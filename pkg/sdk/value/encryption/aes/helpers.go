@@ -32,7 +32,15 @@ func encrypt(data []byte, block cipher.Block) ([]byte, error) {
 
 	// Check nonce size
 	nonceSize := aead.NonceSize()
-	result := make([]byte, nonceSize+aead.Overhead()+len(data))
+
+	// Calculate allocation limit (lgtm)
+	bufSize := nonceSize + aead.Overhead() + len(data)
+	if bufSize > 100*1024*1024 { // Limit to 100MB
+		return nil, fmt.Errorf("data too large")
+	}
+
+	// Allocate data buffer
+	result := make([]byte, bufSize)
 	n, err := rand.Read(result[:nonceSize])
 	if err != nil {
 		return nil, fmt.Errorf("aes: unable to generate nonce : %w", err)
