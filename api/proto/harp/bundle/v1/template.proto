@@ -1,0 +1,181 @@
+// Licensed to Elasticsearch B.V. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Elasticsearch B.V. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+syntax = "proto3";
+
+package harp.bundle.v1;
+
+option csharp_namespace = "harp.Bundle.V1";
+option go_package = "github.com/elastic/harp/api/gen/go/harp/bundle/v1;bundlev1";
+option java_multiple_files = true;
+option java_outer_classname = "TemplateProto";
+option java_package = "com.github.elastic.cloudsec.harp.bundle.v1";
+option objc_class_prefix = "SBX";
+option php_namespace = "harp\\Bundle\\V1";
+
+// -----------------------------------------------------------------------------
+
+// Template represents bundle template generation definition.
+message Template {
+  string api_version = 1;
+  string kind = 2;
+  TemplateMeta meta = 3;
+  TemplateSpec spec = 4;
+}
+
+// TemplateMeta handles bundle template metadata.
+message TemplateMeta {
+  // REQUIRED. Template name.
+  string name = 1;
+  // REQUIRED. Template owner.
+  string owner = 2;
+  // REQUIRED. Short description for template role.
+  string description = 3;
+}
+
+// TemplateSpec handles bundle template specification.
+message TemplateSpec {
+  Selector selector = 1;
+  Namespaces namespaces = 2;
+}
+
+// BundleTemplateSelector defines secret path generator default values.
+message Selector {
+  // Quality defines default quality value for CSO path builder.
+  string quality = 1;
+  // Platform defines default platform value in CSO path builder.
+  string platform = 2;
+  // Product defines default product value in CSO path builder.
+  string product = 3;
+  // Application defines default application value in CSO path builder.
+  string application = 4;
+  // Version defines default version value in CSO path builder.
+  string version = 5;
+  // Component defines default component value in CSO path builder.
+  string component = 6;
+}
+
+// Namespaces defines secret generation template specification accoridng
+// to CSO path naming.
+message Namespaces {
+  // Infrastructure secret definitions.
+  repeated InfrastructureNS infrastructure = 1;
+  // Platform secret definitions.
+  repeated PlatformRegionNS platform = 2;
+  // Product secret definitions.
+  repeated ProductComponentNS product = 3;
+  // Application secret definitions.
+  repeated ApplicationComponentNS application = 4;
+}
+
+// InfrastructureSpec is the container for R1 secret generators.
+message InfrastructureNS {
+  // REQUIRED. Infrastructure provider
+  string provider = 1;
+  // REQUIRED. Infrastructure provider account
+  string account = 2;
+  // REQUIRED. Infrastructure provider account alias (user-friendly name)
+  string name = 3;
+  // REQUIRED. Short descript for the infrastructure purpose.
+  string description = 4;
+  // REQUIRED. Cloud Provider Regions
+  repeated InfrastructureRegionNS regions = 5;
+}
+
+// InfrastructureRegionSpec describes region partition.
+message InfrastructureRegionNS {
+  // REQUIRED. Infrastructure provider region name
+  string name = 1;
+  // REQUIRED. Service secret definitions
+  repeated InfrastructureServiceNS services = 2;
+}
+
+// InfrastructureServiceSpec describes infrastructure service.
+message InfrastructureServiceNS {
+  // REQUIRED. Service type.
+  string type = 1;
+  // REQUIRED. Service name.
+  string name = 2;
+  // REQUIRED. Service usage short description.
+  string description = 3;
+  // REQUIRED. Secret definitions.
+  repeated SecretSuffix secrets = 4;
+}
+
+// PlatformRegionNS is the container for R2 secret generators.
+message PlatformRegionNS {
+  // REQUIRED. Platform region name.
+  string region = 1;
+  // REQUIRED. Platform region short description.
+  string description = 2;
+  // REQUIRED. Platform components deployed in the given region.
+  repeated PlatformComponentNS components = 3;
+}
+
+// PlatformComponentSpec describes platform components.
+message PlatformComponentNS {
+  // REQUIRED. Component type.
+  string type = 1;
+  // REQUIRED. Component name.
+  string name = 2;
+  // REQUIRED. Component short description.
+  string description = 3;
+  // REQUIRED. Secret definitions.
+  repeated SecretSuffix secrets = 4;
+}
+
+// ProductComponentNS describes product components.
+message ProductComponentNS {
+  // REQUIRED. Product type.
+  string type = 1;
+  // REQUIRED. Product name.
+  string name = 2;
+  // REQUIRED. Product short description.
+  string description = 3;
+  // REQUIRED. Secret definitions.
+  repeated SecretSuffix secrets = 4;
+}
+
+// ApplicationComponentNS describes application components.
+message ApplicationComponentNS {
+  // REQUIRED. Application type.
+  string type = 1;
+  // REQUIRED. Application name.
+  string name = 2;
+  // REQUIRED. Application short description.
+  string description = 3;
+  // REQUIRED. Secret definitions.
+  repeated SecretSuffix secrets = 4;
+}
+
+// SecretSuffix holds secret value generation details.
+message SecretSuffix {
+  // REQUIRED. CSO Suffix.
+  string suffix = 1;
+  // REQUIRED. Short description of the purpose of the secret.
+  string description = 2;
+  // Defines if secret is managed or not (generated vs static secret).
+  bool vendor = 3;
+  // JSON Template for K/V Generation.
+  string template = 4;
+  // String Content for file embedding process. (filename / content)
+  map<string, string> content = 5;
+  // Secret labels contains identifying information used for query (i.e. Patch selector).
+  map<string,string> labels = 6;
+  // Secret annotations not used internally used by external harp environments.
+  map<string,string> annotations = 7;
+}

@@ -1,0 +1,32 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "fernet-key-rotator"
+  owner: cloud-security@elastic.co
+  description: "Rotate or create all fernet key of given bundle"
+spec:
+  rules:
+  # Object selector
+  - selector:
+      # Package path match this regexp
+      matchPath:
+        # Regex match
+        regex: ".*"
+
+    # Apply this operation
+    package:
+      # On package annotation
+      annotations:
+        # Update annotation value with new secret
+        update:
+          secret-service.elstc.co/encryptionKey: |-
+            {{ cryptoKey "fernet" }}
+
+      # On package data
+      data:
+        # Update annotations
+        annotations:
+          # Update annotation value with new secret
+          update:
+            secret-service.elstc.co/encryptionKey: |-
+              {{ cryptoKey "fernet" }}

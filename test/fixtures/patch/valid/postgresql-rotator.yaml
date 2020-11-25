@@ -1,0 +1,26 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "postgresql-rotator"
+  owner: cloud-security@elastic.co
+  description: "Rotate postgresql password"
+spec:
+  rules:
+  # Target a precise secret
+  - selector:
+      matchPath:
+        # Strict match
+        strict: "platform/{{.Values.quality}}/{{.Values.account}}/{{.Values.region}}/postgresql/{{.Values.component}}/admin_credentials"
+
+    # Apply this operation on selector matches
+    package:
+      # Access data
+      data:
+        # Target an explicit keys only
+        kv:
+          remove: [ "port" ]
+          add:
+            "listener": "5432"
+          update:
+            "username": "dbuser-{{.Values.component}}-{{ randAlphaNum 8 }}"
+            "password": "{{ paranoidPassword | b64enc }}"

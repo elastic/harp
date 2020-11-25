@@ -1,0 +1,39 @@
+version: '3'
+
+vars:
+  ARTIFACT: harp-server
+
+tasks:
+  default:
+    cmds:
+      - task: build
+
+  build:
+    desc: Build artefact
+    cmds:
+      - mage
+
+  test:
+    desc: Test artefact
+    cmds:
+      - mage test
+
+  release:
+    desc: Generate a release
+    cmds:
+      - go mod vendor
+      - mage release
+
+  release-pack:
+    desc: Generate final artefact to publish to GH
+    cmds:
+      - rm -rf dist && mkdir dist
+      - "tar cfJ dist/{{.ARTIFACT}}-darwin-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-darwin-amd64"
+      - "tar cfJ dist/{{.ARTIFACT}}-linux-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-amd64"
+      - "tar cfJ dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm7"
+      - "tar cfJ dist/{{.ARTIFACT}}-linux-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm64"
+      - "tar cfJ dist/{{.ARTIFACT}}-windows-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-windows-amd64.exe"
+      - cd dist && sha256sum {{.ARTIFACT}}-*.tar.xz > {{.ARTIFACT}}-checksum.txt
+      - cd dist && gpg --detach-sign --armor {{.ARTIFACT}}-checksum.txt
+      - cat dist/{{.ARTIFACT}}-checksum.txt
+      - mage homebrew > dist/harp-server.rb

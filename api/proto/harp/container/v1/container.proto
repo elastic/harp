@@ -1,0 +1,60 @@
+// Licensed to Elasticsearch B.V. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Elasticsearch B.V. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+syntax = "proto3";
+
+package harp.container.v1;
+
+option csharp_namespace = "harp.Container.V1";
+option go_package = "github.com/elastic/harp/api/gen/go/harp/container/v1;containerv1";
+option java_multiple_files = true;
+option java_outer_classname = "ContainerProto";
+option java_package = "com.github.elastic.cloudsec.harp.container.v1";
+option objc_class_prefix = "SCX";
+option php_namespace = "harp\\Container\\V1";
+
+// Header describes container headers.
+message Header {
+  // Content encoding describes the content encoding used for raw.
+  // Unspecified means no encoding.
+  string content_encoding = 1;
+  // Content type is the serialization method used to serialize 'raw'.
+  // Unspecified means "application/vnd.harp.protobuf".
+  string content_type = 2;
+  // Ephemeral public key used for encryption.
+  bytes encryption_public_key = 3;
+  // Container box contains public signing key encrypted with payload key.
+  bytes container_box = 4;
+  // Recipient list for identity bound secret container.
+  repeated Recipient recipients = 6;
+}
+
+// Recipient describes container recipient informations.
+message Recipient {
+  // Recipient identifier
+  bytes identifier = 1;
+  // Encrypted copy of the payload key for recipient.
+  bytes key = 2;
+}
+
+// Container describes the container attributes.
+message Container {
+  // Container headers.
+  Header headers = 1;
+  // Raw hold the complete serialized object in protobuf.
+  bytes raw = 2;
+}

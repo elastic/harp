@@ -1,0 +1,127 @@
+// Licensed to Elasticsearch B.V. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Elasticsearch B.V. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+syntax = "proto3";
+
+package harp.bundle.v1;
+
+option csharp_namespace = "harp.Bundle.V1";
+option go_package = "github.com/elastic/harp/api/gen/go/harp/bundle/v1;bundlev1";
+option java_multiple_files = true;
+option java_outer_classname = "PatchProto";
+option java_package = "com.github.elastic.cloudsec.harp.bundle.v1";
+option objc_class_prefix = "SBX";
+option php_namespace = "harp\\Bundle\\V1";
+
+// -----------------------------------------------------------------------------
+
+// Patch represents bundle patch definition.
+message Patch {
+  // Default to ""
+  string api_version = 1;
+  // Default to "BundlePatch"
+  string kind = 2;
+  // BundlePatch metadata
+  PatchMeta meta = 3;
+  // BundlePatch specification
+  PatchSpec spec = 4;
+}
+
+// PatchMeta handles patch metadata.
+message PatchMeta {
+  // REQUIRED. Template name.
+  string name = 1;
+  // REQUIRED. Template owner.
+  string owner = 2;
+  // REQUIRED. Short description for template role.
+  string description = 3;
+}
+
+// PatchSpec repesetns bundle patch specification holder.
+message PatchSpec {
+  // Patch selector rules. Applied in the declaration order.
+  repeated PatchRule rules = 1;
+}
+
+// PatchRule represents an operation to apply to a given bundle.
+message PatchRule {
+  // Used to determine is patch strategy is applicable to the package.
+  PatchSelector selector = 1;
+  // Package patch operations.
+  PatchPackage package = 2;
+}
+
+// PatchSelector represents selecting strategies used to match a bundle resource.
+message PatchSelector {
+  // Match a package by using its path (secret path).
+  PatchSelectorMatchPath matchPath = 1;
+  // Match a package using a JMESPath query.
+  string jmesPath = 2;
+}
+
+// PatchSelectorMatchPath represents package path matching strategies.
+message PatchSelectorMatchPath {
+  // Strict case-sensitive path matching.
+  // Value can be templatized.
+  string strict = 1;
+  // Regex path matching.
+  // Value can be templatized.
+  string regex = 2;
+}
+
+// PatchPackagePath represents package path operations.
+message PatchPackagePath {
+  // Template used to completely rewrite the package path.
+  string template = 1;
+}
+
+// PatchPackage represents package operations.
+message PatchPackage {
+  // Path operations.
+  PatchPackagePath path = 1;
+  // Annotation operations.
+  PatchOperation annotations = 2;
+  // Label operations.
+  PatchOperation labels = 3;
+  // Secret data operations.
+  PatchSecret data = 4;
+}
+
+// PatchSecret represents secret data operations.
+message PatchSecret {
+  // Secret data annotation operations.
+  PatchOperation annotations = 1;
+  // Secret data label operations.
+  PatchOperation labels = 2;
+  // Template to override secret data.
+  string template = 3;
+  // Used to target specific keys inside the secret data.
+  PatchOperation kv = 4;
+}
+
+// PatchOperation represents atomic patch operations executable on a k/v map.
+message PatchOperation {
+  // Add a new case-sentitive key and value to related data map.
+  // Key and Value can be templatized.
+  map<string,string> add = 1;
+  // Remove a case-sensitive key from related data map.
+  // Key and Value can be templatized.
+  repeated string remove = 2;
+  // Update case-sensitive existing key from related data map.
+  // Key and Value can be templatized.
+  map<string,string> update = 3;
+}

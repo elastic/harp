@@ -1,0 +1,25 @@
+apiVersion: harp.elastic.co/v1
+kind: BundleTemplate
+
+meta:
+  name: "cluster-service-accounts"
+  owner: cluster-manager@elastic.co
+  description: "Cluster Service Account provisioner"
+
+spec:
+  selector:
+    quality: "{{ .Values.quality }}"
+    platform: "observability"
+    product: "deployer"
+    version: "1.0.0"
+
+  namespaces:
+    application:
+    - name: "clusters"
+      description: "Managed clusters secrets"
+      secrets:
+      - suffix: "{{ .Values.installation }}/{{ .Values.region }}/{{ .Values.clusterid }}/users"
+        template: |-
+          [[- $userMap := dict ]][[ range $user := .Values.serviceAccounts -]]
+          [[- $_ := set $userMap $user "{{ noSymbolPassword }}" ]][[ end ]]
+          [[ $userMap | toJson ]]

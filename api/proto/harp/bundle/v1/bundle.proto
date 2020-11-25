@@ -1,0 +1,97 @@
+// Licensed to Elasticsearch B.V. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Elasticsearch B.V. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+syntax = "proto3";
+
+package harp.bundle.v1;
+
+option csharp_namespace = "harp.Bundle.V1";
+option go_package = "github.com/elastic/harp/api/gen/go/harp/bundle/v1;bundlev1";
+option java_multiple_files = true;
+option java_outer_classname = "BundleProto";
+option java_package = "com.github.elastic.cloudsec.harp.bundle.v1";
+option objc_class_prefix = "SBX";
+option php_namespace = "harp\\Bundle\\V1";
+
+import "harp/bundle/v1/template.proto";
+import "google/protobuf/wrappers.proto";
+
+// Bundle is a concrete secret bundle.
+message Bundle {
+  // Map of string keys and values that can be used to organize and categorize
+  // (scope and select) objects.
+  map<string,string> labels = 1;
+  // Annotations is an unstructured key value map stored with a resource that
+  // may be set by external tools to store and retrieve arbitrary metadata.
+  map<string,string> annotations = 2;
+  // Version of the file
+  uint32 version = 3;
+  // Secret package collection
+  repeated Package packages = 4;
+  // Bundle template object
+  Template template = 5;
+  // Associated values
+  google.protobuf.BytesValue values = 6;
+  // Merkle Tree root
+  bytes merkle_tree_root = 7;
+}
+
+// Package is a secret organizational unit.
+message Package {
+  // Map of string keys and values that can be used to organize and categorize
+  // (scope and select) objects.
+  map<string,string> labels = 1;
+  // Annotations is an unstructured key value map stored with a resource that
+  // may be set by external tools to store and retrieve arbitrary metadata.
+  map<string,string> annotations = 2;
+  // Package name as a complete secret path (CSO compliance recommended)
+  string name = 3;
+  // Active secret version
+  SecretChain secrets = 4;
+  // SecretChain versions
+  map<fixed32, SecretChain> versions = 5;
+}
+
+// SecretChain describe a secret version chain.
+message SecretChain {
+  // Map of string keys and values that can be used to organize and categorize
+  // (scope and select) objects.
+  map<string,string> labels = 1;
+  // Annotations is an unstructured key value map stored with a resource that
+  // may be set by external tools to store and retrieve arbitrary metadata.
+  map<string,string> annotations = 2;
+  // Version identifier
+  fixed32 version = 3;
+  // Secret K/V collection
+  repeated KV data = 4;
+  // Link to previous version
+  google.protobuf.UInt32Value previous_version = 5;
+  // Link to next version
+  google.protobuf.UInt32Value next_version = 6;
+  // Locked buffer when encryption is enabled
+  google.protobuf.BytesValue locked = 7;
+}
+
+// KV contains the key, the value and the type of the value.
+message KV {
+  // Key
+  string key = 1;
+  // Golang type of initial value before packing
+  string type = 2;
+  // Value must be encoded using secret.Pack method
+  bytes value = 3;
+}

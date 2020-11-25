@@ -1,0 +1,37 @@
+---
+blacklist:
+  - GPL-2.0
+
+whitelist:
+  - Apache-2.0
+  - CC0-1.0
+  - MIT
+  - BSD-1-Clause
+  - BSD-2-Clause
+  - BSD-3-Clause
+
+exceptions:
+  # MIT - https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE
+  - sigs.k8s.io/yaml
+  # MIT - https://github.com/apparentlymart/go-textseg/blob/master/LICENSE
+  - github.com/apparentlymart/go-textseg/...
+  # MPL-2.0 - https://github.com/hashicorp/hcl/blob/master/LICENSE
+  - github.com/hashicorp/hcl/...
+  # MPL-2.0 - https://github.com/hashicorp/go-multierror/blob/master/LICENSE
+  - github.com/hashicorp/go-multierror/...
+  # MPL-2.0 - https://github.com/hashicorp/errwrap/blob/master/LICENSE
+  - github.com/hashicorp/errwrap/...
+  # MPL-2.0 - https://github.com/gosimple/slug/blob/master/LICENSE
+  - github.com/gosimple/slug
+  # MPL-2.0-no-copyleft-exception - https://github.com/hashicorp/go-retryablehttp/blob/master/LICENSE
+  - github.com/hashicorp/go-retryablehttp
+  # MPL-2.0-no-copyleft-exception - https://github.com/hashicorp/go-sockaddr/blob/master/LICENSE
+  - github.com/hashicorp/go-sockaddr
+  # MPL-2.0-no-copyleft-exception - https://github.com/hashicorp/go-cleanhttp/blob/master/LICENSE
+  - github.com/hashicorp/go-cleanhttp
+  # MPL-2.0-no-copyleft-exception - https://github.com/hashicorp/go-rootcerts/blob/master/LICENSE
+  - github.com/hashicorp/go-rootcerts
+  # MPL-2.0-no-copyleft-exception - https://github.com/hashicorp/vault/blob/master/LICENSE
+  - github.com/hashicorp/vault/...
+  # BSD-2 - https://github.com/magiconair/properties/blob/master/LICENSE.md
+  - github.com/magiconair/properties

@@ -1,0 +1,20 @@
+infra:
+    aws:
+        account: essp-customer1
+        region: us-east-1
+
+platform:
+    essp:
+        name: customer1
+
+product:
+    name: ece
+    version: v1.0.0
+
+vendor:
+  recurly:
+    api_key: "recurly-foo-api-123456789"
+  okta:
+    api_key: "okta-foo-api-123456789"
+  mailgun:
+    api_key: "mg-admin-9875s-sa"

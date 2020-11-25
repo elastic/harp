@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: proto
+
+  proto:
+    desc: Build Go stub from proto
+    cmds:
+      - rm -rf gen/go && mkdir -p gen/go
+      - find . -name "*.proto" | xargs protoc --go_opt=paths=source_relative --go_out=gen/go --go-grpc_out=gen/go --go-grpc_opt=paths=source_relative -I ./proto -I ../tools/vendor

@@ -1,0 +1,33 @@
+apiVersion: harp.elastic.co/v1
+kind: BundleTemplate
+meta:
+  name: "Ec2ssh"
+  owner: cloud-security@elastic.co
+  description: "EC2 SSH Key"
+spec:
+  namespaces:
+    infrastructure:
+    - provider: "aws"
+      account: "{{ .Values.infra.aws.account }}"
+      description: "AWS Account"
+      regions:
+      - name: "global"
+        services:
+        - type: "ec2"
+          name: "default"
+          description: "Authentication for all EC2 instances"
+          secrets:
+          - suffix: "ssh/rsa_keys"
+            description: "Private SSH keys for connection"
+            template: |-
+              {
+                "private": {{ $sshKey := cryptoPair "rsa" }}{{ $sshKey.Private | toSSH | toJson }},
+                "public": "{{ $sshKey.Public | toSSH | trim }} cloud-security@elastic.co"
+              }
+          - suffix: "ssh/ed25519_keys"
+            description: "Private SSH keys for connection"
+            template: |-
+              {
+                "private": {{ $sshKey := cryptoPair "ssh" }}{{ $sshKey.Private | toSSH | toJson }},
+                "public": "{{ $sshKey.Public | toSSH | trim }} cloud-security@elastic.co"
+              }

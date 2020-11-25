@@ -1,0 +1,15 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "secret-relocator"
+  description: "Move cluster secrets to CSO compliant path"
+spec:
+  rules:
+  - selector:
+      matchPath:
+        regex: "^services/production/global/clusters/*"
+    package:
+      path:
+        template: |-
+            app/production/global/clusters/1.0.0/bootstrap/{{ trimPrefix "services/production/global/observability/" .Path }}
+

@@ -1,0 +1,5 @@
+bin
+dist
+vendor
+tools/bin
+tools/vendor

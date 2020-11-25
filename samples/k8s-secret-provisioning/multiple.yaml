@@ -1,0 +1,12 @@
+{{- $values := .Values -}}
+{{- range $path, $secret := .Values.Secrets -}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ $path | kebabcase }}"
+  namespace: {{ $values.namespace }}
+type: Opaque
+data: {{ range $k, $v := $secret }}
+  {{ $k }}: {{ $v | b64enc }}{{ end }}
+{{ end }}
