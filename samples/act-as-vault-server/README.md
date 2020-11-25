@@ -43,14 +43,6 @@ $ harp bundle dump --in customer1-production.bundle --content-only | jq -r "keys
 
 ### Expose the bundle as read-only Vault server
 
-First of all seal the bundle
-
-```sh
-
-```
-
-> No authentication by default
-
 Map a bundle to `root` namespace as default.
 
 ```sh
