@@ -1,5 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+*.go text eol=lf
 
 # Collapse vendored and generated files on GitHub
 vendor/* linguist-vendored

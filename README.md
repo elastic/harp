@@ -1,6 +1,7 @@
 # Harp
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/elastic/harp)](https://goreportcard.com/report/github.com/elastic/harp)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/elastic/harp.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/elastic/harp/alerts/)
 
 Harp is for Harpocrates (Ancient Greek: Ἁρποκράτης) the god of silence, secrets
 and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipedia.org/wiki/Harpocrates)
