@@ -1,7 +1,10 @@
 # Harp
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go Report Card](https://goreportcard.com/badge/github.com/elastic/harp)](https://goreportcard.com/report/github.com/elastic/harp)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/elastic/harp.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/elastic/harp/alerts/)
+[![made-with-Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](http://golang.org)
+[![GitHub release](https://img.shields.io/github/release/elastic/harp.svg)](https://github.com/elastic/harp/releases/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/elastic/harp/graphs/commit-activity)
 
 Harp is for Harpocrates (Ancient Greek: Ἁρποκράτης) the god of silence, secrets
 and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipedia.org/wiki/Harpocrates)
