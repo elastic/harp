@@ -1,5 +1,7 @@
 # Harp
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/elastic/harp)](https://goreportcard.com/report/github.com/elastic/harp)
+
 Harp is for Harpocrates (Ancient Greek: Ἁρποκράτης) the god of silence, secrets
 and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipedia.org/wiki/Harpocrates)
 
@@ -118,7 +120,7 @@ For CLI
 # or docker image [distroless:static, rootless, noshell]
 mage docker:harp
 # To execute in the container
-docker run --rm -ti --read-only docker.pkg.github.com/elastic/harp/harp:<version>
+docker run --rm -ti --read-only elastic/harp:<version>
 ```
 
 For container server
@@ -127,7 +129,7 @@ For container server
 # or docker image [distroless:static, rootless, noshell]
 mage docker:harpServer
 # To execute in the container
-docker run --rm -ti --read-only docker.pkg.github.com/elastic/harp/harp-server:<version>
+docker run --rm -ti --read-only elastic/harp-server:<version>
 ```
 
 ## Community
