@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/BurntSushi/toml"
+	toml "github.com/pelletier/go-toml"
 	"sigs.k8s.io/yaml"
 )
 

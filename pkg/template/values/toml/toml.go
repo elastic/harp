@@ -20,7 +20,7 @@ package toml
 import (
 	"fmt"
 
-	"github.com/BurntSushi/toml"
+	toml "github.com/pelletier/go-toml"
 )
 
 // Parser is a TOML parser
