@@ -18,8 +18,9 @@
 package docker
 
 import (
-	"encoding/base64"
 	"fmt"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -37,11 +38,8 @@ var dockerTemplate = strings.TrimSpace(`
 ARG BUILD_DATE
 ARG VERSION
 ARG VCS_REF
-ARG RELEASE
 
 FROM elastic/harp-tools as compiler
-
-ARG RELEASE
 
 # Back to project root
 WORKDIR $GOPATH/src/workspace
@@ -127,14 +125,34 @@ func Build(cmd *artifact.Command) func() error {
 			return err
 		}
 
-		// Invoke docker commands
-		err = sh.RunWith(
-			map[string]string{
-				"DOCKER_BUILDKIT": "1",
-			},
-			"/bin/sh", "-c",
-			fmt.Sprintf("echo '%s' | base64 -D | docker build -t elastic/%s -f- --build-arg BUILD_DATE=%s --build-arg VERSION=%s --build-arg VCS_REF=%s .", base64.StdEncoding.EncodeToString(buf.Bytes()), cmd.Kebab(), time.Now().Format(time.RFC3339), git.Tag, git.Revision),
+		// Prepare command
+		//nolint:gosec // expected behavior
+		c := exec.Command("docker", "build",
+			"-t", fmt.Sprintf("elastic/%s", cmd.Kebab()),
+			"-f", "-",
+			"--build-arg", fmt.Sprintf("BUILD_DATE=%s", time.Now().Format(time.RFC3339)),
+			"--build-arg", fmt.Sprintf("VERSION=%s", git.Tag),
+			"--build-arg", fmt.Sprintf("VCS_REF=%s", git.Revision),
+			".",
 		)
+
+		// Prepare environment
+		c.Env = os.Environ()
+		c.Env = append(c.Env, "DOCKER_BUILDKIT=1")
+		c.Stderr = os.Stderr
+		c.Stdout = os.Stdout
+		c.Stdin = buf // Pass Dockerfile as stdin
+
+		// Execute
+		err = c.Run()
+		if err != nil {
+			return fmt.Errorf("unable to run command: %w", err)
+		}
+
+		// Check execution error
+		if !sh.CmdRan(err) {
+			return fmt.Errorf("running '%s' failed with exit code %d", c.String(), sh.ExitStatus(err))
+		}
 
 		return err
 	}

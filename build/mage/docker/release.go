@@ -19,13 +19,14 @@ package docker
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 	"time"
 
+	"github.com/blang/semver/v4"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 
@@ -129,15 +130,42 @@ func Release(cmd *artifact.Command) func() error {
 
 		// Extract release
 		release := os.Getenv("RELEASE")
+		relVer, err := semver.Parse(release)
+		if err != nil {
+			return fmt.Errorf("invalid semver syntax for release: %v", err.Error())
+		}
 
-		// Invoke docker commands
-		err = sh.RunWith(
-			map[string]string{
-				"DOCKER_BUILDKIT": "1",
-			},
-			"/bin/sh", "-c",
-			fmt.Sprintf("echo '%s' | base64 -D | docker build -t elastic/%s:artifacts-%s -f- --build-arg BUILD_DATE=%s --build-arg VERSION=%s --build-arg VCS_REF=%s --build-arg RELEASE=%s --cache-from=elastic/harp-tools --cache-from=elastic/%s:artifacts-%s .", base64.StdEncoding.EncodeToString(buf.Bytes()), cmd.Kebab(), release, time.Now().Format(time.RFC3339), git.Tag, git.Revision, release, cmd.Kebab(), release),
+		// Prepare command
+		//nolint:gosec // expected behavior
+		c := exec.Command("docker", "build",
+			"-t", fmt.Sprintf("elastic/%s:artifacts-%s", cmd.Kebab(), relVer.String()),
+			"-f", "-",
+			"--build-arg", fmt.Sprintf("BUILD_DATE=%s", time.Now().Format(time.RFC3339)),
+			"--build-arg", fmt.Sprintf("VERSION=%s", git.Tag),
+			"--build-arg", fmt.Sprintf("VCS_REF=%s", git.Revision),
+			"--build-arg", fmt.Sprintf("RELEASE=%s", relVer.String()),
+			"--cache-from", "elastic/harp-tools",
+			"--cache-from", fmt.Sprintf("elastic/%s:artifacts-%s", cmd.Kebab(), relVer.String()),
+			".",
 		)
+
+		// Prepare environment
+		c.Env = os.Environ()
+		c.Env = append(c.Env, "DOCKER_BUILDKIT=1")
+		c.Stderr = os.Stderr
+		c.Stdout = os.Stdout
+		c.Stdin = buf // Pass Dockerfile as stdin
+
+		// Execute
+		err = c.Run()
+		if err != nil {
+			return fmt.Errorf("unable to run command: %w", err)
+		}
+
+		// Check execution error
+		if !sh.CmdRan(err) {
+			return fmt.Errorf("running '%s' failed with exit code %d", c.String(), sh.ExitStatus(err))
+		}
 
 		return err
 	}
