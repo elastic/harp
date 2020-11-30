@@ -56,7 +56,7 @@ func TestFuncs(t *testing.T) {
 		vars:   `["one", 2, { "name": "helm" }]`,
 	}, {
 		tpl:    `{{ toToml . }}`,
-		expect: "[mast]\n  sail = \"white\"\n",
+		expect: "\n[mast]\n  sail = \"white\"\n",
 		vars:   map[string]map[string]string{"mast": {"sail": "white"}},
 	}, {
 		tpl:    `{{ fromYaml . }}`,
