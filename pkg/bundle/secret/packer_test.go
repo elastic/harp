@@ -21,9 +21,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	fuzz "github.com/google/gofuzz"
 )
 
-func Test_Pack_Unpack(t *testing.T) {
+func Test_Pack_Pack_Unpack(t *testing.T) {
 	testCases := []struct {
 		desc    string
 		in      interface{}
@@ -75,5 +76,23 @@ func Test_Pack_Unpack(t *testing.T) {
 				t.Errorf("%q. Secret.PackUnpack():\n-got/+want\ndiff %s", tC.desc, diff)
 			}
 		})
+	}
+}
+
+func Test_UnPack_Fuzz(t *testing.T) {
+	// Making sure the descrption never panics
+	for i := 0; i < 100000; i++ {
+		f := fuzz.New()
+
+		var (
+			in  []byte
+			out struct{}
+		)
+
+		// Fuzz input
+		f.Fuzz(&in)
+
+		// Execute
+		Unpack(in, &out)
 	}
 }
