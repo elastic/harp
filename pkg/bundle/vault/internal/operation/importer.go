@@ -104,7 +104,7 @@ func (op *importer) Run(ctx context.Context) error {
 					// Unpack secret to original value
 					var value interface{}
 					if err := secret.Unpack(s.Value, &value); err != nil {
-						return fmt.Errorf("unable to unpack secret value for path '%s': %w", secretPackage.Name, err)
+						return fmt.Errorf("unable to unpack secret value for path '%s' with key '%s': %w", secretPackage.Name, s.Key, err)
 					}
 
 					// Assign to map for vault storage
