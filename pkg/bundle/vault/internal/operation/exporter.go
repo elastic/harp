@@ -131,7 +131,7 @@ func (op *exporter) Run(ctx context.Context) error {
 					// Pack secret value
 					s, errPack := op.packSecret(k, v)
 					if errPack != nil {
-						return fmt.Errorf("unable to pack secret value for path '%s' with key '%s' : %w", secPath, k)
+						return fmt.Errorf("unable to pack secret value for path '%s' with key '%s' : %w", secPath, k, err)
 					}
 
 					// Add secret to package

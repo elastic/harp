@@ -47,6 +47,9 @@ func Pack(value interface{}) ([]byte, error) {
 		Tag:        asn1.TagSequence,
 		Bytes:      append(header, payload...),
 	})
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal final sequence: %w", err)
+	}
 
 	// No error
 	return body, nil
