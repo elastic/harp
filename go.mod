@@ -57,6 +57,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
 	github.com/ugorji/go/codec v1.1.13
+	github.com/vmihailenco/msgpack/v5 v5.1.0
 	github.com/zclconf/go-cty v1.7.0
 	gitlab.com/NebulousLabs/merkletree v0.0.0-20200118113624-07fbf710afc4
 	go.uber.org/zap v1.16.0

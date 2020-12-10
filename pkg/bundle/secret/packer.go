@@ -20,6 +20,8 @@ package secret
 import (
 	"encoding/asn1"
 	"fmt"
+
+	msgpack "github.com/vmihailenco/msgpack/v5"
 )
 
 const (
@@ -29,7 +31,7 @@ const (
 // Pack a secret value.
 func Pack(value interface{}) ([]byte, error) {
 	// Encode the payload
-	payload, err := asn1.Marshal(value)
+	payload, err := msgpack.Marshal(value)
 	if err != nil {
 		return nil, fmt.Errorf("unable to pack secret value: %w", err)
 	}
@@ -81,8 +83,8 @@ func Unpack(in []byte, out interface{}) error {
 	}
 
 	// Decode the value
-	if _, err := asn1.Unmarshal(rest, out); err != nil {
-		return fmt.Errorf("unable to upack secret value: %w", err)
+	if err := msgpack.Unmarshal(rest, out); err != nil {
+		return fmt.Errorf("unable to unpack secret value: %w", err)
 	}
 
 	return nil

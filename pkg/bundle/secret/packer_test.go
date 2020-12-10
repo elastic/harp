@@ -31,9 +31,9 @@ func Test_Pack_Pack_Unpack(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			desc:    "empty struct",
-			in:      map[interface{}]interface{}{},
-			wantErr: true,
+			desc:    "empty map",
+			in:      map[string]interface{}{},
+			wantErr: false,
 		},
 		{
 			desc:    "string",
