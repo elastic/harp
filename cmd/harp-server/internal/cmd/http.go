@@ -139,3 +139,33 @@ func overrideBackendConfig(cfg *config.Configuration, backends []string) error {
 
 	return nil
 }
+
+func overrideTransformerConfig(cfg *config.Configuration, transformers []string) error {
+	// Parse backend mapping declaration
+	for _, decl := range transformers {
+		parts := strings.SplitN(decl, ":", 2)
+
+		// Mapping must have 2 parts
+		if len(parts) != 2 {
+			return fmt.Errorf("unable to parse transformer declaration, invalid part count")
+		}
+
+		keyName := parts[0]
+		keyRaw := parts[1]
+
+		log.Bg().Debug("Transformer override", zap.String("keyName", keyName))
+
+		// Initialize transformer list
+		if cfg.Transformers == nil {
+			cfg.Transformers = []config.Transformer{}
+		}
+
+		// Add to backend
+		cfg.Transformers = append(cfg.Transformers, config.Transformer{
+			Name: keyName,
+			Key:  keyRaw,
+		})
+	}
+
+	return nil
+}
