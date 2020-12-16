@@ -116,6 +116,7 @@ var cloudProviderRegions = map[string]types.StringArray{
 		"sa-east-1",
 	},
 	"aws-us-gov": {
+		"global",
 		"us-gov-east-1",
 		"us-gov-west-1",
 	},
@@ -187,10 +188,14 @@ var cloudProviderRegions = map[string]types.StringArray{
 		"brazilsoutheast",
 	},
 	"azure-us-gov": {
+		"global",
 		"usgovvirginia",
 		"usgoviowa",
 		"usgovarizona",
 		"usgovtexas",
+	},
+	"global": {
+		"global",
 	},
 }
 
