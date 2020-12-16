@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/gosimple/slug"
@@ -56,7 +57,7 @@ func (h *vaultTransitHandler) encryptData() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req request
-		if err := parseRequest(w, r, &req); err != nil {
+		if err := decodeJSONBody(w, r, &req); err != nil {
 			http.Error(w, "request is invalid", http.StatusBadRequest)
 			return
 		}
@@ -94,10 +95,13 @@ func (h *vaultTransitHandler) decryptData() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req request
-		if err := parseRequest(w, r, &req); err != nil {
+		if err := decodeJSONBody(w, r, &req); err != nil {
 			http.Error(w, "request is invalid", http.StatusBadRequest)
 			return
 		}
+
+		// Remove Vault prefix
+		req.CipherText = strings.TrimPrefix(req.CipherText, "vault:v1:")
 
 		// Check plaintext encoding
 		rawCipherText, err := base64.StdEncoding.DecodeString(req.CipherText)
@@ -107,7 +111,7 @@ func (h *vaultTransitHandler) decryptData() http.HandlerFunc {
 		}
 
 		// Encrypt plaintext with transformer
-		cipherRaw, err := h.tr.To(r.Context(), rawCipherText)
+		cipherRaw, err := h.tr.From(r.Context(), rawCipherText)
 		if err != nil {
 			http.Error(w, "unable to decrypt ciphertext", http.StatusInternalServerError)
 			return

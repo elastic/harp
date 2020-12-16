@@ -25,8 +25,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gorilla/schema"
-
 	"github.com/elastic/harp/pkg/sdk/log"
 )
 
@@ -96,38 +94,6 @@ func withError(w http.ResponseWriter, r *http.Request, err interface{}) {
 			Message: "Unable to process this request",
 		})
 	}
-}
-
-// gorilla/schema decoder is a shared object, as it caches information about structs
-var decoder = schema.NewDecoder()
-
-// Parse takes the input body from the passed request and tries to unmarshal it into data
-func parseRequest(w http.ResponseWriter, r *http.Request, data interface{}) error {
-	// Get the contentType for comparisons
-	contentType := r.Header.Get("Content-Type")
-
-	// Determine the passed ContentType
-	if strings.Contains(contentType, "application/json") {
-		return decodeJSONBody(w, r, data)
-	} else if contentType == "" ||
-		strings.Contains(contentType, "application/x-www-form-urlencoded") ||
-		strings.Contains(contentType, "multipart/form-data") {
-		// net/http should be capable of parsing the form data
-		err := r.ParseForm()
-		if err != nil {
-			return err
-		}
-
-		// Unmarshal them into the passed interface
-		err = decoder.Decode(data, r.PostForm)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return &malformedRequest{status: http.StatusUnsupportedMediaType, msg: "Content-Type header value is not supported"}
 }
 
 type malformedRequest struct {
