@@ -63,6 +63,8 @@ type Configuration struct {
 
 	Backends []Backend `toml:"Backends" default:"" comment:"###############################\n Backends \n##############################"`
 
+	Transformers []Transformer `toml:"Transformers" default:"" comment:"###############################\n Tranformers \n##############################"`
+
 	Keyring []string `toml:"Keyring" default:"" comment:"###############################\n Container Keyring \n##############################"`
 }
 
@@ -70,4 +72,10 @@ type Configuration struct {
 type Backend struct {
 	NS  string `toml:"ns" default:"" comment:"Backend mount namespace"`
 	URL string `toml:"url" default:"" comment:"Backend settings url"`
+}
+
+// Transformer represents transformer mapping settings
+type Transformer struct {
+	Name string `toml:"name" default:"" comment:"Transformer key name"`
+	Key  string `toml:"key" default:"" comment:"Transformer key"`
 }

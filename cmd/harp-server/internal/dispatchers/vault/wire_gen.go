@@ -8,15 +8,19 @@ package vault
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"github.com/elastic/harp/cmd/harp-server/internal/config"
 	"github.com/elastic/harp/cmd/harp-server/internal/dispatchers/vault/routes"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/sdk/tlsconfig"
+	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 	"github.com/elastic/harp/pkg/server/manager"
 	"github.com/elastic/harp/pkg/server/storage/backends/container"
 	"github.com/elastic/harp/pkg/vault/path"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/gosimple/slug"
 	"go.uber.org/zap"
 	"net/http"
 	"time"
@@ -29,7 +33,11 @@ func setup(ctx context.Context, cfg *config.Configuration) (*http.Server, error)
 	if err != nil {
 		return nil, err
 	}
-	server, err := httpServer(ctx, cfg, backend)
+	vaultTransformerMap, err := transformers(cfg)
+	if err != nil {
+		return nil, err
+	}
+	server, err := httpServer(ctx, cfg, backend, vaultTransformerMap)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +60,29 @@ func backendManager(ctx context.Context, cfg *config.Configuration) (manager.Bac
 	return bm, nil
 }
 
-func httpServer(ctx context.Context, cfg *config.Configuration, bm manager.Backend) (*http.Server, error) {
+type transformerMap map[string]value.Transformer
+
+func transformers(cfg *config.Configuration) (transformerMap, error) {
+	res := transformerMap{}
+
+	if len(cfg.Transformers) == 0 {
+		return res, nil
+	}
+
+	for _, tr := range cfg.Transformers {
+
+		t, err := encryption.FromKey(tr.Key)
+		if err != nil {
+			return res, fmt.Errorf("unable to initialize '%s' transformer: %w", tr.Name, err)
+		}
+
+		res[slug.Make(tr.Name)] = t
+	}
+
+	return res, nil
+}
+
+func httpServer(ctx context.Context, cfg *config.Configuration, bm manager.Backend, tm transformerMap) (*http.Server, error) {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -60,10 +90,12 @@ func httpServer(ctx context.Context, cfg *config.Configuration, bm manager.Backe
 	r.Use(middleware.Recoverer)
 
 	r.Use(middleware.Timeout(60 * time.Second))
+	routes.RootHandler(r)
+	routes.KVHandler(r, bm)
 
-	r.Route("/", func(r chi.Router) {
-		r.Mount("/", routes.KVHandler(bm))
-	})
+	for name, t := range tm {
+		routes.TransitHandler(r, name, t)
+	}
 	container.SetKeyring(cfg.Keyring)
 
 	server := &http.Server{

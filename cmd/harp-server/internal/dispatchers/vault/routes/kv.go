@@ -19,16 +19,13 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/dchest/uniuri"
 	"github.com/go-chi/chi"
 	"github.com/gosimple/slug"
 	"go.uber.org/zap"
 
-	"github.com/elastic/harp/build/version"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/server/manager"
 	"github.com/elastic/harp/pkg/server/storage"
@@ -36,72 +33,20 @@ import (
 )
 
 // KVHandler initializes Vault KV API handler for given bundle
-func KVHandler(bm manager.Backend) http.Handler {
-	r := chi.NewRouter()
-
+func KVHandler(r chi.Router, bm manager.Backend) {
 	// Initialize controler
 	ctrl := &vaultKVHandler{
 		bm: bm,
 	}
 
 	// Map routes
-	r.Get("/v1/sys/seal-status", ctrl.sealStatus())
-	r.Get("/v1/sys/leader", ctrl.leaderStatus())
-	r.Put("/v1/auth/token/renew-self", ctrl.selfRenew())
 	r.Get("/v1/secret/config", ctrl.getConfig())
 	r.Get("/v1/sys/internal/ui/mounts/*", ctrl.getMount())
 	r.Get("/v1/secret/data/*", ctrl.getSecret())
-
-	return r
 }
-
-// KV is an alias to map for readability.
-type KV map[string]interface{}
 
 type vaultKVHandler struct {
 	bm manager.Backend
-}
-
-func (h *vaultKVHandler) sealStatus() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		with(w, r, http.StatusOK, &KV{
-			"type":         "shamir",
-			"initialized":  true,
-			"sealed":       false,
-			"t":            1,
-			"n":            1,
-			"progress":     0,
-			"version":      version.Version,
-			"cluster_name": "harp-container-server",
-			"cluster_id":   "763d1163-18f9-46d8-b1ca-2d327c0cc57f",
-			"nonce":        "",
-		})
-	}
-}
-
-func (h *vaultKVHandler) leaderStatus() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		with(w, r, http.StatusOK, &KV{
-			"ha_enabled": false,
-			"is_self":    true,
-		})
-	}
-}
-
-func (h *vaultKVHandler) selfRenew() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		with(w, r, http.StatusOK, &KV{
-			"auth": &KV{
-				"client_token": fmt.Sprintf("harp.%s", uniuri.NewLen(12)),
-				"policies":     []string{"harp", "read-only"},
-				"metadata": &KV{
-					"user": "harp",
-				},
-				"lease_duration": 3600,
-				"renewable":      true,
-			},
-		})
-	}
 }
 
 func (h *vaultKVHandler) getMount() http.HandlerFunc {

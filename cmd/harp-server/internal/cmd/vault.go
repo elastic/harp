@@ -32,26 +32,33 @@ import (
 	"github.com/elastic/harp/pkg/sdk/platform"
 )
 
-var vaultNamespaces []string
+type vaultParams struct {
+	Namespaces   []string
+	Transformers []string
+}
 
 // -----------------------------------------------------------------------------
 
 var vaultCmd = func() *cobra.Command {
+	params := &vaultParams{}
+
 	cmd := &cobra.Command{
 		Use:   "vault",
 		Short: "Starts a Vault container server",
-		Run:   runVaultServer,
+		Run: func(cmd *cobra.Command, args []string) {
+			runVaultServer(cmd.Context(), params)
+		},
 	}
 
 	// Parameters
-	cmd.Flags().StringSliceVarP(&vaultNamespaces, "namespace", "n", nil, "namespace mapping (ns:url)")
-	log.CheckErr("unable to mark 'namespace' flag as required.", cmd.MarkFlagRequired("namespace"))
+	cmd.Flags().StringSliceVarP(&params.Namespaces, "namespace", "n", nil, "namespace mapping (ns:url)")
+	cmd.Flags().StringSliceVarP(&params.Transformers, "transformer", "t", nil, "transformer mapping (keyName:key)")
 
 	return cmd
 }
 
-func runVaultServer(cmd *cobra.Command, args []string) {
-	ctx, cancel := context.WithCancel(cmd.Context())
+func runVaultServer(ctx context.Context, params *vaultParams) {
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	// Initialize config
@@ -70,9 +77,17 @@ func runVaultServer(cmd *cobra.Command, args []string) {
 		Network:         conf.Vault.Network,
 		Address:         conf.Vault.Listen,
 		Builder: func(ln net.Listener, group *run.Group) {
+			// Check requirements
+			if len(params.Namespaces) == 0 && len(params.Transformers) == 0 {
+				log.For(ctx).Fatal("namespaces and/or transformers must be specified")
+			}
+
 			// Override config
-			if err := overrideBackendConfig(conf, vaultNamespaces); err != nil {
+			if err := overrideBackendConfig(conf, params.Namespaces); err != nil {
 				log.For(ctx).Fatal("Unable to parse backend mapping", zap.Error(err))
+			}
+			if err := overrideTransformerConfig(conf, params.Transformers); err != nil {
+				log.For(ctx).Fatal("Unable to parse transformer mapping", zap.Error(err))
 			}
 
 			server, err := vault.New(ctx, conf)

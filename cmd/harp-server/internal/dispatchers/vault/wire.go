@@ -22,18 +22,22 @@ package vault
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/google/wire"
+	"github.com/gosimple/slug"
 	"go.uber.org/zap"
 
 	"github.com/elastic/harp/cmd/harp-server/internal/config"
 	"github.com/elastic/harp/cmd/harp-server/internal/dispatchers/vault/routes"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/sdk/tlsconfig"
+	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 	"github.com/elastic/harp/pkg/server/manager"
 	"github.com/elastic/harp/pkg/server/storage/backends/container"
 	vpath "github.com/elastic/harp/pkg/vault/path"
@@ -55,7 +59,31 @@ func backendManager(ctx context.Context, cfg *config.Configuration) (manager.Bac
 	return bm, nil
 }
 
-func httpServer(ctx context.Context, cfg *config.Configuration, bm manager.Backend) (*http.Server, error) {
+type transformerMap map[string]value.Transformer
+
+func transformers(cfg *config.Configuration) (transformerMap, error) {
+	res := transformerMap{}
+
+	if len(cfg.Transformers) == 0 {
+		return res, nil
+	}
+
+	for _, tr := range cfg.Transformers {
+		// Try to initialize the transformer from key
+		t, err := encryption.FromKey(tr.Key)
+		if err != nil {
+			return res, fmt.Errorf("unable to initialize '%s' transformer: %w", tr.Name, err)
+		}
+
+		// Add to transfromer map
+		res[slug.Make(tr.Name)] = t
+	}
+
+	// No error
+	return res, nil
+}
+
+func httpServer(ctx context.Context, cfg *config.Configuration, bm manager.Backend, tm transformerMap) (*http.Server, error) {
 	r := chi.NewRouter()
 
 	// middleware stack
@@ -66,9 +94,13 @@ func httpServer(ctx context.Context, cfg *config.Configuration, bm manager.Backe
 	// timeout before request cancelation
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	r.Route("/", func(r chi.Router) {
-		r.Mount("/", routes.KVHandler(bm))
-	})
+	routes.RootHandler(r)
+	routes.KVHandler(r, bm)
+
+	// Map transit handlers
+	for name, t := range tm {
+		routes.TransitHandler(r, name, t)
+	}
 
 	// Apply container keyring
 	container.SetKeyring(cfg.Keyring)
@@ -113,6 +145,7 @@ func httpServer(ctx context.Context, cfg *config.Configuration, bm manager.Backe
 func setup(ctx context.Context, cfg *config.Configuration) (*http.Server, error) {
 	wire.Build(
 		backendManager,
+		transformers,
 		httpServer,
 	)
 	return &http.Server{}, nil

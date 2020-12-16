@@ -41,7 +41,7 @@ go mod vendor
 mage
 ```
 
-## Supported Backend
+## Namespaced secrets
 
 One backend is bound to a `namespace`. In order to register a namespace, you
 have to use the following syntax :
@@ -49,6 +49,42 @@ have to use the following syntax :
 ```sh
 --namespace <name>:<backend-factory-url>
 ```
+
+## Transformer API
+
+You can expose a transformer using Vault Transit HTTP API.
+
+```sh
+--transformer <name>:<key> (from harp keygen)
+```
+
+Example :
+
+```sh
+$ harp server vault \
+  --transformer fernet:$(harp keygen fernet) \
+  --transformer aes256-gcm96:$(harp keygen aes-256) \
+  --transformer secretbox:$(harp keygen secretbox)
+```
+
+It will initalize a transformer with given name as Vault Key with given value as Key.
+
+```sh
+$ export VAULT_ADDR=http://127.0.0.1
+
+# To encrypt
+$ vault write transit/encrypt/secretbox plaintext=$(base64 <<< "my secret data")
+Key           Value
+---           -----
+ciphertext    vault:v1:XHcLYFthNzR70a5gs/i4stRfxAkL8RXTF0U4oX13/gx8ftXZhTPMejjN+fChaemmOfYVwxeNeQ==
+
+# To decrypt
+$ vault write -format=json transit/decrypt/secretbox ciphertext=vault:v1:XHcLYFthNzR70a5gs/i4stRfxAkL8RXTF0U4oX13/gx8ftXZhTPMejjN+fChaemmOfYVwxeNeQ== | jq -r ".data.plaintext" | base64 -D
+my secret data
+```
+
+> Don't forget to protect `harp-server` with a TLS configuration to protect
+> your secret when accessing over network.
 
 ### Local
 
