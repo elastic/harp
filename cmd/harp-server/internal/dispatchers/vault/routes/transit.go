@@ -49,10 +49,7 @@ type vaultTransitHandler struct {
 
 func (h *vaultTransitHandler) encryptData() http.HandlerFunc {
 	type request struct {
-		PlainText  string    `json:"plaintext,omitempty"`
-		Context    string    `json:"context,omitempty"`
-		Nonce      string    `json:"nonce,omitempty"`
-		BatchInput []request `json:"batch_input,omitempty"`
+		PlainText string `json:"plaintext,omitempty"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +69,7 @@ func (h *vaultTransitHandler) encryptData() http.HandlerFunc {
 		// Encrypt plaintext with transformer
 		cipherRaw, err := h.tr.To(r.Context(), rawPlainText)
 		if err != nil {
-			http.Error(w, "unable to encrypt plaintext", http.StatusInternalServerError)
+			http.Error(w, "unable to encrypt plaintext", http.StatusBadRequest)
 			return
 		}
 
@@ -87,10 +84,7 @@ func (h *vaultTransitHandler) encryptData() http.HandlerFunc {
 
 func (h *vaultTransitHandler) decryptData() http.HandlerFunc {
 	type request struct {
-		CipherText string    `json:"ciphertext,omitempty"`
-		Context    string    `json:"context,omitempty"`
-		Nonce      string    `json:"nonce,omitempty"`
-		BatchInput []request `json:"batch_input,omitempty"`
+		CipherText string `json:"ciphertext,omitempty"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -113,7 +107,7 @@ func (h *vaultTransitHandler) decryptData() http.HandlerFunc {
 		// Encrypt plaintext with transformer
 		cipherRaw, err := h.tr.From(r.Context(), rawCipherText)
 		if err != nil {
-			http.Error(w, "unable to decrypt ciphertext", http.StatusInternalServerError)
+			http.Error(w, "unable to decrypt ciphertext", http.StatusBadRequest)
 			return
 		}
 
