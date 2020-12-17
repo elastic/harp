@@ -123,7 +123,7 @@ func renderSuffix(templateContext engine.Context, secretPath string, item *bundl
 	if item.Template != "" {
 		payload, err := engine.RenderContextWithData(templateContext, item.Template, data)
 		if err != nil {
-			return nil, fmt.Errorf("unable to render suffiox template: %v", err)
+			return nil, fmt.Errorf("unable to render suffix template: %v", err)
 		}
 
 		// Parse generated JSON

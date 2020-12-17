@@ -46,6 +46,8 @@ var tests = []struct {
 	{"infra/azure/security/global/iam", false},
 	{"infra/aws/security/us-east-1/rds/postgres/admin_creds", false},
 	{"infra/gcp/security/us-east1/db/postgres/admin_creds", false},
+	{"infra/local/security/global/dns/registrar/admin_creds", false},
+	{"infra/unsupported/security/global/dns/registrar/admin_creds", true},
 	// Platform
 	{"platform", true},
 	{"platform/", true},

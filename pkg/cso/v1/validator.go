@@ -28,6 +28,13 @@ import (
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
+const (
+	// Local is used to describe local infrastructure provider.
+	reservedLocalProvider = "local"
+	// Global is used to replace region component to indicate non-region bound secret suffix.
+	reservedGlobalRegion = "global"
+)
+
 var validators = map[string]func([]string) error{
 	"meta":     validateMeta,
 	"infra":    validateInfra,
@@ -91,8 +98,8 @@ func validateMeta(parts []string) error {
 // -----------------------------------------------------------------------------
 
 var cloudProviderRegions = map[string]types.StringArray{
+	reservedLocalProvider: {},
 	"aws": {
-		"global",
 		"us-east-1",
 		"us-east-2",
 		"us-west-1",
@@ -120,7 +127,6 @@ var cloudProviderRegions = map[string]types.StringArray{
 		"us-gov-west-1",
 	},
 	"gcp": {
-		"global",
 		"asia-east1",
 		"asia-east2",
 		"asia-northeast1",
@@ -143,7 +149,6 @@ var cloudProviderRegions = map[string]types.StringArray{
 		"us-west2",
 	},
 	"azure": {
-		"global",
 		"eastasia",
 		"southeastasia",
 		"centralus",
@@ -203,7 +208,7 @@ func validateInfra(parts []string) error {
 	// Validate cloud provider
 	r, ok := cloudProviderRegions[parts[0]]
 	if !ok {
-		return fmt.Errorf("cloud provider (%s) not supported", parts[0])
+		return fmt.Errorf("cloud provider (%s) not supported", r)
 	}
 
 	// Validate accounts
@@ -214,8 +219,8 @@ func validateInfra(parts []string) error {
 		return fmt.Errorf("unable to validate infrastructure cloud provider account (%s): %v", parts[1], err)
 	}
 
-	// Validate region
-	if !r.Contains(parts[2]) {
+	// Validate region if not local provider and not global region
+	if parts[0] != reservedLocalProvider && parts[2] != reservedGlobalRegion && !r.Contains(parts[2]) {
 		return fmt.Errorf("invalid region (%s) for account (%s) on cloud provider (%s)", parts[2], parts[1], parts[0])
 	}
 
@@ -248,15 +253,17 @@ func validatePlatform(parts []string) error {
 
 	// Validate platform region
 	r := parts[2]
-	regionFound := false
-	for _, regions := range cloudProviderRegions {
-		if regions.Contains(r) {
-			regionFound = true
-			break
+	if r != reservedGlobalRegion {
+		regionFound := false
+		for _, regions := range cloudProviderRegions {
+			if regions.Contains(r) {
+				regionFound = true
+				break
+			}
 		}
-	}
-	if !regionFound {
-		return fmt.Errorf("unable to find a region matching (%s)", r)
+		if !regionFound {
+			return fmt.Errorf("unable to find a region matching (%s)", r)
+		}
 	}
 
 	// Validate accounts
