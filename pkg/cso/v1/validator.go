@@ -199,9 +199,6 @@ var cloudProviderRegions = map[string]types.StringArray{
 		"usgovarizona",
 		"usgovtexas",
 	},
-	"global": {
-		"global",
-	},
 }
 
 func validateInfra(parts []string) error {
