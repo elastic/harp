@@ -28,6 +28,8 @@ The purpose of the Cloud Secret Organization (CSO) is to allow for a common stru
 
  - [Elastic Harp](https://github.com/elastic/harp)
  - A set of secrets
+ - A text editor, like `vim`
+ - `jq` and `yq` for validations
 
 ## Secrets Organization (or where do I find things)
 
@@ -87,16 +89,86 @@ The `artifact` directory is used for release artifacts. The basic structure is `
  - `/artifact/docker/sha256:[some sha256sum]/security/attestations/scan_report`
  - `/artifact/iso/md5:[some md5sum]/installation/product-key`
 
-## Storing Secrets
+## Storing (and Retreiving) Secrets
 
-### How do I tell harp what to store?
+Now that we have some idea how to structure the secrets, we need to store them. The tool `harp` uses yaml and json to determine what to store based on the structure above.
 
-Spec Files and Templates
+### How do I tell `harp` what to store?
 
+`Harp` uses specification documents called `spec` files to determine what to store where. These can be formatted as either YAML or JSON. The format allows `harp` to validate both the location (based on the directory paths above) and the format of a secret. If needed, the `spec` file will instruct `harp` on how to generate a secret based on specific criteria if one does not exist. It is possible, with the right syntax, to populate a completely blank `secret store` with all the values needed for a new service deployment automatically.
+
+The spec file is documented in full in the [https://github.com/elastic/harp/tree/main/samples/onboarding/1-template-engine](Harp Onboarding Docs).
+
+### A Sample set of secrets
+
+Let us say that we have a set of secrets to store. We know the secrets, but we need to represent them in a way that `harp` can read in. In this case, we will use a YAML file name `values.yaml`.
+
+```yaml
+secrets:
+  infra:
+    local:
+      account: example_com
+      us-east:
+        ssh_private_key: privatekeystring
+    aws:
+      account: elastic-cloud_com
+      us-east-1:
+        route53_apikey: awsapikey
+  platform:
+    production:
+      elastic-cloud.com:
+        aws-us-west-1:
+          rds:
+            password: mypassword
+        gcp-us-east1:
+          rds:
+            password: myotherpassword
+        azure-eastus2:
+          rds:
+            password: azurepassword
+  app:
+    dev:
+      ubuntu:
+        v18.04:
+          fips:
+            ppa:
+              url: https://ppa.ubuntulinux.net/fips
+              username: someuser
+              password: somepassword
+```
+### A sample `spec.yaml` file
+
+The following `spec.yaml` defines the location of several secrets and the values to populate them with.
+
+```yaml
+apiVersion: harp.elastic.co/v1
+kind: BundleTemplate
+meta:
+  name: samplespec
+  owner: cloud-operations@elastic.co
+  description: Keys for AWS
+spec:
+  namespaces:
+    infrastructure:
+      - provider: local
+        description: Common keys for local resources
+        regions:
+          - name: us-east
+            account: example_com
+            services:
+              - type: compute
+                name: ssh
+                description: private ssh key
+                secrets:
+                  - suffix: private_key
+                    description: ""
+                    template: |-
+                      {
+                          "private_key": "{{ .Values.secrets.infra.local.example_com.us-east.ssh.private-key }}"
+                      }
+```
 ### Importing Secrets from other places
 
 using harp --in spec.yaml -f values.yaml & etc
-
-## Retreiving Secrets
 
 ### Getting things out of vault
