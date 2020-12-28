@@ -107,11 +107,11 @@ Let us say that we have a set of secrets to store. We know the secrets, but we n
 secrets:
   infra:
     local:
-      account: example_com
+      account: example.com
       us-east:
         ssh_private_key: privatekeystring
     aws:
-      account: elastic-cloud_com
+      account: elastic-cloud.com
       us-east-1:
         route53_apikey: awsapikey
   platform:
@@ -154,19 +154,36 @@ spec:
         description: Common keys for local resources
         regions:
           - name: us-east
-            account: example_com
+            account: {{ .Values.secrets.infra.local.account }}
             services:
               - type: compute
                 name: ssh
-                description: private ssh key
+                description: ssh keys
                 secrets:
                   - suffix: private_key
-                    description: ""
+                    description: "SSH Private Key"
                     template: |-
                       {
-                          "private_key": "{{ .Values.secrets.infra.local.example_com.us-east.ssh.private-key }}"
+                          "private_key": "{{ .Values.secrets.infra.local.us-east.ssh_private_key.sshkeystring }}"
+                      }
+      - provider: aws
+        description: aws keys 
+        regions:
+          - name: us-east-1
+            account: {{ .Values.secrets.infra.aws.account }}
+            services:
+              - type: cmoputer
+                name: route53
+                description: route53 api key
+                secrets:
+                  - suffix: apikey
+                    description: "Route53 API Key"
+                    template: |-
+                      {
+                          "api_key": "{{ .Values.secrets.infra.aws.us-east-1.route53_apikey }}
                       }
 ```
+
 ### Importing Secrets from other places
 
 using harp --in spec.yaml -f values.yaml & etc
