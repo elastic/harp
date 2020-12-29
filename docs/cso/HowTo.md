@@ -47,7 +47,7 @@ The `meta` directory is used to store secrets that can compromise the entire sys
 
 The `infra` directory is used to store secrets that relate to infrastructure - cloud service providers, DNS information, data center information, ssh keys, and so on. The basic structure is `/infra/[provider]/[account]/[region]/[service]/[secret]`.
 
- - `/infra/local/example.com/us-east/ssh/private-key`
+ - `/infra/local/example.com/global/ssh/private-key`
  - `/infra/aws/elastic-cloud.com/us-east-1/route53/api-key`
  - `/infra/gcp/elastic-cloud.com/us-west1/compute/ssh-private-key`
  - `/infra/azure/elastic-cloud.com/global/alerting/api-user`
@@ -56,7 +56,7 @@ The `infra` directory is used to store secrets that relate to infrastructure - c
 
 The `platform` directory is used for storing secrets relating to the software running on the infrastructure. The basic structure is `/platform/[quality]/[name]/[region]/[componet]/[secret]`.
 
- - `/platform/dev/example.com/us-east-1/admin/username`
+ - `/platform/dev/example.com/global/admin/username`
  - `/platform/production/elastic-cloud.com/aws-us-west-1/rds/password`
  - `/platform/production/elastic-cloud.com/gcp-us-east1/rds/password`
  - `/platform/production/elastic-cloud.com/azure-eastus2/rds/password`
