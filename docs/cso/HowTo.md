@@ -13,7 +13,7 @@ Storing secrets (see below) is hard. Not from a purely technical standpoint - th
  - `bundle` is a file-based `secret store`. It can be used stand-alone, or as an intermediate step before populating a server-based `secret store`
  - `component` is a piece of software or a add-on to a piece of software
  - `provider` is a cloud provider - one of `aws`, `azure`, `gcp`, `ibm`, or `local`
- - `region` is a region as defined by a `provider`, or `global` to refer to all regions for that `provider`
+ - `region` is a region as defined by a `provider`, or `global` to refer to all regions for that `provider`. The `local` provider only supports the `global` region.
  - `version` is a software version using semver notation - that is `vX.Y.Z` where `X` is the major release, `Y` is the minor release, and `Z` is the "patch" or "build" version.
  - `service` is an online service as defined by a cloud provider or SaaS company.
  - `quality` refers to either `dev`, `staging`, `qa`, or `production`
@@ -107,17 +107,18 @@ Let us say that we have a set of secrets to store. We know the secrets, but we n
 secrets:
   infra:
     local:
-      account: example.com
-      us-east:
+      account: "example.com"
+      global:
         ssh_private_key: privatekeystring
     aws:
-      account: elastic-cloud.com
-      us-east-1:
-        route53_apikey: awsapikey
+      account: "elastic-cloud.com"
+      us_east_1:
+        route53:
+          api_key: awsapikey
   platform:
     production:
-      elastic-cloud.com:
-        aws-us-west-1:
+      elastic_cloud.com:
+        aws_us_west_1:
           rds:
             password: mypassword
         gcp-us-east1:
@@ -132,7 +133,7 @@ secrets:
         v18.04:
           fips:
             ppa:
-              url: https://ppa.ubuntulinux.net/fips
+              url: "https://ppa.ubuntulinux.net/fips"
               username: someuser
               password: somepassword
 ```
@@ -152,9 +153,9 @@ spec:
     infrastructure:
       - provider: local
         description: Common keys for local resources
+        account: "example.com"
         regions:
-          - name: us-east
-            account: {{ .Values.secrets.infra.local.account }}
+          - name: global
             services:
               - type: compute
                 name: ssh
@@ -164,15 +165,15 @@ spec:
                     description: "SSH Private Key"
                     template: |-
                       {
-                          "private_key": "{{ .Values.secrets.infra.local.us-east.ssh_private_key.sshkeystring }}"
+                          "private_key": "{{ .Values.secrets.infra.local.global.ssh_private_key }}"
                       }
       - provider: aws
         description: aws keys 
+        account: "elastic-cloud.com"
         regions:
           - name: us-east-1
-            account: {{ .Values.secrets.infra.aws.account }}
             services:
-              - type: cmoputer
+              - type: compute
                 name: route53
                 description: route53 api key
                 secrets:
@@ -180,7 +181,7 @@ spec:
                     description: "Route53 API Key"
                     template: |-
                       {
-                          "api_key": "{{ .Values.secrets.infra.aws.us-east-1.route53_apikey }}
+                          "api_key": "{{ .Values.secrets.infra.aws.us_east_1.route53.api_key }}"
                       }
 ```
 
