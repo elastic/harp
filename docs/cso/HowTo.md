@@ -185,8 +185,9 @@ spec:
                       }
 ```
 
-### Importing Secrets from other places
+### OK, Now what?
 
-using harp --in spec.yaml -f values.yaml & etc
+### Making Bundles
 
+With the template and the values file, we can now create an enxrypted bundle. The bundle
 ### Getting things out of vault
