@@ -97,7 +97,7 @@ Now that we have some idea how to structure the secrets, we need to store them. 
 
 `Harp` uses specification documents called `spec` files to determine what to store where. These can be formatted as either YAML or JSON. The format allows `harp` to validate both the location (based on the directory paths above) and the format of a secret. If needed, the `spec` file will instruct `harp` on how to generate a secret based on specific criteria if one does not exist. It is possible, with the right syntax, to populate a completely blank `secret store` with all the values needed for a new service deployment automatically.
 
-The spec file is documented in full in the [https://github.com/elastic/harp/tree/main/samples/onboarding/1-template-engine](Harp Onboarding Docs).
+The spec file is documented in full in the [https://github.com/elastic/harp/tree/main/samples/onboarding/1-template-engine](Harp Onboarding Docs). There is a LOT in there, and we cannot possible cover all the cases in this document.
 
 ### A Sample set of secrets
 
@@ -187,7 +187,52 @@ spec:
 
 ### OK, Now what?
 
-### Making Bundles
+Great question! Now it is time to actually store those secrets in a locked bundle. 
 
-With the template and the values file, we can now create an enxrypted bundle. The bundle
+### Working with Bundles
+
+We can start by making an unlocked bundle.
+
+```bash
+harp from bundle-template --in example.spec.yaml --values example.values.yaml --out example.bundle
+```
+
+This will create an unencrypted file `example.bundle` in the local directory. If there are any syntax errors in the spec file or the values file, harp **will** exit with an error. Using a tool like `yq` as a linter on the input files can be very informative to at least verify the syntax and structure of the files themselves.
+
+Be aware that the errors are not always clear at first, and you may need to ask for help to understand them.
+
+You can look an an unencrypted bundle with the `bundle dump` command in `harp`. This will return a JSON representation of all the data in the bundle file, including the template it was generated from. This can be used to verify the data befor encrypting.
+
+```bash
+harp bundle dump --in example.bundle
+```
+
+Once a bundle is created, it can be encrypted with a base64 encoded `key`.
+
+Be aware that the command line below is NOT secure. You should probably use a `secret store` or some other secure tool for generating and storing the `key`.
+
+```bash
+harp bundle encrypt --in example.bundle --out example.encrypted.bundle --key [some base64 string]
+```
+
+In order to decerypt the bundle, you can use the same key with the `decrypt` command. 
+
+```bash
+harp bundle decrypt --in example.encrypted.bundle --out example.bundle --key [some base64 string]
+```
+
+Since the `--in` and `--out` commands can also read and write to the console with `-` as the target, you can pipe one bundle command to the next like so.
+
+```bash
+harp from bundle-template --in example.spec.yaml --values example.values.yaml --out - | harp bundle encrypt --in - --out example.encrypted.bundle --key [some base64 string]
+```
+
+This creates a new bundle and pipes the data into the encrypt command, resulting in an encrypted bundle. 
+
+If we want to be SUPERFANCY, we can add some `jq` parsing to the `decrypt` command and pull a single value out.
+
+```bash
+harp bundle decrypt --in example.encrypted.bundle --out - --key [some base64 string] | harp bundle dump --in - | jq '.packages|map(select(.name == "infra/aws/elastic-cloud.com/us-east-1/compute/route53/apikey"))| .[].secrets.data[].value'
+```
+
 ### Getting things out of vault
