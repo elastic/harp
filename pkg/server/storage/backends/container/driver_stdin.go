@@ -23,8 +23,7 @@ import (
 	"os"
 )
 
-type stdinLoader struct {
-}
+type stdinLoader struct{}
 
 // Reader returns the file Reader
 func (d *stdinLoader) Reader(_ context.Context, key string) (io.ReadCloser, error) {
