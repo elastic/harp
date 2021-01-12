@@ -147,7 +147,7 @@ func processFilePath(currentDirectory, filePath string, result interface{}) erro
 		// If confDir is not blank (current path)
 		if confDir != "" {
 			if errChDir := os.Chdir(confDir); errChDir != nil {
-				return fmt.Errorf("unable to change working directory for '%s': %v", confDir, errChDir)
+				return fmt.Errorf("unable to change working directory for '%s': %w", confDir, errChDir)
 			}
 		}
 	}

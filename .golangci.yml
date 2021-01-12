@@ -32,7 +32,6 @@ linters:
     - gci
     - wrapcheck
     - exhaustivestruct
-    - errorlint
 
 output:
   format: colored-line-number

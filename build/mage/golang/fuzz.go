@@ -43,7 +43,7 @@ func FuzzBuild(name, packageName string) func() error {
 			}
 		}
 
-		fmt.Printf(" > Instrumenting %s [%s]\n", name, packageName)
+		fmt.Fprintf(os.Stdout, " > Instrumenting %s [%s]\n", name, packageName)
 		return sh.Run("go-fuzz-build", "-o", fmt.Sprintf("%s.zip", outputPath), packageName)
 	}
 }
@@ -54,7 +54,7 @@ func FuzzRun(name string) func() error {
 		// Prepare output path
 		outputPath := path.Join(fuzzDir, name)
 
-		fmt.Printf(" > Fuzzing %s\n", name)
+		fmt.Fprintf(os.Stdout, " > Fuzzing %s\n", name)
 		return sh.Run("go-fuzz", "-bin", fmt.Sprintf("%s.zip", outputPath), "-workdir", outputPath)
 	}
 }

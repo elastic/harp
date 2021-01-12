@@ -62,7 +62,7 @@ func FromKey(keyValue string) (value.Transformer, error) {
 
 	// Check transformer initialization error
 	if transformer == nil || err != nil {
-		return nil, fmt.Errorf("unable to initialize value transformer: %v", err)
+		return nil, fmt.Errorf("unable to initialize value transformer: %w", err)
 	}
 
 	// No error

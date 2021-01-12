@@ -48,7 +48,7 @@ func Reader(name string) (io.Reader, error) {
 		// Check stdin
 		info, errStat := os.Stdin.Stat()
 		if errStat != nil {
-			return nil, fmt.Errorf("unable to retrieve stdin information: %v", errStat)
+			return nil, fmt.Errorf("unable to retrieve stdin information: %w", errStat)
 		}
 		if info.Mode()&os.ModeCharDevice != 0 {
 			return nil, fmt.Errorf("the command expects stdin input but nothing seems readable")

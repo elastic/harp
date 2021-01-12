@@ -19,6 +19,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -103,12 +104,13 @@ func (o *pluginListOptions) Run(cmd *cobra.Command) error {
 		// Crawl each directory to identify readable ones
 		files, err := ioutil.ReadDir(dir)
 		if err != nil {
-			if _, ok := err.(*os.PathError); ok {
-				fmt.Fprintf(os.Stderr, "Unable read directory %q from your PATH: %v. Skipping...\n", dir, err)
+			var pathErr *os.PathError
+			if errors.As(err, &pathErr) {
+				fmt.Fprintf(os.Stderr, "Unable read directory %q from your PATH: %v. Skipping...\n", dir, pathErr)
 				continue
 			}
 
-			pluginErrors = append(pluginErrors, fmt.Errorf("error: unable to read directory %q in your PATH: %v", dir, err))
+			pluginErrors = append(pluginErrors, fmt.Errorf("error: unable to read directory %q in your PATH: %w", dir, err))
 			continue
 		}
 
@@ -197,25 +199,25 @@ func (v *commandOverrideVerifier) Verify(path string) []error {
 		cmdPath = cmdPath[1:]
 	}
 
-	errors := []error{}
+	errorList := []error{}
 
 	if isExec, err := isExecutable(path); err == nil && !isExec {
-		errors = append(errors, fmt.Errorf("warning: %s identified as a harp plugin, but it is not executable", path))
+		errorList = append(errorList, fmt.Errorf("warning: %s identified as a harp plugin, but it is not executable", path))
 	} else if err != nil {
-		errors = append(errors, fmt.Errorf("error: unable to identify %s as an executable file: %v", path, err))
+		errorList = append(errorList, fmt.Errorf("error: unable to identify %s as an executable file: %w", path, err))
 	}
 
 	if existingPath, ok := v.seenPlugins[binName]; ok {
-		errors = append(errors, fmt.Errorf("warning: %s is overshadowed by a similarly named plugin: %s", path, existingPath))
+		errorList = append(errorList, fmt.Errorf("warning: %s is overshadowed by a similarly named plugin: %s", path, existingPath))
 	} else {
 		v.seenPlugins[binName] = path
 	}
 
 	if cmd, _, err := v.root.Find(cmdPath); err == nil {
-		errors = append(errors, fmt.Errorf("warning: %s overwrites existing command: %q", binName, cmd.CommandPath()))
+		errorList = append(errorList, fmt.Errorf("warning: %s overwrites existing command: %q", binName, cmd.CommandPath()))
 	}
 
-	return errors
+	return errorList
 }
 
 func isExecutable(fullPath string) (bool, error) {

@@ -44,7 +44,7 @@ func Generate(length, numDigits, numSymbol int, noUpper, allowRepeat bool) (stri
 
 	p, err := password.Generate(length, numDigits, numSymbol, noUpper, allowRepeat)
 	if err != nil {
-		return "", fmt.Errorf("unable to generate a password: %v", err)
+		return "", fmt.Errorf("unable to generate a password: %w", err)
 	}
 
 	return p, nil

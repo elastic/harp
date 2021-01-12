@@ -51,7 +51,6 @@ type Server struct {
 }
 
 // Serve starts the server listening process
-// nolint:funlen // -- Complex function maybe need to refactor
 func Serve(ctx context.Context, srv *Server) error {
 	// Generate an instance identifier
 	appID := uniuri.NewLen(64)

@@ -44,7 +44,7 @@ func LoadDir(fs afero.Fs, dir string) ([]*BufferedFile, error) {
 	// Retrieve absolute path
 	topdir, err := filepath.Abs(dir)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to get absolute path of '%s': %w", dir, err)
 	}
 
 	result := []*BufferedFile{}
@@ -78,7 +78,7 @@ func LoadDir(fs afero.Fs, dir string) ([]*BufferedFile, error) {
 		// Read file content
 		data, err := afero.ReadFile(fs, name)
 		if err != nil {
-			return fmt.Errorf("error reading %s: %v", name, err)
+			return fmt.Errorf("error reading %s: %w", name, err)
 		}
 
 		// Append to result
@@ -88,7 +88,7 @@ func LoadDir(fs afero.Fs, dir string) ([]*BufferedFile, error) {
 		return nil
 	}
 	if err := afero.Walk(fs, topdir, walk); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to walk directory '%s' : %w", topdir, err)
 	}
 
 	// No error

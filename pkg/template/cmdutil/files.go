@@ -37,13 +37,13 @@ func Files(fs afero.Fs, basePath string) (engine.Files, error) {
 	// Get appropriate loader
 	loader, err := files.Loader(afero.NewReadOnlyFs(fs), basePath)
 	if err != nil {
-		return nil, fmt.Errorf("unable to process files: %v", err)
+		return nil, fmt.Errorf("unable to process files: %w", err)
 	}
 
 	// Crawl and load file content
 	fileList, err := loader.Load()
 	if err != nil {
-		return nil, fmt.Errorf("unable to load files: %v", err)
+		return nil, fmt.Errorf("unable to load files: %w", err)
 	}
 
 	// Wrap as template files

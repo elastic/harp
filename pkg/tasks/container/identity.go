@@ -57,7 +57,6 @@ type IdentityTask struct {
 }
 
 // Run the task.
-//nolint:gocyclo // to refactor
 func (t *IdentityTask) Run(ctx context.Context) error {
 	// Check arguments
 	if t.Description == "" {
@@ -81,7 +80,7 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 	if t.PassPhrase != nil {
 		pk, errPassPhrase := t.sealWithPassPhrase(ctx, payload)
 		if errPassPhrase != nil {
-			return fmt.Errorf("unable to seal identity using passphrase: %v", errPassPhrase)
+			return fmt.Errorf("unable to seal identity using passphrase: %w", errPassPhrase)
 		}
 
 		// Assign to identity
@@ -90,7 +89,7 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 	if t.VaultTransitKey != "" {
 		pk, errVault := t.sealWithVaultTransitKey(ctx, payload)
 		if errVault != nil {
-			return fmt.Errorf("unable to seal identity using Vault: %v", errVault)
+			return fmt.Errorf("unable to seal identity using Vault: %w", errVault)
 		}
 
 		// Assign to identity
@@ -105,12 +104,12 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 	// Retrieve output writer
 	writer, err := t.OutputWriter(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to retrieve output writer handle: %v", err)
+		return fmt.Errorf("unable to retrieve output writer handle: %w", err)
 	}
 
 	// Create identity output
 	if err := json.NewEncoder(writer).Encode(id); err != nil {
-		return fmt.Errorf("unable to serialize final identity: %v", err)
+		return fmt.Errorf("unable to serialize final identity: %w", err)
 	}
 
 	// No error
@@ -133,13 +132,13 @@ func (t *IdentityTask) sealWithPassPhrase(_ context.Context, payload []byte) (*i
 	// Prepare encryption using AES-256GCM
 	encrypter, err := jose.NewEncrypter(jose.A256GCM, recipient, opts)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize encrypter: %v", err)
+		return nil, fmt.Errorf("unable to initialize encrypter: %w", err)
 	}
 
 	// Encrypt the Identity JWK
 	jwe, err := encrypter.Encrypt(payload)
 	if err != nil {
-		return nil, fmt.Errorf("unable to encrypt identity keypair: %v", err)
+		return nil, fmt.Errorf("unable to encrypt identity keypair: %w", err)
 	}
 
 	// Assemble final JWE

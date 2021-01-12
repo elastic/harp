@@ -83,7 +83,6 @@ func GOARM(value string) BuildOption {
 // -----------------------------------------------------------------------------
 
 // Build the given binary using the given package.
-//nolint:funlen // To split
 func Build(name, packageName, version string, opts ...BuildOption) func() error {
 	const (
 		defaultCgoEnabled = false
@@ -137,7 +136,7 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 			strCompilationFlags = strings.Join(compilationFlags, ",")
 		}
 
-		fmt.Printf(" > Building %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
+		fmt.Fprintf(os.Stdout, " > Building %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
 
 		// Inject version information
 		varsSetByLinker := map[string]string{

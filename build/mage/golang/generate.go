@@ -19,6 +19,7 @@ package golang
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/magefile/mage/sh"
 )
@@ -26,7 +27,7 @@ import (
 // Generate invoke the go:generate task on given package
 func Generate(name, packageName string) func() error {
 	return func() error {
-		fmt.Printf(" > %s [%s]\n", name, packageName)
+		fmt.Fprintf(os.Stdout, " > %s [%s]\n", name, packageName)
 		return sh.RunV("go", "generate", packageName)
 	}
 }

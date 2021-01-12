@@ -87,7 +87,7 @@ func (s *service) Decrypt(ctx context.Context, ciphertext []byte) ([]byte, error
 	if plainText64, ok := secret.Data["plaintext"].(string); ok && plainText64 != "" {
 		plainText, err := base64.StdEncoding.DecodeString(plainText64)
 		if err != nil {
-			return nil, fmt.Errorf("unable to decode secret: %v", err)
+			return nil, fmt.Errorf("unable to decode secret: %w", err)
 		}
 
 		// Return no error

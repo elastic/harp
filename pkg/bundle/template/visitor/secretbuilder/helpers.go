@@ -123,7 +123,7 @@ func renderSuffix(templateContext engine.Context, secretPath string, item *bundl
 	if item.Template != "" {
 		payload, err := engine.RenderContextWithData(templateContext, item.Template, data)
 		if err != nil {
-			return nil, fmt.Errorf("unable to render suffix template: %v", err)
+			return nil, fmt.Errorf("unable to render suffix template: %w", err)
 		}
 
 		// Parse generated JSON
@@ -133,7 +133,7 @@ func renderSuffix(templateContext engine.Context, secretPath string, item *bundl
 
 		// Extract payload as K/V
 		if err := json.Unmarshal([]byte(payload), &kv); err != nil {
-			return nil, fmt.Errorf("unable to assemble secret package for secret path '%s': %v", secretPath, err)
+			return nil, fmt.Errorf("unable to assemble secret package for secret path '%s': %w", secretPath, err)
 		}
 	}
 
@@ -142,13 +142,13 @@ func renderSuffix(templateContext engine.Context, secretPath string, item *bundl
 			// Render filename
 			renderedFilename, err := engine.RenderContextWithData(templateContext, filename, data)
 			if err != nil {
-				return nil, fmt.Errorf("unable to render filename template: %v", err)
+				return nil, fmt.Errorf("unable to render filename template: %w", err)
 			}
 
 			// Render content
 			payload, err := engine.RenderContextWithData(templateContext, content, data)
 			if err != nil {
-				return nil, fmt.Errorf("unable to render file content template: %v", err)
+				return nil, fmt.Errorf("unable to render file content template: %w", err)
 			}
 
 			// Assign result
@@ -181,7 +181,7 @@ func buildPackage(templateContext engine.Context, secretPath string, chain *bund
 			// Evaluate using template engine
 			renderedValue, err := engine.RenderContext(templateContext, v)
 			if err != nil {
-				return nil, fmt.Errorf("unable to render annotations value '%s' of '%s': %v", k, secretPath, err)
+				return nil, fmt.Errorf("unable to render annotations value '%s' of '%s': %w", k, secretPath, err)
 			}
 
 			item.Annotations[k] = renderedValue
@@ -194,7 +194,7 @@ func buildPackage(templateContext engine.Context, secretPath string, chain *bund
 			// Evaluate using template engine
 			renderedValue, err := engine.RenderContext(templateContext, v)
 			if err != nil {
-				return nil, fmt.Errorf("unable to render label value '%s' of '%s': %v", k, secretPath, err)
+				return nil, fmt.Errorf("unable to render label value '%s' of '%s': %w", k, secretPath, err)
 			}
 
 			item.Labels[k] = renderedValue

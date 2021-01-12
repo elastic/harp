@@ -20,6 +20,7 @@ package convert
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -62,7 +63,7 @@ func loadFromYAML(r io.Reader) (io.Reader, error) {
 
 	// Drain input reader
 	in, err := ioutil.ReadAll(r)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, fmt.Errorf("unable to drain input reader: %w", err)
 	}
 

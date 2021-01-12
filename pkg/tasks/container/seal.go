@@ -51,7 +51,7 @@ type SealTask struct {
 }
 
 // Run the task.
-//nolint:funlen,gocyclo,gocognit // To refactor
+//nolint:funlen,gocyclo // To refactor
 func (t *SealTask) Run(ctx context.Context) error {
 	// Create input reader
 	reader, err := t.ContainerReader(ctx)
@@ -62,7 +62,7 @@ func (t *SealTask) Run(ctx context.Context) error {
 	// Load input container
 	in, err := container.Load(reader)
 	if err != nil {
-		return fmt.Errorf("unable to read input container: %v", err)
+		return fmt.Errorf("unable to read input container: %w", err)
 	}
 
 	// Open output file
@@ -91,7 +91,7 @@ func (t *SealTask) Run(ctx context.Context) error {
 		// Check encoding
 		publicKeyRaw, errDecode := base64.RawURLEncoding.DecodeString(id)
 		if errDecode != nil {
-			return fmt.Errorf("invalid '%s' as public identity: %v", id, errDecode)
+			return fmt.Errorf("invalid '%s' as public identity: %w", id, errDecode)
 		}
 
 		// Validate public key
@@ -114,7 +114,7 @@ func (t *SealTask) Run(ctx context.Context) error {
 		// Generate container key
 		containerPublicKey, containerPrivateKey, errContainerGen := t.generateContainerKey()
 		if errContainerGen != nil {
-			return fmt.Errorf("unable to generate container key: %v", errContainerGen)
+			return fmt.Errorf("unable to generate container key: %w", errContainerGen)
 		}
 
 		// Append to identity
@@ -130,7 +130,7 @@ func (t *SealTask) Run(ctx context.Context) error {
 
 	// Dump to writer
 	if err = container.Dump(writer, sealedContainer); err != nil {
-		return fmt.Errorf("unable to write sealed container: %v", err)
+		return fmt.Errorf("unable to write sealed container: %w", err)
 	}
 
 	// Get output writer
@@ -182,7 +182,7 @@ func (t *SealTask) generateContainerKey() (*[32]byte, *[32]byte, error) {
 	// Generate container key
 	pub, priv, errGen := box.GenerateKey(seed)
 	if errGen != nil {
-		return nil, nil, fmt.Errorf("unable to generate container key: %v", errGen)
+		return nil, nil, fmt.Errorf("unable to generate container key: %w", errGen)
 	}
 
 	// No error

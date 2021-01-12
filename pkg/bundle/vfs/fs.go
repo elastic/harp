@@ -201,6 +201,11 @@ func (fs *bundleFs) Chmod(name string, mode os.FileMode) error {
 	return ErrReadOnly
 }
 
+// Chown changes the uid and gid of the named file.
+func (fs *bundleFs) Chown(name string, uid, gid int) error {
+	return ErrReadOnly
+}
+
 // Chtimes changes the access and modification times of the named file
 func (fs *bundleFs) Chtimes(name string, atime, mtime time.Time) error {
 	return ErrReadOnly

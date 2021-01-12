@@ -132,7 +132,7 @@ func Release(cmd *artifact.Command) func() error {
 		release := os.Getenv("RELEASE")
 		relVer, err := semver.Parse(release)
 		if err != nil {
-			return fmt.Errorf("invalid semver syntax for release: %v", err.Error())
+			return fmt.Errorf("invalid semver syntax for release: %w", err)
 		}
 
 		// Prepare command

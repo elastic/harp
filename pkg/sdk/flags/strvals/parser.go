@@ -137,7 +137,7 @@ func (t *parser) parse() error {
 		if err == nil {
 			continue
 		}
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		return err
@@ -329,7 +329,7 @@ func (t *parser) valList() ([]interface{}, error) {
 	for {
 		switch rs, last, err := runesUntil(t.sc, stop); {
 		case err != nil:
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				err = errors.New("list must terminate with '}'")
 			}
 			return list, err

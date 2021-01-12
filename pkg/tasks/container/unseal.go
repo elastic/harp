@@ -46,7 +46,7 @@ func (t *UnsealTask) Run(ctx context.Context) error {
 	// Load input container
 	in, err := container.Load(reader)
 	if err != nil {
-		return fmt.Errorf("unable to read input container: %v", err)
+		return fmt.Errorf("unable to read input container: %w", err)
 	}
 
 	// Decode container key

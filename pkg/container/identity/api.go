@@ -57,19 +57,19 @@ func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*JSONWebKe
 	// Decode payload
 	payload, err := base64.RawURLEncoding.DecodeString(i.Private.Content)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode private key: %v", err)
+		return nil, fmt.Errorf("unable to decode private key: %w", err)
 	}
 
 	// Apply transformation
 	clearText, err := t.From(ctx, payload)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decrypt identity payload: %v", err)
+		return nil, fmt.Errorf("unable to decrypt identity payload: %w", err)
 	}
 
 	// Decode key
 	var key JSONWebKey
 	if err = json.NewDecoder(bytes.NewReader(clearText)).Decode(&key); err != nil {
-		return nil, fmt.Errorf("unable to decode payload as JSON: %v", err)
+		return nil, fmt.Errorf("unable to decode payload as JSON: %w", err)
 	}
 
 	// Return result

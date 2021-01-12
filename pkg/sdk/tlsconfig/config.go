@@ -113,12 +113,12 @@ func certPool(caFile string, exclusivePool bool) (*x509.CertPool, error) {
 	} else {
 		certPool, err = SystemCertPool()
 		if err != nil {
-			return nil, fmt.Errorf("failed to read system certificates: %v", err)
+			return nil, fmt.Errorf("failed to read system certificates: %w", err)
 		}
 	}
 	content, err := ioutil.ReadFile(caFile)
 	if err != nil {
-		return nil, fmt.Errorf("could not read CA certificate %q: %v", caFile, err)
+		return nil, fmt.Errorf("could not read CA certificate %q: %w", caFile, err)
 	}
 	if !certPool.AppendCertsFromPEM(content) {
 		return nil, fmt.Errorf("failed to append certificates from PEM file: %q", caFile)
@@ -151,7 +151,7 @@ func adjustMinVersion(options *Options, config *tls.Config) error {
 // IsErrEncryptedKey returns true if the 'err' is an error of incorrect
 // password when tryin to decrypt a TLS private key
 func IsErrEncryptedKey(err error) bool {
-	return errors.Cause(err) == x509.IncorrectPasswordError
+	return errors.Is(errors.Cause(err), x509.IncorrectPasswordError)
 }
 
 // getPrivateKey returns the private key in 'keyBytes', in PEM-encoded format.
@@ -241,9 +241,9 @@ func Server(options *Options) (*tls.Config, error) {
 	tlsCert, err := tls.LoadX509KeyPair(options.CertFile, options.KeyFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("could not load X509 key pair (cert: %q, key: %q): %v", options.CertFile, options.KeyFile, err)
+			return nil, fmt.Errorf("could not load X509 key pair (cert: %q, key: %q): %w", options.CertFile, options.KeyFile, err)
 		}
-		return nil, fmt.Errorf("error reading X509 key pair (cert: %q, key: %q): %v. Make sure the key is not encrypted", options.CertFile, options.KeyFile, err)
+		return nil, fmt.Errorf("error reading X509 key pair (cert: %q, key: %q). Make sure the key is not encrypted: %w", options.CertFile, options.KeyFile, err)
 	}
 	tlsConfig.Certificates = []tls.Certificate{tlsCert}
 	if options.ClientAuth >= tls.VerifyClientCertIfGiven && options.CAFile != "" {

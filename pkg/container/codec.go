@@ -55,7 +55,7 @@ func Load(r io.Reader) (*containerv1.Container, error) {
 	// Read magic
 	var magic uint32
 	if err := binary.Read(r, binary.BigEndian, &magic); err != nil {
-		return nil, fmt.Errorf("unable to read magic code: %v", err)
+		return nil, fmt.Errorf("unable to read magic code: %w", err)
 	}
 
 	// Check magic value
@@ -66,7 +66,7 @@ func Load(r io.Reader) (*containerv1.Container, error) {
 	// Read container version
 	var version uint16
 	if err := binary.Read(r, binary.BigEndian, &version); err != nil {
-		return nil, fmt.Errorf("unable to read container version: %v", err)
+		return nil, fmt.Errorf("unable to read container version: %w", err)
 	}
 
 	// Check magic value
@@ -114,18 +114,18 @@ func Dump(w io.Writer, c *containerv1.Container) error {
 	// Serialize protobuf payload
 	payload, err := proto.Marshal(c)
 	if err != nil {
-		return fmt.Errorf("unable to encode container content: %v", err)
+		return fmt.Errorf("unable to encode container content: %w", err)
 	}
 
 	// Write packets
 	if err = binary.Write(w, binary.BigEndian, containerMagic); err != nil {
-		return fmt.Errorf("unable to write container magic: %v", err)
+		return fmt.Errorf("unable to write container magic: %w", err)
 	}
 	if err = binary.Write(w, binary.BigEndian, containerVersion); err != nil {
-		return fmt.Errorf("unable to write container version: %v", err)
+		return fmt.Errorf("unable to write container version: %w", err)
 	}
 	if _, err = w.Write(payload); err != nil {
-		return fmt.Errorf("unable to write container content: %v", err)
+		return fmt.Errorf("unable to write container content: %w", err)
 	}
 
 	// No error
@@ -148,7 +148,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...*[32]byte) (*conta
 	// Serialize protobuf payload
 	content, err := proto.Marshal(container)
 	if err != nil {
-		return container, fmt.Errorf("unable to encode container content: %v", err)
+		return container, fmt.Errorf("unable to encode container content: %w", err)
 	}
 
 	// Generate payload encryption key
@@ -229,7 +229,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...*[32]byte) (*conta
 }
 
 // Unseal a sealed container with the given identity
-//nolint:funlen,gocyclo,gocognit // To refactor
+//nolint:funlen,gocyclo // To refactor
 func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (*containerv1.Container, error) {
 	// Check parameters
 	if types.IsNil(container) {
@@ -294,7 +294,7 @@ func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (
 	// Compute headers hash
 	headerHash, err := computeHeaderHash(container.Headers)
 	if err != nil {
-		return nil, fmt.Errorf("unable to compute header hash: %v", err)
+		return nil, fmt.Errorf("unable to compute header hash: %w", err)
 	}
 
 	// Extract payload nonce
@@ -327,7 +327,7 @@ func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (
 	// Unmarshal inner container
 	out := &containerv1.Container{}
 	if err := proto.Unmarshal(content, out); err != nil {
-		return nil, fmt.Errorf("unable to unpack inner content: %v", err)
+		return nil, fmt.Errorf("unable to unpack inner content: %w", err)
 	}
 
 	// No error

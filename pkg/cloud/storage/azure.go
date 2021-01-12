@@ -73,7 +73,7 @@ func (b *msAzureBlobBackend) GetObject(ctx context.Context, path string) (*Objec
 	// Check existence
 	exists, err := blobReference.Exists()
 	if err != nil {
-		return nil, fmt.Errorf("azure: unable to check blob existence for '%s': %v", objectPath, err)
+		return nil, fmt.Errorf("azure: unable to check blob existence for '%s': %w", objectPath, err)
 	}
 	if !exists {
 		return nil, fmt.Errorf("azure: object '%s' does not exist", objectPath)
@@ -81,7 +81,7 @@ func (b *msAzureBlobBackend) GetObject(ctx context.Context, path string) (*Objec
 
 	readCloser, err := blobReference.Get(nil)
 	if err != nil {
-		return nil, fmt.Errorf("azure: unbale to oper content reader for '%s': %v", objectPath, err)
+		return nil, fmt.Errorf("azure: unbale to oper content reader for '%s': %w", objectPath, err)
 	}
 
 	// Assemble response

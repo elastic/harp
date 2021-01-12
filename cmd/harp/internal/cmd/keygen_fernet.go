@@ -19,6 +19,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/fernet/fernet-go"
 	"github.com/spf13/cobra"
@@ -51,5 +52,5 @@ func runKeygenFernet(cmd *cobra.Command, args []string) {
 	}
 
 	// Print the key
-	fmt.Print(k.Encode())
+	fmt.Fprint(os.Stdout, k.Encode())
 }

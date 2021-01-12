@@ -19,10 +19,11 @@ package cmdutil
 
 import (
 	"fmt"
+	"os"
 	"syscall"
 
 	"github.com/awnumar/memguard"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 
 	"github.com/elastic/harp/pkg/sdk/security"
 )
@@ -38,14 +39,14 @@ func ReadSecret(prompt string, confirmation bool) (*memguard.LockedBuffer, error
 	defer memguard.WipeBytes(passwordConfirm)
 
 	// Ask to password
-	fmt.Printf("%s: ", prompt)
+	fmt.Fprintf(os.Stdout, "%s: ", prompt)
 	//nolint:unconvert // stdin doesn't share same type on each platform
-	password, err = terminal.ReadPassword(int(syscall.Stdin))
+	password, err = term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
 		return nil, fmt.Errorf("unable to read secret")
 	}
 
-	fmt.Print("\n")
+	fmt.Fprint(os.Stdout, "\n")
 
 	// Check if confirmation is requested
 	if !confirmation {
@@ -53,14 +54,14 @@ func ReadSecret(prompt string, confirmation bool) (*memguard.LockedBuffer, error
 		return memguard.NewBufferFromBytes(password), nil
 	}
 
-	fmt.Printf("%s (confirmation): ", prompt)
+	fmt.Fprintf(os.Stdout, "%s (confirmation): ", prompt)
 	//nolint:unconvert // stdin doesn't share same type on each platform
-	passwordConfirm, err = terminal.ReadPassword(int(syscall.Stdin))
+	passwordConfirm, err = term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
 		return nil, fmt.Errorf("unable to read secret confirmation")
 	}
 
-	fmt.Print("\n")
+	fmt.Fprint(os.Stdout, "\n")
 
 	// Compare if equal
 	if !security.SecureCompare(password, passwordConfirm) {

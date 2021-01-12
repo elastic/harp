@@ -117,7 +117,7 @@ func (op *importer) Run(ctx context.Context) error {
 					if len(secretPackage.Annotations) > 0 {
 						out, err := json.Marshal(secretPackage.Annotations)
 						if err != nil {
-							return fmt.Errorf("unable to encode annotations as JSON for path '%v': %v", secretPackage.Name, err)
+							return fmt.Errorf("unable to encode annotations as JSON for path '%v': %w", secretPackage.Name, err)
 						}
 
 						// Assign json
@@ -128,7 +128,7 @@ func (op *importer) Run(ctx context.Context) error {
 					if len(secretPackage.Labels) > 0 {
 						out, err := json.Marshal(secretPackage.Labels)
 						if err != nil {
-							return fmt.Errorf("unable to encode labels as JSON for path '%v': %v", secretPackage.Name, err)
+							return fmt.Errorf("unable to encode labels as JSON for path '%v': %w", secretPackage.Name, err)
 						}
 
 						// Assign json
