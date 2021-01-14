@@ -79,7 +79,7 @@ func LineReader(name string) ([]string, error) {
 	// Create input reader
 	reader, err := Reader(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to initialize a content reader: %w", err)
 	}
 
 	// Read line by line

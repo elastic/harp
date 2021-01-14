@@ -167,7 +167,8 @@ func Release(cmd *artifact.Command) func() error {
 			return fmt.Errorf("running '%s' failed with exit code %d", c.String(), sh.ExitStatus(err))
 		}
 
-		return err
+		// No error
+		return nil
 	}
 }
 
@@ -177,7 +178,7 @@ func merge(t string, cmd *artifact.Command) (*bytes.Buffer, error) {
 	// Compile template
 	dockerFileTmpl, err := template.New("Dockerfile").Parse(t)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to compile dockerfile template: %w", err)
 	}
 
 	// Merge data

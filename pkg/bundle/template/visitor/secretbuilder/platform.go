@@ -47,7 +47,7 @@ func platform(results chan *bundlev1.Package, templateContext engine.Context, qu
 	// Parse selector values
 	platformQuality, err := engine.RenderContext(templateContext, quality)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render platform.quality: %w", err)
 	}
 	if strings.TrimSpace(platformQuality) == "" {
 		return nil, fmt.Errorf("quality selector must not be empty")
@@ -55,7 +55,7 @@ func platform(results chan *bundlev1.Package, templateContext engine.Context, qu
 
 	platformName, err := engine.RenderContext(templateContext, name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render platform.name: %w", err)
 	}
 	if strings.TrimSpace(platformName) == "" {
 		return nil, fmt.Errorf("platform selector must not be empty")

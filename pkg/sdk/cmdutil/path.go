@@ -19,6 +19,7 @@ package cmdutil
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -35,10 +36,10 @@ func Expand(path string) (string, error) {
 		return path, nil
 	}
 
-	// REtrieve HOMEDIR
+	// Retrieve HOMEDIR
 	home, err := getHomeDir()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to retrieve user home directory path: %w", err)
 	}
 
 	// Return result

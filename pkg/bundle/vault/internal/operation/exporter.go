@@ -86,7 +86,7 @@ func (op *exporter) Run(ctx context.Context) error {
 
 			// Acquire a token
 			if err := sem.Acquire(gReaderCtx, 1); err != nil {
-				return err
+				return fmt.Errorf("unable to acquire a semaphore token: %w", err)
 			}
 
 			log.For(gReaderCtx).Debug("Exporting secret ...", zap.String("path", secretPath))
@@ -104,7 +104,7 @@ func (op *exporter) Run(ctx context.Context) error {
 						log.For(gReaderCtx).Debug("No data / path found for given path", zap.String("path", secPath))
 						return nil
 					}
-					return err
+					return fmt.Errorf("unexpected vault error: %w", err)
 				}
 
 				// Prepare secret list
@@ -203,7 +203,7 @@ func (op *exporter) Run(ctx context.Context) error {
 
 	// Wait for all goroutime to complete
 	if err := g.Wait(); err != nil {
-		return err
+		return fmt.Errorf("vault operation error: %w", err)
 	}
 
 	// No error
@@ -216,7 +216,7 @@ func (op *exporter) walk(ctx context.Context, basePath, currPath string, keys ch
 	// List secret of basepath
 	res, err := op.service.List(ctx, basePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to list secret entries for '%s': %w", basePath, err)
 	}
 
 	// Check path is a leaf
@@ -244,7 +244,7 @@ func (op *exporter) packSecret(key string, value interface{}) (*bundlev1.KV, err
 	// Pack secret value
 	payload, err := secret.Pack(value)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to pack secret '%s': %w", key, err)
 	}
 
 	// Build the secret object

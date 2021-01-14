@@ -34,7 +34,7 @@ func parseSecretTemplate(templateContext engine.Context, ring csov1.Ring, secret
 	// Prepare secret chain
 	chain, err := buildSecretChain(templateContext, secretPath, item, data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to build secret chain for path '%s': %w", secretPath, err)
 	}
 
 	// No error
@@ -56,7 +56,7 @@ func buildSecretChain(templateContext engine.Context, secretPath string, item *b
 	// Extract generated secret value
 	kv, err := renderSuffix(templateContext, secretPath, item, data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render secret suffix (path:%s suffix:%s): %w", secretPath, item.Suffix, err)
 	}
 
 	// Prepare secret list

@@ -35,10 +35,14 @@ var ErrNotList = errors.New("not a list")
 func ToYAML(s string) (string, error) {
 	m, err := Parse(s)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to parse input as YAML: %w", err)
 	}
 	d, err := yaml.Marshal(m)
-	return strings.TrimSuffix(string(d), "\n"), err
+	if err != nil {
+		return "", fmt.Errorf("unable to marshal content as YAML: %w", err)
+	}
+
+	return strings.TrimSuffix(string(d), "\n"), nil
 }
 
 // Parse parses a set line.

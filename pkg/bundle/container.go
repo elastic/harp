@@ -118,17 +118,17 @@ func ToContainer(b *bundlev1.Bundle) (*containerv1.Container, error) {
 	// Compress with gzip
 	zw, errGz := gzip.NewWriterLevel(payload, gzipCompressionLevel)
 	if errGz != nil {
-		return nil, fmt.Errorf("unable to compress bundle content")
+		return nil, fmt.Errorf("unable to compress bundle content: %w", errGz)
 	}
 
 	// Delegate to Bundle Writer
 	if errDump := Dump(zw, b); errDump != nil {
-		return nil, errDump
+		return nil, fmt.Errorf("unable to dump container: %w", errDump)
 	}
 
 	// Close gzip writer
 	if errGz = zw.Close(); errGz != nil {
-		return nil, fmt.Errorf("unable to close compression writer")
+		return nil, fmt.Errorf("unable to close compression writer: %w", errGz)
 	}
 
 	// Return container

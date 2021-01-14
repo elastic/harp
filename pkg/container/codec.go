@@ -193,7 +193,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...*[32]byte) (*conta
 		// Pack recipient using its public key
 		r, errPack := packRecipient(&payloadKey, encPriv, peerPublicKey)
 		if errPack != nil {
-			return nil, errPack
+			return nil, fmt.Errorf("unable to pack container recipient (%X): %w", *peerPublicKey, err)
 		}
 
 		// Append to container
@@ -203,7 +203,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...*[32]byte) (*conta
 	// Compute header hash
 	headerHash, err := computeHeaderHash(containerHeaders)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to compute header hash: %w", err)
 	}
 
 	// Prepare protected content
@@ -268,7 +268,7 @@ func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (
 	// Try recipients
 	payloadKey, err := tryRecipientKeys(&derivedKey, container.Headers.Recipients)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to unseal container: error occurred during recipient key tests: %w", err)
 	}
 
 	// Check private key

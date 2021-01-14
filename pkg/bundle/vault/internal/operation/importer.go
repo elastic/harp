@@ -84,7 +84,7 @@ func (op *importer) Run(ctx context.Context) error {
 
 			// Acquire a token
 			if err := sem.Acquire(gWriterCtx, 1); err != nil {
-				return err
+				return fmt.Errorf("unable to acquire a semaphore token: %w", err)
 			}
 
 			log.For(gWriterCtx).Debug("Writing secret ...", zap.String("prefix", op.prefix), zap.String("path", secretPackage.Name))
@@ -161,7 +161,7 @@ func (op *importer) Run(ctx context.Context) error {
 
 				// Write secret to Vault
 				if err := op.backends[rootPath].Write(gWriterCtx, secretPath, data); err != nil {
-					return err
+					return fmt.Errorf("unbale to write secret data for path '%s': %w", secretPath, err)
 				}
 
 				// No error
@@ -193,7 +193,7 @@ func (op *importer) Run(ctx context.Context) error {
 
 	// Wait for all goroutime to complete
 	if err := g.Wait(); err != nil {
-		return err
+		return fmt.Errorf("vault operation error: %w", err)
 	}
 
 	// No error

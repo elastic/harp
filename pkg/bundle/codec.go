@@ -361,13 +361,13 @@ func Diff(src, dst *bundlev1.Bundle) (string, error) {
 	// Convert src bundle
 	srcMap, err := AsMap(src)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to convert source bundle as map: %w", err)
 	}
 
 	// Convert dst bundle
 	dstMap, err := AsMap(dst)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to convert destination bundle as map: %w", err)
 	}
 
 	diff := cmp.Diff(srcMap, dstMap)

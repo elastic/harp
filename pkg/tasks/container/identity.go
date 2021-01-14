@@ -74,7 +74,7 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 	// Create identity
 	id, payload, err := identity.New(t.Description)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create a new identity: %w", err)
 	}
 
 	if t.PassPhrase != nil {

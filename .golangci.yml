@@ -30,8 +30,8 @@ linters:
     - goerr113
     - nlreturn
     - gci
-    - wrapcheck
     - exhaustivestruct
+    - wrapcheck
 
 output:
   format: colored-line-number

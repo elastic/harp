@@ -154,6 +154,7 @@ func Build(cmd *artifact.Command) func() error {
 			return fmt.Errorf("running '%s' failed with exit code %d", c.String(), sh.ExitStatus(err))
 		}
 
-		return err
+		// No error
+		return nil
 	}
 }

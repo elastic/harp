@@ -19,6 +19,7 @@ package engine
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -96,10 +97,15 @@ func (v Values) AsMap() map[string]interface{} {
 func (v Values) Encode(w io.Writer) error {
 	out, err := yaml.Marshal(v)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to encode values as yaml: %w", err)
 	}
 	_, err = w.Write(out)
-	return err
+	if err != nil {
+		return fmt.Errorf("unable to write encoded values to writer: %w", err)
+	}
+
+	// No error
+	return nil
 }
 
 // PathValue takes a path that traverses a YAML structure and returns the value at the end of that path.

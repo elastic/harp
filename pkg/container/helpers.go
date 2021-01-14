@@ -50,7 +50,7 @@ func packRecipient(payloadKey, ephPrivKey, peerPublicKey *[32]byte) (*containerv
 	// Calculate identifier
 	identifier, err := keyIdentifierFromDerivedKey(&recipientKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to derive key identifier: %w", err)
 	}
 
 	// Generate recipient nonce

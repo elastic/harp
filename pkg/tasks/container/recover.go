@@ -63,7 +63,7 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 	// Extract from reader
 	input, err := identity.FromReader(reader)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to extract an identity from reader: %w", err)
 	}
 
 	var (

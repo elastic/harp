@@ -54,7 +54,7 @@ func YAML(r io.Reader) (*bundlev1.Patch, error) {
 
 	// Deserialize JSON with JSONPB wrapper
 	if err := protojson.Unmarshal(jsonData, &def); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to decode spec as json: %w", err)
 	}
 
 	// Validate spec

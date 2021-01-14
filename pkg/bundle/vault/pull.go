@@ -60,7 +60,7 @@ func Pull(ctx context.Context, client *api.Client, paths []string, opts ...Optio
 	// Apply option functions
 	for _, o := range opts {
 		if err := o(defaultOpts); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("unable to apply option %T: %w", o, err)
 		}
 	}
 
