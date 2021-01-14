@@ -52,8 +52,8 @@ func (t *DiffTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to open destination bundle: %w", err)
 	}
 
-	// Load source bundle
-	bDst, err := bundle.Load(readerDst)
+	// Load destination bundle
+	bDst, err := bundle.FromContainerReader(readerDst)
 	if err != nil {
 		return fmt.Errorf("unable to load destination bundle content: %w", err)
 	}

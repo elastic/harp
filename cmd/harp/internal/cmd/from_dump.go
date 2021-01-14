@@ -80,7 +80,7 @@ func runfromDump(cmd *cobra.Command, args []string) {
 	}
 
 	// Dump all content
-	if err := bundle.Dump(writer, &secrets); err != nil {
-		log.For(ctx).Fatal("unable to dump bundle content", zap.Error(err))
+	if err = bundle.ToContainerWriter(writer, &secrets); err != nil {
+		log.For(ctx).Fatal("unable to produce exported bundle", zap.Error(err))
 	}
 }
