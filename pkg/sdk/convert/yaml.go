@@ -20,6 +20,7 @@ package convert
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -62,26 +63,26 @@ func loadFromYAML(r io.Reader) (io.Reader, error) {
 
 	// Drain input reader
 	in, err := ioutil.ReadAll(r)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, fmt.Errorf("unable to drain input reader: %w", err)
 	}
 
 	// Decode as YAML any object
 	var specBody interface{}
 	if errYaml := yaml.Unmarshal(in, &specBody); errYaml != nil {
-		return nil, errYaml
+		return nil, fmt.Errorf("unable to decode spec as YAML: %w", err)
 	}
 
 	// Convert map[interface{}]interface{} to a JSON serializable struct
 	specBody, err = convertMapStringInterface(specBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to prepare spec to json transformation: %w", err)
 	}
 
 	// Marshal as json
 	jsonData, err := json.Marshal(specBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable ot marshal spec as JSON: %w", err)
 	}
 
 	// No error
@@ -100,7 +101,7 @@ func convertMapStringInterface(val interface{}) (interface{}, error) {
 			}
 			value, err := convertMapStringInterface(v)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("unable to convert map[string] to map[interface{}]: %w", err)
 			}
 			result[key] = value
 		}
@@ -109,7 +110,7 @@ func convertMapStringInterface(val interface{}) (interface{}, error) {
 		for k, v := range items {
 			value, err := convertMapStringInterface(v)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("unable to convert map[string] to map[interface{}]: %w", err)
 			}
 			items[k] = value
 		}

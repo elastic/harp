@@ -131,7 +131,7 @@ func Load(r io.Reader) (*bundlev1.Bundle, error) {
 	// Compute merkle tree root
 	tree, _, err := Tree(bundle)
 	if err != nil {
-		return nil, fmt.Errorf("unable to compute merkle tree of bundle content: %v", err)
+		return nil, fmt.Errorf("unable to compute merkle tree of bundle content: %w", err)
 	}
 
 	// Check if root match
@@ -156,7 +156,7 @@ func Dump(w io.Writer, b *bundlev1.Bundle) error {
 	// Compute merkle tree
 	tree, _, err := Tree(b)
 	if err != nil {
-		return fmt.Errorf("unable to compute merkle tree of bundle content: %v", err)
+		return fmt.Errorf("unable to compute merkle tree of bundle content: %w", err)
 	}
 
 	// Assign to bundle
@@ -170,7 +170,7 @@ func Dump(w io.Writer, b *bundlev1.Bundle) error {
 
 	// WWrite to writer
 	if _, err = w.Write(payload); err != nil {
-		return fmt.Errorf("unable to write serialized Bundle: %v", err)
+		return fmt.Errorf("unable to write serialized Bundle: %w", err)
 	}
 
 	// No error
@@ -361,13 +361,13 @@ func Diff(src, dst *bundlev1.Bundle) (string, error) {
 	// Convert src bundle
 	srcMap, err := AsMap(src)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to convert source bundle as map: %w", err)
 	}
 
 	// Convert dst bundle
 	dstMap, err := AsMap(dst)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to convert destination bundle as map: %w", err)
 	}
 
 	diff := cmp.Diff(srcMap, dstMap)

@@ -36,7 +36,7 @@ func (e *engine) Get(ctx context.Context, id string) ([]byte, error) {
 	// Open and read all file content
 	out, err := afero.ReadFile(e.fs, id)
 	if err != nil {
-		return nil, fmt.Errorf("bundle: unable to read file content: %v", err)
+		return nil, fmt.Errorf("bundle: unable to read file content: %w", err)
 	}
 
 	// No error

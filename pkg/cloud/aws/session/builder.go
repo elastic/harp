@@ -47,7 +47,7 @@ func NewSession(opts *Options) (*session.Session, error) {
 	// Start a new AWS session
 	awsSession, err := session.NewSession()
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize AWS session: %v", err)
+		return nil, fmt.Errorf("unable to initialize AWS session: %w", err)
 	}
 
 	// Prepare credential providers
@@ -132,23 +132,23 @@ func FromURL(u string) (*Options, error) {
 	// Unescape strings
 	accessKeyID, err := url.QueryUnescape(q.Get("access-key-id"))
 	if err != nil {
-		return nil, fmt.Errorf("accessKeyID value is invalid: %v", err)
+		return nil, fmt.Errorf("accessKeyID value is invalid: %w", err)
 	}
 	profile, err := url.QueryUnescape(q.Get("profile"))
 	if err != nil {
-		return nil, fmt.Errorf("profile value is invalid: %v", err)
+		return nil, fmt.Errorf("profile value is invalid: %w", err)
 	}
 	region, err := url.QueryUnescape(q.Get("region"))
 	if err != nil {
-		return nil, fmt.Errorf("region value is invalid: %v", err)
+		return nil, fmt.Errorf("region value is invalid: %w", err)
 	}
 	secretAccessKey, err := url.QueryUnescape(q.Get("secret-access-key"))
 	if err != nil {
-		return nil, fmt.Errorf("secret-access-key value is invalid: %v", err)
+		return nil, fmt.Errorf("secret-access-key value is invalid: %w", err)
 	}
 	sessionToken, err := url.QueryUnescape(q.Get("session-token"))
 	if err != nil {
-		return nil, fmt.Errorf("session-token value is invalid: %v", err)
+		return nil, fmt.Errorf("session-token value is invalid: %w", err)
 	}
 
 	const trueStringValue = "true"

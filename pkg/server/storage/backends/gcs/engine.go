@@ -77,7 +77,7 @@ func (d *engine) Get(ctx context.Context, key string) ([]byte, error) {
 	// Create a Google Storage client
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("gcs: unable to initialize storage client: %v", err)
+		return nil, fmt.Errorf("gcs: unable to initialize storage client: %w", err)
 	}
 
 	// Retrieve using S3 storage backend

@@ -19,6 +19,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -56,7 +57,7 @@ func NewConfigCommand(conf interface{}, envPrefix string) *cobra.Command {
 				if err != nil {
 					log.For(cmd.Context()).Fatal("Error during configuration export", zap.Error(err))
 				}
-				fmt.Println(string(btes))
+				fmt.Fprintln(os.Stdout, string(btes))
 			} else {
 				m := flags.AsEnvVariables(conf, upPrefix, true)
 				keys := []string{}
@@ -67,7 +68,7 @@ func NewConfigCommand(conf interface{}, envPrefix string) *cobra.Command {
 
 				sort.Strings(keys)
 				for _, k := range keys {
-					fmt.Printf("export %s=\"%s\"\n", k, m[k])
+					fmt.Fprintf(os.Stdout, "export %s=\"%s\"\n", k, m[k])
 				}
 			}
 		},

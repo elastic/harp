@@ -52,7 +52,7 @@ func Diceware(count int) (string, error) {
 	// Generate word list
 	list, err := diceware.Generate(count)
 	if err != nil {
-		return "", fmt.Errorf("unable to generate daceware passphrase: %v", err)
+		return "", fmt.Errorf("unable to generate daceware passphrase: %w", err)
 	}
 
 	// Assemble result

@@ -58,7 +58,7 @@ func Validate(spec *bundlev1.Patch) error {
 func Checksum(spec *bundlev1.Patch) (string, error) {
 	// Validate bundle template
 	if err := Validate(spec); err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to validate spec: %w", err)
 	}
 
 	// Encode spec as protobuf
@@ -78,7 +78,7 @@ func Checksum(spec *bundlev1.Patch) (string, error) {
 func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}) error {
 	// Validate spec
 	if err := Validate(spec); err != nil {
-		return err
+		return fmt.Errorf("unable to validate spec: %w", err)
 	}
 	if b == nil {
 		return fmt.Errorf("cannot process nil bundle")

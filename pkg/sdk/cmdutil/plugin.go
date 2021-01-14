@@ -80,7 +80,12 @@ func (h *DefaultPluginHandler) Execute(executablePath string, cmdArgs, environme
 		if err == nil {
 			os.Exit(0)
 		}
-		return err
+		if err != nil {
+			return fmt.Errorf("unable to execute command: %w", err)
+		}
+
+		// No error
+		return nil
 	}
 
 	// invoke cmd binary relaying the environment and args given
@@ -120,7 +125,7 @@ func HandlePluginCommand(pluginHandler PluginHandler, cmdArgs []string) error {
 
 	// invoke cmd binary relaying the current environment and args given
 	if err := pluginHandler.Execute(foundBinaryPath, cmdArgs[len(remainingArgs):], os.Environ()); err != nil {
-		return err
+		return fmt.Errorf("unable to execute '%s' plugin: %w", foundBinaryPath, err)
 	}
 
 	return nil

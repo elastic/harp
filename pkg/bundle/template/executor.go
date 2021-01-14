@@ -65,7 +65,7 @@ func Checksum(spec *bundlev1.Template) (string, error) {
 
 	// Validate bundle template
 	if err := Validate(spec); err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to validate spec: %w", err)
 	}
 
 	// Encode spec as protobuf
@@ -93,7 +93,7 @@ func Execute(spec *bundlev1.Template, v visitor.TemplateVisitor) error {
 
 	// Validate bundle template
 	if err := Validate(spec); err != nil {
-		return err
+		return fmt.Errorf("unable to validate spec: %w", err)
 	}
 
 	// Walk all namespaces

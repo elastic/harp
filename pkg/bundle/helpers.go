@@ -70,7 +70,7 @@ func AsMap(b *bundlev1.Bundle) (KV, error) {
 		// Map package secrets
 		secrets, err := AsSecretMap(p)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("unable to pack secrets as a map: %w", err)
 		}
 
 		// Assign result

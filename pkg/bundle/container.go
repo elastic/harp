@@ -51,7 +51,7 @@ func FromContainerReader(r io.Reader) (*bundlev1.Bundle, error) {
 	// Load secret container
 	c, err := container.Load(r)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load Bundle: %v", err)
+		return nil, fmt.Errorf("unable to load Bundle: %w", err)
 	}
 
 	// Delegate to bundle loader
@@ -71,7 +71,7 @@ func ToContainerWriter(w io.Writer, b *bundlev1.Bundle) error {
 	// Create a container
 	c, err := ToContainer(b)
 	if err != nil {
-		return fmt.Errorf("unable to wrap bundle as a container: %v", err)
+		return fmt.Errorf("unable to wrap bundle as a container: %w", err)
 	}
 
 	// Prepare secret container
@@ -118,17 +118,17 @@ func ToContainer(b *bundlev1.Bundle) (*containerv1.Container, error) {
 	// Compress with gzip
 	zw, errGz := gzip.NewWriterLevel(payload, gzipCompressionLevel)
 	if errGz != nil {
-		return nil, fmt.Errorf("unable to compress bundle content")
+		return nil, fmt.Errorf("unable to compress bundle content: %w", errGz)
 	}
 
 	// Delegate to Bundle Writer
 	if errDump := Dump(zw, b); errDump != nil {
-		return nil, errDump
+		return nil, fmt.Errorf("unable to dump container: %w", errDump)
 	}
 
 	// Close gzip writer
 	if errGz = zw.Close(); errGz != nil {
-		return nil, fmt.Errorf("unable to close compression writer")
+		return nil, fmt.Errorf("unable to close compression writer: %w", errGz)
 	}
 
 	// Return container

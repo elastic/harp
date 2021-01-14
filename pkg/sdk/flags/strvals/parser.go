@@ -35,10 +35,14 @@ var ErrNotList = errors.New("not a list")
 func ToYAML(s string) (string, error) {
 	m, err := Parse(s)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to parse input as YAML: %w", err)
 	}
 	d, err := yaml.Marshal(m)
-	return strings.TrimSuffix(string(d), "\n"), err
+	if err != nil {
+		return "", fmt.Errorf("unable to marshal content as YAML: %w", err)
+	}
+
+	return strings.TrimSuffix(string(d), "\n"), nil
 }
 
 // Parse parses a set line.
@@ -137,7 +141,7 @@ func (t *parser) parse() error {
 		if err == nil {
 			continue
 		}
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		return err
@@ -329,7 +333,7 @@ func (t *parser) valList() ([]interface{}, error) {
 	for {
 		switch rs, last, err := runesUntil(t.sc, stop); {
 		case err != nil:
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				err = errors.New("list must terminate with '}'")
 			}
 			return list, err

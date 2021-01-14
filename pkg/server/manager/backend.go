@@ -81,13 +81,13 @@ func (bm *backendManager) Register(ctx context.Context, namespace, uri string) e
 	// Load backend settings
 	engine, err := storage.Build(uri)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to build secret backend (%s:%s): %w", namespace, uri, err)
 	}
 
 	// Add encryption backend
 	engine, err = wrapEncryptionEngine(uri, engine)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to wrap encryption engine with secret backend (%s:%s): %w", namespace, uri, err)
 	}
 
 	// Add to backend map

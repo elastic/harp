@@ -19,6 +19,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -62,5 +63,5 @@ func runPassphrase(cmd *cobra.Command, args []string) {
 
 	// Print the key
 	// lgtm [go/clear-text-logging]
-	fmt.Println(passPhrase)
+	fmt.Fprintln(os.Stdout, passPhrase)
 }

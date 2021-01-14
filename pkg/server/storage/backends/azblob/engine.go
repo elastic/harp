@@ -53,7 +53,7 @@ func build(u *url.URL) (serverstorage.Engine, error) {
 	// Create an Azure Stroage client
 	client, err := storage.NewClientFromConnectionString(azureConnString)
 	if err != nil {
-		return nil, fmt.Errorf("azblob: unable to initialize storage client: %v", err)
+		return nil, fmt.Errorf("azblob: unable to initialize storage client: %w", err)
 	}
 
 	// Build engine instance

@@ -46,7 +46,7 @@ func product(results chan *bundlev1.Package, templateContext engine.Context, nam
 	// Parse selector values
 	productName, err := engine.RenderContext(templateContext, name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render product.name: %w", err)
 	}
 	if strings.TrimSpace(productName) == "" {
 		return nil, fmt.Errorf("product selector must not be empty")
@@ -54,7 +54,7 @@ func product(results chan *bundlev1.Package, templateContext engine.Context, nam
 
 	productVersion, err := engine.RenderContext(templateContext, version)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render product.version: %w", err)
 	}
 	if strings.TrimSpace(productVersion) == "" {
 		return nil, fmt.Errorf("version selector must not be empty")

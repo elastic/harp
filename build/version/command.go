@@ -19,6 +19,7 @@ package version
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -34,9 +35,9 @@ func Command() *cobra.Command {
 		Short: "Display service version",
 		Run: func(cmd *cobra.Command, args []string) {
 			if displayAsJSON {
-				fmt.Printf("%s", JSON())
+				fmt.Fprintf(os.Stdout, "%s", JSON())
 			} else {
-				fmt.Printf("%s", Full())
+				fmt.Fprintf(os.Stdout, "%s", Full())
 			}
 		},
 	}

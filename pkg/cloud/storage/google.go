@@ -60,13 +60,13 @@ func (b *gcsBackend) GetObject(ctx context.Context, path string) (*Object, error
 	// Retrieve object attributes
 	attrs, err := objectHandle.Attrs(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("gcs: unable to retrieve object attribute: %v", err)
+		return nil, fmt.Errorf("gcs: unable to retrieve object attribute: %w", err)
 	}
 
 	// Prepare content reader
 	rc, err := objectHandle.NewReader(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("gcs: unable to initialie object reader: %v", err)
+		return nil, fmt.Errorf("gcs: unable to initialie object reader: %w", err)
 	}
 
 	// Assemble response

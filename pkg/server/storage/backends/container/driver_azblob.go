@@ -39,7 +39,7 @@ func (d *azureBlobLoader) Reader(ctx context.Context, key string) (io.ReadCloser
 	// Create an Azure Stroage client
 	client, err := storage.NewClientFromConnectionString(d.connString)
 	if err != nil {
-		return nil, fmt.Errorf("azblob: unable to initialize storage client: %v", err)
+		return nil, fmt.Errorf("azblob: unable to initialize storage client: %w", err)
 	}
 
 	// Retrieve using Azure storage backend

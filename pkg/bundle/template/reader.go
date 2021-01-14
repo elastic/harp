@@ -54,7 +54,7 @@ func YAML(r io.Reader) (*bundlev1.Template, error) {
 
 	// Deserialize JSON with JSONPB wrapper
 	if err := protojson.Unmarshal(jsonData, &def); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to decode json: %w", err)
 	}
 
 	// Validate descriptor

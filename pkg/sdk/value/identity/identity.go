@@ -23,8 +23,7 @@ import (
 	"github.com/elastic/harp/pkg/sdk/value"
 )
 
-type identityTransformer struct {
-}
+type identityTransformer struct{}
 
 // Transformer returns a non-operation transformer
 func Transformer() (value.Transformer, error) {

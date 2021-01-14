@@ -43,13 +43,13 @@ const (
 func New(description string) (*Identity, []byte, error) {
 	// Check arguments
 	if err := validation.Validate(description, validation.Required, is.ASCII); err != nil {
-		return nil, nil, fmt.Errorf("unable to create identity with invalid description: %v", err)
+		return nil, nil, fmt.Errorf("unable to create identity with invalid description: %w", err)
 	}
 
 	// Generate x25519 keys
 	pub, priv, err := box.GenerateKey(rand.Reader)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to generate identity keypair: %v", err)
+		return nil, nil, fmt.Errorf("unable to generate identity keypair: %w", err)
 	}
 
 	// Wrap as JWK
@@ -63,7 +63,7 @@ func New(description string) (*Identity, []byte, error) {
 	// Encode JWK as json
 	payload, err := json.Marshal(jwk)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to serialize identity keypair: %v", err)
+		return nil, nil, fmt.Errorf("unable to serialize identity keypair: %w", err)
 	}
 
 	// Return unsealed identity
@@ -86,7 +86,7 @@ func FromReader(r io.Reader) (*Identity, error) {
 	// Convert input as a map
 	var input Identity
 	if err := json.NewDecoder(r).Decode(&input); err != nil {
-		return nil, fmt.Errorf("unable to decode input JSON: %v", err)
+		return nil, fmt.Errorf("unable to decode input JSON: %w", err)
 	}
 
 	// Check public key encoding

@@ -42,7 +42,6 @@ type DumpTask struct {
 }
 
 // Run the task.
-//nolint:gocognit,gocyclo // to refactor
 func (t *DumpTask) Run(ctx context.Context) error {
 	var (
 		reader io.Reader
@@ -133,7 +132,7 @@ func (t *DumpTask) dumpMetadata(writer io.Writer, b *bundlev1.Bundle) error {
 		if len(p.Annotations) > 0 {
 			out, err := json.Marshal(p.Annotations)
 			if err != nil {
-				return fmt.Errorf("unable to encode annotations as JSON: %v", err)
+				return fmt.Errorf("unable to encode annotations as JSON: %w", err)
 			}
 
 			// Assign json
@@ -143,7 +142,7 @@ func (t *DumpTask) dumpMetadata(writer io.Writer, b *bundlev1.Bundle) error {
 		if len(p.Labels) > 0 {
 			out, err := json.Marshal(p.Labels)
 			if err != nil {
-				return fmt.Errorf("unable to encode labels as JSON: %v", err)
+				return fmt.Errorf("unable to encode labels as JSON: %w", err)
 			}
 
 			// Assign json

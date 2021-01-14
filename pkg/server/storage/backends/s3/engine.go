@@ -48,12 +48,12 @@ func build(u *url.URL) (storage.Engine, error) {
 	// Build session from url
 	opts, err := session.FromURL(u.String())
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse session URL: %v", err)
+		return nil, fmt.Errorf("unable to parse session URL: %w", err)
 	}
 	// Build AWS session
 	sess, err := session.NewSession(opts)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize session: %v", err)
+		return nil, fmt.Errorf("unable to initialize session: %w", err)
 	}
 
 	// Build engine instance

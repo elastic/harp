@@ -77,5 +77,10 @@ func Interpret(secret *csov1.Secret, templates map[csov1.RingLevel]string, w io.
 	}
 
 	// Return error
-	return err
+	if err != nil {
+		return fmt.Errorf("unable to interpret CSO path: %w", err)
+	}
+
+	// No error
+	return nil
 }

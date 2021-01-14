@@ -20,6 +20,7 @@ package cmd
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 
 	"github.com/awnumar/memguard"
 	"github.com/spf13/cobra"
@@ -44,5 +45,5 @@ func runKeygenSecretbox(cmd *cobra.Command, args []string) {
 	_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-secretbox", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
 
-	fmt.Printf("secretbox:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
+	fmt.Fprintf(os.Stdout, "secretbox:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
 }

@@ -63,15 +63,16 @@ func (b *s3Backend) GetObject(ctx context.Context, path string) (*Object, error)
 	// Get object from bucket
 	result, err := b.client.GetObjectWithContext(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
+		var aerr awserr.Error
+		if errors.As(err, &aerr) {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchKey:
 				return nil, fmt.Errorf("s3: object not found '%s'", *input.Key)
 			default:
-				return nil, fmt.Errorf("s3: unable to retrieve object: %v", aerr)
+				return nil, fmt.Errorf("s3: unable to retrieve object: %w", aerr)
 			}
 		}
-		return nil, fmt.Errorf("s3: unable to process request: %v", err)
+		return nil, fmt.Errorf("s3: unable to process request: %w", err)
 	}
 
 	// Assemble response

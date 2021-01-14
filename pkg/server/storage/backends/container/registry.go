@@ -103,12 +103,12 @@ func build(u *url.URL) (storage.Engine, error) {
 		// Build session from url
 		opts, err := session.FromURL(u.String())
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse session URL: %v", err)
+			return nil, fmt.Errorf("unable to parse session URL: %w", err)
 		}
 		// Build AWS session
 		sess, err := session.NewSession(opts)
 		if err != nil {
-			return nil, fmt.Errorf("unable to initialize session: %v", err)
+			return nil, fmt.Errorf("unable to initialize session: %w", err)
 		}
 		// Delegate to loader
 		return buildWithLoader(u, &s3Loader{
@@ -163,7 +163,7 @@ func buildWithLoader(u *url.URL, loader Loader) (storage.Engine, error) {
 	// Fetch bundle using loader
 	br, errDriver := loader.Reader(ctx, u.Path)
 	if errDriver != nil {
-		return nil, fmt.Errorf("unable to load container content: %v", errDriver)
+		return nil, fmt.Errorf("unable to load container content: %w", errDriver)
 	}
 
 	// Extract bundle container key form url
@@ -176,13 +176,13 @@ func buildWithLoader(u *url.URL, loader Loader) (storage.Engine, error) {
 	// Initialize bundle
 	b, err := getBundle(ctx, br, containerIDRaw, unlockKeyRaw)
 	if err != nil {
-		return nil, fmt.Errorf("unable to extract bundle: %v", err)
+		return nil, fmt.Errorf("unable to extract bundle: %w", err)
 	}
 
 	// Initialize virtual filesystem
 	fs, err := vfs.FromBundle(b)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize bundle filesystem: %v", err)
+		return nil, fmt.Errorf("unable to initialize bundle filesystem: %w", err)
 	}
 
 	// Build engine instance
@@ -203,7 +203,7 @@ func getBundle(ctx context.Context, br io.Reader, containerID, psk string) (*bun
 		// Load container
 		sealed, errLoad := container.Load(br)
 		if errLoad != nil {
-			return nil, fmt.Errorf("unable to load secret container: %v", errLoad)
+			return nil, fmt.Errorf("unable to load secret container: %w", errLoad)
 		}
 
 		// Append given key, and keyring
@@ -235,7 +235,7 @@ func getBundle(ctx context.Context, br io.Reader, containerID, psk string) (*bun
 			}
 		}
 		if errUnseal != nil {
-			return nil, fmt.Errorf("unable to unseal container: %v", errUnseal)
+			return nil, fmt.Errorf("unable to unseal container: %w", errUnseal)
 		}
 		if unsealed == nil {
 			return nil, fmt.Errorf("unable to unseal container: no key match")
@@ -244,13 +244,13 @@ func getBundle(ctx context.Context, br io.Reader, containerID, psk string) (*bun
 		// Extract bundle
 		b, err = bundle.FromContainer(unsealed)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract Bundle from sealed container: %v", err)
+			return nil, fmt.Errorf("unable to extract Bundle from sealed container: %w", err)
 		}
 	} else {
 		// No container key assume unsealed container.
 		b, err = bundle.FromContainerReader(br)
 		if err != nil {
-			return nil, fmt.Errorf("unable to extract Bundle from unsealed container: %v", err)
+			return nil, fmt.Errorf("unable to extract Bundle from unsealed container: %w", err)
 		}
 	}
 
@@ -259,13 +259,13 @@ func getBundle(ctx context.Context, br io.Reader, containerID, psk string) (*bun
 		// Initialize a transformer from key
 		t, err := encryption.FromKey(psk)
 		if err != nil {
-			return nil, fmt.Errorf("unbale to initialize encryption transformer to unlock bundle: %v", err)
+			return nil, fmt.Errorf("unbale to initialize encryption transformer to unlock bundle: %w", err)
 		}
 
 		// Unlock the bundle
 		err = bundle.UnLock(ctx, b, t)
 		if err != nil {
-			return nil, fmt.Errorf("unable to unlock bundle: %v", err)
+			return nil, fmt.Errorf("unable to unlock bundle: %w", err)
 		}
 	}
 

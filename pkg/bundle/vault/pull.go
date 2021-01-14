@@ -60,7 +60,7 @@ func Pull(ctx context.Context, client *api.Client, paths []string, opts ...Optio
 	// Apply option functions
 	for _, o := range opts {
 		if err := o(defaultOpts); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("unable to apply option %T: %w", o, err)
 		}
 	}
 
@@ -75,7 +75,6 @@ func Pull(ctx context.Context, client *api.Client, paths []string, opts ...Optio
 }
 
 // runPull starts a multithreaded Vault secret puller.
-//nolint:funlen // refactor
 func runPull(ctx context.Context, client *api.Client, paths []string, opts *options) (*bundlev1.Bundle, error) {
 	var res *bundlev1.Bundle
 

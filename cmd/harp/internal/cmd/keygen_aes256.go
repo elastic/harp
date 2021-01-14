@@ -20,6 +20,7 @@ package cmd
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 
 	"github.com/awnumar/memguard"
 	"github.com/spf13/cobra"
@@ -44,5 +45,5 @@ func runKeygenAES256(cmd *cobra.Command, args []string) {
 	_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-aes256", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
 
-	fmt.Printf("aes-gcm:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
+	fmt.Fprintf(os.Stdout, "aes-gcm:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
 }

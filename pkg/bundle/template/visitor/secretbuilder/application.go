@@ -48,7 +48,7 @@ func application(results chan *bundlev1.Package, templateContext engine.Context,
 	// Parse selector values
 	platformQuality, err := engine.RenderContext(templateContext, quality)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render platform.quality: %w", err)
 	}
 	if strings.TrimSpace(platformQuality) == "" {
 		return nil, fmt.Errorf("quality selector must not be empty")
@@ -56,7 +56,7 @@ func application(results chan *bundlev1.Package, templateContext engine.Context,
 
 	platformName, err := engine.RenderContext(templateContext, platform)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render platform.name: %w", err)
 	}
 	if strings.TrimSpace(platformName) == "" {
 		return nil, fmt.Errorf("platform selector must not be empty")
@@ -64,7 +64,7 @@ func application(results chan *bundlev1.Package, templateContext engine.Context,
 
 	productName, err := engine.RenderContext(templateContext, product)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render product.name: %w", err)
 	}
 	if strings.TrimSpace(productName) == "" {
 		return nil, fmt.Errorf("product selector must not be empty")
@@ -72,7 +72,7 @@ func application(results chan *bundlev1.Package, templateContext engine.Context,
 
 	productVersion, err := engine.RenderContext(templateContext, version)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to render product.version: %w", err)
 	}
 	if strings.TrimSpace(productVersion) == "" {
 		return nil, fmt.Errorf("version selector must not be empty")

@@ -66,8 +66,7 @@ type BundleAPIServer interface {
 }
 
 // UnimplementedBundleAPIServer must be embedded to have forward compatible implementations.
-type UnimplementedBundleAPIServer struct {
-}
+type UnimplementedBundleAPIServer struct{}
 
 func (UnimplementedBundleAPIServer) GetSecret(context.Context, *GetSecretRequest) (*GetSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecret not implemented")

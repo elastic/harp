@@ -51,7 +51,7 @@ func Validate(path string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to secret path: %v", err)
+		return fmt.Errorf("unable to secret path: %w", err)
 	}
 
 	// Clean path first
@@ -88,7 +88,7 @@ func validateMeta(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to validate meta path (%s): %v", parts[0], err)
+		return fmt.Errorf("unable to validate meta path (%s): %w", parts[0], err)
 	}
 
 	// Meta has no constraints
@@ -216,7 +216,7 @@ func validateInfra(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to validate infrastructure cloud provider account (%s): %v", parts[1], err)
+		return fmt.Errorf("unable to validate infrastructure cloud provider account (%s): %w", parts[1], err)
 	}
 
 	// Validate region if not local provider and not global region
@@ -248,7 +248,7 @@ func validatePlatform(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to validate platform name (%s): %v", parts[1], err)
+		return fmt.Errorf("unable to validate platform name (%s): %w", parts[1], err)
 	}
 
 	// Validate platform region
@@ -271,7 +271,7 @@ func validatePlatform(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to validate platform service (%s): %v", parts[1], err)
+		return fmt.Errorf("unable to validate platform service (%s): %w", parts[1], err)
 	}
 
 	// Platform has no more constraints
@@ -291,7 +291,7 @@ func validateProduct(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to validate product name (%s): %v", parts[0], err)
+		return fmt.Errorf("unable to validate product name (%s): %w", parts[0], err)
 	}
 
 	// check version as a semver compliant version
@@ -321,7 +321,7 @@ func validateApplication(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to validate platform name (%s): %v", parts[1], err)
+		return fmt.Errorf("unable to validate platform name (%s): %w", parts[1], err)
 	}
 
 	// Extract product name
@@ -329,7 +329,7 @@ func validateApplication(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to validate product name (%s): %v", parts[2], err)
+		return fmt.Errorf("unable to validate product name (%s): %w", parts[2], err)
 	}
 
 	// check version as a semver compliant version
@@ -342,7 +342,7 @@ func validateApplication(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("invalid component (%s) for product (%s) version (%s), %v", parts[4], parts[3], parts[2], err)
+		return fmt.Errorf("invalid component (%s) for product (%s) version (%s), %w", parts[4], parts[3], parts[2], err)
 	}
 
 	// Product has no more constraints
@@ -362,7 +362,7 @@ func validateArtifact(parts []string) error {
 		validation.Required,
 		is.PrintableASCII,
 	); err != nil {
-		return fmt.Errorf("unable to validate artifact type (%s): %v", parts[1], err)
+		return fmt.Errorf("unable to validate artifact type (%s): %w", parts[1], err)
 	}
 
 	// Artifact has no more constraints
@@ -378,7 +378,7 @@ func validateSemVer(version string) error {
 	// check version as a semver compliant version
 	_, err := semver.Make(version)
 	if err != nil {
-		return err
+		return fmt.Errorf("version '%s' has not a valid semver syntax: %w", version, err)
 	}
 
 	// No error

@@ -44,7 +44,7 @@ func DefaultClient() (ServiceFactory, error) {
 	// Inittialize vault client
 	vaultClient, err := api.NewClient(conf)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize vault client: %v", err)
+		return nil, fmt.Errorf("unable to initialize vault client: %w", err)
 	}
 
 	// Delegate to other constructor.

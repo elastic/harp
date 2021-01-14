@@ -57,13 +57,13 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 	// Create input reader
 	reader, err := t.JSONReader(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to read input reader: %v", err)
+		return fmt.Errorf("unable to read input reader: %w", err)
 	}
 
 	// Extract from reader
 	input, err := identity.FromReader(reader)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to extract an identity from reader: %w", err)
 	}
 
 	var (
@@ -95,7 +95,7 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 	// Decode key
 	var key jsonWebKey
 	if err = json.NewDecoder(bytes.NewReader(payload)).Decode(&key); err != nil {
-		return fmt.Errorf("unable to decode payload as JSON: %v", err)
+		return fmt.Errorf("unable to decode payload as JSON: %w", err)
 	}
 
 	// Check validity

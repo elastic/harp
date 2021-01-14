@@ -38,7 +38,7 @@ type ContentLoader interface {
 func Loader(fs afero.Fs, name string) (ContentLoader, error) {
 	fi, err := fs.Stat(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to get file info for '%s': %w", name, err)
 	}
 
 	// Is directory

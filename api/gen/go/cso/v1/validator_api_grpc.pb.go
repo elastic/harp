@@ -66,8 +66,7 @@ type ValidatorAPIServer interface {
 }
 
 // UnimplementedValidatorAPIServer must be embedded to have forward compatible implementations.
-type UnimplementedValidatorAPIServer struct {
-}
+type UnimplementedValidatorAPIServer struct{}
 
 func (UnimplementedValidatorAPIServer) Validate(context.Context, *ValidateRequest) (*ValidateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Validate not implemented")
