@@ -21,8 +21,9 @@ import (
 	"bufio"
 	"bytes"
 	"os"
-	"os/exec"
 	"strings"
+
+	exec "golang.org/x/sys/execabs"
 )
 
 // PathSeparatorString models the os.PathSeparator as a string.

@@ -20,12 +20,12 @@ package docker
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
+	exec "golang.org/x/sys/execabs"
 
 	"github.com/elastic/harp/build/mage/git"
 )
@@ -120,7 +120,7 @@ func Tools() error {
 	}
 
 	// Prepare command
-	//nolint:gosec // expected behavior
+	// expected behavior
 	c := exec.Command("docker", "build",
 		"-t", "elastic/harp-tools",
 		"-f", "-",

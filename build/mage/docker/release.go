@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"text/template"
 	"time"
@@ -29,6 +28,7 @@ import (
 	"github.com/blang/semver/v4"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
+	exec "golang.org/x/sys/execabs"
 
 	"github.com/elastic/harp/build/artifact"
 	"github.com/elastic/harp/build/mage/git"
@@ -136,7 +136,7 @@ func Release(cmd *artifact.Command) func() error {
 		}
 
 		// Prepare command
-		//nolint:gosec // expected behavior
+		// expected behavior
 		c := exec.Command("docker", "build",
 			"-t", fmt.Sprintf("elastic/%s:artifacts-%s", cmd.Kebab(), relVer.String()),
 			"-f", "-",
