@@ -20,12 +20,12 @@ package docker
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
+	exec "golang.org/x/sys/execabs"
 
 	"github.com/elastic/harp/build/artifact"
 	"github.com/elastic/harp/build/mage/git"
@@ -126,7 +126,7 @@ func Build(cmd *artifact.Command) func() error {
 		}
 
 		// Prepare command
-		//nolint:gosec // expected behavior
+		// expected behavior
 		c := exec.Command("docker", "build",
 			"-t", fmt.Sprintf("elastic/%s", cmd.Kebab()),
 			"-f", "-",

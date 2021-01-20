@@ -23,16 +23,17 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
+
+	exec "golang.org/x/sys/execabs"
 
 	"github.com/elastic/harp/build/version"
 )
 
 // BugReport generates a bug report body
-// nolint:godox // Bug not allow in documentation
+//nolint:godox // Bug not allow in documentation
 func BugReport() string {
 	var buf bytes.Buffer
 	buf.WriteString(bugHeader)
@@ -176,7 +177,7 @@ func printGlibcVersion(w io.Writer) {
 	if m == nil {
 		return
 	}
-	cmd = exec.Command(m[1]) // nolint:gosec // controlled input
+	cmd = exec.Command(m[1]) // controlled input
 	out, err = cmd.Output()
 	if err != nil {
 		return

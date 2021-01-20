@@ -20,10 +20,11 @@ package cmdutil
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"runtime"
 	"strings"
 	"syscall"
+
+	exec "golang.org/x/sys/execabs"
 )
 
 // PluginHandler is capable of parsing command line arguments
