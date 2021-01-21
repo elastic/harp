@@ -50,7 +50,7 @@ func Exporter(service kv.Service, backendPath string, output chan *bundlev1.Pack
 // -----------------------------------------------------------------------------
 
 // Use as many proc as we have logical CPUs
-var maxReaderWorker = runtime.GOMAXPROCS(0)
+var maxReaderWorker = runtime.NumCPU() + 1
 
 // -----------------------------------------------------------------------------
 
