@@ -34,6 +34,7 @@ type VaultTask struct {
 	SecretPaths    []string
 	VaultNamespace string
 	WithMetadata   bool
+	MaxWorkerCount int64
 }
 
 // Run the task.
@@ -52,6 +53,7 @@ func (t *VaultTask) Run(ctx context.Context) error {
 	// Call exporter
 	b, err := bundlevault.Pull(ctx, client, t.SecretPaths,
 		bundlevault.WithMetadata(t.WithMetadata),
+		bundlevault.WithMaxWorkerCount(t.MaxWorkerCount),
 	)
 	if err != nil {
 		return fmt.Errorf("error occurs during vault export: %w", err)

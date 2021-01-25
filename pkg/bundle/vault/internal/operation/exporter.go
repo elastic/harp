@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"path"
-	"runtime"
 	"strings"
 
 	"github.com/imdario/mergo"
@@ -38,27 +37,24 @@ import (
 )
 
 // Exporter initialize a secret exporter operation
-func Exporter(service kv.Service, backendPath string, output chan *bundlev1.Package, withMetadata bool) Operation {
+func Exporter(service kv.Service, backendPath string, output chan *bundlev1.Package, withMetadata bool, maxWorkerCount int64) Operation {
 	return &exporter{
-		service:      service,
-		path:         backendPath,
-		withMetadata: withMetadata,
-		output:       output,
+		service:        service,
+		path:           backendPath,
+		withMetadata:   withMetadata,
+		output:         output,
+		maxWorkerCount: maxWorkerCount,
 	}
 }
 
 // -----------------------------------------------------------------------------
 
-// Use as many proc as we have logical CPUs
-var maxReaderWorker = runtime.GOMAXPROCS(0)
-
-// -----------------------------------------------------------------------------
-
 type exporter struct {
-	service      kv.Service
-	path         string
-	withMetadata bool
-	output       chan *bundlev1.Package
+	service        kv.Service
+	path           string
+	withMetadata   bool
+	output         chan *bundlev1.Package
+	maxWorkerCount int64
 }
 
 // Run the implemented operation
@@ -70,12 +66,17 @@ func (op *exporter) Run(ctx context.Context) error {
 	// Prepare channels
 	pathChan := make(chan string)
 
+	// Validate worker count
+	if op.maxWorkerCount < 1 {
+		op.maxWorkerCount = 1
+	}
+
 	// Consumers ---------------------------------------------------------------
 
 	// Secret reader
 	g.Go(func() error {
 		// Initialize a semaphore with maxReaderWorker tokens
-		sem := semaphore.NewWeighted(int64(maxReaderWorker))
+		sem := semaphore.NewWeighted(op.maxWorkerCount)
 
 		// Reader errGroup
 		gReader, gReaderCtx := errgroup.WithContext(gctx)

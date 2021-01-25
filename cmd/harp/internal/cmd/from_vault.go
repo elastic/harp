@@ -30,11 +30,12 @@ import (
 
 var fromVaultCmd = func() *cobra.Command {
 	var (
-		pathsFrom    string
-		secretPaths  []string
-		outputPath   string
-		namespace    string
-		withMetadata bool
+		pathsFrom      string
+		secretPaths    []string
+		outputPath     string
+		namespace      string
+		withMetadata   bool
+		maxWorkerCount int64
 	)
 
 	cmd := &cobra.Command{
@@ -63,6 +64,7 @@ var fromVaultCmd = func() *cobra.Command {
 				SecretPaths:    secretPaths,
 				VaultNamespace: namespace,
 				WithMetadata:   withMetadata,
+				MaxWorkerCount: maxWorkerCount,
 			}
 
 			// Run the task
@@ -78,6 +80,7 @@ var fromVaultCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&outputPath, "out", "", "Container output ('-' for stdout or filename)")
 	cmd.Flags().StringVar(&namespace, "namespace", "", "Vault namespace")
 	cmd.Flags().BoolVar(&withMetadata, "with-metadata", true, "Pull bundle metadata from Vault")
+	cmd.Flags().Int64Var(&maxWorkerCount, "worker-count", 4, "Active worker count limit")
 
 	return cmd
 }

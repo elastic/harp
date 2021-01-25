@@ -30,10 +30,11 @@ import (
 
 var toVaultCmd = func() *cobra.Command {
 	var (
-		inputPath     string
-		backendPrefix string
-		namespace     string
-		withMetadata  bool
+		inputPath      string
+		backendPrefix  string
+		namespace      string
+		withMetadata   bool
+		maxWorkerCount int64
 	)
 
 	cmd := &cobra.Command{
@@ -50,6 +51,7 @@ var toVaultCmd = func() *cobra.Command {
 				BackendPrefix:   backendPrefix,
 				PushMetadata:    withMetadata,
 				VaultNamespace:  namespace,
+				MaxWorkerCount:  maxWorkerCount,
 			}
 
 			// Run the task
@@ -64,6 +66,7 @@ var toVaultCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&backendPrefix, "prefix", "", "Vault backend prefix")
 	cmd.Flags().StringVar(&namespace, "namespace", "", "Vault namespace")
 	cmd.Flags().BoolVar(&withMetadata, "with-metadata", false, "Push container metadata")
+	cmd.Flags().Int64Var(&maxWorkerCount, "worker-count", 4, "Active worker count limit")
 
 	return cmd
 }

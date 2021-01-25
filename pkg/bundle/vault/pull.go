@@ -47,6 +47,7 @@ func Pull(ctx context.Context, client *api.Client, paths []string, opts ...Optio
 		defaultPathInclusions = []*regexp.Regexp{}
 		defaultPathExclusions = []*regexp.Regexp{}
 		defaultWithMetadata   = false
+		defaultWorkerCount    = int64(4)
 	)
 
 	// Create default option instance
@@ -55,6 +56,7 @@ func Pull(ctx context.Context, client *api.Client, paths []string, opts ...Optio
 		exclusions:   defaultPathExclusions,
 		includes:     defaultPathInclusions,
 		withMetadata: defaultWithMetadata,
+		workerCount:  defaultWorkerCount,
 	}
 
 	// Apply option functions
@@ -126,7 +128,7 @@ func runPull(ctx context.Context, client *api.Client, paths []string, opts *opti
 				}
 
 				// Create an exporter
-				op := operation.Exporter(service, vpath.SanitizePath(p), packageChan, opts.withMetadata)
+				op := operation.Exporter(service, vpath.SanitizePath(p), packageChan, opts.withMetadata, opts.workerCount)
 
 				// Run the job
 				if err := op.Run(gReaderctx); err != nil {
