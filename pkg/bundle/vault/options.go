@@ -25,6 +25,7 @@ import (
 type options struct {
 	prefix       string
 	withMetadata bool
+	workerCount  int64
 	exclusions   []*regexp.Regexp
 	includes     []*regexp.Regexp
 }
@@ -79,6 +80,15 @@ func WithPrefix(value string) Option {
 func WithMetadata(value bool) Option {
 	return func(opts *options) error {
 		opts.withMetadata = value
+		// No error
+		return nil
+	}
+}
+
+// WithMaxWorkerCount sets the maximum count of active operation worker count.
+func WithMaxWorkerCount(value int64) Option {
+	return func(opts *options) error {
+		opts.workerCount = value
 		// No error
 		return nil
 	}

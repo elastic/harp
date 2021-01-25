@@ -37,25 +37,27 @@ import (
 )
 
 // Importer initialize a secret importer operation
-func Importer(client *api.Client, bundleFile *bundlev1.Bundle, prefix string, withMetadata bool) Operation {
+func Importer(client *api.Client, bundleFile *bundlev1.Bundle, prefix string, withMetadata bool, maxWorkerCount int64) Operation {
 	return &importer{
-		client:       client,
-		bundle:       bundleFile,
-		prefix:       prefix,
-		withMetadata: withMetadata,
-		backends:     map[string]kv.Service{},
+		client:         client,
+		bundle:         bundleFile,
+		prefix:         prefix,
+		withMetadata:   withMetadata,
+		backends:       map[string]kv.Service{},
+		maxWorkerCount: maxWorkerCount,
 	}
 }
 
 // -----------------------------------------------------------------------------
 
 type importer struct {
-	client        *api.Client
-	bundle        *bundlev1.Bundle
-	prefix        string
-	withMetadata  bool
-	backends      map[string]kv.Service
-	backendsMutex sync.RWMutex
+	client         *api.Client
+	bundle         *bundlev1.Bundle
+	prefix         string
+	withMetadata   bool
+	backends       map[string]kv.Service
+	backendsMutex  sync.RWMutex
+	maxWorkerCount int64
 }
 
 // Run the implemented operation
@@ -67,12 +69,17 @@ func (op *importer) Run(ctx context.Context) error {
 	// Prepare channels
 	packageChan := make(chan *bundlev1.Package)
 
+	// Validate worker count
+	if op.maxWorkerCount < 1 {
+		op.maxWorkerCount = 1
+	}
+
 	// consumers ---------------------------------------------------------------
 
 	// Secret writer
 	g.Go(func() error {
 		// Initialize a semaphore with maxReaderWorker tokens
-		sem := semaphore.NewWeighted(int64(maxReaderWorker))
+		sem := semaphore.NewWeighted(op.maxWorkerCount)
 
 		// Writer errGroup
 		gWriter, gWriterCtx := errgroup.WithContext(gctx)
