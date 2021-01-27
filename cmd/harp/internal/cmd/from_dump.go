@@ -18,69 +18,45 @@
 package cmd
 
 import (
-	"io/ioutil"
-
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-)
-
-var (
-	fromDumpOutputPath string
-	fromDumpInputPath  string
+	"github.com/elastic/harp/pkg/tasks/from"
 )
 
 // -----------------------------------------------------------------------------
 
 var fromDumpCmd = func() *cobra.Command {
+	var (
+		inputPath  string
+		outputPath string
+	)
 	cmd := &cobra.Command{
 		Use:   "dump",
 		Short: "Import from bundle dump output as a secret container",
-		Run:   runfromDump,
+		Run: func(cmd *cobra.Command, args []string) {
+			// Initialize logger and context
+			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-from-dump", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			defer cancel()
+
+			// Prepare task
+			t := &from.BundleDumpTask{
+				JSONReader:   cmdutil.FileReader(inputPath),
+				OutputWriter: cmdutil.FileWriter(outputPath),
+			}
+
+			// Run the task
+			if err := t.Run(ctx); err != nil {
+				log.For(ctx).Fatal("unable to execute task", zap.Error(err))
+			}
+		},
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&fromDumpInputPath, "in", "", "JSON input file ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&fromDumpOutputPath, "out", "", "Container output ('-' for stdout or filename)")
+	cmd.Flags().StringVar(&inputPath, "in", "-", "Bundle dump input ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&outputPath, "out", "-", "Container output ('-' for stdout or filename)")
 
 	return cmd
-}
-
-func runfromDump(cmd *cobra.Command, args []string) {
-	ctx, cancel := cmdutil.Context(cmd.Context(), "harp-from-dump", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
-	defer cancel()
-
-	// Create input reader
-	reader, err := cmdutil.Reader(fromDumpInputPath)
-	if err != nil {
-		log.For(ctx).Fatal("unable to open input file", zap.Error(err), zap.String("path", fromDumpInputPath))
-	}
-
-	// Create output writer
-	writer, err := cmdutil.Writer(fromDumpOutputPath)
-	if err != nil {
-		log.For(ctx).Fatal("unable to open output bundle", zap.Error(err), zap.String("path", fromDumpOutputPath))
-	}
-
-	// Drain input content
-	content, err := ioutil.ReadAll(reader)
-	if err != nil {
-		log.For(ctx).Fatal("unable to read input content", zap.Error(err))
-	}
-
-	// unmarshall from JSON
-	var secrets bundlev1.Bundle
-	if err = protojson.Unmarshal(content, &secrets); err != nil {
-		log.For(ctx).Fatal("unable to decode JSON bundle", zap.Error(err))
-	}
-
-	// Dump all content
-	if err = bundle.ToContainerWriter(writer, &secrets); err != nil {
-		log.For(ctx).Fatal("unable to produce exported bundle", zap.Error(err))
-	}
 }

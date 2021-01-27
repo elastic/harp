@@ -18,14 +18,19 @@
 package bundle
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"reflect"
 
 	"github.com/gobwas/glob"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/secret"
+	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 // KV describes map[string]interface{} alias
@@ -233,4 +238,47 @@ func FromSecretMap(secretKv KV) ([]*bundlev1.KV, error) {
 
 	// No error
 	return secrets, nil
+}
+
+// FromDump creates a bundle from a JSON Dump.
+func FromDump(r io.Reader) (*bundlev1.Bundle, error) {
+	// Check parameters
+	if types.IsNil(r) {
+		return nil, fmt.Errorf("unable to process nil reader")
+	}
+
+	// Drain input content
+	content, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read input content: %w", err)
+	}
+
+	// Build the container from json
+	var b bundlev1.Bundle
+	if err = protojson.Unmarshal(content, &b); err != nil {
+		return nil, fmt.Errorf("unable to decode JSON bundle: %w", err)
+	}
+
+	// Convert secret values to current value packing method.
+	for _, p := range b.Packages {
+		for _, s := range p.Secrets.Data {
+			// Decode json encoded value
+			var data interface{}
+			if errJSON := json.Unmarshal(s.Value, &data); errJSON != nil {
+				return nil, fmt.Errorf("unable to decode '%s' - '%s' secret value as json: %w", p.Name, s.Key, errJSON)
+			}
+
+			// Pack secret value
+			payload, err := secret.Pack(data)
+			if err != nil {
+				return nil, fmt.Errorf("unable to pack '%s' - '%s' secret value: %w", p.Name, s.Key, err)
+			}
+
+			// Replace current json encoded secret value by packed one.
+			s.Value = payload
+		}
+	}
+
+	// No error
+	return &b, nil
 }
