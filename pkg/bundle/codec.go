@@ -338,11 +338,34 @@ func JSON(w io.Writer, b *bundlev1.Bundle) error {
 		return fmt.Errorf("unable to process nil bundle")
 	}
 
+	// Clone bundle (we don't want to modify input bundle)
+	cloned := proto.Clone(b).(*bundlev1.Bundle)
+
 	// Initialize marshaller
 	m := &protojson.MarshalOptions{}
 
+	// Decode packed values
+	for _, p := range cloned.Packages {
+		for _, s := range p.Secrets.Data {
+			// Unpack secret value
+			var data interface{}
+			if err := secret.Unpack(s.Value, &data); err != nil {
+				return fmt.Errorf("unable to unpack '%s' - '%s' secret value: %w", p.Name, s.Key, err)
+			}
+
+			// Re-encode as json
+			payload, err := json.Marshal(data)
+			if err != nil {
+				return fmt.Errorf("unable to encode '%s' - '%s' secret value as json: %w", p.Name, s.Key, err)
+			}
+
+			// Replace current packed secret value by json encoded one.
+			s.Value = payload
+		}
+	}
+
 	// Marshal bundle
-	out, err := m.Marshal(b)
+	out, err := m.Marshal(cloned)
 	if err != nil {
 		return fmt.Errorf("unable to produce JSON from bundle object: %w", err)
 	}
