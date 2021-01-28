@@ -234,6 +234,4 @@ If we want to be SUPERFANCY, we can add some `jq` parsing to the `decrypt` comma
 ```bash
 harp bundle decrypt --in example.encrypted.bundle --out - --key [some base64 string] | harp bundle dump --in - | jq '.packages|map(select(.name == "infra/aws/elastic-cloud.com/us-east-1/compute/route53/apikey"))| .[].secrets.data[].value'
 ```
-## Getting things in to and out of Vault
 
-One of the truely neat things about `harp` is it is designed to work with Hashicorp Vault as a `secret store`. Users can interact with `harp` and the `spec` files without needing to interact with vault, and applications that use the `CSO` specification can get to their secrets without knowing or accessing the rest of `vault`. 
