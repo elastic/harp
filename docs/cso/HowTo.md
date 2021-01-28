@@ -3,7 +3,7 @@
 
 ## Introduction
 
-Storing secrets (see below) is hard. Not from a purely technical standpoint - there are many, many secure ways to store them - but in the sense that secrets need to be saved in ways that they can be found logically by humans and machines. The Cloud Secret Organization specification is a way to standardize how secrets are stored logically. This document bridges the gap between the high level explanations and the daily practice of storing, retrieving, and using secrets.
+Storing secrets (see below) is hard. Not from a purely technical standpoint - there are many, many secure ways to store them - but in the sense that secrets need to be saved in ways that they can be found logically by humans **and** machines. The Cloud Secret Organization (CSO) specification is a way to standardize how secrets are stored logically, and the `harp` tool is designed to aid in storing, retrieving, and validating secrets in a CSO compliant manner. This document provides a simple and practical introduction to CSO and storing, retrieving, and using secrets with `harp`.
 
 ### Terms used in this document
 
@@ -234,5 +234,6 @@ If we want to be SUPERFANCY, we can add some `jq` parsing to the `decrypt` comma
 ```bash
 harp bundle decrypt --in example.encrypted.bundle --out - --key [some base64 string] | harp bundle dump --in - | jq '.packages|map(select(.name == "infra/aws/elastic-cloud.com/us-east-1/compute/route53/apikey"))| .[].secrets.data[].value'
 ```
+## Getting things in to and out of Vault
 
-### Getting things out of vault
+One of the truely neat things about `harp` is it is designed to work with Hashicorp Vault as a `secret store`. Users can interact with `harp` and the `spec` files without needing to interact with vault, and applications that use the `CSO` specification can get to their secrets without knowing or accessing the rest of `vault`. 
