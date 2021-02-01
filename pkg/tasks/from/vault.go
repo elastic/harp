@@ -26,6 +26,7 @@ import (
 	"github.com/elastic/harp/pkg/bundle"
 	bundlevault "github.com/elastic/harp/pkg/bundle/vault"
 	"github.com/elastic/harp/pkg/tasks"
+	"github.com/elastic/harp/pkg/vault"
 )
 
 // VaultTask implements secret-container building from Vault K/V.
@@ -48,6 +49,11 @@ func (t *VaultTask) Run(ctx context.Context) error {
 	// If a namespace is specified
 	if t.VaultNamespace != "" {
 		client.SetNamespace(t.VaultNamespace)
+	}
+
+	// Verify vault connection
+	if _, err := vault.CheckAuthentication(client); err != nil {
+		return fmt.Errorf("vault connection verification failed: %w", err)
 	}
 
 	// Call exporter

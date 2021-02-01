@@ -93,7 +93,7 @@ func runPush(ctx context.Context, b *bundlev1.Bundle, client *api.Client, opts *
 
 	// Run the vault operation
 	if err := op.Run(ctx); err != nil {
-		return fmt.Errorf("unable to import secret bundle: %w", err)
+		return fmt.Errorf("unable to push secret bundle: %w", err)
 	}
 
 	// No error
