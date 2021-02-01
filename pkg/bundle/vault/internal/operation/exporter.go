@@ -85,6 +85,11 @@ func (op *exporter) Run(ctx context.Context) error {
 		for secretPath := range pathChan {
 			secPath := secretPath
 
+			if err := gReaderCtx.Err(); err != nil {
+				// Stop processing
+				break
+			}
+
 			// Acquire a token
 			if err := sem.Acquire(gReaderCtx, 1); err != nil {
 				return fmt.Errorf("unable to acquire a semaphore token: %w", err)
@@ -96,6 +101,11 @@ func (op *exporter) Run(ctx context.Context) error {
 			gReader.Go(func() error {
 				// Release token on finish
 				defer sem.Release(1)
+
+				if err := gReaderCtx.Err(); err != nil {
+					// Context has already an error
+					return nil
+				}
 
 				// Read from Vault
 				payload, err := op.service.Read(gReaderCtx, secPath)

@@ -89,6 +89,11 @@ func (op *importer) Run(ctx context.Context) error {
 			// Assign local reference
 			secretPackage := secretPackage
 
+			if err := gWriterCtx.Err(); err != nil {
+				// Stop processing
+				break
+			}
+
 			// Acquire a token
 			if err := sem.Acquire(gWriterCtx, 1); err != nil {
 				return fmt.Errorf("unable to acquire a semaphore token: %w", err)
@@ -99,6 +104,11 @@ func (op *importer) Run(ctx context.Context) error {
 			// Build function reader
 			gWriter.Go(func() error {
 				defer sem.Release(1)
+
+				if err := gWriterCtx.Err(); err != nil {
+					// Context has already an error
+					return nil
+				}
 
 				// No data to insert
 				if secretPackage.Secrets == nil {
