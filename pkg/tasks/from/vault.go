@@ -52,8 +52,8 @@ func (t *VaultTask) Run(ctx context.Context) error {
 	}
 
 	// Verify vault connection
-	if _, err := vault.CheckAuthentication(client); err != nil {
-		return fmt.Errorf("vault connection verification failed: %w", err)
+	if _, errAuth := vault.CheckAuthentication(client); errAuth != nil {
+		return fmt.Errorf("vault connection verification failed: %w", errAuth)
 	}
 
 	// Call exporter
