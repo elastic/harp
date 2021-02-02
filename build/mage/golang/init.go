@@ -29,6 +29,7 @@ import (
 
 // Keep only last 2 versions
 var goVersions = []string{
+	"go1.16rc1",
 	"go1.15.6",
 	"go1.15.7",
 }
