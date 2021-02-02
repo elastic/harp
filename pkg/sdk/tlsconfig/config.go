@@ -31,6 +31,8 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+
+	"github.com/elastic/harp/pkg/sdk/security/crypto/pkcs8"
 )
 
 // Options represents the information needed to create client and server TLS configurations.
@@ -165,8 +167,8 @@ func getPrivateKey(keyBytes []byte, passphrase string) ([]byte, error) {
 	}
 
 	var err error
-	if x509.IsEncryptedPEMBlock(pemBlock) {
-		keyBytes, err = x509.DecryptPEMBlock(pemBlock, []byte(passphrase))
+	if pemBlock.Type == "ENCRYPTED PRIVATE KEY" {
+		keyBytes, err = pkcs8.DecryptPEMBlock(pemBlock, []byte(passphrase))
 		if err != nil {
 			return nil, errors.Wrap(err, "private key is encrypted, but could not decrypt it")
 		}
