@@ -19,6 +19,7 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -88,7 +89,7 @@ func (h *vaultKVHandler) getSecret() http.HandlerFunc {
 
 		// Retrieve secret from engine
 		secret, err := h.bm.GetSecret(ctx, vpath.SanitizePath(ns), p)
-		if err == storage.ErrSecretNotFound {
+		if errors.Is(err, storage.ErrSecretNotFound) {
 			http.Error(w, "secret not found", http.StatusNotFound)
 			return
 		}

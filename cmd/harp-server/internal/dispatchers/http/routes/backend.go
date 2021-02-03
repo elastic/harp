@@ -18,6 +18,7 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -43,7 +44,7 @@ func backend(namespace string, engine storage.Engine) http.HandlerFunc {
 
 		// Retrieve secret from engine
 		secret, err := engine.Get(ctx, identifier)
-		if err == storage.ErrSecretNotFound {
+		if errors.Is(err, storage.ErrSecretNotFound) {
 			http.Error(w, "secret not found", http.StatusNotFound)
 			return
 		}
