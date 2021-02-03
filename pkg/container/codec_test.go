@@ -361,7 +361,7 @@ func Test_UnSeal_Fuzz(t *testing.T) {
 		f := fuzz.New()
 
 		// Prepare arguments
-		var identity []byte
+		var identity [32]byte
 		input := containerv1.Container{
 			Headers: &containerv1.Header{},
 			Raw:     []byte{0x00, 0x00},
@@ -372,6 +372,6 @@ func Test_UnSeal_Fuzz(t *testing.T) {
 		f.Fuzz(&identity)
 
 		// Execute
-		Unseal(&input, memguard.NewBufferFromBytes(identity))
+		Unseal(&input, memguard.NewBufferFromBytes(identity[:]))
 	}
 }
