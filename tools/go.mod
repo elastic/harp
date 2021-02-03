@@ -16,6 +16,7 @@ require (
 	github.com/google/wire v0.4.0
 	github.com/izumin5210/gex v0.6.1
 	github.com/magefile/mage v1.11.0
+	github.com/mvdan/mvdan.cc v0.0.0-20210202235754-572593964513 // indirect
 	github.com/stephens2424/writerset v1.0.2 // indirect
 	go.elastic.co/go-licence-detector v0.5.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.0.1
