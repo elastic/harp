@@ -306,7 +306,7 @@ func (op *exporter) packSecret(key string, value interface{}) (*bundlev1.KV, err
 	}, nil
 }
 
-func extractVersion(packagePath string) (string, uint, error) {
+func extractVersion(packagePath string) (string, uint32, error) {
 	// Check arguments
 	if packagePath == "" {
 		return "", 0, fmt.Errorf("unable to extract path and version from an empty string")
@@ -326,11 +326,11 @@ func extractVersion(packagePath string) (string, uint, error) {
 	}
 
 	// Convert
-	versionUnit, errParse := strconv.ParseUint(versionRaw, 10, 64)
+	versionUnit, errParse := strconv.ParseUint(versionRaw, 10, 32)
 	if errParse != nil {
 		return "", 0, fmt.Errorf("unable to parse version as a valid integer: %w", err)
 	}
 
 	// Return path elements
-	return vaultPath.SanitizePath(u.Path), uint(versionUnit), nil
+	return vaultPath.SanitizePath(u.Path), uint32(versionUnit), nil
 }

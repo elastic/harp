@@ -104,7 +104,7 @@ func (s *kvv1Backend) Read(ctx context.Context, path string) (SecretData, Secret
 	return secret.Data, nil, err
 }
 
-func (s *kvv1Backend) ReadVersion(ctx context.Context, path string, version uint) (SecretData, SecretMetadata, error) {
+func (s *kvv1Backend) ReadVersion(ctx context.Context, path string, version uint32) (SecretData, SecretMetadata, error) {
 	return s.Read(ctx, path)
 }
 
