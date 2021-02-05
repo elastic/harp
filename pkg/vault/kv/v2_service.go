@@ -21,9 +21,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/vault/api"
+
 	"github.com/elastic/harp/pkg/vault/logical"
 	vpath "github.com/elastic/harp/pkg/vault/path"
-	"github.com/hashicorp/vault/api"
 )
 
 type kvv2Backend struct {
