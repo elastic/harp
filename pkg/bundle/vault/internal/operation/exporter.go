@@ -111,13 +111,13 @@ func (op *exporter) Run(ctx context.Context) error {
 				}
 
 				// Extract desired version from path
-				vaultPath, vaultVersion, errPackagePath := extractVersion(secPath)
+				vaultPackagePath, vaultVersion, errPackagePath := extractVersion(secPath)
 				if errPackagePath != nil {
 					return fmt.Errorf("unable to parse package path '%s': %w", secPath, errPackagePath)
 				}
 
 				// Read from Vault
-				secretData, secretMeta, err := op.service.ReadVersion(gReaderCtx, vaultPath, vaultVersion)
+				secretData, secretMeta, err := op.service.ReadVersion(gReaderCtx, vaultPackagePath, vaultVersion)
 				if err != nil {
 					// Mask path not found or empty secret value
 					if errors.Is(err, kv.ErrNoData) || errors.Is(err, kv.ErrPathNotFound) {
@@ -162,7 +162,7 @@ func (op *exporter) Run(ctx context.Context) error {
 				pack := &bundlev1.Package{
 					Labels:      map[string]string{},
 					Annotations: map[string]string{},
-					Name:        vaultPath,
+					Name:        vaultPackagePath,
 					Secrets:     chain,
 				}
 
