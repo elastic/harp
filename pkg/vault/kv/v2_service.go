@@ -23,6 +23,7 @@ import (
 
 	"github.com/elastic/harp/pkg/vault/logical"
 	vpath "github.com/elastic/harp/pkg/vault/path"
+	"github.com/hashicorp/vault/api"
 )
 
 type kvv2Backend struct {
@@ -82,14 +83,32 @@ func (s *kvv2Backend) List(ctx context.Context, path string) ([]string, error) {
 }
 
 func (s *kvv2Backend) Read(ctx context.Context, path string) (SecretData, SecretMetadata, error) {
+	return s.ReadVersion(ctx, path, 0)
+}
+
+func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint) (SecretData, SecretMetadata, error) {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {
 		return nil, nil, fmt.Errorf("unable to query with empty path")
 	}
 
+	var (
+		secret *api.Secret
+		err    error
+	)
+
 	// Create a logical client
-	secret, err := s.logical.Read(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "data"))
+	if version > 0 {
+		// Prepare params
+		versionParam := map[string][]string{
+			"version": {fmt.Sprintf("%d", version)},
+		}
+
+		secret, err = s.logical.ReadWithData(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "data"), versionParam)
+	} else {
+		secret, err = s.logical.Read(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "data"))
+	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, err)
 	}

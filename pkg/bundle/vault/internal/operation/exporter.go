@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
@@ -108,8 +109,14 @@ func (op *exporter) Run(ctx context.Context) error {
 					return nil
 				}
 
+				// Extract desired version from path
+				vaultPath, vaultVersion, errPackagePath := op.extractVersion(secPath)
+				if errPackagePath != nil {
+					return fmt.Errorf("unable to parse package path '%s': %w", secPath, errPackagePath)
+				}
+
 				// Read from Vault
-				secretData, secretMeta, err := op.service.Read(gReaderCtx, secPath)
+				secretData, secretMeta, err := op.service.ReadVersion(gReaderCtx, vaultPath, vaultVersion)
 				if err != nil {
 					// Mask path not found or empty secret value
 					if errors.Is(err, kv.ErrNoData) || errors.Is(err, kv.ErrPathNotFound) {
@@ -215,7 +222,7 @@ func (op *exporter) Run(ctx context.Context) error {
 				// Dispatch annoations to package
 				if v, ok := pack.Annotations[vaultKVv2MetadataVersion]; ok {
 					// Convert version
-					secretVersion, errParse := strconv.ParseUint(v, 10, 64)
+					secretVersion, errParse := strconv.ParseUint(v, 10, 32)
 					if errParse != nil {
 						log.For(ctx).Warn("unable to parse secret data version as a valid number: %w", zap.Error(errParse))
 					} else {
@@ -296,4 +303,27 @@ func (op *exporter) packSecret(key string, value interface{}) (*bundlev1.KV, err
 		Type:  fmt.Sprintf("%T", value),
 		Value: payload,
 	}, nil
+}
+
+func (op *exporter) extractVersion(packagePath string) (string, uint, error) {
+	// Looks a little hack-ish for me
+	u, err := url.ParseRequestURI(fmt.Sprintf("harp://bundle/%s", packagePath))
+	if err != nil {
+		return "", 0, fmt.Errorf("unable to parse package path: %w", err)
+	}
+
+	// Get version
+	versionRaw := u.Query().Get("version")
+	if versionRaw == "" {
+		// Get latest
+		return u.Path, 0, nil
+	}
+
+	// Convert
+	versionUnit, errParse := strconv.ParseUint(versionRaw, 10, 64)
+	if errParse != nil {
+		return "", 0, fmt.Errorf("unable to parse version as a valid integer: %w", err)
+	}
+
+	return u.Path, uint(versionUnit), nil
 }
