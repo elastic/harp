@@ -41,6 +41,7 @@ require (
 	github.com/iancoleman/strcase v0.1.2
 	github.com/imdario/mergo v0.3.11
 	github.com/jmespath/go-jmespath v0.4.0
+	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/magefile/mage v1.11.0
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/oklog/run v1.1.0

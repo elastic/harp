@@ -28,13 +28,13 @@ import (
 
 	"github.com/awnumar/memguard"
 	"github.com/golang/protobuf/ptypes/wrappers"
-	"github.com/google/go-cmp/cmp"
 	"gitlab.com/NebulousLabs/merkletree"
 	"golang.org/x/crypto/blake2b"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	"github.com/elastic/harp/pkg/bundle/compare"
 	"github.com/elastic/harp/pkg/bundle/secret"
 	csov1 "github.com/elastic/harp/pkg/cso/v1"
 	"github.com/elastic/harp/pkg/sdk/security"
@@ -381,20 +381,17 @@ func JSON(w io.Writer, b *bundlev1.Bundle) error {
 
 // Diff calculates bundle differences.
 func Diff(src, dst *bundlev1.Bundle) (string, error) {
-	// Convert src bundle
-	srcMap, err := AsMap(src)
+	diffs, err := compare.Diff(src, dst)
 	if err != nil {
-		return "", fmt.Errorf("unable to convert source bundle as map: %w", err)
+		return "", fmt.Errorf("unable to compute bundle differences: %w", err)
 	}
 
-	// Convert dst bundle
-	dstMap, err := AsMap(dst)
+	// Serialize as json
+	jsonPatch, err := json.Marshal(diffs)
 	if err != nil {
-		return "", fmt.Errorf("unable to convert destination bundle as map: %w", err)
+		return "", fmt.Errorf("unable to serialize diff result: %w", err)
 	}
-
-	diff := cmp.Diff(srcMap, dstMap)
 
 	// No error
-	return diff, nil
+	return string(jsonPatch), nil
 }
