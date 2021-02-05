@@ -86,7 +86,7 @@ func (s *kvv2Backend) Read(ctx context.Context, path string) (SecretData, Secret
 	return s.ReadVersion(ctx, path, 0)
 }
 
-func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint) (SecretData, SecretMetadata, error) {
+func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint32) (SecretData, SecretMetadata, error) {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {

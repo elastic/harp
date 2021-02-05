@@ -43,7 +43,7 @@ type SecretLister interface {
 // SecretReader represents secret reader feature contract.
 type SecretReader interface {
 	Read(ctx context.Context, path string) (SecretData, SecretMetadata, error)
-	ReadVersion(ctx context.Context, path string, version uint) (SecretData, SecretMetadata, error)
+	ReadVersion(ctx context.Context, path string, version uint32) (SecretData, SecretMetadata, error)
 }
 
 // SecretWriter represents secret writer feature contract.
