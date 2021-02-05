@@ -36,6 +36,7 @@ func SecretGetter(client *api.Client) func(string) (map[string]interface{}, erro
 		}
 
 		// Delegate to reader
-		return service.Read(context.Background(), path)
+		data, _, err := service.Read(context.Background(), path)
+		return data, err
 	}
 }

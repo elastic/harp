@@ -29,8 +29,11 @@ var (
 	ErrNoData = errors.New("no data")
 )
 
-// Secrets is a secret body
-type Secrets map[string]interface{}
+// SecretData is a secret body
+type SecretData map[string]interface{}
+
+// SecretMetadata is secret data attached metadata
+type SecretMetadata map[string]interface{}
 
 // SecretLister repesents secret key listing feature contract.
 type SecretLister interface {
@@ -39,12 +42,13 @@ type SecretLister interface {
 
 // SecretReader represents secret reader feature contract.
 type SecretReader interface {
-	Read(ctx context.Context, path string) (Secrets, error)
+	Read(ctx context.Context, path string) (SecretData, SecretMetadata, error)
+	ReadVersion(ctx context.Context, path string, version uint) (SecretData, SecretMetadata, error)
 }
 
 // SecretWriter represents secret writer feature contract.
 type SecretWriter interface {
-	Write(ctx context.Context, path string, secrets Secrets) error
+	Write(ctx context.Context, path string, secrets SecretData) error
 }
 
 // Service declares vault service contract.

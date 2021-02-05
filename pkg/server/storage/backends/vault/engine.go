@@ -69,17 +69,17 @@ func init() {
 
 func (e *engine) Get(ctx context.Context, id string) ([]byte, error) {
 	// Read from Vault
-	secret, err := e.service.Read(ctx, id)
+	secretData, _, err := e.service.Read(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("vault: unable to read secret from vault server: %w", err)
 	}
-	if secret == nil {
+	if secretData == nil {
 		return []byte{}, storage.ErrSecretNotFound
 	}
 
 	// Encode secret as json
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(secret); err != nil {
+	if err := json.NewEncoder(&buf).Encode(secretData); err != nil {
 		return nil, fmt.Errorf("vault: unable to encode secret: %w", err)
 	}
 

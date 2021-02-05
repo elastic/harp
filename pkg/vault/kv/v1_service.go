@@ -81,30 +81,34 @@ func (s *kvv1Backend) List(ctx context.Context, path string) ([]string, error) {
 	return out, nil
 }
 
-func (s *kvv1Backend) Read(ctx context.Context, path string) (Secrets, error) {
+func (s *kvv1Backend) Read(ctx context.Context, path string) (SecretData, SecretMetadata, error) {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {
-		return nil, fmt.Errorf("unable to query with empty path")
+		return nil, nil, fmt.Errorf("unable to query with empty path")
 	}
 
 	// Create a logical client
 	secret, err := s.logical.Read(secretPath)
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, err)
+		return nil, nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, err)
 	}
 	if secret == nil {
-		return nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, ErrPathNotFound)
+		return nil, nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, ErrPathNotFound)
 	}
 	if secret.Data == nil {
-		return nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, ErrNoData)
+		return nil, nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, ErrNoData)
 	}
 
 	// Return secret value and no error
-	return secret.Data, nil
+	return secret.Data, nil, err
 }
 
-func (s *kvv1Backend) Write(ctx context.Context, path string, data Secrets) error {
+func (s *kvv1Backend) ReadVersion(ctx context.Context, path string, version uint) (SecretData, SecretMetadata, error) {
+	return s.Read(ctx, path)
+}
+
+func (s *kvv1Backend) Write(ctx context.Context, path string, data SecretData) error {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {
