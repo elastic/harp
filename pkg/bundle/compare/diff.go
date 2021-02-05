@@ -1,3 +1,20 @@
+// Licensed to Elasticsearch B.V. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Elasticsearch B.V. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 package compare
 
 import (
@@ -29,6 +46,7 @@ type DiffItem struct {
 // -----------------------------------------------------------------------------
 
 // Diff calculates bundle differences.
+//nolint:funlen,gocognit,gocyclo // To refactor
 func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 	// Check arguments
 	if src == nil {
@@ -38,17 +56,25 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 		return nil, fmt.Errorf("unable to diff with a nil destination")
 	}
 
-	var diffs = []DiffItem{}
+	diffs := []DiffItem{}
 
 	// Index source packages
-	var srcIndex = map[string]*bundlev1.Package{}
+	srcIndex := map[string]*bundlev1.Package{}
 	for _, srcPkg := range src.Packages {
+		if srcPkg == nil || srcPkg.Secrets == nil {
+			continue
+		}
+
 		srcIndex[srcPkg.Name] = srcPkg
 	}
 
 	// Index destination packages
-	var dstIndex = map[string]*bundlev1.Package{}
+	dstIndex := map[string]*bundlev1.Package{}
 	for _, dstPkg := range dst.Packages {
+		if dstPkg == nil || dstPkg.Secrets == nil {
+			continue
+		}
+
 		dstIndex[dstPkg.Name] = dstPkg
 		if _, ok := srcIndex[dstPkg.Name]; !ok {
 			// Package has been added
@@ -60,6 +86,10 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 
 			// Add keys
 			for _, s := range dstPkg.Secrets.Data {
+				if s == nil {
+					continue
+				}
+
 				// Unpack secret value
 				var data string
 				if err := secret.Unpack(s.Value, &data); err != nil {
@@ -92,10 +122,17 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 		// Index secret data
 		srcSecretIndex := map[string]*bundlev1.KV{}
 		for _, ss := range sp.Secrets.Data {
+			if ss == nil {
+				continue
+			}
 			srcSecretIndex[ss.Key] = ss
 		}
 		dstSecretIndex := map[string]*bundlev1.KV{}
 		for _, ds := range dp.Secrets.Data {
+			if ds == nil {
+				continue
+			}
+
 			dstSecretIndex[ds.Key] = ds
 			oldValue, ok := srcSecretIndex[ds.Key]
 			if !ok {
@@ -132,6 +169,17 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 					Type:      "secret",
 					Path:      fmt.Sprintf("%s#%s", dp.Name, ds.Key),
 					Value:     data,
+				})
+			}
+		}
+
+		// Clean removed source secrets
+		for k := range srcSecretIndex {
+			if _, ok := dstSecretIndex[k]; !ok {
+				diffs = append(diffs, DiffItem{
+					Operation: Remove,
+					Type:      "secret",
+					Path:      fmt.Sprintf("%s#%s", dp.Name, k),
 				})
 			}
 		}
