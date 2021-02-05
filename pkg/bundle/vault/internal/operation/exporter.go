@@ -161,7 +161,7 @@ func (op *exporter) Run(ctx context.Context) error {
 				pack := &bundlev1.Package{
 					Labels:      map[string]string{},
 					Annotations: map[string]string{},
-					Name:        secPath,
+					Name:        vaultPath,
 					Secrets:     chain,
 				}
 
