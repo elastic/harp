@@ -73,7 +73,7 @@ func TestSecretReader_Found(t *testing.T) {
 			fmt.Fprintf(w, `{"data":{"type":"kv", "path":"application/", "options":{"version": "2"}}}`)
 		case "/v1/application/data/secret/found":
 			w.WriteHeader(200)
-			fmt.Fprintf(w, `{"data":{"data":{"key":"value"}}}`)
+			fmt.Fprintf(w, `{"data":{"data":{"key":"value"},"metadata":{}}}`)
 		default:
 			w.WriteHeader(400)
 		}

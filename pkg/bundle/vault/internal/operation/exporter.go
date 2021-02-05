@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/imdario/mergo"
@@ -108,7 +109,7 @@ func (op *exporter) Run(ctx context.Context) error {
 				}
 
 				// Read from Vault
-				payload, err := op.service.Read(gReaderCtx, secPath)
+				secretData, secretMeta, err := op.service.Read(gReaderCtx, secPath)
 				if err != nil {
 					// Mask path not found or empty secret value
 					if errors.Is(err, kv.ErrNoData) || errors.Is(err, kv.ErrPathNotFound) {
@@ -130,7 +131,7 @@ func (op *exporter) Run(ctx context.Context) error {
 				metadata := map[string]string{}
 
 				// Iterate over secret bundle
-				for k, v := range payload {
+				for k, v := range secretData {
 					// Check for metadata prefix
 					if strings.HasPrefix(strings.ToLower(k), bundleMetadataPrefix) {
 						metadata[strings.ToLower(k)] = fmt.Sprintf("%s", v)
@@ -188,6 +189,37 @@ func (op *exporter) Run(ctx context.Context) error {
 							log.For(gReaderCtx).Warn("unable to merge package metadata object", zap.Error(errMergo), zap.String("key", key), zap.String("path", secPath))
 							continue
 						}
+					}
+				}
+
+				// Embed secret storage metadata
+				if secretMeta != nil {
+					// Encode all Vault metadata as json
+					metadataJSON, errMetaJSON := json.Marshal(secretMeta)
+					if errMetaJSON != nil {
+						return fmt.Errorf("unable to encode Vault metadata for path '%s': %w", secPath, errMetaJSON)
+					}
+					pack.Annotations[vaultKVMetadata] = string(metadataJSON)
+
+					// Extract useful metadata
+					for k, v := range secretMeta {
+						switch k {
+						case "version":
+							pack.Annotations[vaultKVv2MetadataVersion] = fmt.Sprintf("%s", v)
+						case "created_time":
+							pack.Annotations[vaultKVv2MetadataCreatedTime] = fmt.Sprintf("%s", v)
+						}
+					}
+				}
+
+				// Dispatch annoations to package
+				if v, ok := pack.Annotations[vaultKVv2MetadataVersion]; ok {
+					// Convert version
+					secretVersion, errParse := strconv.ParseUint(v, 10, 64)
+					if errParse != nil {
+						log.For(ctx).Warn("unable to parse secret data version as a valid number: %w", zap.Error(errParse))
+					} else {
+						pack.Secrets.Version = uint32(secretVersion)
 					}
 				}
 

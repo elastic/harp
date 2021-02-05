@@ -82,7 +82,7 @@ func TestBuilder_V1(t *testing.T) {
 	}
 
 	// Read the value
-	_, err = underTest.Read(context.Background(), "application/secret/foo")
+	_, _, err = underTest.Read(context.Background(), "application/secret/foo")
 	if err != nil {
 		t.Errorf("BuilderV1() - Read error = %v", err)
 		return
@@ -112,7 +112,7 @@ func TestBuilder_V2(t *testing.T) {
 			switch r.Method {
 			case http.MethodGet:
 				w.WriteHeader(200)
-				fmt.Fprintf(w, `{"data":{"data":{"key":"value"}}}`)
+				fmt.Fprintf(w, `{"data":{"data":{"key":"value"},"metadata":{"created_time": "2018-03-22T02:24:06.945319214Z","deletion_time": "","destroyed": false,"version": 2}}}`)
 			case http.MethodPut:
 				w.WriteHeader(200)
 				fmt.Fprintf(w, `{"data":{"data":{}}}`)
@@ -152,7 +152,7 @@ func TestBuilder_V2(t *testing.T) {
 	}
 
 	// Read the value
-	_, err = underTest.Read(context.Background(), "application/secret/foo")
+	_, _, err = underTest.Read(context.Background(), "application/secret/foo")
 	if err != nil {
 		t.Errorf("BuilderV2() - Read error = %v", err)
 		return

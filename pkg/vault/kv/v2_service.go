@@ -81,41 +81,45 @@ func (s *kvv2Backend) List(ctx context.Context, path string) ([]string, error) {
 	return out, nil
 }
 
-func (s *kvv2Backend) Read(ctx context.Context, path string) (Secrets, error) {
+func (s *kvv2Backend) Read(ctx context.Context, path string) (SecretData, SecretMetadata, error) {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {
-		return nil, fmt.Errorf("unable to query with empty path")
+		return nil, nil, fmt.Errorf("unable to query with empty path")
 	}
 
 	// Create a logical client
 	secret, err := s.logical.Read(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "data"))
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, err)
+		return nil, nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, err)
 	}
 	if secret == nil {
-		return nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, ErrPathNotFound)
+		return nil, nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, ErrPathNotFound)
 	}
 	if secret.Data == nil {
-		return nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, ErrNoData)
+		return nil, nil, fmt.Errorf("unable to retrieve secret for path '%s': %w", path, ErrNoData)
 	}
 
 	// Check v2 backend
 	data, ok := secret.Data["data"]
 	if !ok {
-		return nil, fmt.Errorf("unable to extract values for path '%s', secret backend supposed to be a v2 but it's not", path)
+		return nil, nil, fmt.Errorf("unable to extract values for path '%s', secret backend supposed to be a v2 but it's not", path)
+	}
+	metadata, ok := secret.Data["metadata"]
+	if !ok {
+		return nil, nil, fmt.Errorf("unable to extract metadata for path '%s', secret backend supposed to be a v2 but it's not", path)
 	}
 
 	// Check data
 	if data == nil {
-		return nil, ErrNoData
+		return nil, nil, ErrNoData
 	}
 
 	// Return secret value and no error
-	return data.(map[string]interface{}), nil
+	return data.(map[string]interface{}), metadata.(map[string]interface{}), err
 }
 
-func (s *kvv2Backend) Write(ctx context.Context, path string, data Secrets) error {
+func (s *kvv2Backend) Write(ctx context.Context, path string, data SecretData) error {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {

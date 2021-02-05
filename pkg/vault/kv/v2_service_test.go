@@ -91,7 +91,7 @@ func Test_KVV2_List(t *testing.T) {
 			},
 			prepare: func(logical *logical.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
-					Data: Secrets{},
+					Data: SecretData{},
 				}, nil)
 			},
 			wantErr: true,
@@ -104,7 +104,7 @@ func Test_KVV2_List(t *testing.T) {
 			},
 			prepare: func(logical *logical.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
-					Data: Secrets{
+					Data: SecretData{
 						"keys": 1,
 					},
 				}, nil)
@@ -119,7 +119,7 @@ func Test_KVV2_List(t *testing.T) {
 			},
 			prepare: func(logical *logical.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
-					Data: Secrets{
+					Data: SecretData{
 						"keys": []interface{}{},
 					},
 				}, nil)
@@ -135,7 +135,7 @@ func Test_KVV2_List(t *testing.T) {
 			},
 			prepare: func(logical *logical.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
-					Data: Secrets{
+					Data: SecretData{
 						"keys": []interface{}{"secrets/application/foo/secret-1", "secrets/application/foo/secret-2"},
 					},
 				}, nil)
@@ -180,11 +180,12 @@ func Test_KVV2_Read(t *testing.T) {
 		path string
 	}
 	tests := []struct {
-		name    string
-		prepare func(*logical.MockLogical)
-		args    args
-		want    Secrets
-		wantErr bool
+		name     string
+		prepare  func(*logical.MockLogical)
+		args     args
+		wantData SecretData
+		wantMeta SecretMetadata
+		wantErr  bool
 	}{
 		{
 			name: "nil",
@@ -269,13 +270,15 @@ func Test_KVV2_Read(t *testing.T) {
 						"data": map[string]interface{}{
 							"key": "value",
 						},
+						"metadata": map[string]interface{}{},
 					},
 				}, nil)
 			},
 			wantErr: false,
-			want: map[string]interface{}{
+			wantData: map[string]interface{}{
 				"key": "value",
 			},
+			wantMeta: map[string]interface{}{},
 		},
 	}
 	for _, tt := range tests {
@@ -293,13 +296,16 @@ func Test_KVV2_Read(t *testing.T) {
 
 			// Service
 			underTest := V2(logicalMock, "secrets/")
-			got, err := underTest.Read(tt.args.ctx, tt.args.path)
+			gotData, gotMeta, err := underTest.Read(tt.args.ctx, tt.args.path)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("vaultClient.Read() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("vaultClient.Read() = %v, want %v", got, tt.want)
+			if !tt.wantErr && !reflect.DeepEqual(gotData, tt.wantData) {
+				t.Errorf("vaultClient.Read() = %v, want %v", gotData, tt.wantData)
+			}
+			if !tt.wantErr && !reflect.DeepEqual(gotMeta, tt.wantMeta) {
+				t.Errorf("vaultClient.Read() = %v, want %v", gotMeta, tt.wantMeta)
 			}
 		})
 	}
@@ -344,7 +350,7 @@ func Test_KVV2_Write(t *testing.T) {
 			},
 			prepare: func(logical *logical.MockLogical) {
 				logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{
-					Data: Secrets{
+					Data: SecretData{
 						"key": "value",
 					},
 				}, nil)

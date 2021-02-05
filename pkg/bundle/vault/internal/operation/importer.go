@@ -178,7 +178,7 @@ func (op *importer) Run(ctx context.Context) error {
 
 				// Write secret to Vault
 				if err := op.backends[rootPath].Write(gWriterCtx, secretPath, data); err != nil {
-					return fmt.Errorf("unbale to write secret data for path '%s': %w", secretPath, err)
+					return fmt.Errorf("unable to write secret data for path '%s': %w", secretPath, err)
 				}
 
 				// No error
