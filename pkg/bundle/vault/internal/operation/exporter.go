@@ -36,6 +36,7 @@ import (
 	"github.com/elastic/harp/pkg/bundle/secret"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/vault/kv"
+	vaultPath "github.com/elastic/harp/pkg/vault/path"
 )
 
 // Exporter initialize a secret exporter operation
@@ -110,7 +111,7 @@ func (op *exporter) Run(ctx context.Context) error {
 				}
 
 				// Extract desired version from path
-				vaultPath, vaultVersion, errPackagePath := op.extractVersion(secPath)
+				vaultPath, vaultVersion, errPackagePath := extractVersion(secPath)
 				if errPackagePath != nil {
 					return fmt.Errorf("unable to parse package path '%s': %w", secPath, errPackagePath)
 				}
@@ -219,7 +220,7 @@ func (op *exporter) Run(ctx context.Context) error {
 					}
 				}
 
-				// Dispatch annoations to package
+				// Dispatch annotations to package
 				if v, ok := pack.Annotations[vaultKVv2MetadataVersion]; ok {
 					// Convert version
 					secretVersion, errParse := strconv.ParseUint(v, 10, 32)
@@ -305,7 +306,12 @@ func (op *exporter) packSecret(key string, value interface{}) (*bundlev1.KV, err
 	}, nil
 }
 
-func (op *exporter) extractVersion(packagePath string) (string, uint, error) {
+func extractVersion(packagePath string) (string, uint, error) {
+	// Check arguments
+	if packagePath == "" {
+		return "", 0, fmt.Errorf("unable to extract path and version from an empty string")
+	}
+
 	// Looks a little hack-ish for me
 	u, err := url.ParseRequestURI(fmt.Sprintf("harp://bundle/%s", packagePath))
 	if err != nil {
@@ -316,7 +322,7 @@ func (op *exporter) extractVersion(packagePath string) (string, uint, error) {
 	versionRaw := u.Query().Get("version")
 	if versionRaw == "" {
 		// Get latest
-		return u.Path, 0, nil
+		return vaultPath.SanitizePath(u.Path), 0, nil
 	}
 
 	// Convert
@@ -325,5 +331,6 @@ func (op *exporter) extractVersion(packagePath string) (string, uint, error) {
 		return "", 0, fmt.Errorf("unable to parse version as a valid integer: %w", err)
 	}
 
-	return u.Path, uint(versionUnit), nil
+	// Return path elements
+	return vaultPath.SanitizePath(u.Path), uint(versionUnit), nil
 }
