@@ -51,18 +51,8 @@ func executeRule(patchName string, r *bundlev1.PatchRule, b *bundlev1.Bundle, va
 		return fmt.Errorf("unable to compile selector: %w", err)
 	}
 
-	pkgs := []*bundlev1.Package{}
-
-	// Process deletion first
-	for _, p := range b.Packages {
-		// Package match selector specification
-		if s.IsSatisfiedBy(p) && !r.Package.Remove {
-			pkgs = append(pkgs, p)
-		}
-	}
-
 	// Browse all packages
-	for _, p := range pkgs {
+	for _, p := range b.Packages {
 		// Package match selector specification
 		if s.IsSatisfiedBy(p) {
 			// Apply patch
@@ -75,9 +65,6 @@ func executeRule(patchName string, r *bundlev1.PatchRule, b *bundlev1.Bundle, va
 			bundle.Annotate(p, patchName, "true")
 		}
 	}
-
-	// Reassign packages
-	b.Packages = pkgs
 
 	// No error
 	return nil

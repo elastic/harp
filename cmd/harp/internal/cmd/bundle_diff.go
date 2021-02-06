@@ -32,6 +32,7 @@ var bundleDiffCmd = func() *cobra.Command {
 	var (
 		sourcePath      string
 		destinationPath string
+		generatePatch   bool
 	)
 
 	cmd := &cobra.Command{
@@ -47,6 +48,7 @@ var bundleDiffCmd = func() *cobra.Command {
 				SourceReader:      cmdutil.FileReader(sourcePath),
 				DestinationReader: cmdutil.FileReader(destinationPath),
 				OutputWriter:      cmdutil.StdoutWriter(),
+				GeneratePatch:     generatePatch,
 			}
 
 			// Run the task
@@ -57,9 +59,10 @@ var bundleDiffCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&sourcePath, "src", "", "Container path ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&destinationPath, "dst", "", "Container path")
+	cmd.Flags().StringVar(&sourcePath, "old", "", "Container path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&destinationPath, "new", "", "Container path ('-' for stdin or filename)")
 	log.CheckErr("unable to mark 'dst' flag as required.", cmd.MarkFlagRequired("dst"))
+	cmd.Flags().BoolVar(&generatePatch, "patch", false, "Output as a bundle patch")
 
 	return cmd
 }

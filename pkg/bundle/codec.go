@@ -34,7 +34,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/elastic/harp/pkg/bundle/compare"
 	"github.com/elastic/harp/pkg/bundle/secret"
 	csov1 "github.com/elastic/harp/pkg/cso/v1"
 	"github.com/elastic/harp/pkg/sdk/security"
@@ -377,21 +376,4 @@ func JSON(w io.Writer, b *bundlev1.Bundle) error {
 
 	// No error
 	return nil
-}
-
-// Diff calculates bundle differences.
-func Diff(src, dst *bundlev1.Bundle) (string, error) {
-	diffs, err := compare.Diff(src, dst)
-	if err != nil {
-		return "", fmt.Errorf("unable to compute bundle differences: %w", err)
-	}
-
-	// Serialize as json
-	jsonPatch, err := json.Marshal(diffs)
-	if err != nil {
-		return "", fmt.Errorf("unable to serialize diff result: %w", err)
-	}
-
-	// No error
-	return string(jsonPatch), nil
 }

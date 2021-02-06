@@ -61,7 +61,8 @@ func (t *PatchTask) Run(ctx context.Context) error {
 	}
 
 	// Apply the patch speicification to generate an output bundle
-	if err = patch.Apply(spec, b, t.Values); err != nil {
+	patchedBundle, err := patch.Apply(spec, b, t.Values)
+	if err != nil {
 		return fmt.Errorf("unable to generate output bundle from patch: %w", err)
 	}
 
@@ -72,7 +73,7 @@ func (t *PatchTask) Run(ctx context.Context) error {
 	}
 
 	// Dump all content
-	if err = bundle.ToContainerWriter(outputWriter, b); err != nil {
+	if err = bundle.ToContainerWriter(outputWriter, patchedBundle); err != nil {
 		return fmt.Errorf("unable to dump bundle content: %w", err)
 	}
 

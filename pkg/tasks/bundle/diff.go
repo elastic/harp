@@ -19,9 +19,13 @@ package bundle
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"sigs.k8s.io/yaml"
+
 	"github.com/elastic/harp/pkg/bundle"
+	"github.com/elastic/harp/pkg/bundle/compare"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -30,6 +34,7 @@ type DiffTask struct {
 	SourceReader      tasks.ReaderProvider
 	DestinationReader tasks.ReaderProvider
 	OutputWriter      tasks.WriterProvider
+	GeneratePatch     bool
 }
 
 // Run the task.
@@ -59,7 +64,7 @@ func (t *DiffTask) Run(ctx context.Context) error {
 	}
 
 	// Calculate diff
-	report, err := bundle.Diff(bSrc, bDst)
+	report, err := compare.Diff(bSrc, bDst)
 	if err != nil {
 		return fmt.Errorf("unable to calculate bundle difference: %w", err)
 	}
@@ -70,8 +75,27 @@ func (t *DiffTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to open output writer: %w", err)
 	}
 
-	// Print report
-	fmt.Fprintln(writer, report)
+	if !t.GeneratePatch {
+		// Encode as JSON
+		if err := json.NewEncoder(writer).Encode(report); err != nil {
+			return fmt.Errorf("unable to marshal JSON OpLog: %w", err)
+		}
+	} else {
+		// Convert optlog as a patch
+		patch, err := compare.ToPatch(report)
+		if err != nil {
+			return fmt.Errorf("unable to convert oplog as a bundle patch: %w", err)
+		}
+
+		// Marshal YAML Patch
+		out, err := yaml.Marshal(patch)
+		if err != nil {
+			return fmt.Errorf("unable to marshal patch as YAML: %w", err)
+		}
+
+		// Write output
+		fmt.Fprintln(writer, string(out))
+	}
 
 	// No error
 	return nil
