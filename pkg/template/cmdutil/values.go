@@ -168,7 +168,7 @@ func processFilePath(currentDirectory, filePath string, result interface{}) erro
 	// Check prefix
 	if valuePrefix != "" {
 		// Parse with detected parser
-		fileContent := map[string]interface{}{}
+		var fileContent interface{}
 		if err := p.Unmarshal(contentBytes, &fileContent); err != nil {
 			return fmt.Errorf("unable to unmarshal content from '%s' as '%s': %w", filePath, fileType, err)
 		}
@@ -186,7 +186,7 @@ func processFilePath(currentDirectory, filePath string, result interface{}) erro
 			return fmt.Errorf("unable to decode json content from '%s' parsed as '%s': %w", filePath, fileType, err)
 		}
 	} else if err := p.Unmarshal(contentBytes, result); err != nil {
-		return fmt.Errorf("unable to unmarshal content from '%s' as '%s': %w", filePath, fileType, err)
+		return fmt.Errorf("unable to unmarshal content from '%s' as '%s', you should use an explicit prefix: %w", filePath, fileType, err)
 	}
 
 	// No error
