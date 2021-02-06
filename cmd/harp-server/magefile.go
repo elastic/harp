@@ -126,6 +126,14 @@ func Release(ctx context.Context) error {
 				"harp-server",
 				"github.com/elastic/harp/cmd/harp-server",
 				version,
+				golang.GOOS("darwin"), golang.GOARCH("arm64"),
+			)()
+		},
+		func() error {
+			return golang.Release(
+				"harp-server",
+				"github.com/elastic/harp/cmd/harp-server",
+				version,
 				golang.GOOS("linux"), golang.GOARCH("amd64"),
 			)()
 		},
