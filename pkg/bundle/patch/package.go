@@ -75,6 +75,7 @@ func Checksum(spec *bundlev1.Patch) (string, error) {
 }
 
 // Apply given patch to the given bundle.
+//nolint:interfacer // Explicit type restriction
 func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}) (*bundlev1.Bundle, error) {
 	// Validate spec
 	if err := Validate(spec); err != nil {
@@ -93,11 +94,20 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 	bCopy := proto.Clone(b).(*bundlev1.Bundle)
 
 	// Process all rules
-	for i, r := range spec.Spec.Rules {
-		if err := executeRule(spec.Meta.Name, r, bCopy, values); err != nil {
-			return b, fmt.Errorf("unable to execute rule index %d: %w", i, err)
+	k := 0
+	for _, p := range bCopy.Packages {
+		for i, r := range spec.Spec.Rules {
+			action, err := executeRule(spec.Meta.Name, r, p, values)
+			if err != nil {
+				return b, fmt.Errorf("unable to execute rule index %d: %w", i, err)
+			}
+			if action != packagedRemoved {
+				bCopy.Packages[k] = p
+				k++
+			}
 		}
 	}
+	bCopy.Packages = bCopy.Packages[:k]
 
 	// No error
 	return bCopy, nil

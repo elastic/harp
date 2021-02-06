@@ -31,43 +31,56 @@ import (
 	"github.com/elastic/harp/pkg/template/engine"
 )
 
+type ruleAction uint
+
+const (
+	packageUnchanged ruleAction = iota
+	packageUpdated
+	packagedRemoved
+)
+
 // -----------------------------------------------------------------------------
 
-func executeRule(patchName string, r *bundlev1.PatchRule, b *bundlev1.Bundle, values map[string]interface{}) error {
+func executeRule(patchName string, r *bundlev1.PatchRule, p *bundlev1.Package, values map[string]interface{}) (ruleAction, error) {
 	// Check parameters
 	if patchName == "" {
-		return fmt.Errorf("cannot process with blank patch name")
+		return packageUnchanged, fmt.Errorf("cannot process with blank patch name")
 	}
 	if r == nil {
-		return fmt.Errorf("cannot process nil rule")
+		return packageUnchanged, fmt.Errorf("cannot process nil rule")
 	}
-	if b == nil {
-		return fmt.Errorf("cannot process nil bundle")
+	if p == nil {
+		return packageUnchanged, fmt.Errorf("cannot process nil package")
 	}
 
 	// Compile selector
 	s, err := compileSelector(r.Selector, values)
 	if err != nil {
-		return fmt.Errorf("unable to compile selector: %w", err)
+		return packageUnchanged, fmt.Errorf("unable to compile selector: %w", err)
 	}
 
-	// Browse all packages
-	for _, p := range b.Packages {
-		// Package match selector specification
-		if s.IsSatisfiedBy(p) {
-			// Apply patch
-			if err := applyPackagePatch(p, r.Package, values); err != nil {
-				return fmt.Errorf("unable to apply patch to package `%s`: %w", p.Name, err)
-			}
-
-			// Add annotations to mark package as patched.
-			bundle.Annotate(p, "patched", "true")
-			bundle.Annotate(p, patchName, "true")
+	// Package match selector specification
+	if s.IsSatisfiedBy(p) {
+		// Check removal request
+		if r.Package.Remove {
+			return packagedRemoved, nil
 		}
+
+		// Apply patch
+		if err := applyPackagePatch(p, r.Package, values); err != nil {
+			return packageUnchanged, fmt.Errorf("unable to apply patch to package `%s`: %w", p.Name, err)
+		}
+
+		// Add annotations to mark package as patched.
+		bundle.Annotate(p, "patched", "true")
+		bundle.Annotate(p, patchName, "true")
+
+		// No error
+		return packageUpdated, nil
 	}
 
 	// No error
-	return nil
+	return packageUnchanged, nil
 }
 
 func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (selector.Specification, error) {
