@@ -122,6 +122,10 @@ func Release(ctx context.Context) error {
 			)()
 		},
 		func() error {
+			if !golang.Is("go1.16rc1", "go1.16") {
+				// Skip the build
+				return nil
+			}
 			return golang.Release(
 				"harp-server",
 				"github.com/elastic/harp/cmd/harp-server",

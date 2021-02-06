@@ -18,30 +18,12 @@
 package golang
 
 import (
-	"os"
 	"runtime"
-	"time"
 
-	"github.com/fatih/color"
+	"github.com/elastic/harp/pkg/sdk/types"
 )
 
-// Keep only last 2 versions
-var goVersions = []string{
-	"go1.16rc1",
-	"go1.15.8",
-	"go1.15.7",
-}
-
-func init() {
-	// Set default timezone to UTC
-	time.Local = time.UTC
-
-	if !Is(goVersions...) {
-		color.HiRed("#############################################################################################")
-		color.HiRed("")
-		color.HiRed("Your golang compiler (%s) must be updated to %s to successfully compile all tools.", runtime.Version(), goVersions)
-		color.HiRed("")
-		color.HiRed("#############################################################################################")
-		os.Exit(-1)
-	}
+// Is return true if current go version is included in given array.
+func Is(versions ...string) bool {
+	return types.StringArray(versions).Contains(runtime.Version())
 }

@@ -38,10 +38,7 @@ class {{ .Formula }} < Formula
 
   # Stable build
   stable do
-    if OS.mac? && Hardware::CPU.arm?
-	  url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-darwin-arm64-{{ .Release }}.tar.xz"
-	  sha256 "{{ sha256file (printf "dist/%s-darwin-arm64-%s.tar.xz" .Bin .Release) }}"
-    elsif OS.mac?
+    if OS.mac?
       url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-darwin-amd64-{{ .Release }}.tar.xz"
       sha256 "{{ sha256file (printf "dist/%s-darwin-amd64-%s.tar.xz" .Bin .Release) }}"
     elsif OS.linux?
