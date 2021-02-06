@@ -6,35 +6,110 @@ vars:
 tasks:
   default:
     cmds:
-      - task: build
-
-  build:
-    desc: Build artefact
-    cmds:
-      - mage
-
-  test:
-    desc: Test artefact
-    cmds:
-      - mage test
+      - task: release
 
   release:
     desc: Generate a release
     cmds:
-      - go mod vendor
-      - mage release
+      - task: release-clean
+      - task: release-all
+      - task: release-checksum
+      - task: release-formula
 
-  release-pack:
-    desc: Generate final artefact to publish to GH
+  release-clean:
     cmds:
       - rm -rf dist && mkdir dist
+
+  release-all:
+    deps:
+      - release-darwin-amd64
+#      - release-darwin-arm64
+      - release-linux-amd64
+      - release-linux-arm64
+      - release-linux-arm7
+      - release-windows-amd64
+
+  release-darwin-amd64:
+    cmds:
       - "tar cfJ dist/{{.ARTIFACT}}-darwin-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-darwin-amd64"
+    sources:
+      - bin/{{.ARTIFACT}}-darwin-amd64
+    generates:
+      - dist/{{.ARTIFACT}}-darwin-amd64-$RELEASE.tar.xz
+    preconditions:
+      - test -f bin/{{.ARTIFACT}}-darwin-amd64
+    method: checksum
+
+  release-darwin-arm64:
+    cmds:
       - "tar cfJ dist/{{.ARTIFACT}}-darwin-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-darwin-arm64"
+    sources:
+      - bin/{{.ARTIFACT}}-darwin-arm64
+    generates:
+      - dist/{{.ARTIFACT}}-darwin-arm64-$RELEASE.tar.xz
+    preconditions:
+      - test -f bin/{{.ARTIFACT}}-darwin-amd64
+    method: checksum
+
+  release-linux-amd64:
+    cmds:
       - "tar cfJ dist/{{.ARTIFACT}}-linux-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-amd64"
-      - "tar cfJ dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm7"
+    sources:
+      - bin/{{.ARTIFACT}}-linux-amd64
+    generates:
+      - dist/{{.ARTIFACT}}-linux-amd64-$RELEASE.tar.xz
+    preconditions:
+      - test -f bin/{{.ARTIFACT}}-linux-amd64
+    method: checksum
+
+  release-linux-arm64:
+    cmds:
       - "tar cfJ dist/{{.ARTIFACT}}-linux-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm64"
+    sources:
+      - bin/{{.ARTIFACT}}-linux-arm64
+    generates:
+      - dist/{{.ARTIFACT}}-linux-arm64-$RELEASE.tar.xz
+    preconditions:
+      - test -f bin/{{.ARTIFACT}}-linux-arm64
+    method: checksum
+
+  release-linux-arm7:
+    cmds:
+      - "tar cfJ dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm7"
+    sources:
+      - bin/{{.ARTIFACT}}-linux-arm7
+    generates:
+      - dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.xz
+    preconditions:
+      - test -f bin/{{.ARTIFACT}}-linux-arm7
+    method: checksum
+
+  release-windows-amd64:
+    cmds:
       - "tar cfJ dist/{{.ARTIFACT}}-windows-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-windows-amd64.exe"
+    sources:
+      - bin/{{.ARTIFACT}}-windows-amd64.exe
+    generates:
+      - dist/{{.ARTIFACT}}-windows-amd64-$RELEASE.tar.xz
+    preconditions:
+      - test -f bin/{{.ARTIFACT}}-windows-amd64.exe
+    method: checksum
+
+  release-checksum:
+    deps:
+      - release-all
+    cmds:
       - cd dist && sha256sum {{.ARTIFACT}}-*.tar.xz > {{.ARTIFACT}}-checksum.txt
       - cd dist && gpg --detach-sign --armor {{.ARTIFACT}}-checksum.txt
       - cat dist/{{.ARTIFACT}}-checksum.txt
-      - mage homebrew > dist/harp-server.rb
+    generates:
+      - dist/{{.ARTIFACT}}-checksum.txt
+      - dist/{{.ARTIFACT}}-checksum.txt.asc
+
+  release-formula:
+    deps:
+      - release-all
+    cmds:
+      - mage homebrew > dist/{{.ARTIFACT}}.rb
+    generates:
+      - dist/{{.ARTIFACT}}.rb
