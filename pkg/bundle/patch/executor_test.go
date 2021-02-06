@@ -46,28 +46,25 @@ func Test_executeRule_Fuzz(t *testing.T) {
 				},
 			},
 		}
-		file := bundlev1.Bundle{
-			Packages: []*bundlev1.Package{
-				{
-					Name: "foo",
-					Secrets: &bundlev1.SecretChain{
-						Data: []*bundlev1.KV{
-							{
-								Key:   "k1",
-								Value: []byte("v1"),
-							},
-						},
+		p := bundlev1.Package{
+			Name: "foo",
+			Secrets: &bundlev1.SecretChain{
+				Data: []*bundlev1.KV{
+					{
+						Key:   "k1",
+						Value: []byte("v1"),
 					},
 				},
 			},
 		}
+
 		var patchName string
 
 		f.Fuzz(&patchName)
 		f.Fuzz(&spec.Spec.Rules[0])
 
 		// Execute
-		executeRule(patchName, spec.Spec.Rules[0], &file, values)
+		executeRule(patchName, spec.Spec.Rules[0], &p, values)
 	}
 }
 
@@ -123,27 +120,22 @@ func Test_applyPackagePatch_Fuzz(t *testing.T) {
 				},
 			},
 		}
-		file := bundlev1.Bundle{
-			Packages: []*bundlev1.Package{
-				{
-					Name: "foo",
-					Secrets: &bundlev1.SecretChain{
-						Data: []*bundlev1.KV{
-							{
-								Key:   "k1",
-								Value: []byte("v1"),
-							},
-						},
+		p := bundlev1.Package{
+			Name: "foo",
+			Secrets: &bundlev1.SecretChain{
+				Data: []*bundlev1.KV{
+					{
+						Key:   "k1",
+						Value: []byte("v1"),
 					},
 				},
 			},
 		}
 
-		f.Fuzz(&file.Packages[0])
 		f.Fuzz(&spec.Spec.Rules[0].Package)
 
 		// Execute
-		applyPackagePatch(file.Packages[0], spec.Spec.Rules[0].Package, values)
+		applyPackagePatch(&p, spec.Spec.Rules[0].Package, values)
 	}
 }
 
