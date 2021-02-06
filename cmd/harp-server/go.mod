@@ -13,11 +13,11 @@ require (
 	github.com/elastic/harp v0.0.0-00010101000000-000000000000
 	github.com/fatih/color v1.10.0
 	github.com/go-chi/chi v1.5.1
-	github.com/google/wire v0.4.0
+	github.com/google/wire v0.5.0
 	github.com/gosimple/slug v1.9.0
 	github.com/magefile/mage v1.11.0
 	github.com/oklog/run v1.1.0
 	github.com/spf13/cobra v1.1.1
 	go.uber.org/zap v1.16.0
-	google.golang.org/grpc v1.34.1
+	google.golang.org/grpc v1.35.0
 )

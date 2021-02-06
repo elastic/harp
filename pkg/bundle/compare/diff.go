@@ -19,6 +19,7 @@ package compare
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
@@ -184,6 +185,17 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 			}
 		}
 	}
+
+	// Sort diff
+	sort.SliceStable(diffs, func(i, j int) bool {
+		var (
+			x = diffs[i]
+			y = diffs[j]
+		)
+
+		// Sort by patch descending
+		return x.Path < y.Path
+	})
 
 	// No error
 	return diffs, nil

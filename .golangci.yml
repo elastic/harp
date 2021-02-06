@@ -32,6 +32,7 @@ linters:
     - gci
     - exhaustivestruct
     - wrapcheck
+    - ifshort
 
 output:
   format: colored-line-number

@@ -29,6 +29,7 @@ tasks:
     cmds:
       - rm -rf dist && mkdir dist
       - "tar cfJ dist/{{.ARTIFACT}}-darwin-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-darwin-amd64"
+      - "tar cfJ dist/{{.ARTIFACT}}-darwin-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-darwin-arm64"
       - "tar cfJ dist/{{.ARTIFACT}}-linux-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-amd64"
       - "tar cfJ dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm7"
       - "tar cfJ dist/{{.ARTIFACT}}-linux-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm64"
