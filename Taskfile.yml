@@ -108,7 +108,8 @@ tasks:
 
   release-formula:
     deps:
-      - release-all
+      - release-darwin-amd64
+      - release-linux-amd64
     cmds:
       - mage homebrew > dist/{{.ARTIFACT}}.rb
     generates:
