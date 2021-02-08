@@ -149,11 +149,10 @@ func (c rfc1423Algo) deriveKey(password, salt []byte, h func() hash.Hash) []byte
 //
 // If the PEM blocks has the Proc-Type header set to "4,ENCRYPTED" it uses
 // x509.DecryptPEMBlock to decrypt the block. If not it tries to decrypt the
-// block using AES-128-CBC, AES-192-CBC, AES-256-CBC, DES, or 3DES using the
+// block using AES-128-CBC, AES-192-CBC, AES-256-CBC using the
 // key derived using PBKDF2 over the given password.
 func DecryptPEMBlock(block *pem.Block, password []byte) ([]byte, error) {
 	if block.Headers["Proc-Type"] == "4,ENCRYPTED" {
-		//nolint:staticcheck // Expected behavior
 		return x509.DecryptPEMBlock(block, password)
 	}
 
@@ -168,7 +167,7 @@ func DecryptPEMBlock(block *pem.Block, password []byte) ([]byte, error) {
 // DecryptPKCS8PrivateKey takes a password encrypted private key using the
 // PKCS#8 encoding and returns the decrypted data in PKCS#8 form.
 //
-// It supports AES-128-CBC, AES-192-CBC, AES-256-CBC, DES, or 3DES encrypted
+// It supports AES-128-CBC, AES-192-CBC, AES-256-CBC encrypted
 // data using the key derived with PBKDF2 over the given password.
 func DecryptPKCS8PrivateKey(data, password []byte) ([]byte, error) {
 	var pki encryptedPrivateKeyInfo
