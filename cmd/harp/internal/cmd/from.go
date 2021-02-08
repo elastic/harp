@@ -34,6 +34,7 @@ var fromCmd = func() *cobra.Command {
 	cmd.AddCommand(fromJSONCmd())
 	cmd.AddCommand(fromTemplateCmd())
 	cmd.AddCommand(fromDumpCmd())
+	cmd.AddCommand(fromOPLogCmd())
 
 	return cmd
 }

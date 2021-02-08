@@ -36,6 +36,9 @@ const (
 	Replace string = "replace"
 )
 
+// OpLog represents operation log calculate from bundle differences.
+type OpLog []DiffItem
+
 // DiffItem represents bundle comparison operations.
 type DiffItem struct {
 	Operation string `json:"op"`
