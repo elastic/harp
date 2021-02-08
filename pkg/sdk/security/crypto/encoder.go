@@ -34,6 +34,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	jose "gopkg.in/square/go-jose.v2"
 
+	"github.com/elastic/harp/pkg/sdk/security/crypto/pkcs8"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
@@ -82,14 +83,18 @@ func ToPEM(key interface{}) (string, error) {
 	switch k := key.(type) {
 	// Private keys ------------------------------------------------------------
 	case *rsa.PrivateKey:
+		privkeyBytes, err := x509.MarshalPKCS8PrivateKey(k)
+		if err != nil {
+			return "", err
+		}
 		pemData = pem.EncodeToMemory(
 			&pem.Block{
 				Type:  blockTypeRsaPrivateKey,
-				Bytes: x509.MarshalPKCS1PrivateKey(k),
+				Bytes: privkeyBytes,
 			},
 		)
 	case *ecdsa.PrivateKey:
-		privkeyBytes, err := x509.MarshalECPrivateKey(k)
+		privkeyBytes, err := x509.MarshalPKCS8PrivateKey(k)
 		if err != nil {
 			return "", err
 		}
@@ -111,7 +116,7 @@ func ToPEM(key interface{}) (string, error) {
 			},
 		)
 
-	// Private keys ------------------------------------------------------------
+	// Public keys ------------------------------------------------------------
 	case *rsa.PublicKey:
 		pubkeyBytes, err := x509.MarshalPKIXPublicKey(k)
 		if err != nil {
@@ -167,20 +172,14 @@ func EncryptPEM(pemData, passphrase string) (string, error) {
 		return "", fmt.Errorf("unable to parse input PEM")
 	}
 
-	// Generate new block
-	block, err := x509.EncryptPEMBlock(
-		rand.Reader,
-		inputBlock.Type,
-		inputBlock.Bytes,
-		[]byte(passphrase),
-		x509.PEMCipherAES256,
-	)
+	// Encrypt PEM
+	encBlock, err := pkcs8.EncryptPKCS8PrivateKey(rand.Reader, inputBlock.Bytes, []byte(passphrase), x509.PEMCipherAES256)
 	if err != nil {
-		return "", fmt.Errorf("unable to encrypt PEM: %w", err)
+		return "", fmt.Errorf("unable to encrypt PEM data")
 	}
 
-	// Encode output PEM
-	outPem := pem.EncodeToMemory(block)
+	// Build output
+	outPem := pem.EncodeToMemory(encBlock)
 
 	// No error
 	return string(outPem), nil
