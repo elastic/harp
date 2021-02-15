@@ -21,10 +21,12 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/ed25519"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"math/big"
@@ -75,6 +77,34 @@ func ToJWK(key interface{}) (string, error) {
 
 	// No error
 	return string(payload), nil
+}
+
+// FromJWK parses a JWK and return wrapped keys.
+func FromJWK(jwk string) (interface{}, error) {
+	var k jose.JSONWebKey
+
+	// Decode JWK
+	if err := json.Unmarshal([]byte(jwk), &k); err != nil {
+		return nil, fmt.Errorf("unable to decode JWK: %w", err)
+	}
+
+	if k.IsPublic() {
+		// No error
+		return struct {
+			Public interface{}
+		}{
+			Public: k.Key,
+		}, nil
+	}
+
+	// No error
+	return struct {
+		Private interface{}
+		Public  interface{}
+	}{
+		Private: k.Key,
+		Public:  k.Public().Key,
+	}, nil
 }
 
 // ToPEM encodes the given key using PEM.
@@ -232,6 +262,102 @@ func ToSSH(key interface{}) (string, error) {
 
 	// No error
 	return string(result), nil
+}
+
+// EncryptJWE encrypts input as JWE token.
+func EncryptJWE(key string, payload interface{}) (string, error) {
+	// Prepare encrypter
+	encrypter, err := jose.NewEncrypter(jose.A128GCM, jose.Recipient{Algorithm: jose.PBES2_HS256_A128KW, Key: key}, nil)
+	if err != nil {
+		return "", fmt.Errorf("unable to initialize JWE encrypter: %w", err)
+	}
+
+	// Marshal payload
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("unable to marshal content: %w", err)
+	}
+
+	// Encrypt
+	object, err := encrypter.Encrypt(payloadBytes)
+	if err != nil {
+		return "", fmt.Errorf("unable to encrypt payload: %w", err)
+	}
+
+	// Return JWE
+	return object.CompactSerialize()
+}
+
+// DecryptJWE decrypt a JWE token.
+func DecryptJWE(key string, token string) (interface{}, error) {
+	// Parse JWE token
+	object, err := jose.ParseEncrypted(token)
+	if err != nil {
+		return "", err
+	}
+
+	// Decrypt token using given key.
+	payloadBytes, err := object.Decrypt(key)
+	if err != nil {
+		return "", fmt.Errorf("unable to decrypt JWE: %w", err)
+	}
+
+	// Decode payload
+	var data interface{}
+	if err := json.Unmarshal(payloadBytes, &data); err != nil {
+		return "", fmt.Errorf("unable to decode payload: %w", err)
+	}
+
+	// No error
+	return data, nil
+}
+
+// ToJWS returns a JWT token.
+func ToJWS(payload interface{}, privkey interface{}) (string, error) {
+	var alg jose.SignatureAlgorithm
+
+	// Select appropriate algorithm
+	switch k := privkey.(type) {
+	case *rsa.PrivateKey:
+		alg = jose.RS256
+	case *ecdsa.PrivateKey:
+		if k.Curve == elliptic.P256() {
+			alg = jose.ES256
+		} else if k.Curve == elliptic.P384() {
+			alg = jose.ES384
+		} else if k.Curve == elliptic.P521() {
+			alg = jose.ES512
+		}
+	case ed25519.PrivateKey:
+		alg = jose.EdDSA
+	}
+
+	// Create a signer
+	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: alg, Key: privkey}, nil)
+	if err != nil {
+		return "", fmt.Errorf("unable to initialize signer: %w", err)
+	}
+
+	// Encode payload
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("unable to marshal payload as json: %w", err)
+	}
+
+	// Sign the token
+	object, err := signer.Sign(payloadBytes)
+	if err != nil {
+		return "", fmt.Errorf("unable to sign payload: %w", err)
+	}
+
+	// Serialize final token
+	serialize, err := object.CompactSerialize()
+	if err != nil {
+		return "", fmt.Errorf("unable to generate final token: %w", err)
+	}
+
+	// No error
+	return serialize, nil
 }
 
 // -----------------------------------------------------------------------------

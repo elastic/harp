@@ -54,6 +54,7 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 		"fromJsonArray": codec.FromJSONArray,
 		// Crypto
 		"toJwk":      crypto.ToJWK,
+		"fromJwk":    crypto.FromJWK,
 		"toPem":      crypto.ToPEM,
 		"encryptPem": crypto.EncryptPEM,
 		"toSSH":      crypto.ToSSH,
@@ -61,6 +62,10 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 		"cryptoPair": crypto.Keypair,
 		// Secret
 		"secret": SecretReaders(secretReaders),
+		// JWT/JWE
+		"encryptJwe": crypto.EncryptJWE,
+		"decryptJwe": crypto.DecryptJWE,
+		"toJws":      crypto.ToJWS,
 	}
 
 	for k, v := range extra {
