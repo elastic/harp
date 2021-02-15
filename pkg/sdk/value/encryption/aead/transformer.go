@@ -15,54 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package aes
+package aead
 
 import (
 	"context"
-	"crypto/aes"
 	"crypto/cipher"
-	"encoding/base64"
-	"fmt"
-
-	"github.com/elastic/harp/pkg/sdk/value"
 )
-
-const (
-	keyLength = 32
-)
-
-// Transformer returns an AES-GCM vlue transformer instace.
-func Transformer(key string) (value.Transformer, error) {
-	// Decode key
-	k, err := base64.URLEncoding.DecodeString(key)
-	if err != nil {
-		return nil, fmt.Errorf("aes: unable to decode key: %w", err)
-	}
-	if l := len(k); l != keyLength {
-		return nil, fmt.Errorf("aes: invalid secret key length (%d)", l)
-	}
-
-	// Create AES block cipher
-	block, err := aes.NewCipher(k)
-	if err != nil {
-		return nil, fmt.Errorf("aes: unable to initialize block cipher: %w", err)
-	}
-
-	// Return transformer
-	return &aesTransformer{
-		block: block,
-	}, nil
-}
 
 // -----------------------------------------------------------------------------
 
-type aesTransformer struct {
-	block cipher.Block
+type aeadTransformer struct {
+	aead cipher.AEAD
 }
 
-func (t *aesTransformer) To(_ context.Context, input []byte) ([]byte, error) {
-	// Encrypt using AES-GCM
-	out, err := encrypt(input, t.block)
+func (t *aeadTransformer) To(_ context.Context, input []byte) ([]byte, error) {
+	// Encrypt
+	out, err := encrypt(input, t.aead)
 	if err != nil {
 		return nil, err
 	}
@@ -71,9 +39,9 @@ func (t *aesTransformer) To(_ context.Context, input []byte) ([]byte, error) {
 	return out, nil
 }
 
-func (t *aesTransformer) From(_ context.Context, input []byte) ([]byte, error) {
-	// Decrypt using AES-GCM
-	out, err := decrypt(input, t.block)
+func (t *aeadTransformer) From(_ context.Context, input []byte) ([]byte, error) {
+	// Decrypt
+	out, err := decrypt(input, t.aead)
 	if err != nil {
 		return nil, err
 	}

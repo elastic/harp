@@ -43,6 +43,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0
 	github.com/magefile/mage v1.11.0
 	github.com/mcuadros/go-defaults v1.2.0
+	github.com/miscreant/miscreant.go v0.0.0-20200214223636-26d376326b75
 	github.com/oklog/run v1.1.0
 	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.10.5

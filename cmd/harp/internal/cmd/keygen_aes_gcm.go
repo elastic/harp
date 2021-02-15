@@ -26,24 +26,36 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
+	"github.com/elastic/harp/pkg/sdk/log"
 )
 
 // -----------------------------------------------------------------------------
 
-var keygenAES256Cmd = func() *cobra.Command {
+var keygenAESCmd = func() *cobra.Command {
+	var keySize uint16
+
 	cmd := &cobra.Command{
-		Use:     "aes-256",
-		Aliases: []string{"aes256"},
-		Short:   "Generate and print an aes-256 key",
-		Run:     runKeygenAES256,
+		Use:     "aes-gcm",
+		Aliases: []string{"aes"},
+		Short:   "Generate and print an AES-GCM key",
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-aes", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			defer cancel()
+
+			// Validate key size
+			switch keySize {
+			case 128, 192, 256:
+				break
+			default:
+				log.For(ctx).Fatal("invalid specificed key size, only 128, 192 and 256 are supported.")
+			}
+
+			fmt.Fprintf(os.Stdout, "aes-gcm:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(int(keySize/8)).Bytes()))
+		},
 	}
 
+	// Parameters
+	cmd.Flags().Uint16Var(&keySize, "size", 128, "Specify an AES key size (128, 192, 256)")
+
 	return cmd
-}
-
-func runKeygenAES256(cmd *cobra.Command, args []string) {
-	_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-aes256", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
-	defer cancel()
-
-	fmt.Fprintf(os.Stdout, "aes-gcm:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
 }

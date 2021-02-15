@@ -22,15 +22,18 @@ import (
 	"strings"
 
 	"github.com/elastic/harp/pkg/sdk/value"
-	"github.com/elastic/harp/pkg/sdk/value/encryption/aes"
+	"github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
 )
 
 const (
-	secretboxPrefix = "secretbox:"
-	aesgcmPrefix    = "aes-gcm:"
-	fernetPrefix    = "fernet:"
+	secretboxPrefix  = "secretbox:"
+	aesgcmPrefix     = "aes-gcm:"
+	aespmacsivPrefix = "aes-pmac-siv:"
+	fernetPrefix     = "fernet:"
+	chachaPrefix     = "chacha:"
+	xchachaPrefix    = "xchacha:"
 )
 
 // FromKey returns the value transformer that match the value format.
@@ -51,7 +54,16 @@ func FromKey(keyValue string) (value.Transformer, error) {
 		transformer, err = secretbox.Transformer(strings.TrimPrefix(keyValue, secretboxPrefix))
 	} else if strings.HasPrefix(keyValue, aesgcmPrefix) {
 		// Activate AES-GCM transformer
-		transformer, err = aes.Transformer(strings.TrimPrefix(keyValue, aesgcmPrefix))
+		transformer, err = aead.AESGCM(strings.TrimPrefix(keyValue, aesgcmPrefix))
+	} else if strings.HasPrefix(keyValue, aespmacsivPrefix) {
+		// Activate AES-PMAC-SIV transformer
+		transformer, err = aead.AESPMACSIV(strings.TrimPrefix(keyValue, aespmacsivPrefix))
+	} else if strings.HasPrefix(keyValue, chachaPrefix) {
+		// Activate ChaCha20Poly1305 transformer
+		transformer, err = aead.Chacha20Poly1305(strings.TrimPrefix(keyValue, chachaPrefix))
+	} else if strings.HasPrefix(keyValue, xchachaPrefix) {
+		// Activate XChaCha20Poly1305 transformer
+		transformer, err = aead.XChacha20Poly1305(strings.TrimPrefix(keyValue, xchachaPrefix))
 	} else if strings.HasPrefix(keyValue, fernetPrefix) {
 		// Activate Fernet transformer
 		transformer, err = fernet.Transformer(strings.TrimPrefix(keyValue, fernetPrefix))
