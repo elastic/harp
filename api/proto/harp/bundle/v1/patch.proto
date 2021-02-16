@@ -101,6 +101,8 @@ message PatchPackage {
   PatchSecret data = 4;
   // Flag as remove.
   bool remove = 5;
+  // Flag to create if not exist.
+  bool create = 6;
 }
 
 // PatchSecret represents secret data operations.
