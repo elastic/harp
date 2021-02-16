@@ -338,6 +338,73 @@ func TestApply(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "remove package",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-package.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "application/to-be-removed",
+						},
+						{
+							Name: "secrets/application/component-2.yaml",
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Name: "secrets/application/component-2.yaml",
+					},
+				},
+			},
+		},
+		{
+			name: "add package",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/add-package.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "secrets/application/component-2.yaml",
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Name: "secrets/application/component-2.yaml",
+					},
+					{
+						Name: "application/created-package",
+						Annotations: map[string]string{
+							"package-creator":                       "true",
+							"patched":                               "true",
+							"secret-service.elstc.co/encryptionKey": "UcbPlrEJ9jZEQX06n8oMln_mCl3EU2zl2ZVc-obb7Dw=",
+						},
+						Secrets: &bundlev1.SecretChain{
+							Annotations: map[string]string{
+								"secret-service.elstc.co/encryptionKey": "DrZ-0yEA18iS7A4xaR_pd-relh9KMtTw2q11nBEJykg=",
+							},
+							Data: []*bundlev1.KV{
+								{
+									Key:   "key",
+									Type:  "string",
+									Value: []byte("0\n\x02\x01\x01\x13\x05value"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

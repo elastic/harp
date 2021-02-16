@@ -182,7 +182,7 @@ func applyPackagePatch(pkg *bundlev1.Package, p *bundlev1.PatchPackage, values m
 			pkg.Secrets = &bundlev1.SecretChain{}
 		}
 		if err := applySecretPatch(pkg.Secrets, p.Data, values); err != nil {
-			return fmt.Errorf("unable to apply pathc to secret data for package `%s`: %w", pkg.Name, err)
+			return fmt.Errorf("unable to apply patch to secret data for package `%s`: %w", pkg.Name, err)
 		}
 	}
 
@@ -221,6 +221,9 @@ func applySecretPatch(secrets *bundlev1.SecretChain, op *bundlev1.PatchSecret, v
 	// Check K/V
 	if op.Kv != nil {
 		var err error
+		if secrets.Data == nil {
+			secrets.Data = make([]*bundlev1.KV, 0)
+		}
 		if secrets.Data, err = applySecretKVPatch(secrets.Data, op.Kv, values); err != nil {
 			return fmt.Errorf("unable to process kv: %w", err)
 		}
@@ -233,10 +236,10 @@ func applySecretPatch(secrets *bundlev1.SecretChain, op *bundlev1.PatchSecret, v
 func applySecretKVPatch(kv []*bundlev1.KV, op *bundlev1.PatchOperation, values map[string]interface{}) ([]*bundlev1.KV, error) {
 	// Check parameters
 	if kv == nil {
-		return nil, fmt.Errorf("canot process nil kv list")
+		return nil, fmt.Errorf("cannot process nil kv list")
 	}
 	if op == nil {
-		return nil, fmt.Errorf("canot process nil operation")
+		return nil, fmt.Errorf("cannot process nil operation")
 	}
 
 	var out []*bundlev1.KV

@@ -96,6 +96,27 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 	// Initialize empty package list
 	packageList := make([]*bundlev1.Package, 0)
 
+	// Process all creation rule first
+	for i, r := range spec.Spec.Rules {
+		// Ignore non creation rules and non strict matcher
+		if !r.Package.Create || r.Selector.MatchPath.Strict == "" {
+			continue
+		}
+
+		// Create a package
+		p := &bundlev1.Package{
+			Name: r.Selector.MatchPath.Strict,
+		}
+
+		_, err := executeRule(spec.Meta.Name, r, p, values)
+		if err != nil {
+			return b, fmt.Errorf("unable to execute rule index %d: %w", i, err)
+		}
+
+		// Add created package
+		bCopy.Packages = append(bCopy.Packages, p)
+	}
+
 	// Process all rules
 	for _, p := range bCopy.Packages {
 		lastAction := packageUnchanged

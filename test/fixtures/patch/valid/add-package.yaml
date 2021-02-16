@@ -1,0 +1,33 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "package-creator"
+  owner: security@elastic.co
+  description: "Create a targeted package"
+spec:
+  rules:
+    - selector:
+        matchPath:
+          strict: "application/created-package"
+      package:
+        # Flag to be created if not exists
+        create: true
+
+        # On package annotation
+        annotations:
+            # Update annotation value with new secret
+            update:
+                secret-service.elstc.co/encryptionKey: |-
+                    UcbPlrEJ9jZEQX06n8oMln_mCl3EU2zl2ZVc-obb7Dw=
+
+        # On package data
+        data:
+            # Update annotations
+            annotations:
+                # Update annotation value with new secret
+                update:
+                    secret-service.elstc.co/encryptionKey: |-
+                        DrZ-0yEA18iS7A4xaR_pd-relh9KMtTw2q11nBEJykg=
+            kv:
+                add:
+                    "key": "value"

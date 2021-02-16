@@ -1,0 +1,14 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "package-remover"
+  owner: security@elastic.co
+  description: "Remove a targeted package"
+spec:
+  rules:
+    - selector:
+        matchPath:
+          strict: "application/to-be-removed"
+      package:
+        # Flag to be removed
+        remove: true
