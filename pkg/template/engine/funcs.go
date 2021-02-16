@@ -23,6 +23,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 
 	"github.com/elastic/harp/pkg/sdk/security/crypto"
+	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
 	"github.com/elastic/harp/pkg/sdk/security/diceware"
 	"github.com/elastic/harp/pkg/sdk/security/password"
 	"github.com/elastic/harp/pkg/template/engine/internal/codec"
@@ -60,12 +61,16 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 		"toSSH":      crypto.ToSSH,
 		"cryptoKey":  crypto.Key,
 		"cryptoPair": crypto.Keypair,
+		"keyToBytes": crypto.KeyToBytes,
 		// Secret
 		"secret": SecretReaders(secretReaders),
 		// JWT/JWE
 		"encryptJwe": crypto.EncryptJWE,
 		"decryptJwe": crypto.DecryptJWE,
 		"toJws":      crypto.ToJWS,
+		// Bech32
+		"bech32enc": bech32.Encode,
+		"bech32dec": crypto.Bech32Decode,
 	}
 
 	for k, v := range extra {

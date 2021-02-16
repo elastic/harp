@@ -193,7 +193,7 @@ Where `type` could be :
 * `ec`, `ec:normal` , `ec:p256` => EC P-256
 * `ec:high`, `ec:p384` => EC P-384
 * `ec:strong`, `ec:p521` => EC P-521
-* `ssh`, `ed:25519` => Ed25519
+* `ssh`, `ed25519` => Ed25519
 * `naclbox` => Curve25519
 
 #### toJwk

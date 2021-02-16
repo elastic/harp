@@ -36,6 +36,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	jose "gopkg.in/square/go-jose.v2"
 
+	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/pkcs8"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
@@ -189,6 +190,38 @@ func ToPEM(key interface{}) (string, error) {
 	return string(pemData), nil
 }
 
+// KeyToBytes encodes the given crypto key as a byte array.
+func KeyToBytes(key interface{}) ([]byte, error) {
+	var (
+		out []byte
+		err error
+	)
+	switch k := key.(type) {
+	// Private keys ------------------------------------------------------------
+	case *rsa.PrivateKey, *ecdsa.PrivateKey:
+		out, err = x509.MarshalPKCS8PrivateKey(k)
+		if err != nil {
+			return nil, err
+		}
+	case ed25519.PrivateKey:
+		out = []byte(k)
+	// Public keys ------------------------------------------------------------
+	case *rsa.PublicKey:
+		out, err = x509.MarshalPKIXPublicKey(k)
+		if err != nil {
+			return nil, err
+		}
+	case *ecdsa.PublicKey:
+		out = elliptic.MarshalCompressed(k.Curve, k.X, k.Y)
+	case ed25519.PublicKey:
+		out = []byte(k)
+	default:
+		return nil, fmt.Errorf("given key type is not supported")
+	}
+
+	return out, nil
+}
+
 // EncryptPEM returns an encrypted PEM block using the given passphrase.
 func EncryptPEM(pemData, passphrase string) (string, error) {
 	// Check passphrase
@@ -289,11 +322,11 @@ func EncryptJWE(key string, payload interface{}) (string, error) {
 }
 
 // DecryptJWE decrypt a JWE token.
-func DecryptJWE(key string, token string) (interface{}, error) {
+func DecryptJWE(key, token string) (interface{}, error) {
 	// Parse JWE token
 	object, err := jose.ParseEncrypted(token)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to parse JWE assertion: %w", err)
 	}
 
 	// Decrypt token using given key.
@@ -313,7 +346,7 @@ func DecryptJWE(key string, token string) (interface{}, error) {
 }
 
 // ToJWS returns a JWT token.
-func ToJWS(payload interface{}, privkey interface{}) (string, error) {
+func ToJWS(payload, privkey interface{}) (string, error) {
 	var alg jose.SignatureAlgorithm
 
 	// Select appropriate algorithm
@@ -330,6 +363,8 @@ func ToJWS(payload interface{}, privkey interface{}) (string, error) {
 		}
 	case ed25519.PrivateKey:
 		alg = jose.EdDSA
+	default:
+		return "", fmt.Errorf("this private key type is not supported '%T'", privkey)
 	}
 
 	// Create a signer
@@ -358,6 +393,22 @@ func ToJWS(payload interface{}, privkey interface{}) (string, error) {
 
 	// No error
 	return serialize, nil
+}
+
+// Bech32Decode decodes given bech32 encoded string.
+func Bech32Decode(in string) (interface{}, error) {
+	hrp, data, err := bech32.Decode(in)
+	if err != nil {
+		return nil, fmt.Errorf("unbale to decode Bech32 encoding string: %w", err)
+	}
+
+	return struct {
+		Hrp  string
+		Data []byte
+	}{
+		Hrp:  hrp,
+		Data: data,
+	}, nil
 }
 
 // -----------------------------------------------------------------------------

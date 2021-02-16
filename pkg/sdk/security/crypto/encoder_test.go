@@ -20,6 +20,7 @@ package crypto
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	_ "golang.org/x/crypto/blake2b"
 )
 
@@ -273,6 +274,150 @@ func TestToSSH(t *testing.T) {
 			_, err := ToSSH(tt.args)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ToSSH() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestFromJWK(t *testing.T) {
+	type args struct {
+		jwk string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			name:    "blank",
+			wantErr: true,
+		},
+		{
+			name: "valid - private",
+			args: args{
+				jwk: `{	"kty": "EC", "d": "KtNle6xh0XBGhJbJEzP-5TiWdB6_dVkoWeWeo-VUVUI", "crv": "P-256", "x": "eoZzawRZk9sL9pkNYIKJJU34FyckdDAQg7LM2z0wez4", "y": "3Z6Z3vv1QQmQ3S5_4aeFnqrENhOBmBreXGYsbbLTLh8"	}`,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - public",
+			args: args{
+				jwk: `{	"kty": "EC", "crv": "P-256", "x": "eoZzawRZk9sL9pkNYIKJJU34FyckdDAQg7LM2z0wez4", "y": "3Z6Z3vv1QQmQ3S5_4aeFnqrENhOBmBreXGYsbbLTLh8"	}`,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := FromJWK(tt.args.jwk)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FromJWK() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestEncryptJWE(t *testing.T) {
+	type args struct {
+		key     string
+		payload interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "blank",
+			wantErr: false,
+		},
+		{
+			name: "claims",
+			args: args{
+				key: "test",
+				payload: map[string]interface{}{
+					"sub": "test",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := EncryptJWE(tt.args.key, tt.args.payload)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("EncryptJWE() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func Test_EncryptDecryptJWE(t *testing.T) {
+	claims := map[string]interface{}{
+		"sub": "test",
+	}
+
+	jwe, err := EncryptJWE("test", claims)
+	if err != nil {
+		t.Fatalf("unbale to encrypt claims: %v", err)
+	}
+
+	got, err := DecryptJWE("test", jwe)
+	if err != nil {
+		t.Fatalf("unbale to decrypt claims: %v", err)
+	}
+
+	if report := cmp.Diff(claims, got); report != "" {
+		t.Errorf("%s", report)
+	}
+}
+
+func TestToJWS(t *testing.T) {
+
+	_, ecPriv, err := generateKeyPair("ec")
+	if err != nil {
+		t.Error("unable to generate ec key")
+		return
+	}
+
+	type args struct {
+		payload interface{}
+		privkey interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "blank",
+			args: args{
+				privkey: ecPriv,
+			},
+			wantErr: false,
+		},
+		{
+			name: "claims",
+			args: args{
+				privkey: ecPriv,
+				payload: map[string]interface{}{
+					"sub": "test",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ToJWS(tt.args.payload, tt.args.privkey)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToJWS() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
