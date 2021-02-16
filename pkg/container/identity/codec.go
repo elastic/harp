@@ -27,8 +27,10 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+	"github.com/gosimple/slug"
 	"golang.org/x/crypto/nacl/box"
 
+	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
@@ -66,13 +68,19 @@ func New(description string) (*Identity, []byte, error) {
 		return nil, nil, fmt.Errorf("unable to serialize identity keypair: %w", err)
 	}
 
+	// Encode public key using Bech32 with description as hrp
+	encoded, err := bech32.Encode(slug.Make(description), pub[:])
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to encode public key: %w", err)
+	}
+
 	// Return unsealed identity
 	return &Identity{
 		APIVersion:  apiVersion,
 		Kind:        kind,
 		Timestamp:   time.Now().UTC(),
 		Description: description,
-		Public:      base64.RawURLEncoding.EncodeToString(pub[:]),
+		Public:      encoded,
 	}, payload, nil
 }
 
@@ -90,7 +98,7 @@ func FromReader(r io.Reader) (*Identity, error) {
 	}
 
 	// Check public key encoding
-	_, err := base64.RawURLEncoding.DecodeString(input.Public)
+	_, _, err := bech32.Decode(input.Public)
 	if err != nil {
 		return nil, fmt.Errorf("invalid public key encoding")
 	}
