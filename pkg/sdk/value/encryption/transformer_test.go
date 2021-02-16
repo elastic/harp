@@ -85,6 +85,13 @@ func TestFromKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "chacha",
+			args: args{
+				keyValue: "chacha:gCUODuqhcktiM1USKOfkwVlKhoUyHxXZm6d64nztCp0=",
+			},
+			wantErr: false,
+		},
+		{
 			name: "fernet",
 			args: args{
 				keyValue: "fernet:ZER8WwNyw5Dsd65bctxillSrRMX4ObaZsQjaNW1nBBI=",

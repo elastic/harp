@@ -33,6 +33,7 @@ import (
 
 	"github.com/elastic/harp/pkg/container"
 	"github.com/elastic/harp/pkg/sdk/log"
+	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/x25519"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
@@ -89,14 +90,14 @@ func (t *SealTask) Run(ctx context.Context) error {
 		}
 
 		// Check encoding
-		publicKeyRaw, errDecode := base64.RawURLEncoding.DecodeString(id)
+		hrp, publicKeyRaw, errDecode := bech32.Decode(id)
 		if errDecode != nil {
 			return fmt.Errorf("invalid '%s' as public identity: %w", id, errDecode)
 		}
 
 		// Validate public key
 		if !x25519.IsValidPublicKey(publicKeyRaw) {
-			log.For(ctx).Warn("Public key ignored, it looks invalid", zap.String("key", id))
+			log.For(ctx).Warn("Public key ignored, it looks invalid", zap.String("key", id), zap.String("hrp", hrp))
 			continue
 		}
 

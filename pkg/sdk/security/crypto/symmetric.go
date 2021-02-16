@@ -33,10 +33,19 @@ func Key(keyType string) (string, error) {
 	case "aes:128":
 		key := memguard.NewBufferRandom(16).Bytes()
 		return base64.StdEncoding.EncodeToString(key), nil
+	case "aes:192":
+		key := memguard.NewBufferRandom(24).Bytes()
+		return base64.StdEncoding.EncodeToString(key), nil
 	case "aes:256":
 		key := memguard.NewBufferRandom(32).Bytes()
 		return base64.StdEncoding.EncodeToString(key), nil
+	case "aes:siv":
+		key := memguard.NewBufferRandom(64).Bytes()
+		return base64.StdEncoding.EncodeToString(key), nil
 	case "secretbox":
+		key := memguard.NewBufferRandom(32).Bytes()
+		return base64.StdEncoding.EncodeToString(key), nil
+	case "chacha20":
 		key := memguard.NewBufferRandom(32).Bytes()
 		return base64.StdEncoding.EncodeToString(key), nil
 	case "fernet":
@@ -47,6 +56,6 @@ func Key(keyType string) (string, error) {
 		}
 		return k.Encode(), nil
 	default:
-		return "", fmt.Errorf("invalid keytype (%s) [aes:128, aes:256, secretbox, fernet]", keyType)
+		return "", fmt.Errorf("invalid keytype (%s) [aes:128, aes:192, aes:256, aes:siv, secretbox, chacha20, fernet]", keyType)
 	}
 }

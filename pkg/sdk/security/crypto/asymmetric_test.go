@@ -40,7 +40,7 @@ func TestKeypair(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	expectedKeyTypes := []string{"rsa", "rsa:normal", "rsa:2048", "rsa:strong", "rsa:4096", "ec", "ec:normal", "ec:p256", "ec:high", "ec:p384", "ec:strong", "ec:p521", "ssh", "ed:25519", "naclbox"}
+	expectedKeyTypes := []string{"rsa", "rsa:normal", "rsa:2048", "rsa:strong", "rsa:4096", "ec", "ec:normal", "ec:p256", "ec:high", "ec:p384", "ec:strong", "ec:p521", "ssh", "ed25519", "naclbox"}
 	for _, kt := range expectedKeyTypes {
 		tests = append(tests, testCase{
 			name:    kt,

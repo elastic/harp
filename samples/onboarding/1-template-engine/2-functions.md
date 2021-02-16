@@ -193,7 +193,7 @@ Where `type` could be :
 * `ec`, `ec:normal` , `ec:p256` => EC P-256
 * `ec:high`, `ec:p384` => EC P-384
 * `ec:strong`, `ec:p521` => EC P-521
-* `ssh`, `ed:25519` => Ed25519
+* `ssh`, `ed25519` => Ed25519
 * `naclbox` => Curve25519
 
 #### toJwk
@@ -227,6 +227,18 @@ Output :
     "crv":"P-384",
     "x":"KfTYa3f9WKgg5npBsBfw6ivTJgQS0xP2KbvQHU4WtEzllvjOsz1D2WZCPq9X-aUq","y":"88SZwdKWNb3GONuO0C8LqI3aCtTBf2SCOiKgLNLinWSH_Dval0_euuCv8WRTVYcL"
 }
+```
+
+#### fromJwk
+
+Decode a JWK encoded key.
+
+```ruby
+{{ $key := fromJwk .Values.jwk }}
+# Convert JWK encoded key to native one
+{{ $key.Private | toJwk }}
+# Get the public key and encode it as JWK
+{{ $key.Public | toJwk }}
 ```
 
 #### toPem
@@ -306,36 +318,62 @@ Output :
 ```ruby
 # {{ $key := cryptoPair "rsa" }}{{ $passphrase := paranoidDiceware }}{{ $privPem := $key.Private | toPem }}{{ $passphrase }}\n{{ encryptPem $privPem $passphrase }}
 "helmet-flashcard-context-tidiness-osmosis-sled-shimmer-jeeringly-exhale-aloof-defuse-pranker
------BEGIN RSA PRIVATE KEY-----
-Proc-Type: 4,ENCRYPTED
-DEK-Info: AES-256-CBC,37b6974ddc3b42c7730cc9b66b3c46ca
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+MIIFNjBgBgkqhkiG9w0BBQ0wUzAyBgkqhkiG9w0BBQwwJQQQQvKLOxmTrmsNvR6x
+skoU4wIDAYagMAwGCCqGSIb3DQIJAAAwHQYJYIZIAWUDBAEqBBBzz11Ee0eilGVC
+rnT7s8ITBIIE0DHRRvy/8XsDWZ64b0huVdQpv3BiXeUATb0c+i1neZo4btaR5prG
+nz/LK6/XbLgUkzgcC5cYEfi5bTkPqFDi4raa8gBryGF95k7akm4XJJY3Os1MIrCS
+MQinWfjr8WqkbPmMe5hZyv6PBuPOPrBcw5M/rhTPIePshvvyWi4cXv1871MCDB5p
+93jhNTNqGB/sbqSbW/qlanYhhaPZuuUZld4Jae9Y9WAvz42T/C/uj6LEQE0+lOGa
+Y1rNYWdkkeoeBhHj8GHfYydTDusxzbMz37VCtdPJQnNtQU6zaCdReC0wVbLcFwWA
+NYghMAjoSFrWhB26htq+Ob+DMLlhbAnVu9iTuEV3C/qe/sFrN2iUjN6lBQh1SISR
+gKHj8dclduMgSQiIKqk+rB89wz3dJIspq93AAzFKbx2MSD9LP70EM2PRaezIjnGR
+irWx6L0xuhPWPCn5oSJpvw7gVuxn7jN6SK/EyMP6fEEd4dN6tNh5XsVEY0jXEw03
+o/MVDeEcmewZwzFpKeIiJYd6IqnwScLqWFeLNZPfi8EKv/hOFVr3fRDH98FKVJer
+xeMA73wBeBG7zPcQga14AlPrJBUHAeH6SObbd0G4k7QDntuYerVU8GQ+5akJw5HL
+1a83uKi85CqtB2QnCFbdhdgOV7X8rxOBd8jlHOzXXkm57sk8sfKWYGzrqtltbGjm
+jgbODDJEX2Jmk/DVhvr60J6m3Y8pyvNIoBK3V9qu2wezRsONX5ZFS6VXan0OBcjQ
+1EwdgMkSci01Gs5oj9s3MPM9FS65arKTCsE9riWfUqLkJBZ6/mHwaqbw1LoYFqev
+WSvl9IyBCGt8YZVnvggYBc4hmmfubn3XhbjZGPDJwh1beOP3TOlTQqPaLsaTCB9F
+NBp3WbSW4Ff3O2c0/gdmLmIMed2nLNVJZSVO8rfhV8k18iDjKwm5hboeuY0CucR1
+7+k/HrrqxsjixhQuyaY5SeGn8AWmJi7tdStExMwiCX9t5zgzL+V1pM/Xf6SG7dij
+EcIfyPrVWGk//0lvBo6jSjtOh8n+JM/9rPQQEngHUhI+h/8QY06AVSCpbgo2vQJl
+Us6Gcc+YBUD04D4lLmI7nSBWNS46Zilirtkmwp61EG/ysB+5MW8oN4212QqM8yrV
+n0UTIsrJn8X2sQ+yLX4qEzA1bH26pJIkwKHfQktb+RrqokgF9uB9kI9UzkBIN8ns
+ZQ3B1+bqzE9z0EWdGd79yNH1SW6LVDDaEVVeV1lrSBSkhAAS86+TUf5rNKhYeqU9
+m3dzPJAl3MTWhXpxQ/olJVb3fES2ZT5EGxVlt36N3p2tUf/GFwaUi8FyNYenGEn0
+R7Vi0TdmOLrhJJI+PzqXceYcLh13MD3XRHbpBR/FqnAf7cVAnxiqjRVgrHHAAq0+
+y3fGPusAt2ANEvl2Hk1qFqQX1oNhRkoqJpBgDc6ouqNV4rEdx+kwBDSoZ7ahWzr0
+lt3bNj4XJ8a74WKdilbWmpM4zonXMovOJ8e2lhXF069B1X6QijSyrXZaOjEobJvH
+mIXCH8ZhRiB/qfLllwLKzdKh961/Mm4mxIC1/FqraGtlC0jkZXZR69huLNNUBGry
+JFS6EYe2rXuOqxSTzurUTPC4U3bBwtCwTpG/YVAzIkiL7BDfhxB0X5aG
+-----END ENCRYPTED PRIVATE KEY-----"
+```
 
-d2KtoDLpW17S3waRsiCZBK+hbbmhL6/xjc61AJsf9kTshBP/5ZnbDNq0catp55r0
-wNicSQUca/6iJkCEStbp7nkhobTOXlldVIBaL0ChsQkvArJ3sxqfpRFJmDwOF48u
-2oKETF92ZgvZultU45iBjJ2uRrmulAJs4we8Dgo8TkjKz9yaGF5gNYloFl69oDfF
-KAx5+f1dtqtaUQmKcivKmFej1e2Zn/QNOjLu5DabfycH9TcRgV+Y3NnffG9rujZE
-E/SKX9fbsmoY/N8pRBLuxJ84t1Fe//qRnWGU1I2T3HVbxoZcdBiPAs1gK/oYRDlu
-b+E8hDGeDNHE69vvrHdzwdvYsLhDG0rimyur2modIuITOjWep+fAOY4mQtV3+15g
-OlMMQ5MQUdoZTg99oIBmuYfb1thLog+UvXsVXl53Lu1v+Oz9mUVjhy/Xc8wzLsUk
-wXd6mo4maTzNxeqE6b6WtNPRlTjKGz1B+9NgWCxRJ5fEuRsA48RycxXuERSLWQXR
-nTco/pQDMUppxKZnNRtEwxG21i/eZkIrapTsUlCKSiyl31/Ux1atfrOrPxXHAz9h
-frnEloHfXz2p0JezQ9aKn0RQEFnGm5zPgDs9znHkFmDtG0P2F3UXFm80oNXjWFDS
-JMK7tnJlS1K1iipMbxlI2b+9w1apD5uXPYYIlBDLZpMdqKPMVywmEQqhw54kqTqi
-8E98EWd9FxPhqHq2tSE+dq/YS+3CGDLjNiVa8jp+vr0GOGI6gQ+1JbPdD20KCzkZ
-jxPZlCDPw2GLtL+uD13aPfgIagKdTPqCoa58G81t3hKVpL7ocPQU/gg2iBmcnTkz
-DAZfTY7LmYalgVyTVZaoy6YC5UouAPSdu+YhUHBR6KLWUQddboKJYdpBb9tbgGbd
-qWgUPFT+7OhuA/ub9TJotlhFct4AkqEkfhgu88mx4rgYIXfQmHc3E6YMH+WcopVB
-foFFSLSM+8eiw9zHVbsVaAsPBpWJb7i5UC98KpEE8aOx17nYraMuhsqOIKaohJoo
-p6zb1U/aK1dOhMTBQqWYpmSYH1oo29dvzT2QlLbzQ2OLT5nIOHNXBXLrdHXUpAm+
-jRSTVN02fTLiT5CFJ2XjwVRZu947piICZwU7JH/D/C6zIvinJ+4mnjPZ3AV8bZet
-2XeQ66b/UiMm9lVehIA9KnEbasjqLqyulGaUmO+Zmd4AcCoKcP137Q+ma72MExqk
-Qu4J1goWiL3ZGdFMf1wdzNf/XONzlLK2zvysvmNhnT3NWtj+QdM+yui3px2QbI09
-Fq6fGOFuCCP35U0tFtI5kT/I6Bm0y/eMBuoGPQvfNf/48VlwswILHabT+x0SfYJH
-rh9v505XT/jP7YVdETgRNTju5NIZmEgoos4aB7zjZcIKpUxz/dyOZ7DtGHcrAnrq
-ZB8vJycdejWmvUhmXIchqdRrDd0WTZlikIU3I6zeP1uHoQNBCrKV/bsKnLItleo4
-4gvZvd9gYEnn4mx+7Q96XmiidV02PIZiZykZR2vmGE+BTEtFb6S+q4ZylBhq9/o+
-rOEinWY5gWfVV+515pCdVWOOSyfwzCx0imnIKC2d4fkMsrNM1xmAZtm/+MYudss9
------END RSA PRIVATE KEY-----"
+#### encryptJwe
+
+Encrypt input using JWE.
+
+```ruby
+{{ $key := cryptoPair "rsa" }}
+# Get the private key and encode it as PEM
+{{ $pk := toPem $key.Private }}
+# Encrypt private key
+{{ encryptJwe $passphrase $pk }}
+```
+
+#### decryptJwe
+
+Decrypt input encoded as JWE.
+
+```ruby
+{{ $key := cryptoPair "rsa" }}
+# Get the private key and encode it as PEM
+{{ $pk := toPem $key.Private }}
+# Encrypt private key
+{{ $encrypted := encryptJwe $passphrase $pk }}
+# Decrypt JWE
+{{ decryptJwe $passphrase $encrypted }}
 ```
 
 #### toSSH
@@ -367,6 +405,16 @@ MCowBQYDK2VwAyEAM2CVfMoQ1VCpsnKYxgQrjvKzvb22ZXgYRL07i5gFcZA=
 -----END PUBLIC KEY-----
 
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDNglXzKENVQqbJymMYEK47ys729tmV4GES9O4uYBXGQ"
+```
+
+#### toJws
+
+Create a JWT.
+
+```ruby
+{{ $key := cryptoPair "ec" }}
+{{ $claims := fromJson "{\"sub\":\"test\"}" }}
+{{ toJws $claims $key.Private }}
 ```
 
 ---

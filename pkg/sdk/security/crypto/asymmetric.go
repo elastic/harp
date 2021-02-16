@@ -86,19 +86,19 @@ func generateKeyPair(keyType string) (interface{}, interface{}, error) {
 		}
 		pub := key.Public()
 		return pub, key, nil
-	case "ssh", "ed:25519":
+	case "ssh", "ed25519":
 		pub, priv, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to generate ed25519 key: %w", err)
 		}
 		return pub, priv, nil
-	case "naclbox":
+	case "naclbox", "x25519":
 		pub, priv, err := box.GenerateKey(rand.Reader)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to generate naclbox key: %w", err)
 		}
 		return pub, priv, nil
 	default:
-		return nil, nil, fmt.Errorf("invalid keytype (%s) [rsa, rsa:strong, ec, ec:high, ec:strong, naclbox]", keyType)
+		return nil, nil, fmt.Errorf("invalid keytype (%s) [(rsa, rsa:normal, rsa:2048), (rsa:strong, rsa:4096), (ec, ec:normal, ec:p256), (ec:high, ec:p384), (ec:strong, ec:p521), (ssh, ed25519), (naclbox, x25519)]", keyType)
 	}
 }
