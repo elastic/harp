@@ -93,21 +93,32 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 	// Copy bundle
 	bCopy := proto.Clone(b).(*bundlev1.Bundle)
 
+	// Initialize empty package list
+	packageList := make([]*bundlev1.Package, 0)
+
 	// Process all rules
-	k := 0
 	for _, p := range bCopy.Packages {
+		lastAction := packageUnchanged
+
 		for i, r := range spec.Spec.Rules {
 			action, err := executeRule(spec.Meta.Name, r, p, values)
 			if err != nil {
 				return b, fmt.Errorf("unable to execute rule index %d: %w", i, err)
 			}
-			if action != packagedRemoved {
-				bCopy.Packages[k] = p
-				k++
+			if action == packagedRemoved {
+				lastAction = action
+				break
 			}
 		}
+
+		if lastAction != packagedRemoved {
+			// Assign package map
+			packageList = append(packageList, p)
+		}
 	}
-	bCopy.Packages = bCopy.Packages[:k]
+
+	// Reassign packages
+	bCopy.Packages = packageList
 
 	// No error
 	return bCopy, nil

@@ -18,12 +18,36 @@
 package patch
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
-	fuzz "github.com/google/gofuzz"
-
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	fuzz "github.com/google/gofuzz"
+)
+
+var (
+	opt = cmp.FilterPath(
+		func(p cmp.Path) bool {
+			// Remove ignoring of the fields below once go-cmp is able to ignore generated fields.
+			// See https://github.com/google/go-cmp/issues/153
+			ignoreXXXCache :=
+				p.String() == "XXX_sizecache" ||
+					p.String() == "Packages.XXX_sizecache" ||
+					p.String() == "Packages.Secrets.XXX_sizecache" ||
+					p.String() == "Packages.Secrets.Data.XXX_sizecache"
+			return ignoreXXXCache
+		}, cmp.Ignore())
+
+	ignoreOpts = []cmp.Option{
+		cmpopts.IgnoreUnexported(bundlev1.Bundle{}),
+		cmpopts.IgnoreUnexported(bundlev1.Package{}),
+		cmpopts.IgnoreUnexported(bundlev1.SecretChain{}),
+		cmpopts.IgnoreUnexported(bundlev1.KV{}),
+		opt,
+	}
 )
 
 func TestValidate(t *testing.T) {
@@ -197,5 +221,134 @@ func TestApply_Fuzz(t *testing.T) {
 
 		// Execute
 		Apply(spec, &file, values)
+	}
+}
+
+func mustLoadPatch(filePath string) *bundlev1.Patch {
+	f, err := os.Open(filePath)
+	if err != nil {
+		panic(err)
+	}
+
+	p, err := YAML(f)
+	if err != nil {
+		panic(err)
+	}
+
+	return p
+}
+
+func TestApply(t *testing.T) {
+	type args struct {
+		spec   *bundlev1.Patch
+		b      *bundlev1.Bundle
+		values map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *bundlev1.Bundle
+		wantErr bool
+	}{
+		{
+			name:    "nil",
+			wantErr: true,
+		},
+		{
+			name: "empty bundle",
+			args: args{
+				spec:   mustLoadPatch("../../../test/fixtures/patch/valid/path-cleaner.yaml"),
+				b:      &bundlev1.Bundle{},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{},
+			},
+		},
+		{
+			name: "modifiable bundle",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/path-cleaner.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "secrets/application/component-1.yaml",
+						},
+						{
+							Name: "secrets/application/component-2.yaml",
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Annotations: map[string]string{
+							"patched":             "true",
+							"secret-path-cleaner": "true",
+						},
+						Name: "application/component-1",
+					},
+					{
+						Annotations: map[string]string{
+							"patched":             "true",
+							"secret-path-cleaner": "true",
+						},
+						Name: "application/component-2",
+					},
+				},
+			},
+		},
+		{
+			name: "duplicate package paths",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/path-cleaner.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "secrets/application/component-1.yaml",
+						},
+						{
+							Name: "secrets/application/component-1.yaml",
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Annotations: map[string]string{
+							"patched":             "true",
+							"secret-path-cleaner": "true",
+						},
+						Name: "application/component-1",
+					},
+					{
+						Annotations: map[string]string{
+							"patched":             "true",
+							"secret-path-cleaner": "true",
+						},
+						Name: "application/component-1",
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Apply(tt.args.spec, tt.args.b, tt.args.values)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Apply() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want, ignoreOpts...); diff != "" {
+				t.Errorf("%q. Patch.Apply():\n-got/+want\ndiff %s", tt.name, diff)
+			}
+		})
 	}
 }
