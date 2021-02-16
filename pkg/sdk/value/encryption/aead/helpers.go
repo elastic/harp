@@ -30,6 +30,9 @@ const (
 )
 
 func encrypt(plaintext []byte, ciph cipher.AEAD) ([]byte, error) {
+	if len(plaintext) > 64*1024*1024 {
+		return nil, errors.New("value too large")
+	}
 	nonce := make([]byte, ciph.NonceSize(), ciph.NonceSize()+ciph.Overhead()+len(plaintext))
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, fmt.Errorf("unable to generate nonce: %w", err)
