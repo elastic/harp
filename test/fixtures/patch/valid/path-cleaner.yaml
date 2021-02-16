@@ -1,0 +1,26 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "secret-path-cleaner"
+  owner: security@elastic.co
+  description: "Remove 'secrets/' prefix of imported secrets"
+spec:
+  rules:
+    - selector:
+        matchPath:
+          # All paths that starts with "secrets/"
+          regex: "^secrets/"
+      package:
+        path:
+          # Remove `secrets/` prefix
+          template: |-
+            {{ trimPrefix "secrets/" .Path }}
+    - selector:
+        matchPath:
+          # All paths that ends with ".yaml"
+          regex: ".yaml$"
+      package:
+        path:
+          # Remove '.yaml' suffix
+          template: |-
+            {{ trimSuffix ".yaml" .Path }}
