@@ -50,14 +50,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ matrix.golang }}-
       - name: Setup gotestsum
-        uses: autero1/action-gotestsum@v0.1.0
+        uses: autero1/action-gotestsum@v1.0.0
         with:
           gotestsum_version: 1.6.1
-      - name: Run Mage
-        uses: magefile/mage-action@v1
-        with:
-          version: latest
-          args: test:unit
+      - name: Run tests
+        run: gotestsum --format short-verbose ./pkg/...
 
   tests-on-macos:
   #  needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
@@ -75,14 +72,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ matrix.golang }}-
       - name: Setup gotestsum
-        uses: autero1/action-gotestsum@v0.1.0
+        uses: autero1/action-gotestsum@v1.0.0
         with:
           gotestsum_version: 1.6.1
-      - name: Run Mage
-        uses: magefile/mage-action@v1
-        with:
-          version: latest
-          args: test:unit
+      - name: Run tests
+        run: gotestsum --format short-verbose ./pkg/...
 
   tests-on-unix:
   #  needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
@@ -100,11 +94,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ matrix.golang }}-
       - name: Setup gotestsum
-        uses: autero1/action-gotestsum@v0.1.0
+        uses: autero1/action-gotestsum@v1.0.0
         with:
           gotestsum_version: 1.6.1
-      - name: Run Mage
-        uses: magefile/mage-action@v1
-        with:
-          version: latest
-          args: test:unit
+      - name: Run tests
+        run: gotestsum --format short-verbose ./pkg/...
