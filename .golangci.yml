@@ -33,6 +33,7 @@ linters:
     - exhaustivestruct
     - wrapcheck
     - ifshort
+    - cyclop
 
 output:
   format: colored-line-number

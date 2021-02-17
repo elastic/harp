@@ -48,7 +48,6 @@ func Keypair(keyType string) (interface{}, error) {
 
 // -----------------------------------------------------------------------------
 
-//nolint:gocyclo // To refactor
 func generateKeyPair(keyType string) (interface{}, interface{}, error) {
 	switch keyType {
 	case "rsa", "rsa:normal", "rsa:2048":
