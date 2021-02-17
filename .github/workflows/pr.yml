@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    tags:
+      - cmd/*
+      - v*
+    branches:
+      - main
+  pull_request:
+jobs:
+ # Check if there any dirty change for go mod tidy
+  go-mod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Check go mod
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod
+
+  # Run golangci-lint
+  #golangci-lint:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - name: lint
+  #      uses: golangci/golangci-lint-action@v2.4.0
+  #      with:
+  #        version: latest
+
+  tests-on-windows:
+  #  needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16 # test only the latest go version to speed up CI
+      - uses: actions/cache@v2.1.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-1.16-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.golang }}-
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v1.0.0
+        with:
+          gotestsum_version: 1.6.1
+      - name: Run tests
+        run: gotestsum --format short-verbose ./pkg/...
+
+  tests-on-macos:
+  #  needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16 # test only the latest go version to speed up CI
+      - uses: actions/cache@v2.1.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-1.16-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.golang }}-
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v1.0.0
+        with:
+          gotestsum_version: 1.6.1
+      - name: Run tests
+        run: gotestsum --format short-verbose ./pkg/...
+
+  tests-on-unix:
+  #  needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16 # test only the latest go version to speed up CI
+      - uses: actions/cache@v2.1.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-1.16-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.golang }}-
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v1.0.0
+        with:
+          gotestsum_version: 1.6.1
+      - name: Run tests
+        run: gotestsum --format short-verbose ./pkg/...

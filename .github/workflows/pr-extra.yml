@@ -1,0 +1,22 @@
+name: Extra
+on:
+  push:
+    tags:
+      - v*
+      - cmd/*
+    branches:
+      - main
+  pull_request:
+jobs:
+  vulns:
+    name: Vulnerability scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - name: Run go list
+        run: go list -json -m all > go.list
+      - name: Nancy
+        uses: sonatype-nexus-community/nancy-github-action@1.0.1
