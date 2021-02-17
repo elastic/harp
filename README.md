@@ -65,7 +65,7 @@ Download a [release](https://github.com/elastic/harp/releases) or build from sou
 
 ```sh
 $ go version
-go version go1.15.8 darwin/amd64
+go version go1.16 linux/amd64
 ```
 
 > Simple go version manager - <https://github.com/stefanmaric/g>
