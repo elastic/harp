@@ -25,17 +25,17 @@ jobs:
           git diff --exit-code go.mod
 
   # Run golangci-lint
-  golangci-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: lint
-        uses: golangci/golangci-lint-action@v2.4.0
-        with:
-          version: latest
+  #golangci-lint:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - name: lint
+  #      uses: golangci/golangci-lint-action@v2.4.0
+  #      with:
+  #        version: latest
 
   tests-on-windows:
-    needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
+  #  needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -49,6 +49,10 @@ jobs:
           key: ${{ runner.os }}-go-1.16-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-${{ matrix.golang }}-
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v0.1.0
+        with:
+          gotestsum_version: 1.6.1
       - name: Run Mage
         uses: magefile/mage-action@v1
         with:
@@ -56,7 +60,7 @@ jobs:
           args: test:unit
 
   tests-on-macos:
-    needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
+  #  needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -70,6 +74,10 @@ jobs:
           key: ${{ runner.os }}-go-1.16-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-${{ matrix.golang }}-
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v0.1.0
+        with:
+          gotestsum_version: 1.6.1
       - name: Run Mage
         uses: magefile/mage-action@v1
         with:
@@ -77,7 +85,7 @@ jobs:
           args: test:unit
 
   tests-on-unix:
-    needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
+  #  needs: golangci-lint # run after golangci-lint action to not produce duplicated errors
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -91,6 +99,10 @@ jobs:
           key: ${{ runner.os }}-go-1.16-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-${{ matrix.golang }}-
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v0.1.0
+        with:
+          gotestsum_version: 1.6.1
       - name: Run Mage
         uses: magefile/mage-action@v1
         with:
