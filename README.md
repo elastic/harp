@@ -14,26 +14,34 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
 
 Harp provides :
 
-* An automation compatible secret management implementation
+* A methodology to design your secret management;
+  * Secret naming convention;
+  * A defined common language and complete processes to achieve secret management
+    operations;
+* A SDK to create your own tools to orchestrate your secret management pipelines;
+  * A container manipulation library exposed as `github.com/elastic/harp/pkg/container`;
+  * A secret bundle specification to store and manipulate secrets exposed as `github.com/elastic/harp/pkg/bundle`;
+  * An `on-steroid` template engine exposed as `github.com/elastic/harp/pkg/template`
+  * A path name validation library exposed as `github.com/elastic/harp/pkg/cso`
+* A CLI for secret management implementation
   * CI/CD integration;
-  * Human readable definitions (YAML);
-  * Auditable and reproductible pipelines.
-* A secret container specification to store and manipulate data;
-* A container manipulation library exposed as `github.com/elastic/harp/pkg/bundle`;
-* An extensible CLI tool.
+  * Based on human readable definitions (YAML);
+  * In order to create auditable and reproducible pipelines.
+  * An extensible tool which can be enhanced via [plugins](https://github.com/elastic/harp-plugins).
 
 And allows :
 
-* bundle level operations
-  * Create a container from scratch / template / json (more via plugins);
+* Bundle level operations
+  * Create a bundle from scratch / template / json (more via plugins);
+  * Generate a complete bundle using a YAML Descriptor (`BundleTemplate`) to describe secret and their usages;
   * Read value stored in the K/V virtual filesystem;
   * Update the K/V virtual filesystem;
-  * Delete keys.
-* immutable container level operations
-  * Seal / Unseal a container for integrity and confidentiality property conservation;
-  * Generate a complete set of data using a YAML Descriptor (`BundleTemplate`);
   * Reproductible patch applied on immutable container (copy-on-write);
   * Import / Export to Vault.
+* Immutable container level operations
+  * Seal / Unseal a container for integrity and confidentiality property conservation
+    to enforce at-rest encryption (aes256-gcm96 or chacha20-poly1305);
+  * Multiple identities sealing algorithm;
 
 ## License
 
@@ -48,7 +56,6 @@ For stable version
 ```sh
 brew tap elastic/harp
 brew install elastic/harp/harp
-brew install elastic/harp/harp-server
 ```
 
 ## Build instructions
@@ -112,7 +119,7 @@ mage
 
 For Tools
 
-You have to build this image before executing artifact pipelines.
+You have to build this image once before executing artifact pipelines.
 
 ```sh
 mage docker:tools
@@ -127,14 +134,9 @@ mage docker:harp
 docker run --rm -ti --read-only elastic/harp:<version>
 ```
 
-For container server
+## Plugins
 
-```sh
-# or docker image [distroless:static, rootless, noshell]
-mage docker:harpServer
-# To execute in the container
-docker run --rm -ti --read-only elastic/harp-server:<version>
-```
+You can find more Harp feature extensions - <https://github.com/elastic/harp-plugins>
 
 ## Community
 

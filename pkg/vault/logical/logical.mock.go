@@ -5,10 +5,9 @@
 package logical
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/hashicorp/vault/api"
+	reflect "reflect"
 )
 
 // MockLogical is a mock of Logical interface
