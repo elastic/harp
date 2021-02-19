@@ -27,12 +27,12 @@ import (
 )
 
 type file struct {
+	modTime    time.Time
 	name       string
-	mode       os.FileMode
+	bodyReader io.Reader
 	size       int64
 	content    *memguard.Enclave
-	bodyReader io.Reader
-	modTime    time.Time
+	mode       os.FileMode
 	closed     bool
 }
 

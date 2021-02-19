@@ -100,7 +100,6 @@ func (d *directory) ReadDir(n int) ([]fs.DirEntry, error) {
 		default:
 			continue
 		}
-
 	}
 
 	// Check directory entry exhaustion
