@@ -15,30 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package ext
 
-import (
-	"github.com/spf13/cobra"
+import "github.com/google/cel-go/checker/decls"
+
+var (
+	harpPackageObjectType = decls.NewObjectType("harp.bundle.v1.Package")
+	harpKVObjectType      = decls.NewObjectType("harp.bundle.v1.KV")
 )
-
-// -----------------------------------------------------------------------------
-
-var bundleCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "bundle",
-		Aliases: []string{"b"},
-		Short:   "Bundle commands",
-	}
-
-	// Bundle commands
-	cmd.AddCommand(bundleDumpCmd())
-	cmd.AddCommand(bundleReadCmd())
-	cmd.AddCommand(bundleEncryptCmd())
-	cmd.AddCommand(bundleDecryptCmd())
-	cmd.AddCommand(bundleDiffCmd())
-	cmd.AddCommand(bundlePatchCmd())
-	cmd.AddCommand(bundleFilterCmd())
-	cmd.AddCommand(bundleLintCmd())
-
-	return cmd
-}

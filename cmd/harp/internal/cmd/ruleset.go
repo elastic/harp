@@ -23,22 +23,15 @@ import (
 
 // -----------------------------------------------------------------------------
 
-var bundleCmd = func() *cobra.Command {
+var rulesetCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "bundle",
-		Aliases: []string{"b"},
-		Short:   "Bundle commands",
+		Use:     "ruleset",
+		Aliases: []string{"rs"},
+		Short:   "RuleSet commands",
 	}
 
 	// Bundle commands
-	cmd.AddCommand(bundleDumpCmd())
-	cmd.AddCommand(bundleReadCmd())
-	cmd.AddCommand(bundleEncryptCmd())
-	cmd.AddCommand(bundleDecryptCmd())
-	cmd.AddCommand(bundleDiffCmd())
-	cmd.AddCommand(bundlePatchCmd())
-	cmd.AddCommand(bundleFilterCmd())
-	cmd.AddCommand(bundleLintCmd())
+	cmd.AddCommand(rulesetFromBundle())
 
 	return cmd
 }

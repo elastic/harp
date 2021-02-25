@@ -15,30 +15,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package engine
 
 import (
-	"github.com/spf13/cobra"
+	"context"
+	"errors"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
-// -----------------------------------------------------------------------------
+// ErrRuleNotValid is raised when a rule from a ruleset is false.
+var ErrRuleNotValid = errors.New("rule is not valid")
 
-var bundleCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "bundle",
-		Aliases: []string{"b"},
-		Short:   "Bundle commands",
-	}
-
-	// Bundle commands
-	cmd.AddCommand(bundleDumpCmd())
-	cmd.AddCommand(bundleReadCmd())
-	cmd.AddCommand(bundleEncryptCmd())
-	cmd.AddCommand(bundleDecryptCmd())
-	cmd.AddCommand(bundleDiffCmd())
-	cmd.AddCommand(bundlePatchCmd())
-	cmd.AddCommand(bundleFilterCmd())
-	cmd.AddCommand(bundleLintCmd())
-
-	return cmd
+// PackageLinter describes linter engine contract.
+type PackageLinter interface {
+	EvaluatePackage(ctx context.Context, p *bundlev1.Package) error
 }

@@ -24,6 +24,7 @@ require (
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3
+	github.com/google/cel-go v0.7.2
 	github.com/google/go-cmp v0.5.4
 	github.com/google/gofuzz v1.2.0
 	github.com/google/gops v0.3.14
@@ -67,7 +68,7 @@ require (
 	golang.org/x/text v0.3.5 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	golang.org/x/tools v0.1.0 // indirect
-	google.golang.org/genproto v0.0.0-20210203152818-3206188e46ba // indirect
+	google.golang.org/genproto v0.0.0-20210203152818-3206188e46ba
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/ini.v1 v1.62.0 // indirect
