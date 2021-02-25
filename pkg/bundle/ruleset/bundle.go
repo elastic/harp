@@ -47,7 +47,7 @@ func FromBundle(b *bundlev1.Bundle) (*bundlev1.RuleSet, error) {
 
 	// Create ruleset
 	rs := &bundlev1.RuleSet{
-		ApiVersion: "harp.elastic.co/linter/v1",
+		ApiVersion: "harp.elastic.co/v1",
 		Kind:       "RuleSet",
 		Meta: &bundlev1.RuleSetMeta{
 			Name:        b64Root,
