@@ -61,6 +61,7 @@ var mainCmd = func() *cobra.Command {
 	cmd.AddCommand(passphraseCmd())
 	cmd.AddCommand(docCmd())
 	cmd.AddCommand(bugCmd())
+	cmd.AddCommand(rulesetCmd())
 
 	cmd.AddCommand(pluginCmd())
 	cmd.AddCommand(csoCmd())
