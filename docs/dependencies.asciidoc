@@ -110,6 +110,7 @@ This page lists the third-party dependencies used to build {n}.
 | link:https://github.com/aws/aws-sdk-go[$$github.com/aws/aws-sdk-go$$] | v1.25.37 | Apache-2.0
 | link:https://github.com/beorn7/perks[$$github.com/beorn7/perks$$] | v1.0.0 | MIT
 | link:https://github.com/bgentry/speakeasy[$$github.com/bgentry/speakeasy$$] | v0.1.0 | MIT
+| link:https://github.com/bitly/go-simplejson[$$github.com/bitly/go-simplejson$$] | v0.5.0 | MIT
 | link:https://github.com/bketelsen/crypt[$$github.com/bketelsen/crypt$$] | v0.0.3-0.20200106085610-5cbc8cc4026c | MIT
 | link:https://github.com/census-instrumentation/opencensus-proto[$$github.com/census-instrumentation/opencensus-proto$$] | v0.2.1 | Apache-2.0
 | link:https://github.com/cespare/xxhash[$$github.com/cespare/xxhash$$] | v1.1.0 | MIT
@@ -138,7 +139,7 @@ This page lists the third-party dependencies used to build {n}.
 | link:https://github.com/go-stack/stack[$$github.com/go-stack/stack$$] | v1.8.0 | MIT
 | link:https://github.com/go-task/slim-sprig[$$github.com/go-task/slim-sprig$$] | v0.0.0-20210107165309-348f09dbbbc0 | MIT
 | link:https://github.com/go-test/deep[$$github.com/go-test/deep$$] | v1.0.3 | MIT
-| link:https://github.com/gogo/protobuf[$$github.com/gogo/protobuf$$] | v1.2.1 | BSD-3-Clause
+| link:https://github.com/gogo/protobuf[$$github.com/gogo/protobuf$$] | v1.3.2 | BSD-3-Clause
 | link:https://github.com/golang/glog[$$github.com/golang/glog$$] | v0.0.0-20160126235308-23def4e6c14b | Apache-2.0
 | link:https://github.com/golang/groupcache[$$github.com/golang/groupcache$$] | v0.0.0-20190129154638-5b532d6fd5ef | Apache-2.0
 | link:https://github.com/golang/snappy[$$github.com/golang/snappy$$] | v0.0.1 | BSD-3-Clause
@@ -187,7 +188,7 @@ This page lists the third-party dependencies used to build {n}.
 | link:https://github.com/jtolds/gls[$$github.com/jtolds/gls$$] | v4.20.0+incompatible | MIT
 | link:https://github.com/julienschmidt/httprouter[$$github.com/julienschmidt/httprouter$$] | v1.2.0 | BSD-3-Clause
 | link:https://github.com/keybase/go-ps[$$github.com/keybase/go-ps$$] | v0.0.0-20190827175125-91aafc93ba19 | MIT
-| link:https://github.com/kisielk/errcheck[$$github.com/kisielk/errcheck$$] | v1.1.0 | MIT
+| link:https://github.com/kisielk/errcheck[$$github.com/kisielk/errcheck$$] | v1.5.0 | MIT
 | link:https://github.com/kisielk/gotool[$$github.com/kisielk/gotool$$] | v1.0.0 | BSD-3-Clause
 | link:https://github.com/konsorten/go-windows-terminal-sequences[$$github.com/konsorten/go-windows-terminal-sequences$$] | v1.0.1 | MIT
 | link:https://github.com/kr/fs[$$github.com/kr/fs$$] | v0.1.0 | BSD-3-Clause
