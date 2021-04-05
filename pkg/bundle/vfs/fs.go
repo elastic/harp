@@ -64,7 +64,10 @@ func FromBundle(b *bundlev1.Bundle) (afero.Fs, error) {
 
 			// Check if secret is a file
 			if value, ok := secrets["@content"]; ok {
-				content := value.([]byte)
+				content, ok := value.([]byte)
+				if !ok {
+					return nil, fmt.Errorf("@content must be a byte array")
+				}
 
 				// Assign file content as value
 				box = memguard.NewEnclave(content)

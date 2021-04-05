@@ -119,19 +119,40 @@ func (packageLib) ProgramOptions() []cel.ProgramOption {
 
 func celPackageMatchPath(lhs, rhs ref.Val) ref.Val {
 	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
-	p := x.(*bundlev1.Package)
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
 
-	pathTyped := rhs.(types.String)
-	path := pathTyped.Value().(string)
+	pathTyped, ok := rhs.(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	path, ok := pathTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
 
 	return types.Bool(glob.MustCompile(path).Match(p.Name))
 }
 
 func celPackageHasSecret(lhs, rhs ref.Val) ref.Val {
 	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
-	p := x.(*bundlev1.Package)
-	secretTyped := rhs.(types.String)
-	secretName := secretTyped.Value().(string)
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	secretTyped, ok := rhs.(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	secretName, ok := secretTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
 
 	// No secret data
 	if p.Secrets == nil || p.Secrets.Data == nil || len(p.Secrets.Data) == 0 {
@@ -150,9 +171,16 @@ func celPackageHasSecret(lhs, rhs ref.Val) ref.Val {
 
 func celPackageHasAllSecrets(lhs, rhs ref.Val) ref.Val {
 	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
-	p := x.(*bundlev1.Package)
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
+
 	secretsTyped, _ := rhs.ConvertToNative(reflect.TypeOf([]string{}))
-	secretNames := secretsTyped.([]string)
+	secretNames, ok := secretsTyped.([]string)
+	if !ok {
+		return types.Bool(false)
+	}
 
 	// No secret data
 	if p.Secrets == nil || p.Secrets.Data == nil || len(p.Secrets.Data) == 0 {
@@ -181,7 +209,10 @@ func celPackageHasAllSecrets(lhs, rhs ref.Val) ref.Val {
 
 func celPackageIsCSOCompliant(lhs ref.Val) ref.Val {
 	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
-	p := x.(*bundlev1.Package)
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
 
 	if err := csov1.Validate(p.Name); err != nil {
 		return types.Bool(false)
@@ -193,9 +224,20 @@ func celPackageIsCSOCompliant(lhs ref.Val) ref.Val {
 func celPackageGetSecret(reg ref.TypeAdapter) func(lhs, rhs ref.Val) ref.Val {
 	return func(lhs, rhs ref.Val) ref.Val {
 		x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
-		p := x.(*bundlev1.Package)
-		secretTyped := rhs.(types.String)
-		secretName := secretTyped.Value().(string)
+		p, ok := x.(*bundlev1.Package)
+		if !ok {
+			return types.Bool(false)
+		}
+
+		secretTyped, ok := rhs.(types.String)
+		if !ok {
+			return types.Bool(false)
+		}
+
+		secretName, ok := secretTyped.Value().(string)
+		if !ok {
+			return types.Bool(false)
+		}
 
 		// No secret data
 		if p.Secrets == nil || p.Secrets.Data == nil || len(p.Secrets.Data) == 0 {

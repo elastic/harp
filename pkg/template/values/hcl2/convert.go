@@ -37,7 +37,10 @@ type jsonObj map[string]interface{}
 // This assumes that the body is a hclsyntax.Body
 func convertFile(file *hcl.File) (jsonObj, error) {
 	c := converter{bytes: file.Bytes}
-	body := file.Body.(*hclsyntax.Body)
+	body, ok := file.Body.(*hclsyntax.Body)
+	if !ok {
+		return nil, fmt.Errorf("file has an unexpected body type: %T", file.Body)
+	}
 	return c.convertBody(body)
 }
 

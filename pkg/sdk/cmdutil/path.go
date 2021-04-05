@@ -47,7 +47,7 @@ func Expand(path string) (string, error) {
 }
 
 func getHomeDir() (string, error) {
-	home := ""
+	var home string
 
 	switch runtime.GOOS {
 	case "windows":

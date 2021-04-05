@@ -121,7 +121,10 @@ func (secretLib) ProgramOptions() []cel.ProgramOption {
 func celValidatorBuilder(rules ...validation.Rule) func(ref.Val) ref.Val {
 	return func(lhs ref.Val) ref.Val {
 		x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.KV{}))
-		p := x.(*bundlev1.KV)
+		p, ok := x.(*bundlev1.KV)
+		if !ok {
+			return types.Bool(false)
+		}
 
 		var out string
 		if err := secret.Unpack(p.Value, &out); err != nil {
