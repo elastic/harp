@@ -5,10 +5,14 @@ go 1.16
 // Snyk finding
 replace github.com/satori/go.uuid => github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 
+// Nancy findings
+replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
+
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/awnumar/memguard v0.22.2
 	github.com/basgys/goxml2json v1.1.0
+	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cloudflare/tableflip v1.2.2
 	github.com/common-nighthawk/go-figure v0.0.0-20200609044655-c4b36f998cf2
