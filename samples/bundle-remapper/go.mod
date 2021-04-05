@@ -1,6 +1,6 @@
 module HARP.elastic.co/remapper
 
-go 1.15
+go 1.16
 
 replace github.com/elastic/harp => ../../
 

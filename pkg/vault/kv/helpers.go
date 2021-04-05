@@ -67,7 +67,10 @@ func kvPreflightVersionRequest(client *api.Client, secretPath string) (string, i
 	}
 	var mountPath string
 	if mountPathRaw, ok := secret.Data["path"]; ok {
-		mountPath = mountPathRaw.(string)
+		mountPath, ok = mountPathRaw.(string)
+		if !ok {
+			return "", 0, errors.New("path must be a string")
+		}
 	}
 	options := secret.Data["options"]
 	if options == nil {
@@ -77,7 +80,10 @@ func kvPreflightVersionRequest(client *api.Client, secretPath string) (string, i
 	if versionRaw == nil {
 		return mountPath, 1, nil
 	}
-	version := versionRaw.(string)
+	version, ok := versionRaw.(string)
+	if !ok {
+		return "", 0, errors.New("version must be a string")
+	}
 	switch version {
 	case "", "1":
 		return mountPath, 1, nil

@@ -34,6 +34,11 @@ linters:
     - wrapcheck
     - ifshort
     - cyclop
+    - interfacer # Deprecated
+    - maligned # Deprecated
+    - scopelint # Deprecated
+    - nilerr
+    - gomoddirectives
 
 output:
   format: colored-line-number

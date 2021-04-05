@@ -108,7 +108,10 @@ func (bfs *bundleFs) Open(name string) (fs.File, error) {
 		if !ok {
 			return nil, fmt.Errorf("directory '%s' not found: %w", dirName, fs.ErrNotExist)
 		}
-		currentDirectory = it.(*directory)
+		currentDirectory, ok = it.(*directory)
+		if !ok {
+			return nil, errors.New("invalid directory iterator value")
+		}
 	}
 
 	// Get child
@@ -204,7 +207,10 @@ func (bfs *bundleFs) WriteFile(name string, data []byte, perm os.FileMode) error
 			currentDirectory.children[dirName] = it
 			currentDirectory.Unlock()
 		}
-		currentDirectory = it.(*directory)
+		currentDirectory, ok = it.(*directory)
+		if !ok {
+			return errors.New("invalid directory iterator value")
+		}
 	}
 
 	// Create file entry

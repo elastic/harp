@@ -339,7 +339,10 @@ func JSON(w io.Writer, b *bundlev1.Bundle) error {
 	}
 
 	// Clone bundle (we don't want to modify input bundle)
-	cloned := proto.Clone(b).(*bundlev1.Bundle)
+	cloned, ok := proto.Clone(b).(*bundlev1.Bundle)
+	if !ok {
+		return fmt.Errorf("the cloned bundle does not have a correct type: %T", cloned)
+	}
 
 	// Initialize marshaller
 	m := &protojson.MarshalOptions{}

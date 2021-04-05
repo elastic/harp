@@ -76,7 +76,7 @@ func (s *kvv2Backend) List(ctx context.Context, path string) ([]string, error) {
 	// Convert list of interface to list of string
 	out := make([]string, len(r))
 	for i := range r {
-		out[i] = r[i].(string)
+		out[i] = fmt.Sprintf("%v", r[i])
 	}
 
 	// No error

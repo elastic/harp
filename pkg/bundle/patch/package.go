@@ -79,19 +79,22 @@ func Checksum(spec *bundlev1.Patch) (string, error) {
 func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}) (*bundlev1.Bundle, error) {
 	// Validate spec
 	if err := Validate(spec); err != nil {
-		return b, fmt.Errorf("unable to validate spec: %w", err)
+		return nil, fmt.Errorf("unable to validate spec: %w", err)
 	}
 	if b == nil {
-		return b, fmt.Errorf("cannot process nil bundle")
+		return nil, fmt.Errorf("cannot process nil bundle")
 	}
 
 	// Prepare selectors
 	if len(spec.Spec.Rules) == 0 {
-		return b, fmt.Errorf("empty bundle patch")
+		return nil, fmt.Errorf("empty bundle patch")
 	}
 
 	// Copy bundle
-	bCopy := proto.Clone(b).(*bundlev1.Bundle)
+	bCopy, ok := proto.Clone(b).(*bundlev1.Bundle)
+	if !ok {
+		return nil, fmt.Errorf("the cloned bundle does not have the expected type: %T", bCopy)
+	}
 
 	// Initialize empty package list
 	packageList := make([]*bundlev1.Package, 0)
@@ -110,7 +113,7 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 
 		_, err := executeRule(spec.Meta.Name, r, p, values)
 		if err != nil {
-			return b, fmt.Errorf("unable to execute rule index %d: %w", i, err)
+			return nil, fmt.Errorf("unable to execute rule index %d: %w", i, err)
 		}
 
 		// Add created package
@@ -124,7 +127,7 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 		for i, r := range spec.Spec.Rules {
 			action, err := executeRule(spec.Meta.Name, r, p, values)
 			if err != nil {
-				return b, fmt.Errorf("unable to execute rule index %d: %w", i, err)
+				return nil, fmt.Errorf("unable to execute rule index %d: %w", i, err)
 			}
 			if action == packagedRemoved {
 				lastAction = action
