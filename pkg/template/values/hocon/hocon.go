@@ -94,13 +94,15 @@ func visitNode(node *hocon.HoconValue) interface{} {
 }
 
 func hoconIncludeCallback(filename string) *hocon.HoconRoot {
-	if files, err := filepath.Glob(filename); err != nil {
+	files, err := filepath.Glob(filename)
+	switch {
+	case err != nil:
 		log.Bg().Error("hocon: unable to load file glob", zap.Error(err), zap.String("filename", filename))
 		return nil
-	} else if len(files) == 0 {
+	case len(files) == 0:
 		log.Bg().Warn("hocon: unable to load file %s", zap.String("filename", filename))
 		return hocon.Parse("", nil)
-	} else {
+	default:
 		root := hocon.Parse("", nil)
 		for _, f := range files {
 			data, err := ioutil.ReadFile(f)

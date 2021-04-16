@@ -355,7 +355,7 @@ func (t *parser) valList() ([]interface{}, error) {
 	}
 }
 
-func runesUntil(in io.RuneReader, stop map[rune]bool) ([]rune, rune, error) {
+func runesUntil(in io.RuneReader, stop map[rune]bool) (runeset []rune, last rune, err error) {
 	v := []rune{}
 	for {
 		switch r, _, e := in.ReadRune(); {

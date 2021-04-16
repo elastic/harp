@@ -121,7 +121,7 @@ func (ctx *context) StrictMode() bool {
 }
 
 // Delims returns left and right delimiters used to compile the template.
-func (ctx *context) Delims() (string, string) {
+func (ctx *context) Delims() (left, right string) {
 	return ctx.delimLeft, ctx.delimRight
 }
 

@@ -354,11 +354,12 @@ func ToJWS(payload, privkey interface{}) (string, error) {
 	case *rsa.PrivateKey:
 		alg = jose.RS256
 	case *ecdsa.PrivateKey:
-		if k.Curve == elliptic.P256() {
+		switch k.Curve {
+		case elliptic.P256():
 			alg = jose.ES256
-		} else if k.Curve == elliptic.P384() {
+		case elliptic.P384():
 			alg = jose.ES384
-		} else if k.Curve == elliptic.P521() {
+		case elliptic.P521():
 			alg = jose.ES512
 		}
 	case ed25519.PrivateKey:

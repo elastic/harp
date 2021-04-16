@@ -25,12 +25,11 @@ import (
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/secret"
-	csov1 "github.com/elastic/harp/pkg/cso/v1"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/template/engine"
 )
 
-func parseSecretTemplate(templateContext engine.Context, ring csov1.Ring, secretPath string, item *bundlev1.SecretSuffix, data interface{}) (*bundlev1.Package, error) {
+func parseSecretTemplate(templateContext engine.Context, secretPath string, item *bundlev1.SecretSuffix, data interface{}) (*bundlev1.Package, error) {
 	// Prepare secret chain
 	chain, err := buildSecretChain(templateContext, secretPath, item, data)
 	if err != nil {

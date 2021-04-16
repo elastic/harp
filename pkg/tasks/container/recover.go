@@ -71,7 +71,8 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 		errDecrypt error
 	)
 
-	if input.Private.Encoding == "jwe" {
+	switch {
+	case input.Private.Encoding == "jwe":
 		// Parse JWE Token
 		jwe, errParse := jose.ParseEncrypted(input.Private.Content)
 		if errParse != nil {
@@ -83,12 +84,12 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 		if errDecrypt != nil {
 			return fmt.Errorf("unable to decrypt JWE token")
 		}
-	} else if strings.HasPrefix(input.Private.Encoding, "kms:vault:") {
+	case strings.HasPrefix(input.Private.Encoding, "kms:vault:"):
 		payload, errDecrypt = t.unsealWithVaultTransitKey(ctx, input.Private.Content)
 		if errDecrypt != nil {
 			return fmt.Errorf("unable to decrypt using Vault")
 		}
-	} else {
+	default:
 		return fmt.Errorf("unknown private key encoding '%s'", input.Private.Encoding)
 	}
 

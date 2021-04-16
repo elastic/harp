@@ -141,7 +141,7 @@ func (b *platformSecretBuilder) VisitForComponent(obj *bundlev1.PlatformComponen
 		}
 
 		// Compile template
-		p, err := parseSecretTemplate(b.templateContext, csov1.RingPlatform, secretPath, item, tmplModel)
+		p, err := parseSecretTemplate(b.templateContext, secretPath, item, tmplModel)
 		if err != nil {
 			b.err = err
 			return

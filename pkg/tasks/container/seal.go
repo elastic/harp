@@ -158,7 +158,7 @@ func (t *SealTask) Run(ctx context.Context) error {
 	return nil
 }
 
-func (t *SealTask) generateContainerKey() (*[32]byte, *[32]byte, error) {
+func (t *SealTask) generateContainerKey() (publicKey, privateKey *[32]byte, err error) {
 	// Generate random container key
 	seed := rand.Reader
 

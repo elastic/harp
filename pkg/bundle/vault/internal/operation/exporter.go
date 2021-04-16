@@ -306,7 +306,7 @@ func (op *exporter) packSecret(key string, value interface{}) (*bundlev1.KV, err
 	}, nil
 }
 
-func extractVersion(packagePath string) (string, uint32, error) {
+func extractVersion(packagePath string) (mountPath string, backendVersion uint32, err error) {
 	// Check arguments
 	if packagePath == "" {
 		return "", 0, fmt.Errorf("unable to extract path and version from an empty string")

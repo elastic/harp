@@ -66,7 +66,7 @@ func Serve(ctx context.Context, srv *Server) error {
 	})
 
 	// Preparing instrumentation
-	instrumentationRouter := instrumentServer(ctx, srv, appID)
+	instrumentationRouter := instrumentServer(ctx, srv)
 
 	// Configure graceful restart
 	upg := reloader.Create(ctx)
@@ -144,7 +144,7 @@ func Serve(ctx context.Context, srv *Server) error {
 	return group.Run()
 }
 
-func instrumentServer(ctx context.Context, srv *Server, appID string) *http.ServeMux {
+func instrumentServer(ctx context.Context, srv *Server) *http.ServeMux {
 	instrumentationRouter := http.NewServeMux()
 
 	// Register common features

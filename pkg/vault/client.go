@@ -22,6 +22,7 @@ import (
 
 	"github.com/hashicorp/vault/api"
 
+	"github.com/elastic/harp/pkg/vault/cubbyhole"
 	"github.com/elastic/harp/pkg/vault/kv"
 	"github.com/elastic/harp/pkg/vault/transit"
 )
@@ -32,6 +33,7 @@ import (
 type ServiceFactory interface {
 	KV(mountPath string) (kv.Service, error)
 	Transit(mounthPath, keyName string) (transit.Service, error)
+	Cubbyhole(mountPath string) (cubbyhole.Service, error)
 }
 
 // -----------------------------------------------------------------------------
@@ -41,11 +43,16 @@ func DefaultClient() (ServiceFactory, error) {
 	// Initialize default config
 	conf := api.DefaultConfig()
 
-	// Inittialize vault client
+	// Initialize vault client
 	vaultClient, err := api.NewClient(conf)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize vault client: %w", err)
 	}
+
+	// Set default expiration for wrapped tokens
+	vaultClient.SetWrappingLookupFunc(func(operation, path string) string {
+		return "120s"
+	})
 
 	// Delegate to other constructor.
 	return FromVaultClient(vaultClient)
@@ -72,4 +79,8 @@ func (c *client) KV(mountPath string) (kv.Service, error) {
 
 func (c *client) Transit(mountPath, keyName string) (transit.Service, error) {
 	return transit.New(c.Client, mountPath, keyName)
+}
+
+func (c *client) Cubbyhole(mountPath string) (cubbyhole.Service, error) {
+	return cubbyhole.New(c.Client, mountPath)
 }

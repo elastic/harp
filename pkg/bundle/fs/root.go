@@ -32,6 +32,11 @@ import (
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
+const (
+	directoryAccess = 0o555
+	fileAccess      = 0o444
+)
+
 type bundleFs struct {
 	root *directory
 }
@@ -66,7 +71,7 @@ func FromBundle(b *bundlev1.Bundle) (BundleFS, error) {
 		}
 
 		// Write content
-		if errWrite := bfs.WriteFile(p.Name, body, 0o555); errWrite != nil {
+		if errWrite := bfs.WriteFile(p.Name, body, fileAccess); errWrite != nil {
 			return nil, fmt.Errorf("unable to write package '%s' in filesystem: %w", p.Name, err)
 		}
 	}
@@ -199,7 +204,7 @@ func (bfs *bundleFs) WriteFile(name string, data []byte, perm os.FileMode) error
 		if !ok {
 			it = &directory{
 				name:     dirName,
-				perm:     0o555,
+				perm:     directoryAccess,
 				children: map[string]interface{}{},
 			}
 
@@ -217,7 +222,7 @@ func (bfs *bundleFs) WriteFile(name string, data []byte, perm os.FileMode) error
 	currentDirectory.Lock()
 	currentDirectory.children[fname] = &file{
 		name:    fname,
-		mode:    0o444,
+		mode:    fileAccess,
 		size:    int64(len(data)),
 		content: memguard.NewEnclave(data),
 	}

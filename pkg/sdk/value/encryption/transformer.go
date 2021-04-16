@@ -49,25 +49,26 @@ func FromKey(keyValue string) (value.Transformer, error) {
 	}
 
 	// Build the value transformer according to used prefix.
-	if strings.HasPrefix(keyValue, secretboxPrefix) {
+	switch {
+	case strings.HasPrefix(keyValue, secretboxPrefix):
 		// Activate Nacl SecretBox transformer
 		transformer, err = secretbox.Transformer(strings.TrimPrefix(keyValue, secretboxPrefix))
-	} else if strings.HasPrefix(keyValue, aesgcmPrefix) {
+	case strings.HasPrefix(keyValue, aesgcmPrefix):
 		// Activate AES-GCM transformer
 		transformer, err = aead.AESGCM(strings.TrimPrefix(keyValue, aesgcmPrefix))
-	} else if strings.HasPrefix(keyValue, aespmacsivPrefix) {
+	case strings.HasPrefix(keyValue, aespmacsivPrefix):
 		// Activate AES-PMAC-SIV transformer
 		transformer, err = aead.AESPMACSIV(strings.TrimPrefix(keyValue, aespmacsivPrefix))
-	} else if strings.HasPrefix(keyValue, chachaPrefix) {
+	case strings.HasPrefix(keyValue, chachaPrefix):
 		// Activate ChaCha20Poly1305 transformer
 		transformer, err = aead.Chacha20Poly1305(strings.TrimPrefix(keyValue, chachaPrefix))
-	} else if strings.HasPrefix(keyValue, xchachaPrefix) {
+	case strings.HasPrefix(keyValue, xchachaPrefix):
 		// Activate XChaCha20Poly1305 transformer
 		transformer, err = aead.XChacha20Poly1305(strings.TrimPrefix(keyValue, xchachaPrefix))
-	} else if strings.HasPrefix(keyValue, fernetPrefix) {
+	case strings.HasPrefix(keyValue, fernetPrefix):
 		// Activate Fernet transformer
 		transformer, err = fernet.Transformer(strings.TrimPrefix(keyValue, fernetPrefix))
-	} else {
+	default:
 		// Fallback to fernet
 		transformer, err = fernet.Transformer(keyValue)
 	}

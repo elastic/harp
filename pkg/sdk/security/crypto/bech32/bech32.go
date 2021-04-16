@@ -109,15 +109,17 @@ func convertBits(data []byte, frombits, tobits byte, pad bool) ([]byte, error) {
 			ret = append(ret, byte(acc>>bits)&maxv)
 		}
 	}
-	if pad {
+	switch {
+	case pad:
 		if bits > 0 {
 			ret = append(ret, byte(acc<<(tobits-bits))&maxv)
 		}
-	} else if bits >= frombits {
+	case bits >= frombits:
 		return nil, fmt.Errorf("illegal zero padding")
-	} else if byte(acc<<(tobits-bits))&maxv != 0 {
+	case byte(acc<<(tobits-bits))&maxv != 0:
 		return nil, fmt.Errorf("non-zero padding")
 	}
+
 	return ret, nil
 }
 
