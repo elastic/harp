@@ -15,17 +15,23 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package logical
+package cmd
 
-import "github.com/hashicorp/vault/api"
+import (
+	"github.com/spf13/cobra"
+)
 
-//go:generate mockgen -destination logical.mock.go -package logical github.com/elastic/harp/pkg/vault/logical Logical
+// -----------------------------------------------------------------------------
 
-// Logical backend interface
-type Logical interface {
-	Read(path string) (*api.Secret, error)
-	ReadWithData(path string, data map[string][]string) (*api.Secret, error)
-	Write(path string, data map[string]interface{}) (*api.Secret, error)
-	List(path string) (*api.Secret, error)
-	Unwrap(token string) (*api.Secret, error)
+var shareCmd = func() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "share",
+		Short: "Share secret using Vault Cubbyhole",
+	}
+
+	// Add sub commands
+	cmd.AddCommand(sharePutCmd())
+	cmd.AddCommand(shareGetCmd())
+
+	return cmd
 }

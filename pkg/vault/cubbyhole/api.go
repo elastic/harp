@@ -15,17 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package logical
+package cubbyhole
 
-import "github.com/hashicorp/vault/api"
+import (
+	"context"
+	"io"
+)
 
-//go:generate mockgen -destination logical.mock.go -package logical github.com/elastic/harp/pkg/vault/logical Logical
+type Reader interface {
+	Get(ctx context.Context, token string, w io.Writer) error
+}
 
-// Logical backend interface
-type Logical interface {
-	Read(path string) (*api.Secret, error)
-	ReadWithData(path string, data map[string][]string) (*api.Secret, error)
-	Write(path string, data map[string]interface{}) (*api.Secret, error)
-	List(path string) (*api.Secret, error)
-	Unwrap(token string) (*api.Secret, error)
+type Writer interface {
+	Put(ctx context.Context, r io.Reader) (string, error)
+}
+
+type Service interface {
+	Reader
+	Writer
 }

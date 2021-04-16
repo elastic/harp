@@ -150,7 +150,7 @@ func (b *infrastructureSecretBuilder) VisitForService(obj *bundlev1.Infrastructu
 		}
 
 		// Compile template
-		p, err := parseSecretTemplate(b.templateContext, csov1.RingInfra, secretPath, item, tmplModel)
+		p, err := parseSecretTemplate(b.templateContext, secretPath, item, tmplModel)
 		if err != nil {
 			b.err = err
 			return

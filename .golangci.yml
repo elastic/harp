@@ -13,47 +13,74 @@ run:
     - ".*\\.gen\\.go$"
     - ".*\\_gen\\.go$"
     - "mock_.*\\.go"
+    - ".*\\.resolvers\\.go$"
 
-linters:
-  enable-all: true
-  disable:
-    - gomnd
-    - wsl
-    - bodyclose
-    - unparam
-    - lll
-    - gochecknoglobals
-    - gochecknoinits
-    - dupl
-    - nestif
-    - godot
-    - goerr113
-    - nlreturn
-    - gci
-    - exhaustivestruct
-    - wrapcheck
-    - ifshort
-    - cyclop
-    - interfacer # Deprecated
-    - maligned # Deprecated
-    - scopelint # Deprecated
-    - nilerr
-    - gomoddirectives
+  # default is true. Enables skipping of directories:
+  #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
+  skip-dirs-use-default: true
 
+  # by default isn't set. If set we pass it to "go list -mod={option}". From "go help modules":
+  # If invoked with -mod=readonly, the go command is disallowed from the implicit
+  # automatic updating of go.mod described above. Instead, it fails when any changes
+  # to go.mod are needed. This setting is most useful to check that go.mod does
+  # not need updates, such as in a continuous integration and testing system.
+  # If invoked with -mod=vendor, the go command assumes that the vendor
+  # directory holds the correct copies of dependencies and ignores
+  # the dependency descriptions in go.mod.
+  modules-download-mode: readonly
+
+  # Allow multiple parallel golangci-lint instances running.
+  # If false (default) - golangci-lint acquires file lock on start.
+  allow-parallel-runners: false
+
+# output configuration options
 output:
+  # colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
+  # default is "colored-line-number"
   format: colored-line-number
+
+  # print lines of code with issue, default is true
   print-issued-lines: true
+
+  # print linter name in the end of issue text, default is true
   print-linter-name: true
 
+  # make issues output unique by line, default is true
+  uniq-by-line: true
+
+  # add a prefix to the output file references; default is no prefix
+  path-prefix: ""
+
+  # sorts results by: filepath, line and column
+  sort-results: false
+
 linters-settings:
+  dogsled:
+    # checks assignments with too many blank identifiers; default is 2
+    max-blank-identifiers: 2
+  dupl:
+    # tokens count to trigger issue, 150 by default
+    threshold: 150
   errcheck:
-    # report about not checking of errors in type assetions: `a := b.(MyStruct)`;
+    # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
     # default is false: such cases aren't reported by default.
     check-type-assertions: false
 
     # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`;
     # default is false: such cases aren't reported by default.
     check-blank: false
+
+    # [deprecated] comma-separated list of pairs of the form pkg:regex
+    # the regex is used to ignore names within pkg. (default "fmt:.*").
+    # see https://github.com/kisielk/errcheck#the-deprecated-method for details
+    ignore: fmt:.*,io/ioutil:^Read.*
+  exhaustive:
+    # check switch statements in generated files also
+    check-generated: false
+    # indicates that switch statements are to be considered exhaustive if a
+    # 'default' case is present, even if all enum members aren't listed in the
+    # switch
+    default-signifies-exhaustive: false
   govet:
     # report about shadowed variables
     check-shadowing: true
@@ -65,18 +92,32 @@ linters-settings:
     simplify: true
   gocyclo:
     min-complexity: 15
-  maligned:
-    suggest-new: true
-  dupl:
-    threshold: 150
-  goconst:
-    min-len: 3
-    min-occurrences: 3
   misspell:
     locale: US
   lll:
     line-length: 140
     tab-width: 1
+  gci:
+    # put imports beginning with prefix after 3rd-party packages;
+    # only support one prefix
+    # if not set, use goimports.local-prefixes
+    local-prefixes: github.com/elastic
+  gocognit:
+    # minimal code complexity to report, 30 by default (but we recommend 10-20)
+    min-complexity: 20
+  goconst:
+    # minimal length of string constant, 3 by default
+    min-len: 3
+    # minimal occurrences count to trigger, 3 by default
+    min-occurrences: 3
+  nestif:
+    # minimal complexity of if statements to report, 5 by default
+    min-complexity: 4
+  gomnd:
+    settings:
+      mnd:
+        # don't include the "operation" and "assign"
+        checks: argument,case,condition,return
   unused:
     # treat code as a program (not a library) and report unused exported identifiers; default is false.
     # XXX: if you enable this setting, unused will report a lot of false-positives in text editors:
@@ -102,19 +143,6 @@ linters-settings:
     simple: true
     range-loops: true # Report preallocation suggestions on range loops, true by default
     for-loops: false # Report preallocation suggestions on for loops, false by default
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - unnamedResult
-      - wrapperFunc
-      - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - ifElseChain
-      - octalLiteral
   funlen:
     lines: 100
     statements: 50
@@ -142,9 +170,55 @@ linters-settings:
       KIND, either express or implied.  See the License for the
       specific language governing permissions and limitations
       under the License.
+  gocritic:
+    # Enable multiple checks by tags, run `GL_DEBUG=gocritic golangci-lint run` to see all tags and checks.
+    # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+      - opinionated
+      - experimental
 
-issues:
-  max-per-linter: 0
-  max-same: 0
-  new: false
-  exclude-use-default: true
+linters:
+  enable:
+    - bodyclose
+    - deadcode
+    - depguard
+    - dogsled
+    # - dupl
+    - errcheck
+    - errorlint
+    - exportloopref
+    - exhaustive
+    - forbidigo
+    - funlen
+    # - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goheader
+    - goimports
+    - golint
+    # - gomnd
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    # - lll
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - rowserrcheck
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace

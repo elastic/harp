@@ -24,7 +24,7 @@ import (
 )
 
 // IsKVv2 detect if the givent path match a kv v2 engine.
-func isKVv2(secretPath string, client *api.Client) (string, bool, error) {
+func isKVv2(secretPath string, client *api.Client) (mountPath string, isV2 bool, err error) {
 	mountPath, version, err := kvPreflightVersionRequest(client, secretPath)
 	if err != nil {
 		return "", false, err
@@ -33,7 +33,7 @@ func isKVv2(secretPath string, client *api.Client) (string, bool, error) {
 	return mountPath, version == 2, nil
 }
 
-func kvPreflightVersionRequest(client *api.Client, secretPath string) (string, int, error) {
+func kvPreflightVersionRequest(client *api.Client, secretPath string) (mountPath string, backendVersion int, err error) {
 	// We don't want to use a wrapping call here so save any custom value and
 	// restore after
 	currentWrappingLookupFunc := client.CurrentWrappingLookupFunc()
@@ -65,7 +65,6 @@ func kvPreflightVersionRequest(client *api.Client, secretPath string) (string, i
 	if secret == nil {
 		return "", 0, errors.New("nil response from pre-flight request")
 	}
-	var mountPath string
 	if mountPathRaw, ok := secret.Data["path"]; ok {
 		mountPath, ok = mountPathRaw.(string)
 		if !ok {

@@ -48,7 +48,7 @@ func Keypair(keyType string) (interface{}, error) {
 
 // -----------------------------------------------------------------------------
 
-func generateKeyPair(keyType string) (interface{}, interface{}, error) {
+func generateKeyPair(keyType string) (publicKey, privateKey interface{}, err error) {
 	switch keyType {
 	case "rsa", "rsa:normal", "rsa:2048":
 		key, err := rsa.GenerateKey(rand.Reader, 2048)
