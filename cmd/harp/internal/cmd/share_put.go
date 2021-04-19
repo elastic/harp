@@ -33,7 +33,6 @@ import (
 var sharePutCmd = func() *cobra.Command {
 	var (
 		inputPath     string
-		outputPath    string
 		backendPrefix string
 		namespace     string
 		ttl           time.Duration
@@ -51,7 +50,7 @@ var sharePutCmd = func() *cobra.Command {
 			// Prepare task
 			t := &share.PutTask{
 				InputReader:    cmdutil.FileReader(inputPath),
-				OutputWriter:   cmdutil.FileWriter(outputPath),
+				OutputWriter:   cmdutil.StdoutWriter(),
 				BackendPrefix:  backendPrefix,
 				VaultNamespace: namespace,
 				TTL:            ttl,
@@ -66,9 +65,8 @@ var sharePutCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&inputPath, "", "-", "Input path ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&outputPath, "", "-", "Output path ('-' for stdout or filename)")
-	cmd.Flags().StringVar(&backendPrefix, "prefix", "", "Vault backend prefix")
+	cmd.Flags().StringVar(&inputPath, "in", "-", "Input path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&backendPrefix, "prefix", "cubbyhole", "Vault backend prefix")
 	cmd.Flags().StringVar(&namespace, "namespace", "", "Vault namespace")
 	cmd.Flags().DurationVar(&ttl, "ttl", 30*time.Second, "Token expiration")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "Display result as json")

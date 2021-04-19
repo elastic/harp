@@ -60,8 +60,8 @@ var shareGetCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&outputPath, "", "-", "Output path ('-' for stdout or filename)")
-	cmd.Flags().StringVar(&backendPrefix, "prefix", "", "Vault backend prefix")
+	cmd.Flags().StringVar(&outputPath, "out", "-", "Output path ('-' for stdout or filename)")
+	cmd.Flags().StringVar(&backendPrefix, "prefix", "cubbyhole", "Vault backend prefix")
 	cmd.Flags().StringVar(&namespace, "namespace", "", "Vault namespace")
 	cmd.Flags().StringVar(&token, "token", "", "Wrapped token")
 	log.CheckErr("unable to mark 'token' flag as required.", cmd.MarkFlagRequired("token"))
