@@ -3,3 +3,6 @@ CVE-2020-15114
 CVE-2020-15136
 CVE-2020-15115
 # end
+# go-jwt issues - can be ignored because not used
+CVE-2020-26160
+# end

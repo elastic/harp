@@ -9,6 +9,7 @@ replace github.com/satori/go.uuid => github.com/satori/go.uuid v1.2.1-0.20181028
 replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 
 require (
+	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/awnumar/memguard v0.22.2
 	github.com/basgys/goxml2json v1.1.0
