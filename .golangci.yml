@@ -200,7 +200,6 @@ linters:
     - gofmt
     - goheader
     - goimports
-    - golint
     # - gomnd
     - goprintffuncname
     - gosec
@@ -212,6 +211,7 @@ linters:
     - nakedret
     - noctx
     - nolintlint
+    - revive
     - rowserrcheck
     - staticcheck
     - structcheck
