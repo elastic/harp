@@ -27,7 +27,7 @@ import (
 
 // Keep only last 2 versions
 var goVersions = []string{
-	"~1.16.4",
+	"~1.16.5",
 }
 
 func init() {
