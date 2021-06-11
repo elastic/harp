@@ -49,6 +49,9 @@ func executeRule(patchName string, r *bundlev1.PatchRule, p *bundlev1.Package, v
 	if r == nil {
 		return packageUnchanged, fmt.Errorf("cannot process nil rule")
 	}
+	if r.Package == nil {
+		return packageUnchanged, fmt.Errorf("cannot process rule with nil package")
+	}
 	if p == nil {
 		return packageUnchanged, fmt.Errorf("cannot process nil package")
 	}
