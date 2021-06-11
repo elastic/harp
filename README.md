@@ -11,8 +11,8 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
 
 ## Why harp?
 
-* Secret management essentially processes which must be auditable and
-  executable for infosec and operation requirements;
+* Secret management is in essence a collection of processes that must be
+  auditable, executable and reproducible for infosec and operation requirements;
 * `Developers` should negotiate secret value for the secret consumer they are
   currently developing, by contract based on a path and a value specification
   without the knowledge of the final deployed value;
