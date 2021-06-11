@@ -11,17 +11,17 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
 
 ## Why harp?
 
-* Secret management is essentially processes which must be auditable and
+* Secret management essentially processes which must be auditable and
   executable for infosec and operation requirements;
-* `Developers` should negociate secret value for the secret consumer they are
+* `Developers` should negotiate secret value for the secret consumer they are
   currently developing, by contract based on a path and a value specification
   without the knowledge of the final deployed value;
-* `Secret Operators` use different set of tools in order to achieve secret
-  management operation which increase the error probability due to tool count
+* `Secret Operators` use different set of tools to achieve secret
+  management operation which increases the error probability due to tool count
   involved in the process (incompatibility, changes, etc.);
-* Without a defined secret namming convention, the secret storage become difficult to
-  handle in time (namming is hard) and secret namming could not be assisted to
-  get a consistent an dreliable secret organization;
+* Without a defined secret naming convention, the secret storage becomes difficult to
+  handle in time (naming is hard) and secret naming could not be assisted to
+  get a consistent and reliable secret organization;
 * Secret storage backend can use various implementations in different environments.
 
 ## How does it work?
@@ -31,12 +31,26 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
 ### Like a Data pipeline but for secret
 
 `harp` allows you to handle secrets using deterministic pipelines expressed
-using a atomic serie of cli operations applied to a commonly shared container
+using an atomic series of CLI operations applied to a commonly shared container
 immutable and standalone filesystem used to store secret collection (Bundle)
 generated from a template engine via user specification, or external secret
-value comming from files or secret storage.
+value coming from files or external secret storage.
 
 ![Pipelines](docs/harp/img/SM-HARP.png)
+
+These pipelines use the immutable container filesystem as a data exchange
+protocol and could be extended for new input, intermediary operation or output
+via plugins created with the `harp` SDK.
+
+### Immutable transformation
+
+Each applied transformation create a container with transformed data inside.
+This will enforce container reproducibility by eliminating cumulative
+side-effects applied to the same container.
+
+The container handles for you the confidentiality and integrity protection applied
+to the secret collection stored inside and manipulated by copy during the
+pipeline execution.
 
 ## What can I do?
 
