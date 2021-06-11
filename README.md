@@ -9,13 +9,44 @@
 Harp is for Harpocrates (Ancient Greek: Ἁρποκράτης) the god of silence, secrets
 and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipedia.org/wiki/Harpocrates)
 
+## Why harp?
+
+* Secret management is essentially processes which must be auditable and
+  executable for infosec and operation requirements;
+* `Developers` should negociate secret value for the secret consumer they are
+  currently developing, by contract based on a path and a value specification
+  without the knowledge of the final deployed value;
+* `Secret Operators` use different set of tools in order to achieve secret
+  management operation which increase the error probability due to tool count
+  involved in the process (incompatibility, changes, etc.);
+* Without a defined secret namming convention, the secret storage become difficult to
+  handle in time (namming is hard) and secret namming could not be assisted to
+  get a consistent an dreliable secret organization;
+* Secret storage backend can use various implementations in different environments.
+
+## How does it work?
+
+![Secret management Pipeline](docs/harp/img/SM-HARP-PIPELINE.png)
+
+### Like a Data pipeline but for secret
+
+`harp` allows you to handle secrets using deterministic pipelines expressed
+using a atomic serie of cli operations applied to a commonly shared container
+immutable and standalone filesystem used to store secret collection (Bundle)
+generated from a template engine via user specification, or external secret
+value comming from files or secret storage.
+
+![Pipelines](docs/harp/img/SM-HARP.png)
+
+## What can I do?
+
 > New to harp, let's start with [onboarding tutorial](samples/onboarding/README.md) !
 > TL;DR - [Features overview](FEATURES.md)
 
 Harp provides :
 
 * A methodology to design your secret management;
-  * Secret naming convention;
+  * Secret naming convention (CSO);
   * A defined common language and complete processes to achieve secret management
     operations;
 * A SDK to create your own tools to orchestrate your secret management pipelines;

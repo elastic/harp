@@ -1,18 +1,47 @@
 # Features overview
 
+- [Glossary](#glossary)
+- [Bundle management](#bundle-management)
+- [Features](#features)
+- [Pipelines](#pipelines)
+- [Usages](#usages)
+  - [Secret Container](#secret-container)
+    - [Seal a secret container](#seal-a-secret-container)
+      - [Create an identity](#create-an-identity)
+        - [Use a passphrase as private key protection](#use-a-passphrase-as-private-key-protection)
+        - [Use Vault in\-transit key to encrypt private key](#use-vault-in-transit-key-to-encrypt-private-key)
+      - [Ephemeral Container Key](#ephemeral-container-key)
+      - [Deterministic Container Key](#deterministic-container-key)
+      - [Recover a container key from indentity](#recover-a-container-key-from-indentity)
+    - [Unseal a secret container](#unseal-a-secret-container)
+  - [Secret Bundle](#secret-bundle)
+    - [Create a bundle from template](#create-a-bundle-from-template)
+    - [Create a bundle from a JSON map](#create-a-bundle-from-a-json-map)
+    - [Read a secret value](#read-a-secret-value)
+      - [Example](#example)
+    - [Calculate a bundle difference](#calculate-a-bundle-difference)
+    - [Patch a bundle](#patch-a-bundle)
+    - [Dump a secret bundle](#dump-a-secret-bundle)
+    - [Import a JSON bundle](#import-a-json-bundle)
+    - [Encrypt secret values](#encrypt-secret-values)
+    - [Decrypt secret values](#decrypt-secret-values)
+  - [Vault specific commands](#vault-specific-commands)
+    - [Export a complete secret backend from Vault](#export-a-complete-secret-backend-from-vault)
+    - [Import a bundle in a target secret backend in Vault](#import-a-bundle-in-a-target-secret-backend-in-vault)
+
 ## Glossary
 
-* `secret` is a tuple of information identified by a `key` holding a `value`
-  characterized by an array of bytes.
-* `package` is a collection of `secret` kv pair, it is identified by a name
-  usually called the secret path;
-* `bundle` is a collection of `package` items, and form an atomic group of
-  information representing a secret value state.
-* `container/crate` is the file used to securely store the `bundle`.
-* `secret operator` is a role assigned to an identity allowed to manage secrets;
-* `secret consumer`is a role assigned to an identity allowed to read secrets with
-  authorized policy;
-* `secret backend` is a technical component used to store and organize secrets;
+- `secret` is a tuple of information identified by a `key` holding a `value`
+    characterized by an array of bytes.
+- `package` is a collection of `secret` kv pair, it is identified by a name
+    usually called the secret path;
+- `bundle` is a collection of `package` items, and form an atomic group of
+    information representing a secret value state.
+- `container/crate` is the file used to securely store the `bundle`.
+- `secret operator` is a role assigned to an identity allowed to manage secrets;
+- `secret consumer`is a role assigned to an identity allowed to read secrets with
+    authorized policy;
+- `secret backend` is a technical component used to store and organize secrets;
 
 ## Bundle management
 
@@ -24,16 +53,17 @@ and reproductible.
 
 ### Features
 
-* Input(s)
-  * Read
-    * `Hashicorp Vault`
-    * JSON map
-    * Secret container dump
-  * Generate
-    * `BundleTemplate` for secret bootstrap
+- Input(s)
 
-* Ouput(s)
-  * `Hashicorp Vault`
+  - Read
+    - `Hashicorp Vault`
+    - JSON map
+    - Secret container dump
+  - Generate
+    - `BundleTemplate` for secret bootstrap
+
+- Ouput(s)
+  - `Hashicorp Vault`
 
 ### Pipelines
 
@@ -86,15 +116,15 @@ Sample identity
 
 ```json
 {
-  "@apiVersion": "harp.elastic.co/v1",
-  "@kind": "ContainerIdentity",
-  "@timestamp": "2020-10-27T19:56:47.47957Z",
-  "@description": "Recovery",
-  "public": "KWgAQdzWeKo8xvClMM_rY_NgNq9wCsQsODxSNtqUJV4",
-  "private": {
-    "encoding": "jwe",
-    "content": "eyJhbGciOiJQQkVTMi1IUzUxMitBMjU2S1ciLCJjdHkiOiJqd2sranNvbiIsImVuYyI6IkEyNTZHQ00iLCJwMmMiOjUwMDAwMSwicDJzIjoiYmtFNE9GaFljV3MwTTFobGMxcERSQSJ9.gzyUTwV9QjP6bic22QkQlqmwAeGhnubDFEFiruRP2x1xL84K90teSw.n4_O17H720MKw972.CipjKnrp4Mb5Hgdy1xcUcEHh3ioyg0UbGXd_RneFiopTq0qUm1u4aymq9fSabdrRiKlW3LjGy71MpF8kd_0SD1-5Qzg13NId8oTRI1hnfZDKBrN_nZMPYIOnACqSTB7kjywHdZS0rhHDCVQUtYUy5JAkiw-rRge6ShOlidwNshI.xCc_XAaEPjJIGc9Ucb1asg"
-  }
+    "@apiVersion": "harp.elastic.co/v1",
+    "@kind": "ContainerIdentity",
+    "@timestamp": "2020-10-27T19:56:47.47957Z",
+    "@description": "Recovery",
+    "public": "KWgAQdzWeKo8xvClMM_rY_NgNq9wCsQsODxSNtqUJV4",
+    "private": {
+        "encoding": "jwe",
+        "content": "eyJhbGciOiJQQkVTMi1IUzUxMitBMjU2S1ciLCJjdHkiOiJqd2sranNvbiIsImVuYyI6IkEyNTZHQ00iLCJwMmMiOjUwMDAwMSwicDJzIjoiYmtFNE9GaFljV3MwTTFobGMxcERSQSJ9.gzyUTwV9QjP6bic22QkQlqmwAeGhnubDFEFiruRP2x1xL84K90teSw.n4_O17H720MKw972.CipjKnrp4Mb5Hgdy1xcUcEHh3ioyg0UbGXd_RneFiopTq0qUm1u4aymq9fSabdrRiKlW3LjGy71MpF8kd_0SD1-5Qzg13NId8oTRI1hnfZDKBrN_nZMPYIOnACqSTB7kjywHdZS0rhHDCVQUtYUy5JAkiw-rRge6ShOlidwNshI.xCc_XAaEPjJIGc9Ucb1asg"
+    }
 }
 ```
 
@@ -134,15 +164,15 @@ Sample identity
 
 ```json
 {
-  "@apiVersion": "harp.elastic.co/v1",
-  "@kind": "ContainerIdentity",
-  "@timestamp": "2020-10-27T19:58:51.398987Z",
-  "@description": "Recovery",
-  "public": "4hHPpiJMnVhQFlnveRKeCdaPoqHzW74Rro0S1X33QS4",
-  "private": {
-    "encoding": "kms:vault:q6pcgHWM6wSJWG6OYmHM97DMMeerqTXExYAolfhn4N8",
-    "content": "vault:v1:CNMnI9sIRYYD6pRl1TQ3KHHO+JCmfZiAtD+XBnnIxHt4F6CeFYmuUtY6k7+XAMxtAWG5NtLgS0uyPken2ef1ihJ6Pf6DOtlgDUCnDKyVEvGeZcdOdaZHTgc3YIX/wDY9odmtUvjJGaPNMtIADtMPcjkOLgZH3FnF701dJcsKPxr1fqTQd8mCiFFWqWF9kOQYMqf/1yBybcY6XOGI"
-  }
+    "@apiVersion": "harp.elastic.co/v1",
+    "@kind": "ContainerIdentity",
+    "@timestamp": "2020-10-27T19:58:51.398987Z",
+    "@description": "Recovery",
+    "public": "4hHPpiJMnVhQFlnveRKeCdaPoqHzW74Rro0S1X33QS4",
+    "private": {
+        "encoding": "kms:vault:q6pcgHWM6wSJWG6OYmHM97DMMeerqTXExYAolfhn4N8",
+        "content": "vault:v1:CNMnI9sIRYYD6pRl1TQ3KHHO+JCmfZiAtD+XBnnIxHt4F6CeFYmuUtY6k7+XAMxtAWG5NtLgS0uyPken2ef1ihJ6Pf6DOtlgDUCnDKyVEvGeZcdOdaZHTgc3YIX/wDY9odmtUvjJGaPNMtIADtMPcjkOLgZH3FnF701dJcsKPxr1fqTQd8mCiFFWqWF9kOQYMqf/1yBybcY6XOGI"
+    }
 }
 ```
 
@@ -189,9 +219,9 @@ $ harp container seal \
 Container key : ....
 ```
 
-* The `dckd-master-key` flag defines the root key used for derivation.
-* The `dckd-target` flag defines an arbitry string acting as a salt for Key
-  Derivation Function.
+- The `dckd-master-key` flag defines the root key used for derivation.
+- The `dckd-target` flag defines an arbitry string acting as a salt for Key
+    Derivation Function.
 
 #### Recover a container key from indentity
 
@@ -239,49 +269,49 @@ Given this YAML specificcation :
 apiVersion: harp.elastic.co/v1
 kind: BundleTemplate
 meta:
-  name: "Ecebootstrap"
-  owner: syseng@elstc.co
-  description: "ECE Secret Bootstrap"
+    name: "Ecebootstrap"
+    owner: syseng@elstc.co
+    description: "ECE Secret Bootstrap"
 spec:
-  selector:
-    product: "ece"
-    version: "v1.0.0"
-  namespaces:
-    infrastructure:
-    - provider: "aws"
-      description: "ESSP AWS Account"
-      regions:
-      - name: "us-east-1"
-        services:
-        - type: "rds"
-          name: "adminconsole"
-          description: "PostgreSQL Database used for AdminConsole storage backend"
-          secrets:
-          - suffix: "accounts/root_credentials"
-            description: "Root Admin Account"
-            template: |
-              {
-                "user": "{{.Provider}}-{{.Account}}-{{.Region}}-dbroot-{{ randAlphaNum 8 }}",
-                "password": "{{ paranoidPassword | b64enc }}"
-              }
+    selector:
+        product: "ece"
+        version: "v1.0.0"
+    namespaces:
+        infrastructure:
+            - provider: "aws"
+              description: "ESSP AWS Account"
+              regions:
+                  - name: "us-east-1"
+                    services:
+                        - type: "rds"
+                          name: "adminconsole"
+                          description: "PostgreSQL Database used for AdminConsole storage backend"
+                          secrets:
+                              - suffix: "accounts/root_credentials"
+                                description: "Root Admin Account"
+                                template: |
+                                    {
+                                      "user": "{{.Provider}}-{{.Account}}-{{.Region}}-dbroot-{{ randAlphaNum 8 }}",
+                                      "password": "{{ paranoidPassword | b64enc }}"
+                                    }
 
-        - type: "mail"
-          name: "mailgun"
-          description: "Mailgun encryption keys"
-          secrets:
-          - suffix: "security/signature_keys"
-            description: "Signature keys"
-            template: |
-                {
-                    "privateKey": "{{ $sigKey := cryptoPair "rsa" }}{{ $sigKey.Private | jwk | b64enc }}",
-                    "publicKey": "{{ $sigKey.Public | jwk | b64enc }}"
-                }
-          - suffix: "security/encryption_keys"
-            description: "Encryption keys"
-            template: |
-                {
-                    "encryptionKey": "{{ cryptoKey "aes:256" }}"
-                }
+                        - type: "mail"
+                          name: "mailgun"
+                          description: "Mailgun encryption keys"
+                          secrets:
+                              - suffix: "security/signature_keys"
+                                description: "Signature keys"
+                                template: |
+                                    {
+                                        "privateKey": "{{ $sigKey := cryptoPair "rsa" }}{{ $sigKey.Private | jwk | b64enc }}",
+                                        "publicKey": "{{ $sigKey.Public | jwk | b64enc }}"
+                                    }
+                              - suffix: "security/encryption_keys"
+                                description: "Encryption keys"
+                                template: |
+                                    {
+                                        "encryptionKey": "{{ cryptoKey "aes:256" }}"
+                                    }
 ```
 
 </p>
@@ -386,30 +416,29 @@ It uses a specification to apply tranformations to the given bundle.
 apiVersion: harp.elastic.co/v1
 kind: BundlePatch
 meta:
-  name: "postgresql-rotator"
-  owner: cloud-security@elastic.co
-  description: "Rotate postgresql password"
+    name: "postgresql-rotator"
+    owner: cloud-security@elastic.co
+    description: "Rotate postgresql password"
 spec:
-  rules:
-  # Target a precise secret
-  - selector:
-      matchPath:
-        # Strict match
-        strict: "platform/{{.Values.quality}}/{{.Values.account}}/{{.Values.region}}/postgresql/{{.Values.component}}/admin_credentials"
+    rules:
+        # Target a precise secret
+        - selector:
+              matchPath:
+                  # Strict match
+                  strict: "platform/{{.Values.quality}}/{{.Values.account}}/{{.Values.region}}/postgresql/{{.Values.component}}/admin_credentials"
 
-    # Apply this operation on selector matches
-    package:
-      # Access data
-      data:
-        # Target an explicit keys only
-        kv:
-          remove: [ "port" ]
-          add:
-            "listener": "5432"
-          update:
-            "username": "dbuser-{{.Values.component}}-{{ randAlphaNum 8 }}"
-            "password": "{{ paranoidPassword | b64enc }}"
-
+          # Apply this operation on selector matches
+          package:
+              # Access data
+              data:
+                  # Target an explicit keys only
+                  kv:
+                      remove: ["port"]
+                      add:
+                          "listener": "5432"
+                      update:
+                          "username": "dbuser-{{.Values.component}}-{{ randAlphaNum 8 }}"
+                          "password": "{{ paranoidPassword | b64enc }}"
 ```
 
 </p>
@@ -424,35 +453,35 @@ spec:
 apiVersion: harp.elastic.co/v1
 kind: BundlePatch
 meta:
-  name: "fernet-key-rotator"
-  owner: cloud-security@elastic.co
-  description: "Rotate or create all fernet key of given bundle"
+    name: "fernet-key-rotator"
+    owner: cloud-security@elastic.co
+    description: "Rotate or create all fernet key of given bundle"
 spec:
-  rules:
-  # Object selector
-  - selector:
-      # Package path match this regexp
-      matchPath:
-        # Regex match
-        regex: ".*"
+    rules:
+        # Object selector
+        - selector:
+              # Package path match this regexp
+              matchPath:
+                  # Regex match
+                  regex: ".*"
 
-    # Apply this operation
-    package:
-      # On package annotation
-      annotations:
-        # Update annotation value with new secret
-        update:
-          secret-service.elstc.co/encryptionKey: |-
-            {{ cryptoKey "fernet" }}
+          # Apply this operation
+          package:
+              # On package annotation
+              annotations:
+                  # Update annotation value with new secret
+                  update:
+                      secret-service.elstc.co/encryptionKey: |-
+                          {{ cryptoKey "fernet" }}
 
-      # On package data
-      data:
-        # Update annotations
-        annotations:
-          # Update annotation value with new secret
-          update:
-            secret-service.elstc.co/encryptionKey: |-
-              {{ cryptoKey "fernet" }}
+              # On package data
+              data:
+                  # Update annotations
+                  annotations:
+                      # Update annotation value with new secret
+                      update:
+                          secret-service.elstc.co/encryptionKey: |-
+                              {{ cryptoKey "fernet" }}
 ```
 
 </p>
@@ -543,9 +572,9 @@ platform/production/customer-1/us-east-1/zookeeper/accounts/admin_credentials
 
 Sometimes, you need to process secret bundle before using it for example :
 
-* Secret rotation
-* Bundle modifications
-* Namespace or Package remapping
+- Secret rotation
+- Bundle modifications
+- Namespace or Package remapping
 
 For that, you need to dump the secret bundle, process the JSON using your tool
 or language, and then reimport the bundle to generate the binary one.
@@ -561,9 +590,9 @@ can encrypt secret values.
 
 Supported encryption:
 
-* `aes256-gcm96`
-* `secretbox`
-* `fernet`
+- `aes256-gcm96`
+- `secretbox`
+- `fernet`
 
 For this purpose, you have to generate a key using `keygen` subcommands.
 
