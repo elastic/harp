@@ -13,16 +13,21 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
 
 * Secret management is in essence a collection of processes that must be
   auditable, executable and reproducible for infosec and operation requirements;
+* Secret provisioning must be designed with secret rotation as a day one task,
+  due to the fact that secret data must be rotated periodically to keep its
+  secret property;
 * `Developers` should negotiate secret value for the secret consumer they are
-  currently developing, by contract based on a path and a value specification
-  without the knowledge of the final deployed value;
+  currently developing, by the contract based on a path (reference to the secret)
+  and a value specification (for code contract) without the knowledge of the
+  final deployed value;
 * `Secret Operators` use different set of tools to achieve secret
-  management operation which increases the error probability due to tool count
-  involved in the process (incompatibility, changes, etc.);
+  management operation which increases the error/secret exposure probability due to
+  tool count involved in the process (incompatibility, changes, etc.);
 * Without a defined secret naming convention, the secret storage becomes difficult to
-  handle in time (naming is hard) and secret naming could not be assisted to
-  get a consistent and reliable secret organization;
-* Secret storage backend can use various implementations in different environments.
+  handle in time (naming is hard) and secret naming could not be helped to
+  get a consistent, reliable and flexible secret tree;
+* Secret storage backend can use various implementations in different environments
+  and should be provisioned consistently.
 
 ## How does it work?
 
