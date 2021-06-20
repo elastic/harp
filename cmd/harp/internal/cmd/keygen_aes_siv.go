@@ -18,27 +18,29 @@
 package cmd
 
 import (
+	"encoding/base64"
+	"fmt"
+	"os"
+
+	"github.com/awnumar/memguard"
 	"github.com/spf13/cobra"
+
+	"github.com/elastic/harp/pkg/sdk/cmdutil"
 )
 
 // -----------------------------------------------------------------------------
 
-var keygenCmd = func() *cobra.Command {
+var keygenAESSIVCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "keygen",
-		Aliases: []string{"kg"},
-		Short:   "Key generation commands",
-	}
+		Use:   "aes-siv",
+		Short: "Generate and print an AES-SIV key",
+		Run: func(cmd *cobra.Command, args []string) {
+			_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-aessiv", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			defer cancel()
 
-	// Subcommands
-	cmd.AddCommand(keygenFernetCmd())
-	cmd.AddCommand(keygenSecretBoxCmd())
-	cmd.AddCommand(keygenAESCmd())
-	cmd.AddCommand(keygenMasterKeyCmd())
-	cmd.AddCommand(keygenChaChaCmd())
-	cmd.AddCommand(keygenXChaChaCmd())
-	cmd.AddCommand(keygenAESPMACSIVCmd())
-	cmd.AddCommand(keygenAESSIVCmd())
+			fmt.Fprintf(os.Stdout, "aes-siv:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(64).Bytes()))
+		},
+	}
 
 	return cmd
 }

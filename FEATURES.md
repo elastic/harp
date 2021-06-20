@@ -4,6 +4,25 @@
 * [Bundle management](#bundle-management)
   * [Features](#features)
   * [Pipelines](#pipelines)
+* [Template Engine](#template-engine)
+  * [Render a template](#render-a-template)
+  * [Set external values](#set-external-values)
+  * [Load values from file](#load-values-from-file)
+  * [Value object debugger](#value-object-debugger)
+  * [Load from different filetypes](#load-from-different-filetypes)
+* [Secret Bundle](#secret-bundle)
+  * [Create a bundle from template](#create-a-bundle-from-template)
+  * [Create a bundle from a JSON map](#create-a-bundle-from-a-json-map)
+  * [Read a secret value](#read-a-secret-value)
+  * [Patch a bundle](#patch-a-bundle)
+  * [Calculate a bundle difference](#calculate-a-bundle-difference)
+  * [Dump a secret bundle](#dump-a-secret-bundle)
+  * [Encrypt secret values](#encrypt-secret-values)
+  * [Decrypt secret values](#decrypt-secret-values)
+  * [Linter / Structure checker](#linter--structure-checker)
+    * [Check that all packages are CSO compliant](#check-that-all-packages-are-cso-compliant)
+    * [Validate a secret structure](#validate-a-secret-structure)
+    * [Generate a ruleset from a bundle](#generate-a-ruleset-from-a-bundle)
 * [Secret Container](#secret-container)
   * [Seal a secret container](#seal-a-secret-container)
     * [Create an identity](#create-an-identity)
@@ -12,20 +31,6 @@
     * [Deterministic Container Key](#deterministic-container-key)
   * [Recover a container key from indentity](#recover-a-container-key-from-indentity)
   * [Unseal a secret container](#unseal-a-secret-container)
-* [Secret Bundle](#secret-bundle)
-  * [Create a bundle from template](#create-a-bundle-from-template)
-  * [Create a bundle from a JSON map](#create-a-bundle-from-a-json-map)
-  * [Read a secret value](#read-a-secret-value)
-  * [Calculate a bundle difference](#calculate-a-bundle-difference)
-  * [Patch a bundle](#patch-a-bundle)
-  * [Dump a secret bundle](#dump-a-secret-bundle)
-  * [Import a JSON bundle](#import-a-json-bundle)
-  * [Encrypt secret values](#encrypt-secret-values)
-  * [Decrypt secret values](#decrypt-secret-values)
-  * [Linter / Structure checker](#linter--structure-checker)
-    * [Check that all packages are CSO compliant](#check-that-all-packages-are-cso-compliant)
-    * [Validate a secret structure](#validate-a-secret-structure)
-    * [Generate a ruleset from a bundle](#generate-a-ruleset-from-a-bundle)
 * [Vault specific commands](#vault-specific-commands)
   * [Export a complete secret backend from Vault](#export-a-complete-secret-backend-from-vault)
   * [Import a bundle in a target secret backend in Vault](#import-a-bundle-in-a-target-secret-backend-in-vault)
@@ -67,7 +72,8 @@ and reproductible.
   * Generate
     * `BundleTemplate` for secret bootstrap
 
-* Ouput(s)
+* Builtin Ouput(s)
+  * `Harp Secret Container`
   * `Hashicorp Vault`
 
 ### Pipelines
@@ -83,137 +89,148 @@ using a serie of atomic cli operations.
 > just use the SDK du generate a harp plugin to pull secret and store
 > them as a harp container.
 
-## Secret Container
+## Template Engine
 
-### Seal a secret container
+The provided template engine is used to describe and implement the value
+generation algorithms. You can use it for secret data generation but also for
+various other usecases. [Sample usecases](./samples/onboarding/1-template-engine/9-usecases.md)
 
-#### Create an identity
+As input you can take almost anything which is a string stream.
 
-Identities are cryptographic keypairs (Curve25519) used for sealing process.
+> For more information about the template engine, please read the dedicated
+> section - [Template Engine](./samples/onboarding/1-template-engine/1-introduction.md)
 
-The secret container allows sealing to use multiple identities (public keys) during
-the process so that these identities matching private keys could be used to unseal
-the secret container.
+### Render a template
 
-##### Use a passphrase as private key protection
+`harp` exposes data generation function used to generate the data according to
+the specification described by the user.
 
-Generate a passphrase first. This passphrase will be used to encrypt the
-private key of the identity.
-
-```sh
-harp passphrase > passphrase.txt
-```
-
-> Passphrase must be stored and permissionned effeciently in your secret storage.
-
-Create a recovery identity :
+> Generate an EC P-256 curve keypar, and output the public key using JWK encoding
 
 ```sh
-harp container identity \
-    --passphrase $(cat passphrase.txt) \
-    --description "Recovery" \
-    --out recovery.json
+echo '{{ $key := cryptoPair "ec:p256" }}{{ $key.Public | toJwk }}' | harp template
+{"kty":"EC","kid":"LP2o9bst8ViOGl1q6CIIs23s8g9d6yFAt5iD31qq80w=","crv":"P-256","x":"rIRQRSMbl-DRihd5OGakNWGQcVOsNLICtFfZ5cnJP3U","y":"0OP6GW1Rci4S-0GLtIGbcP3VAPe4lWjwpt8-rZtOvHU"}
 ```
 
-Sample identity
+> Generate a strong password and encode it using Base64
 
-```json
+```sh
+$ echo '{{ strongPassword | b64enc }}' | harp template
+LzBRTl9OcGY8NCF8NDJVMjQvOjIpbFUxbzQhMUB4alE=
+```
+
+> Load a secret from a secret storage (Vault or an Harp Container)
+
+```sh
+$ cat <<EOF | harp template
+export APP_INSTANCE_ID={{ .randAlpha 64 }}
+{{- with secret "app/production/operations/secops/v1.0.0/harp/external/oidc" }}
+export OIDC_SERVER="{{ .authorization_server_url }}"
+export OIDC_CLIENT_ID="{{ .client_id }}"
+export OIDC_CLIENT_SECRET_KEY="{{ .client_private_key | ba64enc }}"
+{{- end }}
+EOF
+export APP_INSTANCE_ID=AcFGdxktUdQBVDaQiMlEMxHvPgqrTOEtiPYZsWFrbOJIqshShlvIxYGkkhlpcBto
+export OIDC_SERVER=https://sso.as.tld
+export OIDC_CLIENT_ID=83af60478e3e2a37a1f42b7a89b6494fa4b04bb7aca9c522de8b9a9b87527d6d
+export OIDC_CLIENT_SECRET_KEY=eyJrdHkiOiJFQyIsImtpZCI6IkdUTnk5X0NwWklUSngyZmViLVVnc...klQSk1Ya2dEMXoyR25HTGcifQ==
+```
+
+### Set external values
+
+You can inject static value during the template rendering process, by adding `set`
+parameters.
+
+```sh
+$ echo 'Secret for {{ .Values.quality }}' | harp template --set quality=production
+Secret for production
+```
+
+### Load values from file
+
+Define a `values.yaml`
+
+```yaml
+account: security
+quality: production
+application:
+    name: harp
+```
+
+Load it during template rendering
+
+```sh
+$ echo 'Account {{ .Values.account }}, quality: {{.Values.quality}} for application {{.Values.application.name}}' | harp template --values values.yaml
+Account security, quality: production for application harp
+```
+
+### Value object debugger
+
+Sometimes you need to inspect the `Values` object. In order to do that, apply
+the same parameters you use for the templae engine to `values` command.
+
+```sh
+$ harp values --values values.yaml --set quality=staging | jq
 {
-  "@apiVersion": "harp.elastic.co/v1",
-  "@kind": "ContainerIdentity",
-  "@timestamp": "2021-02-16T10:06:31.126671Z",
-  "@description": "recovery",
-  "public": "recovery1jjq095c68kjz4e3ck5cvu97qrgf8npm7ck2qfex24nw7zfk2g5jqxkzzwt",
-  "private": {
-    "encoding": "jwe",
-    "content": "eyJhbGciOiJQQkVTMi1IUzUxMitBMjU2S1ciLCJjdHkiOiJqd2sranNvbiIsImVuYyI6IkEyNTZHQ00iLCJwMmMiOjUwMDAwMSwicDJzIjoiVUVVNFdIbHFRMGxEYjI1dWRHWnJiZyJ9.d4qhmOsCNseGI_oyTvOKP6LVdOfEYdKkoplZ0kZuDA1ncUjaKoZOvw.3DmFEueug6zvNkbC.5mvVIkFEBQf9GQulf6BL4TeMfMJcSxQI3sJx3lo0Cf7EJ6ZF1v1U3YaQMB7smG3t9emZNvij5FI8g0DwPd0NHT4BNwuG_-oSbdmHZyD4ilkMdAZYHO9ZctNjLS-0dqV1wG7-uiF40g8FKZbx8UbQ9NDd5UutUTIWfaf8FxhYaf4.xIIn95CNXWAFQd2QCg-tiA"
-  }
+  "account": "security",
+  "application": {
+    "name": "harp"
+  },
+  "quality": "staging"
 }
 ```
 
-> Recovery identity can be "publicly" stored.
+### Load from different filetypes
 
-#### Ephemeral Container Key
-
-For immutability principle, the sealing process generates a new Container Key
-at each execution. It means that all the container consumers must know the new
-container to be able to unseal it.
-
-In order to `seal` a secret container, you can use the following commands :
-
-Seal the container using the generated passphrase for recovery :
+By default value file parsers are detected using the file extension. You can
+override the used parser when needed and also specificy an new root for parsed
+data.
 
 ```sh
-$ harp container seal \
-    --identity $(cat recovery.json | jq -r ".public") \
-    --in unsealed.container \
-    --out sealed.container
-Container Key: .....
+--values=<filename>(:<parser>(:<root>)?)?
 ```
 
-#### Deterministic Container Key
-
-Seal the container using a deterministic container key derived from a master key.
-This will prevent modification of container consumers after each container seals.
-
-Generate a master key :
-
-> Keep this key as an high sensitive secret.
+* `path` can be `-` for stdin or a file path
+* `format` is used to override used parser deducted from file extension (`yaml`, `json`, `xml`, `toml`, `hocon`, `hcl1`, `hcl2`)
+* `prefix` is the name of the root object appended in the final `Values` object
 
 ```sh
-harp keygen master-key > master.key
+$ curl https://...../ecsecurity.conf | harp values -f -:hocon
+{
+  ...json representation of hocon file...
+}
 ```
 
-Seal the secret container using deterministic container key derivation (DCKD) :
+Load TF scripts as values to reuse maps :
 
 ```sh
-$ harp container seal \
-    --identity $(cat recovery.json | jq -r ".public") \
-    --dckd-master-key $(cat master.key) \
-    --dckd-target "customer-1:release-XXX:2020-10-31" \
-    --in unsealed.container \
-    --out sealed.container
-Container key : ....
-```
-
-* The `dckd-master-key` flag defines the root key used for derivation.
-* The `dckd-target` flag defines an arbitry string acting as a salt for Key
-    Derivation Function.
-
-### Recover a container key from indentity
-
-When the container key is lost, you can use attached one of identity private keys
-to unseal the container.
-
-For passphrase recovery :
-
-```sh
-$ harp container recover --identity recovery.json --passphrase $(cat passphrase.txt)
-Container key : mPjzX1A5PcGtZ0nacxkhjl0pZE8XYw84KYF5NO6jhVA
-```
-
-Fo Vault recovery :
-
-```sh
-harp container recover --vault-transit-key harp --identity recovery.json
-Container key : VyEJ6lMy7CPOjJnPYMjH-M7uWUym5utYo4JDVNPPMc8
-```
-
-### Unseal a secret container
-
-In order to modify a bundle, this bundle need to be unsealed.
-
-```sh
-$ harp container seal --in sealed.bundle --out secret.bundle
-Enter container key:
+$ harp values
+  -f infrastructure/common/variables/accounts.tf:hcl2:accounts \
+  -f application/security.conf:hocon:app \
+  --set quality=production \
+  --set-file certificate=ca.pem
+{
+  "accounts": {
+     ...JSON representation of TF (HCL2) file...
+  },
+  "certificate": "...BASE64 encoded file content ...",
+  "app": {
+     ...JSON representation of HOCON file...
+  },
+  "quality": "production"
+}
 ```
 
 ## Secret Bundle
 
+The `SecretBundle` [object](./samples/onboarding/3-secret-bundle/2-bundle.md) is
+used to represent the secret tree mapped using a K/V store.
+
 ### Create a bundle from template
 
 You have to create a `BundleTemplate` that will contains all secret generation
-specification.
+specification to generate a `SecretBundle`.
+
 This specification is embedded in the bundle so that it will be used for secret
 rotation based on the specification.
 
@@ -345,21 +362,6 @@ harp bundle read --in unsealed.bundle \
     --field privateKey
 ```
 
-### Calculate a bundle difference
-
-This is used to generate a diff report from 2 bundles.
-
-```sh
-$ harp bundle diff --src input.bundle --dest other.bundle
-...
-    "infra/aws/customer-1/us-east-1/rds/adminconsole/accounts/root_credentials": bundle.KV{
--       "password": string("YnFkXldoR3E9Z2lJVy5Hc0FeMDhHIUs5eDpHR0E0VTVuaG9JZkRLUW1hN08rNFoyQltKRnwwTDlXQV1lRXRiUA=="),
-+       "password": string("e09+Sjg5UUhWWWFTWC4zWElWaXljQXtlV1ZtNG1PQC9ZZDJWelt5fGFLInNPWXZGMFU1TW45NUhPazQ+TkZYcg=="),
-        "user":     string("dbroot-w9NinCPl"),
-    },
-...
-```
-
 ### Patch a bundle
 
 It uses a specification to apply tranformations to the given bundle.
@@ -458,6 +460,43 @@ This will pull the given value from vault as a bundle, rotate the targeted
 secret according to values and secret path built with them, and then publish
 the bundle back to vault.
 
+### Calculate a bundle difference
+
+This is used to generate a diff report from 2 bundles.
+
+```sh
+$ harp bundle diff --old input.bundle --new other.bundle
+[
+  ...
+  {
+    "op": "add",
+    "type": "secret",
+    "path": "platform/production/customer1/us-east-1/zookeeper/accounts/admin_credentials#username",
+    "value": "zkadmin-DRMRnxsY"
+  },
+  ...
+]
+```
+
+> You can generate the `BundlePatch` from the difference
+
+```sh
+$ harp bundle diff --old input.bundle --new other.bundle --patch
+api_version: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  description: Patch generated from oplog
+  name: autogenerated-patch
+spec:
+  rules:
+  - package:
+      remove: true
+    selector:
+      matchPath:
+        strict: app/staging/customer1/ece/v1.0.0/adminconsole/authentication/otp/okta_api_key
+...
+```
+
 ### Dump a secret bundle
 
 If you need to inspect internal representation of the bundle, you could use
@@ -525,30 +564,15 @@ platform/production/customer-1/us-east-1/postgresql/admiconsole/admin_credential
 platform/production/customer-1/us-east-1/zookeeper/accounts/admin_credentials
 ```
 
-### Import a JSON bundle
-
-Sometimes, you need to process secret bundle before using it for example :
-
-* Secret rotation
-* Bundle modifications
-* Namespace or Package remapping
-
-For that, you need to dump the secret bundle, process the JSON using your tool
-or language, and then reimport the bundle to generate the binary one.
-
-```sh
-harp bundle dump --in input.bundle | ./remap.py | harp from dump --out remapped.bundle
-```
-
 ### Encrypt secret values
 
-In order to protect you unsealed bundle for confidentiality requirements, you
+In order to protect your unsealed bundle for confidentiality requirements, you
 can encrypt secret values.
 
 Supported encryption:
 
 * `aes-gcm` (128, 192, 256)
-* `aes-siv`, `aes-pmac-siv`
+* `aes-siv`, `aes-pmac-siv` (256)
 * `chacha20poly1305`, `xchacha20poly1305`
 * `secretbox`
 * `fernet`
@@ -599,16 +623,16 @@ harp bundle decrypt --in encrypted.bundle --out decrypted.bundle \
 apiVersion: harp.elastic.co/v1
 kind: RuleSet
 meta:
-  name: harp-server
-  description: Package and secret constraints for harp-server
-  owner: security@elastic.co
+    name: harp-server
+    description: Package and secret constraints for harp-server
+    owner: security@elastic.co
 spec:
-  rules:
-    - name: HARP-SRV-0001
-      description: All package paths must be CSO compliant
-      path: "*"
-      constraints:
-        - p.is_cso_compliant()
+    rules:
+        - name: HARP-SRV-0001
+          description: All package paths must be CSO compliant
+          path: "*"
+          constraints:
+              - p.is_cso_compliant()
 ```
 
 Lint an empty bundle will raise an error.
@@ -635,16 +659,16 @@ $ echo '{"infra/aws/security/eu-central-1/ec2/ssh/default/authorized_keys":{"adm
 apiVersion: harp.elastic.co/v1
 kind: RuleSet
 meta:
-  name: harp-server
-  description: Package and secret constraints for harp-server
-  owner: security@elastic.co
+    name: harp-server
+    description: Package and secret constraints for harp-server
+    owner: security@elastic.co
 spec:
-  rules:
-    - name: HARP-SRV-0002
-      description: Database credentials
-      path: "app/qa/security/harp/v1.0.0/server/database/credentials"
-      constraints:
-        - p.has_all_secrets(['DB_HOST','DB_NAME','DB_USER','DB_PASSWORD'])
+    rules:
+        - name: HARP-SRV-0002
+          description: Database credentials
+          path: "app/qa/security/harp/v1.0.0/server/database/credentials"
+          constraints:
+              - p.has_all_secrets(['DB_HOST','DB_NAME','DB_USER','DB_PASSWORD'])
 ```
 
 Lint an empty bundle will raise an error.
@@ -678,85 +702,220 @@ harp ruleset from-bundle --in customer.bundle
 api_version: harp.elastic.co/v1
 kind: RuleSet
 meta:
-  description: Generated from bundle content
-  name: vjz70BPFJuQhm_7quRGNt1ybocQU6DeXCn8h1o4aPm80CI4pM8lNwVBTDqH8SpW0W1r-8dXSVQK67pO-vtgS_Q
+    description: Generated from bundle content
+    name: vjz70BPFJuQhm_7quRGNt1ybocQU6DeXCn8h1o4aPm80CI4pM8lNwVBTDqH8SpW0W1r-8dXSVQK67pO-vtgS_Q
 spec:
-  rules:
-  - constraints:
-    - p.has_secret("API_KEY")
-    name: LINT-vjz70B-1
-    path: app/production/customer1/ece/v1.0.0/adminconsole/authentication/otp/okta_api_key
-  - constraints:
-    - p.has_secret("host")
-    - p.has_secret("port")
-    - p.has_secret("options")
-    - p.has_secret("username")
-    - p.has_secret("password")
-    - p.has_secret("dbname")
-    name: LINT-vjz70B-2
-    path: app/production/customer1/ece/v1.0.0/adminconsole/database/usage_credentials
-  - constraints:
-    - p.has_secret("cookieEncryptionKey")
-    - p.has_secret("sessionSaltSeed")
-    - p.has_secret("jwtHmacKey")
-    name: LINT-vjz70B-3
-    path: app/production/customer1/ece/v1.0.0/adminconsole/http/session
-  - constraints:
-    - p.has_secret("API_KEY")
-    name: LINT-vjz70B-4
-    path: app/production/customer1/ece/v1.0.0/adminconsole/mailing/sender/mailgun_api_key
-  - constraints:
-    - p.has_secret("emailHashPepperSeedKey")
-    name: LINT-vjz70B-5
-    path: app/production/customer1/ece/v1.0.0/adminconsole/privacy/anonymizer
-  - constraints:
-    - p.has_secret("host")
-    - p.has_secret("port")
-    - p.has_secret("options")
-    - p.has_secret("username")
-    - p.has_secret("password")
-    - p.has_secret("dbname")
-    name: LINT-vjz70B-6
-    path: app/production/customer1/ece/v1.0.0/userconsole/database/usage_credentials
-  - constraints:
-    - p.has_secret("privateKey")
-    - p.has_secret("publicKey")
-    name: LINT-vjz70B-7
-    path: app/production/customer1/ece/v1.0.0/userconsole/http/certificate
-  - constraints:
-    - p.has_secret("cookieEncryptionKey")
-    - p.has_secret("sessionSaltSeed")
-    - p.has_secret("jwtHmacKey")
-    name: LINT-vjz70B-8
-    path: app/production/customer1/ece/v1.0.0/userconsole/http/session
-  - constraints:
-    - p.has_secret("user")
-    - p.has_secret("password")
-    name: LINT-vjz70B-9
-    path: infra/aws/essp-customer1/us-east-1/rds/adminconsole/accounts/root_credentials
-  - constraints:
-    - p.has_secret("API_KEY")
-    - p.has_secret("ca.pem")
-    name: LINT-vjz70B-10
-    path: platform/production/customer1/us-east-1/billing/recurly/vendor_api_key
-  - constraints:
-    - p.has_secret("username")
-    - p.has_secret("password")
-    name: LINT-vjz70B-11
-    path: platform/production/customer1/us-east-1/postgresql/admiconsole/admin_credentials
-  - constraints:
-    - p.has_secret("username")
-    - p.has_secret("password")
-    name: LINT-vjz70B-12
-    path: platform/production/customer1/us-east-1/zookeeper/accounts/admin_credentials
-  - constraints:
-    - p.has_secret("privateKey")
-    - p.has_secret("publicKey")
-    name: LINT-vjz70B-13
-    path: product/ece/v1.0.0/artifact/signature/key
+    rules:
+        - constraints:
+              - p.has_secret("API_KEY")
+          name: LINT-vjz70B-1
+          path: app/production/customer1/ece/v1.0.0/adminconsole/authentication/otp/okta_api_key
+        - constraints:
+              - p.has_secret("host")
+              - p.has_secret("port")
+              - p.has_secret("options")
+              - p.has_secret("username")
+              - p.has_secret("password")
+              - p.has_secret("dbname")
+          name: LINT-vjz70B-2
+          path: app/production/customer1/ece/v1.0.0/adminconsole/database/usage_credentials
+        - constraints:
+              - p.has_secret("cookieEncryptionKey")
+              - p.has_secret("sessionSaltSeed")
+              - p.has_secret("jwtHmacKey")
+          name: LINT-vjz70B-3
+          path: app/production/customer1/ece/v1.0.0/adminconsole/http/session
+        - constraints:
+              - p.has_secret("API_KEY")
+          name: LINT-vjz70B-4
+          path: app/production/customer1/ece/v1.0.0/adminconsole/mailing/sender/mailgun_api_key
+        - constraints:
+              - p.has_secret("emailHashPepperSeedKey")
+          name: LINT-vjz70B-5
+          path: app/production/customer1/ece/v1.0.0/adminconsole/privacy/anonymizer
+        - constraints:
+              - p.has_secret("host")
+              - p.has_secret("port")
+              - p.has_secret("options")
+              - p.has_secret("username")
+              - p.has_secret("password")
+              - p.has_secret("dbname")
+          name: LINT-vjz70B-6
+          path: app/production/customer1/ece/v1.0.0/userconsole/database/usage_credentials
+        - constraints:
+              - p.has_secret("privateKey")
+              - p.has_secret("publicKey")
+          name: LINT-vjz70B-7
+          path: app/production/customer1/ece/v1.0.0/userconsole/http/certificate
+        - constraints:
+              - p.has_secret("cookieEncryptionKey")
+              - p.has_secret("sessionSaltSeed")
+              - p.has_secret("jwtHmacKey")
+          name: LINT-vjz70B-8
+          path: app/production/customer1/ece/v1.0.0/userconsole/http/session
+        - constraints:
+              - p.has_secret("user")
+              - p.has_secret("password")
+          name: LINT-vjz70B-9
+          path: infra/aws/essp-customer1/us-east-1/rds/adminconsole/accounts/root_credentials
+        - constraints:
+              - p.has_secret("API_KEY")
+              - p.has_secret("ca.pem")
+          name: LINT-vjz70B-10
+          path: platform/production/customer1/us-east-1/billing/recurly/vendor_api_key
+        - constraints:
+              - p.has_secret("username")
+              - p.has_secret("password")
+          name: LINT-vjz70B-11
+          path: platform/production/customer1/us-east-1/postgresql/admiconsole/admin_credentials
+        - constraints:
+              - p.has_secret("username")
+              - p.has_secret("password")
+          name: LINT-vjz70B-12
+          path: platform/production/customer1/us-east-1/zookeeper/accounts/admin_credentials
+        - constraints:
+              - p.has_secret("privateKey")
+              - p.has_secret("publicKey")
+          name: LINT-vjz70B-13
+          path: product/ece/v1.0.0/artifact/signature/key
 ```
 
 </details>
+
+## Secret Container
+
+The `Secret Container` act as the secret storage used to store securely a
+`SecretBundle`. It is used to transport information from container producer to
+consumers inside the pipeline. It can be used to export a `SecretBundle` and
+exposed via secret consuming protocol (Vault, HTPP, gRPC) using the appropriate
+plugin.
+
+### Seal a secret container
+
+A container must be sealed to keep its confidentiality and integrity property.
+It can be sealed by multiple identities which allow them to unseal it to be able
+to read the inner `SecretBundle` object.
+
+#### Create an identity
+
+Identities are cryptographic keypairs (Curve25519) used for sealing process.
+
+The secret container allows sealing to use multiple identities (public keys) during
+the process so that these identities matching private keys could be used to unseal
+the secret container.
+
+##### Use a passphrase as private key protection
+
+Generate a passphrase first. This passphrase will be used to encrypt the
+private key of the identity.
+
+```sh
+harp passphrase > passphrase.txt
+```
+
+> Passphrase must be stored and permissionned effeciently in your secret storage.
+
+Create a recovery identity :
+
+```sh
+harp container identity \
+    --passphrase $(cat passphrase.txt) \
+    --description "Recovery" \
+    --out recovery.json
+```
+
+Sample identity
+
+```json
+{
+    "@apiVersion": "harp.elastic.co/v1",
+    "@kind": "ContainerIdentity",
+    "@timestamp": "2021-02-16T10:06:31.126671Z",
+    "@description": "recovery",
+    "public": "recovery1jjq095c68kjz4e3ck5cvu97qrgf8npm7ck2qfex24nw7zfk2g5jqxkzzwt",
+    "private": {
+        "encoding": "jwe",
+        "content": "eyJhbGciOiJQQkVTMi1IUzUxMitBMjU2S1ciLCJjdHkiOiJqd2sranNvbiIsImVuYyI6IkEyNTZHQ00iLCJwMmMiOjUwMDAwMSwicDJzIjoiVUVVNFdIbHFRMGxEYjI1dWRHWnJiZyJ9.d4qhmOsCNseGI_oyTvOKP6LVdOfEYdKkoplZ0kZuDA1ncUjaKoZOvw.3DmFEueug6zvNkbC.5mvVIkFEBQf9GQulf6BL4TeMfMJcSxQI3sJx3lo0Cf7EJ6ZF1v1U3YaQMB7smG3t9emZNvij5FI8g0DwPd0NHT4BNwuG_-oSbdmHZyD4ilkMdAZYHO9ZctNjLS-0dqV1wG7-uiF40g8FKZbx8UbQ9NDd5UutUTIWfaf8FxhYaf4.xIIn95CNXWAFQd2QCg-tiA"
+    }
+}
+```
+
+> Recovery identity can be "publicly" stored.
+
+#### Ephemeral Container Key
+
+For immutability principle, the sealing process generates a new Container Key
+at each execution. It means that all the container consumers must know the new
+container to be able to unseal it.
+
+In order to `seal` a secret container, you can use the following commands :
+
+Seal the container using the generated passphrase for recovery :
+
+```sh
+$ harp container seal \
+    --identity $(cat recovery.json | jq -r ".public") \
+    --in unsealed.container \
+    --out sealed.container
+Container Key: .....
+```
+
+#### Deterministic Container Key
+
+Seal the container using a deterministic container key derived from a master key.
+This will prevent modification of container consumers after each container seals.
+
+Generate a master key :
+
+> Keep this key as an high sensitive secret.
+
+```sh
+harp keygen master-key > master.key
+```
+
+Seal the secret container using deterministic container key derivation (DCKD) :
+
+```sh
+$ harp container seal \
+    --identity $(cat recovery.json | jq -r ".public") \
+    --dckd-master-key $(cat master.key) \
+    --dckd-target "customer-1:release-XXX:2020-10-31" \
+    --in unsealed.container \
+    --out sealed.container
+Container key : ....
+```
+
+* The `dckd-master-key` flag defines the root key used for derivation.
+* The `dckd-target` flag defines an arbitry string acting as a salt for Key
+    Derivation Function.
+
+### Recover a container key from indentity
+
+When the container key is lost, you can use attached one of identity private keys
+to unseal the container.
+
+For passphrase recovery :
+
+```sh
+$ harp container recover --identity recovery.json --passphrase $(cat passphrase.txt)
+Container key : mPjzX1A5PcGtZ0nacxkhjl0pZE8XYw84KYF5NO6jhVA
+```
+
+Fo Vault recovery :
+
+```sh
+harp container recover --vault-transit-key harp --identity recovery.json
+Container key : VyEJ6lMy7CPOjJnPYMjH-M7uWUym5utYo4JDVNPPMc8
+```
+
+### Unseal a secret container
+
+In order to modify a bundle, this bundle need to be unsealed.
+
+```sh
+$ harp container seal --in sealed.bundle --out secret.bundle
+Enter container key:
+```
 
 ## Vault specific commands
 
@@ -809,7 +968,7 @@ $ echo -n "my-secret-value" | harp share put
 Token : s.MEc2fYXrzDkUCBzLOcGbIGbK (Expires in 30 seconds)
 ```
 
-Send `<token>`  to User-B via untrusted communication channels (email, slack, ...)
+Send `<token>` to User-B via untrusted communication channels (email, slack, ...)
 
 ```sh
 $ harp share get --token=s.MEc2fYXrzDkUCBzLOcGbIGbK

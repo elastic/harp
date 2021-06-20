@@ -31,6 +31,7 @@ const (
 	secretboxPrefix  = "secretbox:"
 	aesgcmPrefix     = "aes-gcm:"
 	aespmacsivPrefix = "aes-pmac-siv:"
+	aessivPrefix     = "aes-siv:"
 	fernetPrefix     = "fernet:"
 	chachaPrefix     = "chacha:"
 	xchachaPrefix    = "xchacha:"
@@ -56,6 +57,9 @@ func FromKey(keyValue string) (value.Transformer, error) {
 	case strings.HasPrefix(keyValue, aesgcmPrefix):
 		// Activate AES-GCM transformer
 		transformer, err = aead.AESGCM(strings.TrimPrefix(keyValue, aesgcmPrefix))
+	case strings.HasPrefix(keyValue, aessivPrefix):
+		// Activate AES-SIV transformer
+		transformer, err = aead.AESSIV(strings.TrimPrefix(keyValue, aessivPrefix))
 	case strings.HasPrefix(keyValue, aespmacsivPrefix):
 		// Activate AES-PMAC-SIV transformer
 		transformer, err = aead.AESPMACSIV(strings.TrimPrefix(keyValue, aespmacsivPrefix))
