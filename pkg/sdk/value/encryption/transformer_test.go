@@ -92,9 +92,30 @@ func TestFromKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "xchacha",
+			args: args{
+				keyValue: "xchacha:VhfCXaD_QwwwoPCjLJx6vgnaSo0sMPjdCmT0RUUQjBQ=",
+			},
+			wantErr: false,
+		},
+		{
 			name: "fernet",
 			args: args{
 				keyValue: "fernet:ZER8WwNyw5Dsd65bctxillSrRMX4ObaZsQjaNW1nBBI=",
+			},
+			wantErr: false,
+		},
+		{
+			name: "aes-siv",
+			args: args{
+				keyValue: "aes-siv:2XEKpPbE8T0ghLj8Wr9v6stV0YrUCNSoSbtc69Kh-n7-pVaKmWZ8LSvaJOK9BJHqDWE8vyNSzyNpcTYv3-J9lw==",
+			},
+			wantErr: false,
+		},
+		{
+			name: "aes-pmac-siv",
+			args: args{
+				keyValue: "aes-pmac-siv:Brfled4G7okhpCb6T2HMWKgDo1vyqrEdWWVIXfcFUysHaOacXkER5z9GHRuz89scK2TSE962nAFUcScAkihP9w==",
 			},
 			wantErr: false,
 		},

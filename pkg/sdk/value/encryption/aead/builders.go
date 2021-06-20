@@ -55,6 +55,29 @@ func AESGCM(key string) (value.Transformer, error) {
 	}, nil
 }
 
+// AESSIV returns an AES-SIV/AES-CMAC-SIV value transformer instance.
+func AESSIV(key string) (value.Transformer, error) {
+	// Decode key
+	k, err := base64.URLEncoding.DecodeString(key)
+	if err != nil {
+		return nil, fmt.Errorf("aes: unable to decode key: %w", err)
+	}
+	if l := len(k); l != 64 {
+		return nil, fmt.Errorf("aes: invalid secret key length (%d)", l)
+	}
+
+	// Initialize AEAD
+	aead, err := miscreant.NewAEAD("AES-SIV", k, 16)
+	if err != nil {
+		return nil, fmt.Errorf("aes: unable to initialize aes-pmac-siv: %w", err)
+	}
+
+	// Return transformer
+	return &aeadTransformer{
+		aead: aead,
+	}, nil
+}
+
 // AESPMACSIV returns an AES-PMAC-SIV value transformer instance.
 func AESPMACSIV(key string) (value.Transformer, error) {
 	// Decode key
@@ -67,7 +90,7 @@ func AESPMACSIV(key string) (value.Transformer, error) {
 	}
 
 	// Initialize AEAD
-	aead, err := miscreant.NewAEAD("AES-PMAC-SIV", k, 32)
+	aead, err := miscreant.NewAEAD("AES-PMAC-SIV", k, 16)
 	if err != nil {
 		return nil, fmt.Errorf("aes: unable to initialize aes-pmac-siv: %w", err)
 	}
