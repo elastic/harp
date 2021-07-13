@@ -8,6 +8,71 @@ You can find all implemented functions in the external library import nammed
 In order to be able to generate secret values, we have added secret generation
 specialized functions.
 
+### Encoders
+
+#### b64urlenc / b64urldec
+
+Apply BASE64 URL encoding to given input.
+
+```ruby
+{{ paranoidPassword | b64urlenc }}
+fjYySGJoa00iQkdTaXRUQ2d-RVgwfHMwI2tvcG5Yc0xne3RfQV9HZU5YQ3ZTT243XWUyeDVqNjVNQnRMJEdzNA==
+```
+
+Decode a BASE64 URL encoded string.
+
+```ruby
+{{ "fjYySGJoa00iQkdTaXRUQ2d-RVgwfHMwI2tvcG5Yc0xne3RfQV9HZU5YQ3ZTT243XWUyeDVqNjVNQnRMJEdzNA==" | b64urldec }}
+~62HbhkM"BGSitTCg~EX0|s0#kopnXsLg{t_A_GeNXCvSOn7]e2x5j65MBtL$Gs4
+```
+
+#### bech32enc / bech32dec
+
+[Bech32](https://en.bitcoin.it/wiki/Bech32) is an encoding used for many wallet
+address in blockchain space.
+You can encode a binary array with a human readable prefix (HRP), very useful to
+encode crypto-material and keep ownership visible to humans.
+
+> This is the encoding used by container sealing identities.
+
+```ruby
+{{ bechenc <HRP> <[]BYTE> }}
+```
+
+For example with an Ed25519 Public key:
+
+```ruby
+{{ $key := cryptoPair "ed25519" }}
+{{ bech32enc "security" $key.Public }}
+security19f29qq5vq73tdrhspdzkqcdf2exewg2g6xcxe5h74y72qsv7c00sx57ny0
+```
+
+#### shellescape
+
+Apply Shell escaping strategy to allow a string to be safely used in a shell script.
+
+```ruby
+{{ paranoidPassword | shellescape }}
+'tGO48jRkfOiXv8=p?eV^wi7tqJz`ABeQy1ZXk2WE(E1XWuS6%$j+X>QVx93W*WEY'
+```
+
+#### urlPathEscape / urlPathUnescape
+
+Apply url character escaping strategy for components used in path
+
+```ruby
+https://ingester.es.cloud/{{ tenant | urlPathEscape }}/api/v1
+```
+
+#### urlQueryEscape / urlQueryUnescape
+
+Apply url character escaping strategy for components used in query
+
+```ruby
+https://logstash:{{ paranoidPassword | urlQueryEscape }}@ingester.es.cloud:1234
+https://logstash:K3iDayow9%5Cav67HawD6%210k~8lhcm8oLVUBt2wE%3E%5DLBJQJVj%3AfIx%2Fuo%40%7B%3D6kvgXHK@ingester.es.cloud:1234%
+```
+
 ### Secret loader
 
 #### secret

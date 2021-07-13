@@ -11,15 +11,15 @@ require (
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/fatih/color v1.12.0
 	github.com/frapposelli/wwhrd v0.4.0
-	github.com/golang/mock v1.5.0
-	github.com/golangci/golangci-lint v1.40.1
+	github.com/golang/mock v1.6.0
+	github.com/golangci/golangci-lint v1.41.1
 	github.com/google/wire v0.5.0
 	github.com/izumin5210/gex v0.6.1
 	github.com/magefile/mage v1.11.0
 	github.com/stephens2424/writerset v1.0.2 // indirect
 	go.elastic.co/go-licence-detector v0.5.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/protobuf v1.27.1
 	gotest.tools/gotestsum v1.6.4
 	mvdan.cc/gofumpt v0.1.1
 )
