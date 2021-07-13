@@ -99,7 +99,7 @@ tasks:
     deps:
       - release-all
     cmds:
-      - cd dist && sha256sum {{.ARTIFACT}}-*.tar.xz > {{.ARTIFACT}}-checksum.txt
+      - cd dist && sha512sum {{.ARTIFACT}}-*.tar.xz > {{.ARTIFACT}}-checksum.txt
       - cd dist && gpg --detach-sign --armor {{.ARTIFACT}}-checksum.txt
       - cat dist/{{.ARTIFACT}}-checksum.txt
     generates:
