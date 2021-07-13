@@ -18,9 +18,12 @@
 package engine
 
 import (
+	"encoding/base64"
+	"net/url"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/alessio/shellescape"
 
 	"github.com/elastic/harp/pkg/sdk/security/crypto"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
@@ -71,6 +74,21 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 		// Bech32
 		"bech32enc": bech32.Encode,
 		"bech32dec": crypto.Bech32Decode,
+		// URL
+		"urlPathEscape":    url.PathEscape,
+		"urlPathUnescape":  url.PathUnescape,
+		"urlQueryEscape":   url.QueryEscape,
+		"urlQueryUnescape": url.QueryUnescape,
+		// Escape
+		"shellEscape": shellescape.Quote,
+		// Base64
+		"b64urlenc": func(in string) string {
+			return base64.URLEncoding.EncodeToString([]byte(in))
+		},
+		"b64urldec": func(in string) (string, error) {
+			out, err := base64.URLEncoding.DecodeString(in)
+			return string(out), err
+		},
 	}
 
 	for k, v := range extra {
