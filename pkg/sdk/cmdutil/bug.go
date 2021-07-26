@@ -106,10 +106,11 @@ func printOSDetails(w io.Writer) {
 }
 
 func printAppDetails(w io.Writer) {
+	bi := version.NewInfo()
 	fmt.Fprintf(w, "### What version of Secret are you using (`harp version`)?\n\n")
 	fmt.Fprintf(w, "<pre>\n")
 	fmt.Fprintf(w, "$ harp version\n")
-	fmt.Fprintf(w, "%s\n", version.Full())
+	fmt.Fprintf(w, "%s\n", bi.String())
 	fmt.Fprintf(w, "</pre>\n")
 	fmt.Fprintf(w, "\n")
 }

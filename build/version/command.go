@@ -26,7 +26,10 @@ import (
 
 // -----------------------------------------------------------------------------
 
-var displayAsJSON bool
+var (
+	displayAsJSON bool
+	withModules   bool
+)
 
 // Command exports Cobra command builder
 func Command() *cobra.Command {
@@ -34,16 +37,24 @@ func Command() *cobra.Command {
 		Use:   "version",
 		Short: "Display service version",
 		Run: func(cmd *cobra.Command, args []string) {
+			bi := NewInfo()
 			if displayAsJSON {
-				fmt.Fprintf(os.Stdout, "%s", JSON())
+				fmt.Fprintf(os.Stdout, "%s", bi.JSON())
 			} else {
-				fmt.Fprintf(os.Stdout, "%s", Full())
+				fmt.Fprintf(os.Stdout, "%s", bi.String())
+				if withModules {
+					fmt.Fprintln(os.Stdout, "\nDependencies:")
+					for _, dep := range bi.BuildDeps {
+						fmt.Fprintf(os.Stdout, "- %s\n", dep)
+					}
+				}
 			}
 		},
 	}
 
 	// Register parameters
 	cmd.Flags().BoolVar(&displayAsJSON, "json", false, "Display build info as json")
+	cmd.Flags().BoolVar(&withModules, "with-modules", false, "Display builtin go modules")
 
 	// Return command
 	return cmd
