@@ -6,3 +6,6 @@ CVE-2020-15115
 # go-jwt issues - can be ignored because not used
 CVE-2020-26160
 # end
+# vault server indirect dependencies - false positive
+CVE-2019-5736
+# end
