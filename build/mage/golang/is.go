@@ -22,13 +22,12 @@ import (
 	"runtime"
 
 	semver "github.com/Masterminds/semver/v3"
-	"github.com/elastic/harp/pkg/sdk/log"
 	"go.uber.org/zap"
+
+	"github.com/elastic/harp/pkg/sdk/log"
 )
 
-var (
-	versionSemverRe = regexp.MustCompile("[0-9.]+")
-)
+var versionSemverRe = regexp.MustCompile("[0-9.]+")
 
 // Is return true if current go version is included in given array.
 func Is(constraints ...string) bool {

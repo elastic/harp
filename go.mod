@@ -36,8 +36,8 @@ require (
 	github.com/gosimple/slug v1.9.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/hcl v1.0.0
-	github.com/hashicorp/hcl/v2 v2.10.0
-	github.com/hashicorp/vault/api v1.1.0
+	github.com/hashicorp/hcl/v2 v2.10.1
+	github.com/hashicorp/vault/api v1.1.1
 	github.com/iancoleman/strcase v0.2.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jmespath/go-jmespath v0.4.0
@@ -63,8 +63,8 @@ require (
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
-	google.golang.org/genproto v0.0.0-20210713002101-d411969a0d9a
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+	google.golang.org/genproto v0.0.0-20210722135532-667f2b7c528f
 	google.golang.org/grpc v1.39.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/square/go-jose.v2 v2.6.0

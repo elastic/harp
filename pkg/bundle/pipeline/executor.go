@@ -43,7 +43,7 @@ func Run(ctx context.Context, name string, opts ...Option) error {
 			AppName:  slug.Make(name),
 			AppID:    version.ID(),
 			Version:  version.Version,
-			Revision: version.Revision,
+			Revision: version.Commit,
 		},
 	)
 

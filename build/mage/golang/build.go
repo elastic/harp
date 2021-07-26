@@ -140,13 +140,13 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 
 		// Inject version information
 		varsSetByLinker := map[string]string{
-			"github.com/elastic/harp/build/version.Version":          version,
-			"github.com/elastic/harp/build/version.Revision":         git.Revision,
-			"github.com/elastic/harp/build/version.Branch":           git.Branch,
-			"github.com/elastic/harp/build/version.BuildUser":        os.Getenv("USER"),
-			"github.com/elastic/harp/build/version.BuildDate":        time.Now().Format(time.RFC3339),
-			"github.com/elastic/harp/build/version.GoVersion":        runtime.Version(),
-			"github.com/elastic/harp/build/version.CompilationFlags": strCompilationFlags,
+			"github.com/elastic/harp/build/version.Name":      name,
+			"github.com/elastic/harp/build/version.AppName":   packageName,
+			"github.com/elastic/harp/build/version.Version":   version,
+			"github.com/elastic/harp/build/version.Commit":    git.Revision,
+			"github.com/elastic/harp/build/version.Branch":    git.Branch,
+			"github.com/elastic/harp/build/version.BuildDate": time.Now().Format(time.RFC3339),
+			"github.com/elastic/harp/build/version.BuildTags": strCompilationFlags,
 		}
 		var linkerArgs []string
 		for name, value := range varsSetByLinker {
@@ -178,6 +178,6 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 			filename = fmt.Sprintf("%s.exe", filename)
 		}
 
-		return sh.RunWith(env, "go", "build", buildMode, "-mod=readonly", "-ldflags", ldflagsValue, "-o", filename, packageName)
+		return sh.RunWith(env, "go", "build", buildMode, "-trimpath", "-mod=readonly", "-ldflags", ldflagsValue, "-o", filename, packageName)
 	}
 }

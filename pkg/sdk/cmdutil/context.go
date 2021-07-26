@@ -39,7 +39,7 @@ func Context(ctx context.Context, name string, debug bool, logLevel string) (con
 			AppName:  slug.Make(name),
 			AppID:    version.ID(),
 			Version:  version.Version,
-			Revision: version.Revision,
+			Revision: version.Commit,
 		},
 	)
 
