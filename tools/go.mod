@@ -5,7 +5,7 @@ go 1.16
 replace github.com/elastic/go-licenser => github.com/elastic/go-licenser v0.3.2-0.20200604055331-209fde246f25
 
 require (
-	github.com/daixiang0/gci v0.2.8
+	github.com/daixiang0/gci v0.2.9
 	github.com/dvyukov/go-fuzz v0.0.0-20210602112143-b1f3d6f4ef4e
 	github.com/elastic/go-licenser v0.0.0-00010101000000-000000000000
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
@@ -20,6 +20,6 @@ require (
 	go.elastic.co/go-licence-detector v0.5.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.27.1
-	gotest.tools/gotestsum v1.6.4
+	gotest.tools/gotestsum v1.7.0
 	mvdan.cc/gofumpt v0.1.1
 )
