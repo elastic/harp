@@ -145,7 +145,7 @@ func runTemplate(cmd *cobra.Command, args []string) {
 		}
 
 		// Load container
-		b, errBundle := bundle.Load(containerReader)
+		b, errBundle := bundle.FromContainerReader(containerReader)
 		if errBundle != nil {
 			log.For(ctx).Fatal("unable to decode secret container", zap.Error(errBundle), zap.String("container-path", sr))
 		}
