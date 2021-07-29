@@ -36,7 +36,7 @@ encode crypto-material and keep ownership visible to humans.
 > This is the encoding used by container sealing identities.
 
 ```ruby
-{{ bechenc <HRP> <[]BYTE> }}
+{{ bech32enc <HRP> <[]BYTE> }}
 ```
 
 For example with an Ed25519 Public key:
@@ -90,6 +90,43 @@ By default, it uses the `vault` secret loader.
 
 You can specificy an secret container path, or use `-` to read secret container
 from STDIN so that it will be used as secret data source.
+
+Given the following secret :
+
+```sh
+$ harp bundle dump --in test.bundle --data-only | jq -r '.["app/production/customer1/ece/v1.0.0/userconsole/database/usage_credentials"]'
+{
+  "dbname": "userconsole",
+  "host": "sample-instance.abc2defghije.us-west-2.rds.amazonaws.com",
+  "options": "sslmode=require&application_name=userconsole",
+  "password": "NVQ3VjFsTlFKIzAtd25MMWtqYURWT1dJZzBkdERVLVdEOmxMY3NvJHRsWnZ8JVhRcDNZMU92OTJQSmB3WnolXg==",
+  "port": "5432",
+  "username": "dbuser-userconsole-3xXby89C"
+}
+```
+
+When executing the following command :
+
+```sh
+$ cat <<EOF | harp template --secrets-from test.bundle
+{{ with secret "app/production/customer1/ece/v1.0.0/userconsole/database/usage_credentials" -}}
+{{ index . "username" }}
+{{ index . "password" }}
+{{- end }}
+EOF
+dbuser-userconsole-3xXby89C
+NVQ3VjFsTlFKIzAtd25MMWtqYURWT1dJZzBkdERVLVdEOmxMY3NvJHRsWnZ8JVhRcDNZMU92OTJQSmB3WnolXg==
+```
+
+You can set multiple secret loaders.
+
+```sh
+$ echo '{{ with secret "app/production/customer1/ece/v1.0.0/userconsole/database/usage_credentials" }}{{ index . "password" }}{{ end }}' | harp template --secrets-from vault  --secrets-from test.bundle
+NVQ3VjFsTlFKIzAtd25MMWtqYURWT1dJZzBkdERVLVdEOmxMY3NvJHRsWnZ8JVhRcDNZMU92OTJQSmB3WnolXg==
+```
+
+> This will try to look for the secret in Vault first, and then fallback to the bundle
+> if the secret package is not found.
 
 ### Password
 
