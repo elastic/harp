@@ -1,0 +1,20 @@
+app:
+    {{ .Values.env }}:
+        database:
+            user: app-{{ randAlpha 16 }}
+            password: {{ paranoidPassword }}
+        server:
+            privacy:
+                principal: {{ paranoidPassword | b64enc }}
+            http:
+                session:
+                    cookieKeyB64: {{ paranoidPassword | b64enc }}
+                token:
+                    signingPrivateKeyJWK: |-
+                        {{ $key := cryptoPair "ec:p384" }}{{ $key.Private | toJwk }}
+                    signingPublicKeyJWK: |-
+                        {{ $key.Public | toJwk }}
+        vendor:
+            mailgun:
+                apiKey: {{ .Values.mailgun.apikey }}
+

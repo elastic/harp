@@ -35,6 +35,7 @@ var fromCmd = func() *cobra.Command {
 	cmd.AddCommand(fromTemplateCmd())
 	cmd.AddCommand(fromDumpCmd())
 	cmd.AddCommand(fromOPLogCmd())
+	cmd.AddCommand(fromYAMLCmd())
 
 	return cmd
 }

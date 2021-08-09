@@ -1,0 +1,20 @@
+app:
+    production:
+        database:
+            user: app-fhtdjxVIAHGSkUva
+            password: TW1dS2*0C&DzrPDfFPOuav(s.r\4rzp[pP"tZQz03NWU$Yj2TKfK70X0dAoU+Ya+
+        server:
+            privacy:
+                principal: MzYyVE1QKnZzY11DIX51amJCcjdhVTNPWTgqeDVIMUxBOWtBVmJiRmZiMSFSdlBfcFpTTV5EY0tVcH0jc256RQ==
+            http:
+                session:
+                    cookieKeyB64: dWx2WFl2VnNvKkFFNDctM25qVjIwNGNfVC59VjVqeTZcWFgvRUR5QnRiTFN6TGxuYjFSS0hWKHdkaWcpN2ImSQ==
+                token:
+                    signingPrivateKeyJWK: |-
+                        {"kty":"EC","kid":"H12IiBRrRVNgYIcgpNiRP-ZgwM-VlpS53V2d9EutxSU=","crv":"P-384","x":"sMmDmqqahC6jpMygaaex_FtkvFsL_QDOX3jI68uSHrRI55hw2TdPU6KmuGhoGdWQ","y":"dWfqBEdxcNDn-O_DCGUNZrzBMBqPWtumX-gBUrAQiKq70Usk1jr5Fh_Pw6fSPQAQ","d":"HsKJkDPNUctuR86gu-Mx8hKzlnwiMIqK5hl3u7BsBoj-OKLzRjQN2twy3rHqfACS"}
+                    signingPublicKeyJWK: |-
+                        {"kty":"EC","kid":"H12IiBRrRVNgYIcgpNiRP-ZgwM-VlpS53V2d9EutxSU=","crv":"P-384","x":"sMmDmqqahC6jpMygaaex_FtkvFsL_QDOX3jI68uSHrRI55hw2TdPU6KmuGhoGdWQ","y":"dWfqBEdxcNDn-O_DCGUNZrzBMBqPWtumX-gBUrAQiKq70Usk1jr5Fh_Pw6fSPQAQ"}
+        vendor:
+            mailgun:
+                apiKey: 1234567890
+
