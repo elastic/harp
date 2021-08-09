@@ -1,0 +1,34 @@
+apiVersion: harp.elastic.co/terraformer/v1
+kind: AppRoleDefinition
+meta:
+  name: "app"
+  owner: "cloud-security@elastic.co"
+  description: "app service approle & policy"
+spec:
+  selector:
+    platform: "security"
+    product: "sops-sample"
+    version: "v1.0.0"
+    component: "microservice-1"
+    environments:
+      - production
+      - staging
+
+  namespaces:
+    # CSO Compliant paths
+    application:
+      - suffix: "database"
+        description: "Database connnection settings"
+        capabilities: ["read"]
+      - suffix: "server/privacy"
+        description: "Privacy anonymizer"
+        capabilities: ["read"]
+      - suffix: "server/session"
+        description: "HTTP Session related secrets"
+        capabilities: ["read"]
+      - suffix: "server/token"
+        description: "JWT Token provider related secrets"
+        capabilities: ["read"]
+      - suffix: "vendor/mailgun"
+        description: "Mailgun vendor"
+        capabilities: ["read"]

@@ -1,0 +1,21 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "secret-relocator"
+  description: "Move sops secrets to CSO compliant path"
+spec:
+  rules:
+  - selector:
+      matchPath:
+        regex: "^app/production/*"
+    package:
+      path:
+        template: |-
+            app/production/security/sops-sample/v1.0.0/microservice-1/{{ trimPrefix "app/production/" .Path }}
+  - selector:
+      matchPath:
+        regex: "^app/staging/*"
+    package:
+      path:
+        template: |-
+            app/staging/security/sops-sample/v1.0.0/microservice-1/{{ trimPrefix "app/staging/" .Path }}
