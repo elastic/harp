@@ -121,7 +121,7 @@ Check the sops bundle conversion.
 
 ```sh
 $ export SOPS_AGE_KEY_FILE=app-production.age
-$ sops -d production.yaml | harp from yaml | harp bundle dump --data-only | jq
+$ sops -d production.yaml | harp from object | harp bundle dump --data-only | jq
 {
   "app/production/database": {
     "password": "c7#kaTKgAqjAuC6KKdAz)_tsa9mBetD83lAk2cSvyH.jB0AeW%/m4g~4Vi]|I7x!",

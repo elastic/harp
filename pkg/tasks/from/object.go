@@ -19,26 +19,29 @@ package from
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+
+	"gopkg.in/yaml.v3"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/sdk/value/flatmap"
 	"github.com/elastic/harp/pkg/tasks"
-	"gopkg.in/yaml.v2"
 )
 
-// StructTask implements secret-container creation from a YAML/JSON structure.
-type StructTask struct {
-	StructReader tasks.ReaderProvider
+// ObjectTask implements secret-container creation from a YAML/JSON structure.
+type ObjectTask struct {
+	ObjectReader tasks.ReaderProvider
 	OutputWriter tasks.WriterProvider
+	JSON         bool
+	YAML         bool
 }
 
 // Run the task.
-func (t *StructTask) Run(ctx context.Context) error {
+func (t *ObjectTask) Run(ctx context.Context) error {
 	var (
 		reader io.Reader
 		writer io.Writer
@@ -47,21 +50,25 @@ func (t *StructTask) Run(ctx context.Context) error {
 	)
 
 	// Create input reader
-	reader, err = t.StructReader(ctx)
+	reader, err = t.ObjectReader(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to read input reader: %w", err)
 	}
 
-	// Read input as struct
-	in, err := ioutil.ReadAll(reader)
-	if err != nil && !errors.Is(err, io.EOF) {
-		return fmt.Errorf("unable to drain input reader: %w", err)
-	}
-
 	// Decode as YAML any object
 	var source map[string]interface{}
-	if errYaml := yaml.Unmarshal(in, &source); errYaml != nil {
-		return fmt.Errorf("unable to decode source as YAML: %w", err)
+
+	switch {
+	case t.YAML:
+		if errYaml := yaml.NewDecoder(reader).Decode(&source); errYaml != nil {
+			return fmt.Errorf("unable to decode source as YAML: %w", err)
+		}
+	case t.JSON:
+		if errYaml := json.NewDecoder(reader).Decode(&source); errYaml != nil {
+			return fmt.Errorf("unable to decode source as JSON: %w", err)
+		}
+	default:
+		return errors.New("json or yaml must be selected")
 	}
 
 	// Flatten the struct
