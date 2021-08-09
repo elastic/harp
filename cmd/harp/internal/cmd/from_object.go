@@ -28,23 +28,26 @@ import (
 
 // -----------------------------------------------------------------------------
 
-var fromYAMLCmd = func() *cobra.Command {
+var fromObjectCmd = func() *cobra.Command {
 	var (
 		inputPath  string
 		outputPath string
+		inputType  string
 	)
 	cmd := &cobra.Command{
-		Use:   "yaml",
-		Short: "Convert a YAML object to a secret-container",
+		Use:   "object",
+		Short: "Convert an object to a secret-container",
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
-			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-from-yaml", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-from-object", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
 			// Prepare task
-			t := &from.StructTask{
-				StructReader: cmdutil.FileReader(inputPath),
+			t := &from.ObjectTask{
+				ObjectReader: cmdutil.FileReader(inputPath),
 				OutputWriter: cmdutil.FileWriter(outputPath),
+				JSON:         inputType == "json",
+				YAML:         inputType == "yaml",
 			}
 
 			// Run the task
@@ -57,6 +60,7 @@ var fromYAMLCmd = func() *cobra.Command {
 	// Parameters
 	cmd.Flags().StringVar(&inputPath, "in", "-", "YAML object ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&outputPath, "out", "-", "Container output ('-' for stdout or filename)")
+	cmd.Flags().StringVar(&inputType, "format", "yaml", "Input file format (yaml or json)")
 
 	return cmd
 }

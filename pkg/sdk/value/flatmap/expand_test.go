@@ -15,23 +15,54 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package flatmap
 
 import (
-	"github.com/spf13/cobra"
+	"testing"
+
+	"github.com/elastic/harp/pkg/bundle"
+	"github.com/google/go-cmp/cmp"
 )
 
-// -----------------------------------------------------------------------------
-
-var toCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "to",
-		Short: "Secret container publication commands",
+func TestExpand(t *testing.T) {
+	type args struct {
+		m   bundle.KV
+		key string
 	}
-
-	// Add sub commands
-	cmd.AddCommand(toVaultCmd())
-	cmd.AddCommand(toObjectCmd())
-
-	return cmd
+	tests := []struct {
+		name string
+		args args
+		want interface{}
+	}{
+		{
+			name: "empty",
+		},
+		{
+			name: "map",
+			args: args{
+				m: bundle.KV{
+					"app/database": bundle.KV{
+						"user":     "test",
+						"password": "password",
+					},
+				},
+			},
+			want: bundle.KV{
+				"app": bundle.KV{
+					"database": bundle.KV{
+						"user":     "test",
+						"password": "password",
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Expand(tt.args.m, tt.args.key)
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf("Expand() = \n%s", diff)
+			}
+		})
+	}
 }
