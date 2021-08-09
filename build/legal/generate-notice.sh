@@ -26,7 +26,7 @@ generate_notice() {
     (
         cd "$PROJECT_DIR"
         go mod download
-        go list -m -json all | "${TEMP_DIR}"/go-licence-detector \
+        go list -mod=readonly -m -json all | "${TEMP_DIR}"/go-licence-detector \
             -depsTemplate="${SCRIPT_DIR}"/templates/dependencies.asciidoc.tmpl \
             -depsOut="${PROJECT_DIR}"/docs/dependencies.asciidoc \
             -noticeTemplate="${SCRIPT_DIR}"/templates/NOTICE.txt.tmpl \
