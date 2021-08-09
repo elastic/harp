@@ -19,4 +19,5 @@ harp share put [flags]
 
 ### SEE ALSO
 
-* [harp share](harp_share.md)  - Share secret using Vault Cubbyhole
+* [harp share](harp_share.md)	 - Share secret using Vault Cubbyhole
+
