@@ -18,6 +18,7 @@
 package patch
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 
@@ -192,6 +193,7 @@ func applyPackagePatch(pkg *bundlev1.Package, p *bundlev1.PatchPackage, values m
 	return nil
 }
 
+//nolint:gocyclo // to refactor
 func applySecretPatch(secrets *bundlev1.SecretChain, op *bundlev1.PatchSecret, values map[string]interface{}) error {
 	// Check parameters
 	if secrets == nil {
@@ -218,6 +220,31 @@ func applySecretPatch(secrets *bundlev1.SecretChain, op *bundlev1.PatchSecret, v
 		}
 		if err := applyMapOperations(secrets.Labels, op.Labels, values); err != nil {
 			return fmt.Errorf("unable to process labels: %w", err)
+		}
+	}
+
+	// Check template
+	if op.Template != "" {
+		// Compile template
+		rendered, err := engine.Render(op.Template, map[string]interface{}{
+			"Values": values,
+		})
+		if err != nil {
+			return fmt.Errorf("unable to compile secret template: %w", err)
+		}
+
+		// Unmarshall as kv
+		var kv map[string]string
+		if errJSON := json.Unmarshal([]byte(rendered), &kv); errJSON != nil {
+			return fmt.Errorf("unable to valudate rendered secret template as a valid JSON: %w", errJSON)
+		}
+
+		// Update secret data
+		if secrets.Data == nil {
+			secrets.Data = make([]*bundlev1.KV, 0)
+		}
+		if secrets.Data, err = updateSecret(secrets.Data, kv); err != nil {
+			return fmt.Errorf("unable to uppdate kv from template: %w", err)
 		}
 	}
 

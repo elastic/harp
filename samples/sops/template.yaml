@@ -16,5 +16,4 @@ app:
                         {{ $key.Public | toJwk }}
         vendor:
             mailgun:
-                apiKey: {{ .Values.mailgun.apikey }}
-
+                apiKey: {{ .Values.mailgun.apikey | quote }}

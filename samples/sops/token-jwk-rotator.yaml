@@ -1,0 +1,17 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "token-jwk-rotator"
+  description: "Create a new JWK key for JWT signing."
+spec:
+  rules:
+  - selector:
+      matchPath:
+        strict: "app/production/server/http/token"
+    package:
+        data:
+            template: |-
+                {
+                    "signingPrivateKeyJWK": {{ $key := cryptoPair "ec:p384" }}{{ $key.Private | toJwk | toJson }},
+                    "signingPublicKeyJWK": {{ $key.Public | toJwk | toJson }}
+                }
