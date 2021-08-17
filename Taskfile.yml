@@ -28,6 +28,7 @@ tasks:
       - release-linux-arm64
       - release-linux-arm7
       - release-windows-amd64
+      - release-windows-arm64
 
   release-darwin-amd64:
     cmds:
@@ -93,6 +94,17 @@ tasks:
       - dist/{{.ARTIFACT}}-windows-amd64-$RELEASE.tar.xz
     preconditions:
       - test -f bin/{{.ARTIFACT}}-windows-amd64.exe
+    method: checksum
+
+  release-windows-arm64:
+    cmds:
+      - "tar cfJ dist/{{.ARTIFACT}}-windows-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-windows-arm64.exe"
+    sources:
+      - bin/{{.ARTIFACT}}-windows-arm64.exe
+    generates:
+      - dist/{{.ARTIFACT}}-windows-arm64-$RELEASE.tar.xz
+    preconditions:
+      - test -f bin/{{.ARTIFACT}}-windows-arm64.exe
     method: checksum
 
   release-checksum:
