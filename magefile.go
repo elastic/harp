@@ -232,6 +232,14 @@ func Release(ctx context.Context) error {
 				golang.GOOS("windows"), golang.GOARCH("amd64"),
 			)()
 		},
+		func() error {
+			return golang.Release(
+				"harp",
+				"github.com/elastic/harp/cmd/harp",
+				version,
+				golang.GOOS("windows"), golang.GOARCH("arm64"),
+			)()
+		},
 	)
 
 	return ctx.Err()
