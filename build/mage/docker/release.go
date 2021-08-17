@@ -89,7 +89,7 @@ COPY --from=compiler /go/src/workspace/{{.Module}}/bin/* /app/
 {{ else }}
 COPY --from=compiler /go/src/workspace/bin/* /app/
 {{ end }}
-RUN upx --overlay=strip -9 *
+RUN upx --overlay=strip -9 * || true
 
 ## -------------------------------------------------------------------------------------------------
 
