@@ -19,6 +19,7 @@ package kv
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/elastic/harp/pkg/vault/logical"
@@ -108,7 +109,7 @@ func (s *kvv1Backend) ReadVersion(ctx context.Context, path string, version uint
 	return s.Read(ctx, path)
 }
 
-func (s *kvv1Backend) Write(ctx context.Context, path string, data SecretData) error {
+func (s *kvv1Backend) WriteData(ctx context.Context, path string, data SecretData) error {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {
@@ -122,4 +123,8 @@ func (s *kvv1Backend) Write(ctx context.Context, path string, data SecretData) e
 	}
 
 	return nil
+}
+
+func (s *kvv1Backend) WriteMeta(ctx context.Context, path string, meta SecretMetadata) error {
+	return errors.New("custom metadata is not supported for KV version 1 backend")
 }

@@ -161,7 +161,7 @@ func Test_KVV2_List(t *testing.T) {
 			}
 
 			// Service
-			underTest := V2(logicalMock, "secrets/")
+			underTest := V2(logicalMock, "secrets/", true)
 			got, err := underTest.List(tt.args.ctx, tt.args.path)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("vaultClient.List() error = %v, wantErr %v", err, tt.wantErr)
@@ -295,7 +295,7 @@ func Test_KVV2_Read(t *testing.T) {
 			}
 
 			// Service
-			underTest := V2(logicalMock, "secrets/")
+			underTest := V2(logicalMock, "secrets/", true)
 			gotData, gotMeta, err := underTest.Read(tt.args.ctx, tt.args.path)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("vaultClient.Read() error = %v, wantErr %v", err, tt.wantErr)
@@ -311,7 +311,7 @@ func Test_KVV2_Read(t *testing.T) {
 	}
 }
 
-func Test_KVV2_Write(t *testing.T) {
+func Test_KVV2_WriteData(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		path string
@@ -372,10 +372,81 @@ func Test_KVV2_Write(t *testing.T) {
 			}
 
 			// Service
-			underTest := V2(logicalMock, "secrets/")
-			err := underTest.Write(tt.args.ctx, tt.args.path, tt.args.data)
+			underTest := V2(logicalMock, "secrets/", true)
+			err := underTest.WriteData(tt.args.ctx, tt.args.path, tt.args.data)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("vaultClient.Write() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("vaultClient.WriteData() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func Test_KVV2_WriteMeta(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		path string
+		meta map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		prepare func(*logical.MockLogical)
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "blank",
+			args: args{
+				ctx:  context.Background(),
+				path: "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "query error",
+			args: args{
+				ctx:  context.Background(),
+				path: "application/foo",
+			},
+			prepare: func(logical *logical.MockLogical) {
+				logical.EXPECT().Write("secrets/metadata/application/foo", gomock.Any()).Return(&vaultApi.Secret{}, fmt.Errorf("foo"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid",
+			args: args{
+				ctx:  context.Background(),
+				path: "application/foo",
+			},
+			prepare: func(logical *logical.MockLogical) {
+				logical.EXPECT().Write("secrets/metadata/application/foo", gomock.Any()).Return(&vaultApi.Secret{
+					Data: SecretData{
+						"key": "value",
+					},
+				}, nil)
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			// Arm mocks
+			logicalMock := logical.NewMockLogical(ctrl)
+
+			// Prepare mocks
+			if tt.prepare != nil {
+				tt.prepare(logicalMock)
+			}
+
+			// Service
+			underTest := V2(logicalMock, "secrets/", true)
+			err := underTest.WriteMeta(tt.args.ctx, tt.args.path, tt.args.meta)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("vaultClient.WriteMeta() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})

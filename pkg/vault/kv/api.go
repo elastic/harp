@@ -27,6 +27,9 @@ var (
 	ErrPathNotFound = errors.New("path not found")
 	// ErrNoData is raised when gievn secret path doesn't contains data.
 	ErrNoData = errors.New("no data")
+	// ErrCustomMetadataDisabled is raised when trying to write a custom
+	// metadata with globally disabled feature.
+	ErrCustomMetadataDisabled = errors.New("custom metadata is disabled")
 )
 
 // SecretData is a secret body
@@ -48,7 +51,8 @@ type SecretReader interface {
 
 // SecretWriter represents secret writer feature contract.
 type SecretWriter interface {
-	Write(ctx context.Context, path string, secrets SecretData) error
+	WriteData(ctx context.Context, path string, secrets SecretData) error
+	WriteMeta(ctx context.Context, path string, metas SecretMetadata) error
 }
 
 // Service declares vault service contract.

@@ -96,7 +96,7 @@ func TestBuilder_V1(t *testing.T) {
 	}
 
 	// Write secrets
-	if err := underTest.Write(context.Background(), "application/secret/foo", map[string]interface{}{"key": "value"}); err != nil {
+	if err := underTest.WriteData(context.Background(), "application/secret/foo", map[string]interface{}{"key": "value"}); err != nil {
 		t.Errorf("BuilderV1() - List error = %v", err)
 		return
 	}
@@ -166,7 +166,7 @@ func TestBuilder_V2(t *testing.T) {
 	}
 
 	// Write secrets
-	if err := underTest.Write(context.Background(), "application/secret/foo", map[string]interface{}{"key": "value"}); err != nil {
+	if err := underTest.WriteData(context.Background(), "application/secret/foo", map[string]interface{}{"key": "value"}); err != nil {
 		t.Errorf("BuilderV2() - List error = %v", err)
 		return
 	}

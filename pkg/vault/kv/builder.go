@@ -25,8 +25,16 @@ import (
 	vpath "github.com/elastic/harp/pkg/vault/path"
 )
 
+// Option defines the functional option pattern.
+type Option func(opts *Options)
+
+// Options defiens the default option value.
+type Options struct {
+	useCustomMetadata bool
+}
+
 // New build a KV service according to mountPath version.
-func New(client *api.Client, path string) (Service, error) {
+func New(client *api.Client, path string, opts ...Option) (Service, error) {
 	// Sanitize path
 	secretPath := vpath.SanitizePath(path)
 
@@ -36,10 +44,20 @@ func New(client *api.Client, path string) (Service, error) {
 		return nil, fmt.Errorf("vault: unable to detect k/v backend version: %w", err)
 	}
 
+	// Defines default flag.
+	dopts := &Options{
+		useCustomMetadata: false,
+	}
+
+	// Apply option function.
+	for _, o := range opts {
+		o(dopts)
+	}
+
 	// Build the service according to mountPath version
 	var s Service
 	if v2 {
-		s = V2(client.Logical(), mountPath)
+		s = V2(client.Logical(), mountPath, dopts.useCustomMetadata)
 	} else {
 		s = V1(client.Logical(), mountPath)
 	}
