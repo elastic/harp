@@ -145,7 +145,6 @@ func Release(cmd *artifact.Command) func() error {
 			"--build-arg", fmt.Sprintf("VCS_REF=%s", git.Revision),
 			"--build-arg", fmt.Sprintf("RELEASE=%s", relVer.String()),
 			"--cache-from", "elastic/harp-tools",
-			"--cache-from", fmt.Sprintf("elastic/%s:artifacts-%s", cmd.Kebab(), relVer.String()),
 			".",
 		)
 
