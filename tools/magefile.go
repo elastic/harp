@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+//go:build mage
 // +build mage
 
 package main
@@ -47,5 +48,5 @@ func (Go) Vendor() error {
 // Tools updates tools from package
 func (Go) Tools() error {
 	color.Blue("## Installing tools")
-	return sh.RunV("go", "run", "github.com/izumin5210/gex/cmd/gex", "--build")
+	return sh.RunV("go", "generate", "tools.go")
 }

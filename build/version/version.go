@@ -49,7 +49,7 @@ func NewInfo() Info {
 		GitCommit:      Commit,
 		BuildTags:      BuildTags,
 		BuildDate:      BuildDate,
-		GoVersion:      fmt.Sprintf("go version %s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		GoVersion:      fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		BuildDeps:      depsFromBuildInfo(),
 		HarpSdkVersion: sdkVersion,
 	}
