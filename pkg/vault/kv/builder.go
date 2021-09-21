@@ -33,6 +33,13 @@ type Options struct {
 	useCustomMetadata bool
 }
 
+// WithVaultMetatadata enable/disable the custom metadata storage strategy (requires Vault >=1.9).
+func WithVaultMetatadata(value bool) Option {
+	return func(opts *Options) {
+		opts.useCustomMetadata = value
+	}
+}
+
 // New build a KV service according to mountPath version.
 func New(client *api.Client, path string, opts ...Option) (Service, error) {
 	// Sanitize path

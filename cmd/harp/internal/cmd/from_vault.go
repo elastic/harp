@@ -30,12 +30,13 @@ import (
 
 var fromVaultCmd = func() *cobra.Command {
 	var (
-		pathsFrom      string
-		secretPaths    []string
-		outputPath     string
-		namespace      string
-		withMetadata   bool
-		maxWorkerCount int64
+		pathsFrom         string
+		secretPaths       []string
+		outputPath        string
+		namespace         string
+		withMetadata      bool
+		withVaultMetadata bool
+		maxWorkerCount    int64
 	)
 
 	cmd := &cobra.Command{
@@ -60,11 +61,12 @@ var fromVaultCmd = func() *cobra.Command {
 
 			// Prepare task
 			t := &from.VaultTask{
-				OutputWriter:   cmdutil.FileWriter(outputPath),
-				SecretPaths:    secretPaths,
-				VaultNamespace: namespace,
-				WithMetadata:   withMetadata,
-				MaxWorkerCount: maxWorkerCount,
+				OutputWriter:    cmdutil.FileWriter(outputPath),
+				SecretPaths:     secretPaths,
+				VaultNamespace:  namespace,
+				WithMetadata:    withMetadata || withVaultMetadata,
+				AsVaultMetadata: withVaultMetadata,
+				MaxWorkerCount:  maxWorkerCount,
 			}
 
 			// Run the task
@@ -79,7 +81,8 @@ var fromVaultCmd = func() *cobra.Command {
 	cmd.Flags().StringArrayVar(&secretPaths, "path", []string{}, "Vault backend path (and recursive)")
 	cmd.Flags().StringVar(&outputPath, "out", "", "Container output ('-' for stdout or filename)")
 	cmd.Flags().StringVar(&namespace, "namespace", "", "Vault namespace")
-	cmd.Flags().BoolVar(&withMetadata, "with-metadata", true, "Pull bundle metadata from Vault")
+	cmd.Flags().BoolVar(&withMetadata, "with-metadata", false, "Push container metadata as secret data")
+	cmd.Flags().BoolVar(&withVaultMetadata, "with-vault-metadata", false, "Push container metadata as secret metadata (requires Vault >=1.9)")
 	cmd.Flags().Int64Var(&maxWorkerCount, "worker-count", 4, "Active worker count limit")
 
 	return cmd

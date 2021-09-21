@@ -27,7 +27,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/imdario/mergo"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
@@ -141,8 +140,13 @@ func (op *exporter) Run(ctx context.Context) error {
 				// Iterate over secret bundle
 				for k, v := range secretData {
 					// Check for metadata prefix
-					if strings.HasPrefix(strings.ToLower(k), bundleMetadataPrefix) {
-						metadata[strings.ToLower(k)] = fmt.Sprintf("%s", v)
+					if strings.EqualFold(k, kv.VaultMetadataDataKey) && op.withMetadata {
+						rawMetadata := fmt.Sprintf("%s", v)
+						// Unpack value
+						if errDecode := json.Unmarshal([]byte(rawMetadata), &metadata); errDecode != nil {
+							log.For(gReaderCtx).Error("unable to decode package metadata object as JSON", zap.Error(errDecode), zap.String("path", secPath))
+							continue
+						}
 
 						// Ignore secret unpacking for this value
 						continue
@@ -166,68 +170,40 @@ func (op *exporter) Run(ctx context.Context) error {
 					Secrets:     chain,
 				}
 
-				// Process package metadata
+				// Extract useful metadata
+				for k, v := range secretMeta {
+					switch k {
+					case "version":
+						// Convert version
+						version, ok := v.(int32)
+						if ok {
+							pack.Secrets.Version = uint32(version)
+						} else {
+							log.For(gReaderCtx).Warn("unable to unpack secret version, invalid type.", zap.Any("value", v))
+						}
+					case "custom_metadata":
+						// Copy as metadata
+						customMap, ok := v.(map[string]interface{})
+						if ok {
+							for k, v := range customMap {
+								metadata[k] = v.(string)
+							}
+						} else {
+							log.For(gReaderCtx).Warn("unable to unpack secret custom metadata, invalid type.", zap.Any("value", v))
+						}
+					}
+				}
+
+				// Process package metadata distribution
 				if op.withMetadata {
 					for key, value := range metadata {
-						// Clean key
-						key = strings.TrimPrefix(key, bundleMetadataPrefix)
-
-						// Unpack value
-						var data map[string]string
-						if errDecode := json.Unmarshal([]byte(value), &data); errDecode != nil {
-							log.For(gReaderCtx).Error("unable to decode package metadata object as JSON", zap.Error(errDecode), zap.String("key", key), zap.String("path", secPath))
-							continue
-						}
-
-						var meta interface{}
-
 						// Merge with package
-						switch key {
-						case "#annotations":
-							meta = &pack.Annotations
-						case "#labels":
-							meta = &pack.Labels
+						switch {
+						case strings.HasPrefix(key, "label#"):
+							pack.Labels[strings.TrimPrefix(key, "label#")] = value
 						default:
-							log.For(gReaderCtx).Warn("unhandled metadata", zap.Error(err), zap.String("key", key), zap.String("path", secPath))
-							continue
+							pack.Annotations[key] = value
 						}
-
-						// Merge with Vault metadata
-						if errMergo := mergo.MergeWithOverwrite(meta, data, mergo.WithOverride); errMergo != nil {
-							log.For(gReaderCtx).Warn("unable to merge package metadata object", zap.Error(errMergo), zap.String("key", key), zap.String("path", secPath))
-							continue
-						}
-					}
-				}
-
-				// Embed secret storage metadata
-				if secretMeta != nil {
-					// Encode all Vault metadata as json
-					metadataJSON, errMetaJSON := json.Marshal(secretMeta)
-					if errMetaJSON != nil {
-						return fmt.Errorf("unable to encode Vault metadata for path '%s': %w", secPath, errMetaJSON)
-					}
-					pack.Annotations[vaultKVMetadata] = string(metadataJSON)
-
-					// Extract useful metadata
-					for k, v := range secretMeta {
-						switch k {
-						case "version":
-							pack.Annotations[vaultKVv2MetadataVersion] = fmt.Sprintf("%s", v)
-						case "created_time":
-							pack.Annotations[vaultKVv2MetadataCreatedTime] = fmt.Sprintf("%s", v)
-						}
-					}
-				}
-
-				// Dispatch annotations to package
-				if v, ok := pack.Annotations[vaultKVv2MetadataVersion]; ok {
-					// Convert version
-					secretVersion, errParse := strconv.ParseUint(v, 10, 32)
-					if errParse != nil {
-						log.For(ctx).Warn("unable to parse secret data version as a valid number: %w", zap.Error(errParse))
-					} else {
-						pack.Secrets.Version = uint32(secretVersion)
 					}
 				}
 

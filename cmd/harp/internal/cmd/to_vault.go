@@ -30,11 +30,12 @@ import (
 
 var toVaultCmd = func() *cobra.Command {
 	var (
-		inputPath      string
-		backendPrefix  string
-		namespace      string
-		withMetadata   bool
-		maxWorkerCount int64
+		inputPath         string
+		backendPrefix     string
+		namespace         string
+		withMetadata      bool
+		withVaultMetadata bool
+		maxWorkerCount    int64
 	)
 
 	cmd := &cobra.Command{
@@ -49,7 +50,8 @@ var toVaultCmd = func() *cobra.Command {
 			t := &to.VaultTask{
 				ContainerReader: cmdutil.FileReader(inputPath),
 				BackendPrefix:   backendPrefix,
-				PushMetadata:    withMetadata,
+				PushMetadata:    withMetadata || withVaultMetadata,
+				AsVaultMetadata: withVaultMetadata,
 				VaultNamespace:  namespace,
 				MaxWorkerCount:  maxWorkerCount,
 			}
@@ -65,7 +67,8 @@ var toVaultCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&inputPath, "in", "-", "Container path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&backendPrefix, "prefix", "", "Vault backend prefix")
 	cmd.Flags().StringVar(&namespace, "namespace", "", "Vault namespace")
-	cmd.Flags().BoolVar(&withMetadata, "with-metadata", false, "Push container metadata")
+	cmd.Flags().BoolVar(&withMetadata, "with-metadata", false, "Push container metadata as secret data")
+	cmd.Flags().BoolVar(&withVaultMetadata, "with-vault-metadata", false, "Push container metadata as secret metadata (requires Vault >=1.9)")
 	cmd.Flags().Int64Var(&maxWorkerCount, "worker-count", 4, "Active worker count limit")
 
 	return cmd

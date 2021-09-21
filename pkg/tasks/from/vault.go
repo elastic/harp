@@ -31,11 +31,12 @@ import (
 
 // VaultTask implements secret-container building from Vault K/V.
 type VaultTask struct {
-	OutputWriter   tasks.WriterProvider
-	SecretPaths    []string
-	VaultNamespace string
-	WithMetadata   bool
-	MaxWorkerCount int64
+	OutputWriter    tasks.WriterProvider
+	SecretPaths     []string
+	VaultNamespace  string
+	AsVaultMetadata bool
+	WithMetadata    bool
+	MaxWorkerCount  int64
 }
 
 // Run the task.
@@ -58,7 +59,8 @@ func (t *VaultTask) Run(ctx context.Context) error {
 
 	// Call exporter
 	b, err := bundlevault.Pull(ctx, client, t.SecretPaths,
-		bundlevault.WithMetadata(t.WithMetadata),
+		bundlevault.WithVaultMetadata(t.AsVaultMetadata),
+		bundlevault.WithSecretMetadata(t.WithMetadata),
 		bundlevault.WithMaxWorkerCount(t.MaxWorkerCount),
 	)
 	if err != nil {

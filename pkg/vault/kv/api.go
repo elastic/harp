@@ -32,6 +32,23 @@ var (
 	ErrCustomMetadataDisabled = errors.New("custom metadata is disabled")
 )
 
+var (
+	// VaultMetadataDataKey represents the secret data key used to store
+	// metadata.
+	VaultMetadataDataKey = "www.vaultproject.io/kv/metadata"
+)
+
+const (
+	// CustomMetadataKeyLimit defines the key count limit for custom metadata.
+	CustomMetadataKeyLimit = 64
+	// CustomMetadataKeySizeLimit defines the key size limit in bytes for
+	// custom metadata.
+	CustomMetadataKeySizeLimit = 128
+	// CustomMetadataValueSizeLimit defines the value size limit in bytes for
+	// custom metadata.
+	CustomMetadataValueSizeLimit = 512
+)
+
 // SecretData is a secret body
 type SecretData map[string]interface{}
 
@@ -51,8 +68,8 @@ type SecretReader interface {
 
 // SecretWriter represents secret writer feature contract.
 type SecretWriter interface {
-	WriteData(ctx context.Context, path string, secrets SecretData) error
-	WriteMeta(ctx context.Context, path string, metas SecretMetadata) error
+	Write(ctx context.Context, path string, secrets SecretData) error
+	WriteWithMeta(ctx context.Context, path string, secrets SecretData, meta SecretMetadata) error
 }
 
 // Service declares vault service contract.

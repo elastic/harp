@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/dchest/uniuri"
 	"github.com/elastic/harp/pkg/vault/logical"
 	"github.com/golang/mock/gomock"
 	vaultApi "github.com/hashicorp/vault/api"
@@ -373,19 +374,26 @@ func Test_KVV2_WriteData(t *testing.T) {
 
 			// Service
 			underTest := V2(logicalMock, "secrets/", true)
-			err := underTest.WriteData(tt.args.ctx, tt.args.path, tt.args.data)
+			err := underTest.Write(tt.args.ctx, tt.args.path, tt.args.data)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("vaultClient.WriteData() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("vaultClient.Write() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
 	}
 }
 
-func Test_KVV2_WriteMeta(t *testing.T) {
+func Test_KVV2_WriteWithMeta(t *testing.T) {
+	// Fixtures
+	tooManyKeysMeta := map[string]interface{}{}
+	for i := 0; i <= CustomMetadataKeyLimit; i++ {
+		tooManyKeysMeta[fmt.Sprintf("key-%d", i)] = ""
+	}
+
 	type args struct {
 		ctx  context.Context
 		path string
+		data map[string]interface{}
 		meta map[string]interface{}
 	}
 	tests := []struct {
@@ -403,13 +411,77 @@ func Test_KVV2_WriteMeta(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "query error",
+			name: "metadata too many keys",
 			args: args{
 				ctx:  context.Background(),
 				path: "application/foo",
+				meta: tooManyKeysMeta,
+			},
+			wantErr: true,
+		},
+		{
+			name: "metadata key too large",
+			args: args{
+				ctx:  context.Background(),
+				path: "application/foo",
+				meta: map[string]interface{}{
+					uniuri.NewLen(CustomMetadataKeySizeLimit + 1): "",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "metadata value not a string",
+			args: args{
+				ctx:  context.Background(),
+				path: "application/foo",
+				meta: map[string]interface{}{
+					"test": make(chan struct{}),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "metadata value too large",
+			args: args{
+				ctx:  context.Background(),
+				path: "application/foo",
+				meta: map[string]interface{}{
+					"test": uniuri.NewLen(CustomMetadataValueSizeLimit + 1),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "data write error",
+			args: args{
+				ctx:  context.Background(),
+				path: "application/foo",
+				meta: map[string]interface{}{
+					"environment": "test",
+				},
 			},
 			prepare: func(logical *logical.MockLogical) {
-				logical.EXPECT().Write("secrets/metadata/application/foo", gomock.Any()).Return(&vaultApi.Secret{}, fmt.Errorf("foo"))
+				logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{}, fmt.Errorf("foo"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "metadata write error",
+			args: args{
+				ctx:  context.Background(),
+				path: "application/foo",
+				meta: map[string]interface{}{
+					"environment": "test",
+				},
+			},
+			prepare: func(logical *logical.MockLogical) {
+				dataWrite := logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{
+					Data: SecretData{
+						"key": "value",
+					},
+				}, nil)
+				logical.EXPECT().Write("secrets/metadata/application/foo", gomock.Any()).Return(&vaultApi.Secret{}, fmt.Errorf("foo")).After(dataWrite)
 			},
 			wantErr: true,
 		},
@@ -418,13 +490,21 @@ func Test_KVV2_WriteMeta(t *testing.T) {
 			args: args{
 				ctx:  context.Background(),
 				path: "application/foo",
+				meta: map[string]interface{}{
+					"environment": "test",
+				},
 			},
 			prepare: func(logical *logical.MockLogical) {
-				logical.EXPECT().Write("secrets/metadata/application/foo", gomock.Any()).Return(&vaultApi.Secret{
+				dataWrite := logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{
 					Data: SecretData{
 						"key": "value",
 					},
 				}, nil)
+				logical.EXPECT().Write("secrets/metadata/application/foo", gomock.Any()).Return(&vaultApi.Secret{
+					Data: SecretData{
+						"key": "value",
+					},
+				}, nil).After(dataWrite)
 			},
 			wantErr: false,
 		},
@@ -444,9 +524,9 @@ func Test_KVV2_WriteMeta(t *testing.T) {
 
 			// Service
 			underTest := V2(logicalMock, "secrets/", true)
-			err := underTest.WriteMeta(tt.args.ctx, tt.args.path, tt.args.meta)
+			err := underTest.WriteWithMeta(tt.args.ctx, tt.args.path, tt.args.data, tt.args.meta)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("vaultClient.WriteMeta() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("vaultClient.WriteWithMeta() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})

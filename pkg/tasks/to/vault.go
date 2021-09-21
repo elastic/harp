@@ -34,6 +34,7 @@ type VaultTask struct {
 	ContainerReader tasks.ReaderProvider
 	BackendPrefix   string
 	PushMetadata    bool
+	AsVaultMetadata bool
 	VaultNamespace  string
 	MaxWorkerCount  int64
 }
@@ -71,7 +72,8 @@ func (t *VaultTask) Run(ctx context.Context) error {
 	// Process push operation
 	if err := bundlevault.Push(ctx, b, client,
 		bundlevault.WithPrefix(t.BackendPrefix),
-		bundlevault.WithMetadata(t.PushMetadata),
+		bundlevault.WithSecretMetadata(t.PushMetadata),
+		bundlevault.WithVaultMetadata(t.AsVaultMetadata),
 		bundlevault.WithMaxWorkerCount(t.MaxWorkerCount),
 	); err != nil {
 		return fmt.Errorf("error occurs during vault export (prefix: '%s'): %w", t.BackendPrefix, err)

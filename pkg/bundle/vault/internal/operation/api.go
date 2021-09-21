@@ -25,10 +25,3 @@ import (
 type Operation interface {
 	Run(ctx context.Context) error
 }
-
-const (
-	bundleMetadataPrefix         = "harp.elastic.io/v1/bundle"
-	vaultKVMetadata              = "www.vaultproject.io/kv/metadata"
-	vaultKVv2MetadataVersion     = "www.vaultproject.io/kv/v2/metadata#version"
-	vaultKVv2MetadataCreatedTime = "www.vaultproject.io/kv/v2/metadata#createdTime"
-)

@@ -34,6 +34,36 @@ func (m *MockLogical) EXPECT() *MockLogicalMockRecorder {
 	return m.recorder
 }
 
+// Delete mocks base method.
+func (m *MockLogical) Delete(arg0 string) (*api.Secret, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret0, _ := ret[0].(*api.Secret)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockLogicalMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockLogical)(nil).Delete), arg0)
+}
+
+// DeleteWithData mocks base method.
+func (m *MockLogical) DeleteWithData(arg0 string, arg1 map[string][]string) (*api.Secret, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteWithData", arg0, arg1)
+	ret0, _ := ret[0].(*api.Secret)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteWithData indicates an expected call of DeleteWithData.
+func (mr *MockLogicalMockRecorder) DeleteWithData(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWithData", reflect.TypeOf((*MockLogical)(nil).DeleteWithData), arg0, arg1)
+}
+
 // List mocks base method.
 func (m *MockLogical) List(arg0 string) (*api.Secret, error) {
 	m.ctrl.T.Helper()
@@ -107,4 +137,19 @@ func (m *MockLogical) Write(arg0 string, arg1 map[string]interface{}) (*api.Secr
 func (mr *MockLogicalMockRecorder) Write(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockLogical)(nil).Write), arg0, arg1)
+}
+
+// WriteBytes mocks base method.
+func (m *MockLogical) WriteBytes(arg0 string, arg1 []byte) (*api.Secret, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteBytes", arg0, arg1)
+	ret0, _ := ret[0].(*api.Secret)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WriteBytes indicates an expected call of WriteBytes.
+func (mr *MockLogicalMockRecorder) WriteBytes(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteBytes", reflect.TypeOf((*MockLogical)(nil).WriteBytes), arg0, arg1)
 }

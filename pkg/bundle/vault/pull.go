@@ -43,20 +43,22 @@ func Pull(ctx context.Context, client *api.Client, paths []string, opts ...Optio
 
 	// Default values
 	var (
-		defaultPrefix         = ""
-		defaultPathInclusions = []*regexp.Regexp{}
-		defaultPathExclusions = []*regexp.Regexp{}
-		defaultWithMetadata   = false
-		defaultWorkerCount    = int64(4)
+		defaultPrefix             = ""
+		defaultPathInclusions     = []*regexp.Regexp{}
+		defaultPathExclusions     = []*regexp.Regexp{}
+		defaultWithSecretMetadata = false
+		defaultWithVaultMetadata  = false
+		defaultWorkerCount        = int64(4)
 	)
 
 	// Create default option instance
 	defaultOpts := &options{
-		prefix:       defaultPrefix,
-		exclusions:   defaultPathExclusions,
-		includes:     defaultPathInclusions,
-		withMetadata: defaultWithMetadata,
-		workerCount:  defaultWorkerCount,
+		prefix:             defaultPrefix,
+		exclusions:         defaultPathExclusions,
+		includes:           defaultPathInclusions,
+		withSecretMetadata: defaultWithSecretMetadata,
+		withVaultMetadata:  defaultWithVaultMetadata,
+		workerCount:        defaultWorkerCount,
 	}
 
 	// Apply option functions
@@ -122,13 +124,13 @@ func runPull(ctx context.Context, client *api.Client, paths []string, opts *opti
 		exportBuilder := func(p string) func() error {
 			return func() error {
 				// Create dedicated service reader
-				service, err := kv.New(client, p)
+				service, err := kv.New(client, p, kv.WithVaultMetatadata(opts.withVaultMetadata))
 				if err != nil {
 					return fmt.Errorf("unable to prepare vault reader for path '%s': %w", p, err)
 				}
 
 				// Create an exporter
-				op := operation.Exporter(service, vpath.SanitizePath(p), packageChan, opts.withMetadata, opts.workerCount)
+				op := operation.Exporter(service, vpath.SanitizePath(p), packageChan, opts.withSecretMetadata, opts.workerCount)
 
 				// Run the job
 				if err := op.Run(gReaderctx); err != nil {

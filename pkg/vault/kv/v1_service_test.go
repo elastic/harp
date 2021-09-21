@@ -341,7 +341,7 @@ func Test_vaultClient_Write(t *testing.T) {
 
 			// Service
 			underTest := V1(logicalMock, "secrets/")
-			err := underTest.WriteData(tt.args.ctx, tt.args.path, tt.args.data)
+			err := underTest.Write(tt.args.ctx, tt.args.path, tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("vaultClient.Write() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -19,8 +19,8 @@ package operation
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"path"
 	"strings"
 	"sync"
 
@@ -129,34 +129,27 @@ func (op *importer) Run(ctx context.Context) error {
 				}
 
 				// Export metadata
+				metadata := map[string]interface{}{}
 				if op.withMetadata {
 					// Has annotations
 					if len(secretPackage.Annotations) > 0 {
-						out, err := json.Marshal(secretPackage.Annotations)
-						if err != nil {
-							return fmt.Errorf("unable to encode annotations as JSON for path '%v': %w", secretPackage.Name, err)
+						for k, v := range secretPackage.Annotations {
+							metadata[k] = v
 						}
-
-						// Assign json
-						data["harp.elastic.io/v1/bundle#annotations"] = string(out)
 					}
 
 					// Has labels
 					if len(secretPackage.Labels) > 0 {
-						out, err := json.Marshal(secretPackage.Labels)
-						if err != nil {
-							return fmt.Errorf("unable to encode labels as JSON for path '%v': %w", secretPackage.Name, err)
+						for k, v := range secretPackage.Labels {
+							metadata[fmt.Sprintf("label#%s", k)] = v
 						}
-
-						// Assign json
-						data["harp.elastic.io/v1/bundle#labels"] = string(out)
 					}
 				}
 
 				// Assemble secret path
 				secretPath := secretPackage.Name
 				if op.prefix != "" {
-					secretPath = fmt.Sprintf("%s/%s", op.prefix, secretPath)
+					secretPath = path.Join(op.prefix, secretPath)
 				}
 
 				// Extract root backend path
@@ -177,7 +170,7 @@ func (op *importer) Run(ctx context.Context) error {
 				}
 
 				// Write secret to Vault
-				if err := op.backends[rootPath].WriteData(gWriterCtx, secretPath, data); err != nil {
+				if err := op.backends[rootPath].WriteWithMeta(gWriterCtx, secretPath, data, metadata); err != nil {
 					return fmt.Errorf("unable to write secret data for path '%s': %w", secretPath, err)
 				}
 
