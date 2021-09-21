@@ -18,7 +18,7 @@ trap '[[ $TEMP_DIR ]] && rm -rf "$TEMP_DIR"' EXIT
 get_licence_detector() {
     (
         cd "$TEMP_DIR"
-        GOBIN="$TEMP_DIR" GO111MODULE=on go get "$LICENCE_DETECTOR"
+        GOBIN="$TEMP_DIR" GO111MODULE=on go install "$LICENCE_DETECTOR"
     )
 }
 
