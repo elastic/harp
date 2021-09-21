@@ -91,7 +91,7 @@ func runPush(ctx context.Context, b *bundlev1.Bundle, client *api.Client, opts *
 	}
 
 	// Initialize operation
-	op := operation.Importer(client, b, opts.prefix, opts.withSecretMetadata, opts.workerCount)
+	op := operation.Importer(client, b, opts.prefix, opts.withSecretMetadata, opts.withVaultMetadata, opts.workerCount)
 
 	// Run the vault operation
 	if err := op.Run(ctx); err != nil {

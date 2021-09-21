@@ -128,7 +128,7 @@ func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint
 	if !ok {
 		return nil, nil, fmt.Errorf("unable to extract values for path '%s', secret backend supposed to be a v2 but it's not", path)
 	}
-	metadata, ok := secret.Data["metadata"]
+	metadata, ok := secret.Data["metadata"].(map[string]interface{})
 	if !ok {
 		return nil, nil, fmt.Errorf("unable to extract metadata for path '%s', secret backend supposed to be a v2 but it's not", path)
 	}
@@ -138,8 +138,29 @@ func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint
 		return nil, nil, ErrNoData
 	}
 
+	// Custom metadata enabled => retrieve secret meatadata.
+	if s.customMetadataEnabled {
+		rawMeta, err := s.logical.Read(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "metadata"))
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to extract secret metadata for path '%s': %w", path, err)
+		}
+		if rawMeta == nil {
+			return nil, nil, fmt.Errorf("unable to retrieve secret metadata for path '%s': %w", path, ErrPathNotFound)
+		}
+		if rawMeta.Data == nil {
+			return nil, nil, fmt.Errorf("unable to retrieve secret metadata for path '%s': %w", path, ErrNoData)
+		}
+
+		// Check if response contains custom_metadata
+		if rawCustomMeta, ok := rawMeta.Data["custom_metadata"]; ok {
+			if customMeta, ok := rawCustomMeta.(map[string]interface{}); ok {
+				metadata["custom_metadata"] = customMeta
+			}
+		}
+	}
+
 	// Return secret value and no error
-	return data.(map[string]interface{}), metadata.(map[string]interface{}), err
+	return data.(map[string]interface{}), metadata, err
 }
 
 func (s *kvv2Backend) Write(ctx context.Context, path string, data SecretData) error {

@@ -37,27 +37,29 @@ import (
 )
 
 // Importer initialize a secret importer operation
-func Importer(client *api.Client, bundleFile *bundlev1.Bundle, prefix string, withMetadata bool, maxWorkerCount int64) Operation {
+func Importer(client *api.Client, bundleFile *bundlev1.Bundle, prefix string, withMetadata, withVaultMetadata bool, maxWorkerCount int64) Operation {
 	return &importer{
-		client:         client,
-		bundle:         bundleFile,
-		prefix:         prefix,
-		withMetadata:   withMetadata,
-		backends:       map[string]kv.Service{},
-		maxWorkerCount: maxWorkerCount,
+		client:            client,
+		bundle:            bundleFile,
+		prefix:            prefix,
+		withMetadata:      withMetadata || withVaultMetadata,
+		withVaultMetadata: withVaultMetadata,
+		backends:          map[string]kv.Service{},
+		maxWorkerCount:    maxWorkerCount,
 	}
 }
 
 // -----------------------------------------------------------------------------
 
 type importer struct {
-	client         *api.Client
-	bundle         *bundlev1.Bundle
-	prefix         string
-	withMetadata   bool
-	backends       map[string]kv.Service
-	backendsMutex  sync.RWMutex
-	maxWorkerCount int64
+	client            *api.Client
+	bundle            *bundlev1.Bundle
+	prefix            string
+	withMetadata      bool
+	withVaultMetadata bool
+	backends          map[string]kv.Service
+	backendsMutex     sync.RWMutex
+	maxWorkerCount    int64
 }
 
 // Run the implemented operation
@@ -158,7 +160,7 @@ func (op *importer) Run(ctx context.Context) error {
 				// Check backend initialization
 				if _, ok := op.backends[rootPath]; !ok {
 					// Initialize new service for backend
-					service, err := kv.New(op.client, rootPath)
+					service, err := kv.New(op.client, rootPath, kv.WithVaultMetatadata(op.withVaultMetadata))
 					if err != nil {
 						return fmt.Errorf("unable to initialize Vault service for '%s' KV backend: %w", op.prefix, err)
 					}
