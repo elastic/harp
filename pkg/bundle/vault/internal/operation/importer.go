@@ -19,8 +19,8 @@ package operation
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"path"
 	"strings"
 	"sync"
 
@@ -37,27 +37,29 @@ import (
 )
 
 // Importer initialize a secret importer operation
-func Importer(client *api.Client, bundleFile *bundlev1.Bundle, prefix string, withMetadata bool, maxWorkerCount int64) Operation {
+func Importer(client *api.Client, bundleFile *bundlev1.Bundle, prefix string, withMetadata, withVaultMetadata bool, maxWorkerCount int64) Operation {
 	return &importer{
-		client:         client,
-		bundle:         bundleFile,
-		prefix:         prefix,
-		withMetadata:   withMetadata,
-		backends:       map[string]kv.Service{},
-		maxWorkerCount: maxWorkerCount,
+		client:            client,
+		bundle:            bundleFile,
+		prefix:            prefix,
+		withMetadata:      withMetadata || withVaultMetadata,
+		withVaultMetadata: withVaultMetadata,
+		backends:          map[string]kv.Service{},
+		maxWorkerCount:    maxWorkerCount,
 	}
 }
 
 // -----------------------------------------------------------------------------
 
 type importer struct {
-	client         *api.Client
-	bundle         *bundlev1.Bundle
-	prefix         string
-	withMetadata   bool
-	backends       map[string]kv.Service
-	backendsMutex  sync.RWMutex
-	maxWorkerCount int64
+	client            *api.Client
+	bundle            *bundlev1.Bundle
+	prefix            string
+	withMetadata      bool
+	withVaultMetadata bool
+	backends          map[string]kv.Service
+	backendsMutex     sync.RWMutex
+	maxWorkerCount    int64
 }
 
 // Run the implemented operation
@@ -129,34 +131,27 @@ func (op *importer) Run(ctx context.Context) error {
 				}
 
 				// Export metadata
+				metadata := map[string]interface{}{}
 				if op.withMetadata {
 					// Has annotations
 					if len(secretPackage.Annotations) > 0 {
-						out, err := json.Marshal(secretPackage.Annotations)
-						if err != nil {
-							return fmt.Errorf("unable to encode annotations as JSON for path '%v': %w", secretPackage.Name, err)
+						for k, v := range secretPackage.Annotations {
+							metadata[k] = v
 						}
-
-						// Assign json
-						data["harp.elastic.io/v1/bundle#annotations"] = string(out)
 					}
 
 					// Has labels
 					if len(secretPackage.Labels) > 0 {
-						out, err := json.Marshal(secretPackage.Labels)
-						if err != nil {
-							return fmt.Errorf("unable to encode labels as JSON for path '%v': %w", secretPackage.Name, err)
+						for k, v := range secretPackage.Labels {
+							metadata[fmt.Sprintf("label#%s", k)] = v
 						}
-
-						// Assign json
-						data["harp.elastic.io/v1/bundle#labels"] = string(out)
 					}
 				}
 
 				// Assemble secret path
 				secretPath := secretPackage.Name
 				if op.prefix != "" {
-					secretPath = fmt.Sprintf("%s/%s", op.prefix, secretPath)
+					secretPath = path.Join(op.prefix, secretPath)
 				}
 
 				// Extract root backend path
@@ -165,7 +160,7 @@ func (op *importer) Run(ctx context.Context) error {
 				// Check backend initialization
 				if _, ok := op.backends[rootPath]; !ok {
 					// Initialize new service for backend
-					service, err := kv.New(op.client, rootPath)
+					service, err := kv.New(op.client, rootPath, kv.WithVaultMetatadata(op.withVaultMetadata))
 					if err != nil {
 						return fmt.Errorf("unable to initialize Vault service for '%s' KV backend: %w", op.prefix, err)
 					}
@@ -177,7 +172,7 @@ func (op *importer) Run(ctx context.Context) error {
 				}
 
 				// Write secret to Vault
-				if err := op.backends[rootPath].Write(gWriterCtx, secretPath, data); err != nil {
+				if err := op.backends[rootPath].WriteWithMeta(gWriterCtx, secretPath, data, metadata); err != nil {
 					return fmt.Errorf("unable to write secret data for path '%s': %w", secretPath, err)
 				}
 

@@ -23,11 +23,12 @@ import (
 )
 
 type options struct {
-	prefix       string
-	withMetadata bool
-	workerCount  int64
-	exclusions   []*regexp.Regexp
-	includes     []*regexp.Regexp
+	prefix             string
+	withSecretMetadata bool
+	withVaultMetadata  bool
+	workerCount        int64
+	exclusions         []*regexp.Regexp
+	includes           []*regexp.Regexp
 }
 
 // Option defines the functional pattern for bundle operation settings.
@@ -76,10 +77,19 @@ func WithPrefix(value string) Option {
 	}
 }
 
-// WithMetadata add package metadata as secret value to be exported in Vault.
-func WithMetadata(value bool) Option {
+// WithSecretMetadata add package metadata as secret value to be exported in Vault.
+func WithSecretMetadata(value bool) Option {
 	return func(opts *options) error {
-		opts.withMetadata = value
+		opts.withSecretMetadata = value
+		// No error
+		return nil
+	}
+}
+
+// WithVaultMetadata add package metadata as secret metadata to be exported in Vault.
+func WithVaultMetadata(value bool) Option {
+	return func(opts *options) error {
+		opts.withVaultMetadata = value
 		// No error
 		return nil
 	}

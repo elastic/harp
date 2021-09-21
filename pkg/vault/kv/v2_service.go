@@ -19,6 +19,7 @@ package kv
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/vault/api"
@@ -28,15 +29,17 @@ import (
 )
 
 type kvv2Backend struct {
-	logical   logical.Logical
-	mountPath string
+	logical               logical.Logical
+	mountPath             string
+	customMetadataEnabled bool
 }
 
 // V2 returns a K/V v2 backend service instance.
-func V2(l logical.Logical, mountPath string) Service {
+func V2(l logical.Logical, mountPath string, customMetadataEnabled bool) Service {
 	return &kvv2Backend{
-		logical:   l,
-		mountPath: mountPath,
+		logical:               l,
+		mountPath:             mountPath,
+		customMetadataEnabled: customMetadataEnabled,
 	}
 }
 
@@ -125,7 +128,7 @@ func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint
 	if !ok {
 		return nil, nil, fmt.Errorf("unable to extract values for path '%s', secret backend supposed to be a v2 but it's not", path)
 	}
-	metadata, ok := secret.Data["metadata"]
+	metadata, ok := secret.Data["metadata"].(map[string]interface{})
 	if !ok {
 		return nil, nil, fmt.Errorf("unable to extract metadata for path '%s', secret backend supposed to be a v2 but it's not", path)
 	}
@@ -135,18 +138,68 @@ func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint
 		return nil, nil, ErrNoData
 	}
 
+	// Custom metadata enabled => retrieve secret meatadata.
+	if s.customMetadataEnabled {
+		rawMeta, errMeta := s.logical.Read(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "metadata"))
+		if errMeta != nil {
+			return nil, nil, fmt.Errorf("unable to extract secret metadata for path '%s': %w", path, errMeta)
+		}
+		if rawMeta == nil {
+			return nil, nil, fmt.Errorf("unable to retrieve secret metadata for path '%s': %w", path, ErrPathNotFound)
+		}
+		if rawMeta.Data == nil {
+			return nil, nil, fmt.Errorf("unable to retrieve secret metadata for path '%s': %w", path, ErrNoData)
+		}
+
+		// Check if response contains custom_metadata
+		if rawCustomMeta, ok := rawMeta.Data["custom_metadata"]; ok {
+			if customMeta, ok := rawCustomMeta.(map[string]interface{}); ok {
+				metadata["custom_metadata"] = customMeta
+			}
+		}
+	}
+
 	// Return secret value and no error
-	return data.(map[string]interface{}), metadata.(map[string]interface{}), err
+	return data.(map[string]interface{}), metadata, err
 }
 
 func (s *kvv2Backend) Write(ctx context.Context, path string, data SecretData) error {
+	return s.WriteWithMeta(ctx, path, data, nil)
+}
+
+func (s *kvv2Backend) WriteWithMeta(ctx context.Context, path string, data SecretData, meta SecretMetadata) error {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {
 		return fmt.Errorf("unable to query with empty path")
 	}
 
-	// Create a logical client
+	// Custom metadata not enabled => store meatadata as secret data.
+	if s.customMetadataEnabled {
+		// Validate metadata
+		if len(meta) > CustomMetadataKeyLimit {
+			return errors.New("unable to store more than 64 custom metadata keys")
+		}
+
+		// Check key and value constraints
+		for k, v := range meta {
+			if len(k) > CustomMetadataKeySizeLimit {
+				return fmt.Errorf("custom meta '%s' could not be stored, it must be less than 128 bytes", k)
+			}
+			raw, ok := v.(string)
+			if !ok {
+				return fmt.Errorf("custom meta '%s' must be a string", k)
+			}
+			if len(raw) > CustomMetadataValueSizeLimit {
+				return fmt.Errorf("custom meta '%s' value is too large (%d), it must be less than 512 bytes", k, len(raw))
+			}
+		}
+	} else if len(meta) > 0 {
+		// Add metadata to data
+		data[VaultMetadataDataKey] = meta
+	}
+
+	// Write data
 	_, err := s.logical.Write(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "data"), map[string]interface{}{
 		"data": data,
 	})
@@ -154,5 +207,16 @@ func (s *kvv2Backend) Write(ctx context.Context, path string, data SecretData) e
 		return fmt.Errorf("unable to write secret data for path '%s': %w", path, err)
 	}
 
+	// Write metadata
+	if s.customMetadataEnabled && len(meta) > 0 {
+		_, err := s.logical.Write(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "metadata"), map[string]interface{}{
+			"custom_metadata": meta,
+		})
+		if err != nil {
+			return fmt.Errorf("unable to write secret metadata for path '%s': %w", path, err)
+		}
+	}
+
+	// No error
 	return nil
 }

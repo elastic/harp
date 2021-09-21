@@ -109,10 +109,19 @@ func (s *kvv1Backend) ReadVersion(ctx context.Context, path string, version uint
 }
 
 func (s *kvv1Backend) Write(ctx context.Context, path string, data SecretData) error {
+	return s.WriteWithMeta(ctx, path, data, nil)
+}
+
+func (s *kvv1Backend) WriteWithMeta(ctx context.Context, path string, data SecretData, meta SecretMetadata) error {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
 	if secretPath == "" {
 		return fmt.Errorf("unable to query with empty path")
+	}
+
+	// Add metadata as secret data.
+	if len(meta) > 0 {
+		data[VaultMetadataDataKey] = meta
 	}
 
 	// Create a logical client

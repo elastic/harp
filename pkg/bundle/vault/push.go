@@ -40,20 +40,22 @@ func Push(ctx context.Context, b *bundlev1.Bundle, client *api.Client, opts ...O
 
 	// Default values
 	var (
-		defaultPrefix         = ""
-		defaultPathInclusions = []*regexp.Regexp{}
-		defaultPathExclusions = []*regexp.Regexp{}
-		defaultWithMetadata   = false
-		defaultWorkerCount    = int64(4)
+		defaultPrefix             = ""
+		defaultPathInclusions     = []*regexp.Regexp{}
+		defaultPathExclusions     = []*regexp.Regexp{}
+		defaultWithSecretMetadata = false
+		defaultWithVaultMetadata  = false
+		defaultWorkerCount        = int64(4)
 	)
 
 	// Create default option instance
 	defaultOpts := &options{
-		prefix:       defaultPrefix,
-		exclusions:   defaultPathExclusions,
-		includes:     defaultPathInclusions,
-		withMetadata: defaultWithMetadata,
-		workerCount:  defaultWorkerCount,
+		prefix:             defaultPrefix,
+		exclusions:         defaultPathExclusions,
+		includes:           defaultPathInclusions,
+		withSecretMetadata: defaultWithSecretMetadata,
+		withVaultMetadata:  defaultWithVaultMetadata,
+		workerCount:        defaultWorkerCount,
 	}
 
 	// Apply option functions
@@ -89,7 +91,7 @@ func runPush(ctx context.Context, b *bundlev1.Bundle, client *api.Client, opts *
 	}
 
 	// Initialize operation
-	op := operation.Importer(client, b, opts.prefix, opts.withMetadata, opts.workerCount)
+	op := operation.Importer(client, b, opts.prefix, opts.withSecretMetadata, opts.withVaultMetadata, opts.workerCount)
 
 	// Run the vault operation
 	if err := op.Run(ctx); err != nil {

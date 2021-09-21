@@ -27,6 +27,24 @@ var (
 	ErrPathNotFound = errors.New("path not found")
 	// ErrNoData is raised when gievn secret path doesn't contains data.
 	ErrNoData = errors.New("no data")
+	// ErrCustomMetadataDisabled is raised when trying to write a custom
+	// metadata with globally disabled feature.
+	ErrCustomMetadataDisabled = errors.New("custom metadata is disabled")
+)
+
+// VaultMetadataDataKey represents the secret data key used to store
+// metadata.
+var VaultMetadataDataKey = "www.vaultproject.io/kv/metadata"
+
+const (
+	// CustomMetadataKeyLimit defines the key count limit for custom metadata.
+	CustomMetadataKeyLimit = 64
+	// CustomMetadataKeySizeLimit defines the key size limit in bytes for
+	// custom metadata.
+	CustomMetadataKeySizeLimit = 128
+	// CustomMetadataValueSizeLimit defines the value size limit in bytes for
+	// custom metadata.
+	CustomMetadataValueSizeLimit = 512
 )
 
 // SecretData is a secret body
@@ -49,6 +67,7 @@ type SecretReader interface {
 // SecretWriter represents secret writer feature contract.
 type SecretWriter interface {
 	Write(ctx context.Context, path string, secrets SecretData) error
+	WriteWithMeta(ctx context.Context, path string, secrets SecretData, meta SecretMetadata) error
 }
 
 // Service declares vault service contract.
