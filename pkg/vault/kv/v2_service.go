@@ -173,7 +173,7 @@ func (s *kvv2Backend) WriteWithMeta(ctx context.Context, path string, data Secre
 				return fmt.Errorf("custom meta '%s' value is too large (%d), it must be less than 512 bytes", k, len(raw))
 			}
 		}
-	} else {
+	} else if len(meta) > 0 {
 		// Add metadata to data
 		data[VaultMetadataDataKey] = meta
 	}

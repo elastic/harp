@@ -140,12 +140,13 @@ func (op *exporter) Run(ctx context.Context) error {
 				// Iterate over secret bundle
 				for k, v := range secretData {
 					// Check for metadata prefix
-					if strings.EqualFold(k, kv.VaultMetadataDataKey) && op.withMetadata {
-						rawMetadata := fmt.Sprintf("%s", v)
-						// Unpack value
-						if errDecode := json.Unmarshal([]byte(rawMetadata), &metadata); errDecode != nil {
-							log.For(gReaderCtx).Error("unable to decode package metadata object as JSON", zap.Error(errDecode), zap.String("path", secPath))
-							continue
+					if strings.EqualFold(k, kv.VaultMetadataDataKey) {
+						if rawMetadata, ok := v.(map[string]interface{}); ok {
+							for k, v := range rawMetadata {
+								metadata[k] = fmt.Sprintf("%s", v)
+							}
+						} else {
+							log.For(gReaderCtx).Error("Vault metadata type has unexpected type, processing skipped.", zap.String("path", secPath))
 						}
 
 						// Ignore secret unpacking for this value
@@ -175,11 +176,12 @@ func (op *exporter) Run(ctx context.Context) error {
 					switch k {
 					case "version":
 						// Convert version
-						version, ok := v.(int32)
-						if ok {
-							pack.Secrets.Version = uint32(version)
+						rawVersion := json.Number(fmt.Sprintf("%s", v))
+						version, err := rawVersion.Int64()
+						if err != nil {
+							log.For(gReaderCtx).Warn("unable to unpack secret version as int64.", zap.Error(err), zap.Any("value", v))
 						} else {
-							log.For(gReaderCtx).Warn("unable to unpack secret version, invalid type.", zap.Any("value", v))
+							pack.Secrets.Version = uint32(version)
 						}
 					case "custom_metadata":
 						// Copy as metadata
