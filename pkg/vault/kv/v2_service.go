@@ -140,9 +140,9 @@ func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint
 
 	// Custom metadata enabled => retrieve secret meatadata.
 	if s.customMetadataEnabled {
-		rawMeta, err := s.logical.Read(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "metadata"))
-		if err != nil {
-			return nil, nil, fmt.Errorf("unable to extract secret metadata for path '%s': %w", path, err)
+		rawMeta, errMeta := s.logical.Read(vpath.AddPrefixToVKVPath(secretPath, s.mountPath, "metadata"))
+		if errMeta != nil {
+			return nil, nil, fmt.Errorf("unable to extract secret metadata for path '%s': %w", path, errMeta)
 		}
 		if rawMeta == nil {
 			return nil, nil, fmt.Errorf("unable to retrieve secret metadata for path '%s': %w", path, ErrPathNotFound)

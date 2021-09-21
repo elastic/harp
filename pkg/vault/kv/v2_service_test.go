@@ -296,7 +296,7 @@ func Test_KVV2_Read(t *testing.T) {
 			}
 
 			// Service
-			underTest := V2(logicalMock, "secrets/", true)
+			underTest := V2(logicalMock, "secrets/", false)
 			gotData, gotMeta, err := underTest.Read(tt.args.ctx, tt.args.path)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("vaultClient.Read() error = %v, wantErr %v", err, tt.wantErr)
@@ -373,7 +373,7 @@ func Test_KVV2_WriteData(t *testing.T) {
 			}
 
 			// Service
-			underTest := V2(logicalMock, "secrets/", true)
+			underTest := V2(logicalMock, "secrets/", false)
 			err := underTest.Write(tt.args.ctx, tt.args.path, tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("vaultClient.Write() error = %v, wantErr %v", err, tt.wantErr)

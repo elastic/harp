@@ -32,11 +32,9 @@ var (
 	ErrCustomMetadataDisabled = errors.New("custom metadata is disabled")
 )
 
-var (
-	// VaultMetadataDataKey represents the secret data key used to store
-	// metadata.
-	VaultMetadataDataKey = "www.vaultproject.io/kv/metadata"
-)
+// VaultMetadataDataKey represents the secret data key used to store
+// metadata.
+var VaultMetadataDataKey = "www.vaultproject.io/kv/metadata"
 
 const (
 	// CustomMetadataKeyLimit defines the key count limit for custom metadata.
