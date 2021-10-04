@@ -10,6 +10,7 @@ FEATURES:
 
 * to/vault: Support Vault >1.9 custom metadata for bundle metadata publication. [#68](https://github.com/elastic/harp/pull/68)
 * from/vault: Support Vault >1.9 custom metadata for bundle metadata retrieval. [#68](https://github.com/elastic/harp/pull/68)
+* from/vault: Support legacy bundle metadata format. [#69](https://github.com/elastic/harp/pull/69)
 
 ## 0.1.24
 
