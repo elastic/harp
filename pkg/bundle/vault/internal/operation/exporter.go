@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/imdario/mergo"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
@@ -36,7 +37,6 @@ import (
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/vault/kv"
 	vaultPath "github.com/elastic/harp/pkg/vault/path"
-	"github.com/imdario/mergo"
 )
 
 // Exporter initialize a secret exporter operation
