@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/imdario/mergo"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
@@ -116,14 +117,14 @@ func (op *exporter) Run(ctx context.Context) error {
 				}
 
 				// Read from Vault
-				secretData, secretMeta, err := op.service.ReadVersion(gReaderCtx, vaultPackagePath, vaultVersion)
-				if err != nil {
+				secretData, secretMeta, errRead := op.service.ReadVersion(gReaderCtx, vaultPackagePath, vaultVersion)
+				if errRead != nil {
 					// Mask path not found or empty secret value
-					if errors.Is(err, kv.ErrNoData) || errors.Is(err, kv.ErrPathNotFound) {
+					if errors.Is(errRead, kv.ErrNoData) || errors.Is(errRead, kv.ErrPathNotFound) {
 						log.For(gReaderCtx).Debug("No data / path found for given path", zap.String("path", secPath))
 						return nil
 					}
-					return fmt.Errorf("unexpected vault error: %w", err)
+					return fmt.Errorf("unexpected vault error: %w", errRead)
 				}
 
 				// Prepare secret list
@@ -139,7 +140,14 @@ func (op *exporter) Run(ctx context.Context) error {
 
 				// Iterate over secret bundle
 				for k, v := range secretData {
-					// Check for metadata prefix
+					// Check for old metadata prefix
+					if strings.HasPrefix(strings.ToLower(k), legacyBundleMetadataPrefix) {
+						metadata[strings.ToLower(k)] = fmt.Sprintf("%s", v)
+						// Ignore secret unpacking for this value
+						continue
+					}
+
+					// Check for new metadata prefix
 					if strings.EqualFold(k, kv.VaultMetadataDataKey) {
 						if rawMetadata, ok := v.(map[string]interface{}); ok {
 							for k, v := range rawMetadata {
@@ -203,6 +211,37 @@ func (op *exporter) Run(ctx context.Context) error {
 						switch {
 						case strings.HasPrefix(key, "label#"):
 							pack.Labels[strings.TrimPrefix(key, "label#")] = value
+						case strings.HasPrefix(key, legacyBundleMetadataPrefix):
+							// Legacy metadata
+
+							// Clean key
+							key = strings.TrimPrefix(key, legacyBundleMetadataPrefix)
+
+							// Unpack value
+							var data map[string]string
+							if errDecode := json.Unmarshal([]byte(value), &data); errDecode != nil {
+								log.For(gReaderCtx).Error("unable to decode package legacy metadata object as JSON", zap.Error(errDecode), zap.String("key", key), zap.String("path", secPath))
+								continue
+							}
+
+							var meta interface{}
+
+							// Merge with package
+							switch key {
+							case "#annotations":
+								meta = &pack.Annotations
+							case "#labels":
+								meta = &pack.Labels
+							default:
+								log.For(gReaderCtx).Warn("unhandled legacy metadata", zap.String("key", key), zap.String("path", secPath))
+								continue
+							}
+
+							// Merge with Vault metadata
+							if errMergo := mergo.MergeWithOverwrite(meta, data, mergo.WithOverride); errMergo != nil {
+								log.For(gReaderCtx).Warn("unable to merge package legacy metadata object", zap.Error(errMergo), zap.String("key", key), zap.String("path", secPath))
+								continue
+							}
 						default:
 							pack.Annotations[key] = value
 						}
