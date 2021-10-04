@@ -25,3 +25,7 @@ import (
 type Operation interface {
 	Run(ctx context.Context) error
 }
+
+const (
+	legacyBundleMetadataPrefix = "harp.elastic.io/v1/bundle"
+)
