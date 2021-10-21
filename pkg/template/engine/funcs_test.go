@@ -94,6 +94,18 @@ func TestFuncs(t *testing.T) {
 		tpl:    `{{ fromYamlArray . }}`,
 		expect: `[error unmarshaling JSON: while decoding JSON: json: cannot unmarshal object into Go value of type []interface {}]`,
 		vars:   `hello: world`,
+	}, {
+		tpl:    `{{ jsonEscape . }}`,
+		expect: `backslash: \\, A: \u0026 \u003c`,
+		vars:   `backslash: \, A: & <`,
+	}, {
+		tpl:    `{{ jsonUnescape . }}`,
+		expect: `backslash: \, A: & <`,
+		vars:   `"backslash: \\, A: \u0026 \u003c"`,
+	}, {
+		tpl:    `{{ unquote . }}`,
+		expect: `{"channel":"buu","name":"john", "msg":"doe"}`,
+		vars:   `"{\"channel\":\"buu\",\"name\":\"john\", \"msg\":\"doe\"}"`,
 	}}
 
 	for _, tt := range tests {
