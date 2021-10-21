@@ -11,8 +11,8 @@ FEATURES:
 * to/vault: Support Vault >1.9 custom metadata for bundle metadata publication. [#68](https://github.com/elastic/harp/pull/68)
 * from/vault: Support Vault >1.9 custom metadata for bundle metadata retrieval. [#68](https://github.com/elastic/harp/pull/68)
 * from/vault: Support legacy bundle metadata format. [#69](https://github.com/elastic/harp/pull/69)
-* template/engine: `jsonEscape` is added to escape a string using JSON character escaping strategy
-* template/engine: `unquote` is added to unquote a `quote` escaped string
+* template/engine: `jsonEscape` / `jsonUnescape` is added to handle string escaping using JSON character escaping strategy [#70](https://github.com/elastic/harp/pull/70)
+* template/engine: `unquote` is added to unquote a `quote` escaped string [#70](https://github.com/elastic/harp/pull/70)
 
 ## 0.1.24
 
