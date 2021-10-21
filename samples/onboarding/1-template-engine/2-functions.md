@@ -73,6 +73,15 @@ https://logstash:{{ paranoidPassword | urlQueryEscape }}@ingester.es.cloud:1234
 https://logstash:K3iDayow9%5Cav67HawD6%210k~8lhcm8oLVUBt2wE%3E%5DLBJQJVj%3AfIx%2Fuo%40%7B%3D6kvgXHK@ingester.es.cloud:1234%
 ```
 
+#### jsonEscape / jsonUnescape
+
+Apply JSON ecaping strategy to a string
+
+```ruby
+{{ "backslash: \, A: & <" | jsonEscape }}
+backslash: \\, A: \u0026 \u003c
+```
+
 ### Secret loader
 
 #### secret

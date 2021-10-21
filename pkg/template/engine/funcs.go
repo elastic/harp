@@ -19,7 +19,10 @@ package engine
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"net/url"
+	"strconv"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -74,13 +77,6 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 		// Bech32
 		"bech32enc": bech32.Encode,
 		"bech32dec": crypto.Bech32Decode,
-		// URL
-		"urlPathEscape":    url.PathEscape,
-		"urlPathUnescape":  url.PathUnescape,
-		"urlQueryEscape":   url.QueryEscape,
-		"urlQueryUnescape": url.QueryUnescape,
-		// Escape
-		"shellEscape": shellescape.Quote,
 		// Base64
 		"b64urlenc": func(in string) string {
 			return base64.URLEncoding.EncodeToString([]byte(in))
@@ -89,6 +85,25 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 			out, err := base64.URLEncoding.DecodeString(in)
 			return string(out), err
 		},
+		// Escaping
+		"urlPathEscape":    url.PathEscape,
+		"urlPathUnescape":  url.PathUnescape,
+		"urlQueryEscape":   url.QueryEscape,
+		"urlQueryUnescape": url.QueryUnescape,
+		"shellEscape":      shellescape.Quote,
+		"jsonEscape": func(in string) (string, error) {
+			b, err := json.Marshal(in)
+			// Trim the beginning and trailing " character
+			return strings.Trim(string(b), `"`), err
+		},
+		"jsonUnescape": func(in string) (string, error) {
+			var out string
+			if err := json.Unmarshal([]byte(in), &out); err != nil {
+				return "", err
+			}
+			return out, nil
+		},
+		"unquote": strconv.Unquote,
 	}
 
 	for k, v := range extra {
