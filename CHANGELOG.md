@@ -2,6 +2,10 @@
 
 ### Not released yet
 
+DIST:
+
+* homebrew: Approriate harp version can be installed according to your platform architecture and OS [#71](https://github.com/elastic/harp/pull/71)
+
 CHANGES:
 
 * core/vault: Replace json encoded metadata in secret data by a JSON object. [#68](https://github.com/elastic/harp/pull/68)
