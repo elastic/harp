@@ -9,6 +9,29 @@
 Harp is for Harpocrates (Ancient Greek: Ἁρποκράτης) the god of silence, secrets
 and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipedia.org/wiki/Harpocrates)
 
+## TL;DR
+
+* If you want to have a single secret value and you are asking yourself how
+  to generate a strong password - Harp has a template engine with secret value
+  generation functions to allow you to generate such values.
+
+* If you have thousands secrets to handle to deploy your platform/customers
+  on multiple cloud providers with different secret storages - Harp will help you
+  to define consistent secret provisioning bundles and pipelines.
+
+* If you are in the situation when you need an ephemeral secret storage to
+  bootstrap your long term cloud secret storage - Harp will help you to create
+  secret containers that can be consumed on deployment.
+
+* If you want to migrate massively your secrets from one secret storage to
+  another - Harp provides you a secret container to store these secrets while
+  they are going to be distributed in other secret storage implementations.
+
+* If you have to alter/modifiy a secret (rotation/deprecation/renewal) - Harp
+  provides you a GitOps-able secret storage agnostic operation set, so that you
+  can define a specification to describe how your secret operation is going to
+  be applied offline on the secret container.
+
 ## Why harp?
 
 * Secret management is in essence a collection of processes that must be
@@ -92,6 +115,22 @@ And allows :
   * Seal / Unseal a container for integrity and confidentiality property conservation
     to enforce at-rest encryption (aes256-gcm96 or chacha20-poly1305);
   * Multiple identities sealing algorithm;
+
+## FAQ
+
+* Is it used internally at Elastic? - Yes. It is used to generate bootstrap
+  secrets used to bootstrap the new region infrastructure components.
+  #ChickenEggProblem
+
+* Harp is only supporting `Vault`? - No, it has been published with only vault
+  support builtin, but it supports many other secret storage implementations via
+  plugins.
+
+* What's the difference with `Vault`? - Hashicorp Vault is an encrypted highly
+  available K/V store with advanced autorization engine, it doesn't handle
+  secret provisioning for you. You can't ask Vault to generate secrets for your
+  application and store them using a defined logic. Harp is filling this
+  requirement.
 
 ## License
 
@@ -198,3 +237,4 @@ Here is the list of external projects used as inspiration :
 * [SaltPack](https://github.com/keybase/saltpack)
 * [Hashicorp Vault](https://github.com/hashicorp/vault)
 * [AWS SDK Go](https://github.com/aws/aws-sdk-go)
+
