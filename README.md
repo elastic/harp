@@ -1,10 +1,32 @@
-# Harp
-
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go Report Card](https://goreportcard.com/badge/github.com/elastic/harp)](https://goreportcard.com/report/github.com/elastic/harp)
 [![made-with-Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](http://golang.org)
 [![GitHub release](https://img.shields.io/github/release/elastic/harp.svg)](https://github.com/elastic/harp/releases/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/elastic/harp/graphs/commit-activity)
+
+- [Harp](#harp)
+  - [Why harp?](#why-harp)
+  - [Use cases](#use-cases)
+  - [How does it work?](#how-does-it-work)
+    - [Like a Data pipeline but for secret](#like-a-data-pipeline-but-for-secret)
+    - [Immutable transformation](#immutable-transformation)
+  - [What can I do?](#what-can-i-do)
+  - [FAQ](#faq)
+  - [License](#license)
+- [Homebrew install](#homebrew-install)
+- [Build instructions](#build-instructions)
+  - [First time](#first-time)
+    - [Check your go version](#check-your-go-version)
+    - [Install mage](#install-mage)
+      - [From source](#from-source)
+      - [From brew formula](#from-brew-formula)
+    - [Clone repository](#clone-repository)
+  - [Daily](#daily)
+  - [Docker](#docker)
+- [Plugins](#plugins)
+- [Community](#community)
+
+# Harp
 
 Harp is for Harpocrates (Ancient Greek: Ἁρποκράτης) the god of silence, secrets
 and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipedia.org/wiki/Harpocrates)
@@ -28,6 +50,29 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
   get a consistent, reliable and flexible secret tree;
 * Secret storage backend can use various implementations in different environments
   and should be provisioned consistently.
+
+## Use cases
+
+* If you want to have a single secret value and you are asking yourself how
+  to generate a strong password - Harp has a template engine with secret value
+  generation functions to allow you to generate such values.
+
+* If you have thousands secrets to handle to deploy your platform/customers
+  on multiple cloud providers with different secret storages - Harp will help you
+  to define consistent secret provisioning bundles and pipelines.
+
+* If you are in the situation when you need an ephemeral secret storage to
+  bootstrap your long term cloud secret storage - Harp will help you to create
+  secret containers that can be consumed on deployment.
+
+* If you want to migrate massively your secrets from one secret storage to
+  another - Harp provides you a secret container to store these secrets while
+  they are going to be distributed in other secret storage implementations.
+
+* If you have to alter/modifiy a secret (rotation/deprecation/renewal) - Harp
+  provides you a GitOps-able secret storage agnostic operation set, so that you
+  can define a specification to describe how your secret operation is going to
+  be applied offline on the secret container.
 
 ## How does it work?
 
@@ -93,11 +138,27 @@ And allows :
     to enforce at-rest encryption (aes256-gcm96 or chacha20-poly1305);
   * Multiple identities sealing algorithm;
 
+## FAQ
+
+* Is it used internally at Elastic? - Yes. It is used to generate bootstrap
+  secrets used to bootstrap the new region infrastructure components.
+  #ChickenEggProblem
+
+* Harp is only supporting `Vault`? - No, it has been published with only vault
+  support builtin, but it supports many other secret storage implementations via
+  plugins.
+
+* What's the difference with `Vault`? - Hashicorp Vault is an encrypted highly
+  available K/V store with advanced autorization engine, it doesn't handle
+  secret provisioning for you. You can't ask Vault to generate secrets for your
+  application and store them using a defined logic. Harp is filling this
+  requirement.
+
 ## License
 
 `harp` artifacts and source code is released under [Apache 2.0 Software License](LICENSE).
 
-## Homebrew install
+# Homebrew install
 
 Download a [release](https://github.com/elastic/harp/releases) or build from source.
 
@@ -108,13 +169,13 @@ brew tap elastic/harp
 brew install elastic/harp/harp
 ```
 
-## Build instructions
+# Build instructions
 
 Download a [release](https://github.com/elastic/harp/releases) or build from source.
 
-### First time
+## First time
 
-#### Check your go version
+### Check your go version
 
 > Only last 2 minor versions of a major are supported.
 
@@ -127,12 +188,12 @@ go version go1.17.1 linux/amd64
 
 > Simple go version manager - <https://github.com/stefanmaric/g>
 
-#### Install mage
+### Install mage
 
 [Mage](https://magefile.org/) is an alternative to Make where language used is Go.
 You can install it using 2 different methods.
 
-##### From source
+#### From source
 
 ```sh
 # Install mage
@@ -141,13 +202,13 @@ cd mage
 go run bootstrap.go
 ```
 
-##### From brew formula
+#### From brew formula
 
 ```sh
 brew install mage
 ```
 
-#### Clone repository
+### Clone repository
 
 ```sh
 git clone git@github.com:elastic/harp.git
@@ -157,7 +218,7 @@ cd harp/tools
 mage
 ```
 
-### Daily
+## Daily
 
 ```sh
 export PATH=$HARP_REPO/tools/bin:$PATH
@@ -165,7 +226,7 @@ export PATH=$HARP_REPO/tools/bin:$PATH
 mage
 ```
 
-### Docker
+## Docker
 
 For Tools
 
@@ -184,11 +245,11 @@ mage docker:harp
 docker run --rm -ti --read-only elastic/harp:<version>
 ```
 
-## Plugins
+# Plugins
 
 You can find more Harp feature extensions - <https://github.com/elastic/harp-plugins>
 
-## Community
+# Community
 
 Here is the list of external projects used as inspiration :
 
@@ -198,3 +259,4 @@ Here is the list of external projects used as inspiration :
 * [SaltPack](https://github.com/keybase/saltpack)
 * [Hashicorp Vault](https://github.com/hashicorp/vault)
 * [AWS SDK Go](https://github.com/aws/aws-sdk-go)
+
