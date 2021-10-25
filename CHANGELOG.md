@@ -9,6 +9,7 @@ DIST:
 CHANGES:
 
 * core/vault: Replace json encoded metadata in secret data by a JSON object. [#68](https://github.com/elastic/harp/pull/68)
+* crypto/pem: Delegate PEM encoding/decoding to `go.step.sm/crypto` [#72](https://github.com/elastic/harp/pull/72)
 
 FEATURES:
 
