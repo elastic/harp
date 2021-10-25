@@ -31,8 +31,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-
-	"github.com/elastic/harp/pkg/sdk/security/crypto/pkcs8"
+	"go.step.sm/crypto/pemutil"
 )
 
 // Options represents the information needed to create client and server TLS configurations.
@@ -168,7 +167,7 @@ func getPrivateKey(keyBytes []byte, passphrase string) ([]byte, error) {
 
 	var err error
 	if pemBlock.Type == "ENCRYPTED PRIVATE KEY" {
-		keyBytes, err = pkcs8.DecryptPEMBlock(pemBlock, []byte(passphrase))
+		keyBytes, err = pemutil.DecryptPEMBlock(pemBlock, []byte(passphrase))
 		if err != nil {
 			return nil, errors.Wrap(err, "private key is encrypted, but could not decrypt it")
 		}

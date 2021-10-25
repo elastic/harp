@@ -59,6 +59,7 @@ require (
 	github.com/ugorji/go/codec v1.2.6
 	github.com/zclconf/go-cty v1.9.1
 	gitlab.com/NebulousLabs/merkletree v0.0.0-20200118113624-07fbf710afc4
+	go.step.sm/crypto v0.12.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
