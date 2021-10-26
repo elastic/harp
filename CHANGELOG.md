@@ -1,9 +1,18 @@
-## 0.2.0
+## 0.2.1
 
 ### Not released yet
 
+## 0.2.0
+
+### 2021-10-26
+
+BREAKING-CHANGES:
+
+* Metadata storage has been modified to support a JSON level complexity. All plugins must align their metadata management to the new format.
+
 DIST:
 
+* go: Build with Golang 1.17.2.
 * homebrew: Approriate harp version can be installed according to your platform architecture and OS [#71](https://github.com/elastic/harp/pull/71)
 
 CHANGES:
