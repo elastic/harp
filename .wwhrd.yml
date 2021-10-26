@@ -49,3 +49,7 @@ exceptions:
   - github.com/hashicorp/go-immutable-radix
   # MPL-2.0 - https://github.com/hashicorp/go-uuid/blob/master/LICENSE
   - github.com/hashicorp/go-uuid
+  # MPL-2.0 - https://github.com/hashicorp/serf/blob/master/LICENSE
+  - github.com/hashicorp/serf/coordinate
+  # MPL-2.0 - https://github.com/hashicorp/consul/blob/main/LICENSE
+  - github.com/hashicorp/consul/api

@@ -14,31 +14,32 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
-package cmd
+package kv
 
 import (
-	"github.com/spf13/cobra"
+	"context"
+	"errors"
 )
+
+var (
+	// ErrKeyNotFound is raised when the given key could not be found in the store.
+	ErrKeyNotFound = errors.New("key not found")
+)
+
+// Store describes the key/value store contract.
+type Store interface {
+	// Get the value stored at the given key.
+	Get(ctx context.Context, key string) (*Pair, error)
+	// Put the given value at the given key.
+	Put(ctx context.Context, key string, value []byte) error
+	// List subkeys at a given path
+	List(ctx context.Context, path string) ([]*Pair, error)
+}
 
 // -----------------------------------------------------------------------------
 
-var fromCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "from",
-		Short: "Secret container generation commands",
-	}
-
-	// Add subcommands
-	cmd.AddCommand(fromVaultCmd())
-	cmd.AddCommand(fromJSONCmd())
-	cmd.AddCommand(fromTemplateCmd())
-	cmd.AddCommand(fromDumpCmd())
-	cmd.AddCommand(fromOPLogCmd())
-	cmd.AddCommand(fromObjectCmd())
-	cmd.AddCommand(fromConsulCmd())
-	cmd.AddCommand(fromEtcd3Cmd())
-	cmd.AddCommand(fromZookeeperCmd())
-
-	return cmd
+type Pair struct {
+	Key     string
+	Value   []byte
+	Version uint64
 }
