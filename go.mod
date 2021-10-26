@@ -34,6 +34,7 @@ require (
 	github.com/google/gofuzz v1.2.0
 	github.com/google/gops v0.3.21
 	github.com/gosimple/slug v1.11.0
+	github.com/hashicorp/consul/api v1.10.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl/v2 v2.10.1
@@ -49,6 +50,7 @@ require (
 	github.com/onsi/gomega v1.16.0
 	github.com/pelletier/go-toml v1.9.4
 	github.com/pkg/errors v0.9.1
+	github.com/samuel/go-zookeeper v0.0.0-20201211165307-7117e9ea2414
 	github.com/sethvargo/go-diceware v0.2.1
 	github.com/sethvargo/go-password v0.2.0
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
@@ -59,6 +61,7 @@ require (
 	github.com/ugorji/go/codec v1.2.6
 	github.com/zclconf/go-cty v1.9.1
 	gitlab.com/NebulousLabs/merkletree v0.0.0-20200118113624-07fbf710afc4
+	go.etcd.io/etcd/client/v3 v3.5.1
 	go.step.sm/crypto v0.12.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519

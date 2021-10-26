@@ -14,33 +14,32 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
-package golang
+package kv
 
 import (
-	"os"
-	"runtime"
-	"time"
-
-	"github.com/fatih/color"
+	"context"
+	"errors"
 )
 
-// Keep only last 2 versions
-var goVersions = []string{
-	"~1.17.2",
-	"~1.16.9",
+var (
+	// ErrKeyNotFound is raised when the given key could not be found in the store.
+	ErrKeyNotFound = errors.New("key not found")
+)
+
+// Store describes the key/value store contract.
+type Store interface {
+	// Get the value stored at the given key.
+	Get(ctx context.Context, key string) (*Pair, error)
+	// Put the given value at the given key.
+	Put(ctx context.Context, key string, value []byte) error
+	// List subkeys at a given path
+	List(ctx context.Context, path string) ([]*Pair, error)
 }
 
-func init() {
-	// Set default timezone to UTC
-	time.Local = time.UTC
+// -----------------------------------------------------------------------------
 
-	if !Is(goVersions...) {
-		color.HiRed("#############################################################################################")
-		color.HiRed("")
-		color.HiRed("Your golang compiler (%s) must be updated to %s to successfully compile all tools.", runtime.Version(), goVersions)
-		color.HiRed("")
-		color.HiRed("#############################################################################################")
-		os.Exit(-1)
-	}
+type Pair struct {
+	Key     string
+	Value   []byte
+	Version uint64
 }
