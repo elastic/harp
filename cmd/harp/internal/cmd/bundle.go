@@ -39,6 +39,7 @@ var bundleCmd = func() *cobra.Command {
 	cmd.AddCommand(bundlePatchCmd())
 	cmd.AddCommand(bundleFilterCmd())
 	cmd.AddCommand(bundleLintCmd())
+	cmd.AddCommand(bundlePrefixerCmd())
 
 	return cmd
 }

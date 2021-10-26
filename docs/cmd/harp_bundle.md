@@ -18,5 +18,6 @@ Bundle commands
 * [harp bundle filter](harp_bundle_filter.md)	 - Filter package names
 * [harp bundle lint](harp_bundle_lint.md)	 - Lint the bundle using the given ruleset spec
 * [harp bundle patch](harp_bundle_patch.md)	 - Apply patch to the given bundle
+* [harp bundle prefixer](harp_bundle_prefixer.md)	 - Simple package prefix operaton
 * [harp bundle read](harp_bundle_read.md)	 - Read a secret from bundle
 
