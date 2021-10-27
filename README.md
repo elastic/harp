@@ -5,6 +5,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/elastic/harp/graphs/commit-activity)
 
 - [Harp](#harp)
+  - [TL;DR.](#tldr)
   - [Why harp?](#why-harp)
   - [Use cases](#use-cases)
   - [How does it work?](#how-does-it-work)
@@ -31,6 +32,26 @@
 Harp is for Harpocrates (Ancient Greek: Ἁρποκράτης) the god of silence, secrets
 and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipedia.org/wiki/Harpocrates)
 
+## TL;DR.
+
+Harp is a toolset to handle secret data in a `reproducible` way by providing a way
+to describe how your value is technically managed and `consistently` associated
+to a `predictable` secret path with additional metadata (ownership, rotation
+period, leak severity, etc.).
+
+These values (path => value) form a `Bundle` stored in an immutable file named
+a `Container`. This `Container` acts as a pivot format to allow Harp commands
+to communicate and create data management pipelines.
+
+In addition to that, it provides a `template engine` used to generate various
+secret values (password, passphrase, crypto keys, etc.) but also as a secret
+consumer, it merges value placeholders from a file content to render a final
+configuration file.
+
+Finally, it provides an `SDK` to allow developers to integrate `Harp` features
+in their products, and/or extend the Harp pipeline features by creating new
+[plugins](#plugins).
+
 ## Why harp?
 
 * Secret management is in essence a collection of processes that must be
@@ -53,24 +74,20 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
 
 ## Use cases
 
-* If you want to have a single secret value and you are asking yourself how
-  to generate a strong password - Harp has a template engine with secret value
-  generation functions to allow you to generate such values.
-
-* If you have thousands secrets to handle to deploy your platform/customers
-  on multiple cloud providers with different secret storages - Harp will help you
+* If you want to have a `single secret value` and you are asking yourself
+  `how to generate a strong password` - Harp has a template engine with secret
+  value generation functions to allow you to generate such values.
+* If you have `thousands secrets` to handle to deploy your platform/customers
+  `on multiple cloud providers` with `different secret storages` - Harp will help you
   to define consistent secret provisioning bundles and pipelines.
-
-* If you are in the situation when you need an ephemeral secret storage to
-  bootstrap your long term cloud secret storage - Harp will help you to create
+* If you are in the situation when you need an `ephemeral secret storage` to
+  `bootstrap` your long term cloud secret storage - Harp will help you to create
   secret containers that can be consumed on deployment.
-
-* If you want to migrate massively your secrets from one secret storage to
+* If you want to `migrate massively` your secrets from one secret storage to
   another - Harp provides you a secret container to store these secrets while
   they are going to be distributed in other secret storage implementations.
-
-* If you have to alter/modifiy a secret (rotation/deprecation/renewal) - Harp
-  provides you a GitOps-able secret storage agnostic operation set, so that you
+* If you have to `alter/modifiy` a secret (rotation/deprecation/renewal) - Harp
+  provides you a `GitOps-able` secret `storage agnostic operation set`, so that you
   can define a specification to describe how your secret operation is going to
   be applied offline on the secret container.
 
