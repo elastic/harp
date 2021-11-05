@@ -2,6 +2,10 @@
 
 ### Not released yet
 
+DIST:
+
+* go: Build with Golang 1.17.3.
+
 ## 0.2.0
 
 ### 2021-10-26
