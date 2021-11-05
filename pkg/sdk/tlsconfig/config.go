@@ -27,7 +27,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/pkg/errors"
@@ -117,7 +116,7 @@ func certPool(caFile string, exclusivePool bool) (*x509.CertPool, error) {
 			return nil, fmt.Errorf("failed to read system certificates: %w", err)
 		}
 	}
-	content, err := ioutil.ReadFile(caFile)
+	content, err := os.ReadFile(caFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read CA certificate %q: %w", caFile, err)
 	}
@@ -187,12 +186,12 @@ func getCert(options *Options) ([]tls.Certificate, error) {
 
 	errMessage := "Could not load X509 key pair"
 
-	cert, err := ioutil.ReadFile(options.CertFile)
+	cert, err := os.ReadFile(options.CertFile)
 	if err != nil {
 		return nil, errors.Wrap(err, errMessage)
 	}
 
-	prKeyBytes, err := ioutil.ReadFile(options.KeyFile)
+	prKeyBytes, err := os.ReadFile(options.KeyFile)
 	if err != nil {
 		return nil, errors.Wrap(err, errMessage)
 	}

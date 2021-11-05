@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"reflect"
 
 	"sigs.k8s.io/yaml"
@@ -62,7 +61,7 @@ func loadFromYAML(r io.Reader) (io.Reader, error) {
 	}
 
 	// Drain input reader
-	in, err := ioutil.ReadAll(r)
+	in, err := io.ReadAll(r)
 	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, fmt.Errorf("unable to drain input reader: %w", err)
 	}

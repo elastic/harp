@@ -21,7 +21,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/go-akka/configuration"
@@ -105,7 +105,7 @@ func hoconIncludeCallback(filename string) *hocon.HoconRoot {
 	default:
 		root := hocon.Parse("", nil)
 		for _, f := range files {
-			data, err := ioutil.ReadFile(f)
+			data, err := os.ReadFile(f)
 			if err != nil {
 				log.Bg().Error("hocon: unable to load file glob", zap.Error(err))
 				return nil

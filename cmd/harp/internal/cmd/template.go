@@ -20,7 +20,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"github.com/hashicorp/vault/api"
 	"github.com/spf13/afero"
@@ -113,7 +112,7 @@ func runTemplate(cmd *cobra.Command, args []string) {
 	}
 
 	// Drain reader
-	body, err := ioutil.ReadAll(reader)
+	body, err := io.ReadAll(reader)
 	if err != nil {
 		log.For(ctx).Fatal("unable to drain input template reader", zap.Error(err), zap.String("path", templateInputPath))
 	}

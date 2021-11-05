@@ -136,7 +136,7 @@ func Release(cmd *artifact.Command) func() error {
 		}
 
 		// Prepare command
-		// expected behavior
+		//nolint:gosec // expected behavior
 		c := exec.Command("docker", "build",
 			"-t", fmt.Sprintf("elastic/%s:artifacts-%s", cmd.Kebab(), relVer.String()),
 			"-f", "-",

@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 
 	"sigs.k8s.io/yaml"
@@ -33,7 +32,7 @@ import (
 // ReadValues will parse YAML byte data into a Values.
 func ReadValues(r io.Reader) (vals Values, err error) {
 	// Drain reader
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return map[string]interface{}{}, err
 	}

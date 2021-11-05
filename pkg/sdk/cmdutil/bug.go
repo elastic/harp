@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -98,7 +97,7 @@ func printOSDetails(w io.Writer) {
 	case "illumos", "solaris":
 		// Be sure to use the OS-supplied uname, in "/usr/bin":
 		printCmdOut(w, "uname -srv: ", "/usr/bin/uname", "-srv")
-		out, err := ioutil.ReadFile("/etc/release")
+		out, err := os.ReadFile("/etc/release")
 		if err == nil {
 			fmt.Fprintf(w, "/etc/release: %s\n", out)
 		}
@@ -157,7 +156,7 @@ func printGlibcVersion(w io.Writer) {
 	src := []byte(`int main() {}`)
 	srcfile := filepath.Join(tempdir, "go-bug.c")
 	outfile := filepath.Join(tempdir, "go-bug")
-	err := ioutil.WriteFile(srcfile, src, 0o600)
+	err := os.WriteFile(srcfile, src, 0o600)
 	if err != nil {
 		return
 	}
@@ -178,7 +177,8 @@ func printGlibcVersion(w io.Writer) {
 	if m == nil {
 		return
 	}
-	cmd = exec.Command(m[1]) // controlled input
+	//nolint:gosec // controlled input
+	cmd = exec.Command(m[1])
 	out, err = cmd.Output()
 	if err != nil {
 		return

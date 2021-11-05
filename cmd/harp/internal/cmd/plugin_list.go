@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -102,7 +101,7 @@ func (o *pluginListOptions) Run(cmd *cobra.Command) error {
 		}
 
 		// Crawl each directory to identify readable ones
-		files, err := ioutil.ReadDir(dir)
+		files, err := os.ReadDir(dir)
 		if err != nil {
 			var pathErr *os.PathError
 			if errors.As(err, &pathErr) {

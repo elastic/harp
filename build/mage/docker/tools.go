@@ -120,7 +120,7 @@ func Tools() error {
 	}
 
 	// Prepare command
-	// expected behavior
+	//nolint:gosec // expected behavior
 	c := exec.Command("docker", "build",
 		"-t", "elastic/harp-tools",
 		"-f", "-",

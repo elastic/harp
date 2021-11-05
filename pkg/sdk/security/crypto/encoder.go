@@ -30,6 +30,7 @@ import (
 	"fmt"
 
 	"go.step.sm/crypto/pemutil"
+
 	// Import Blake2b
 	_ "golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/ssh"

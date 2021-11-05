@@ -30,7 +30,7 @@ import (
 var PathSeparatorString = string(os.PathSeparator)
 
 // AllPackagesPath denotes all Go packages in a project.
-var AllPackagesPath = strings.Join([]string{".", "..."}, PathSeparatorString)
+var AllPackagesPath = "." + PathSeparatorString + "..."
 
 // AllCommandsPath denotes all Go application packages in this project.
 var AllCommandsPath = strings.Join([]string{".", "cmd", "..."}, PathSeparatorString)
