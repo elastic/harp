@@ -91,6 +91,7 @@ func (h *DefaultPluginHandler) Execute(executablePath string, cmdArgs, environme
 
 	// invoke cmd binary relaying the environment and args given
 	// append executablePath to cmdArgs, as execve will make first argument the "binary name".
+	//nolint:gosec // controlled input
 	return syscall.Exec(executablePath, append([]string{executablePath}, cmdArgs...), environment)
 }
 

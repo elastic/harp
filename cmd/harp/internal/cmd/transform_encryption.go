@@ -18,7 +18,7 @@
 package cmd
 
 import (
-	"io/ioutil"
+	"io"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -69,7 +69,7 @@ var transformEncryptionCmd = func() *cobra.Command {
 			}
 
 			// Drain reader
-			content, err := ioutil.ReadAll(reader)
+			content, err := io.ReadAll(reader)
 			if err != nil {
 				log.For(ctx).Fatal("unable to drain input reader", zap.Error(err))
 			}

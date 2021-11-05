@@ -21,10 +21,8 @@ import (
 	"errors"
 )
 
-var (
-	// ErrKeyNotFound is raised when the given key could not be found in the store.
-	ErrKeyNotFound = errors.New("key not found")
-)
+// ErrKeyNotFound is raised when the given key could not be found in the store.
+var ErrKeyNotFound = errors.New("key not found")
 
 // Store describes the key/value store contract.
 type Store interface {

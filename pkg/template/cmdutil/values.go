@@ -21,7 +21,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -85,7 +85,7 @@ func (opts *ValueOptions) MergeValues() (map[string]interface{}, error) {
 	// User specified a value via --set-file
 	for _, value := range opts.FileValues {
 		reader := func(rs []rune) (interface{}, error) {
-			bytes, err := ioutil.ReadFile(string(rs))
+			bytes, err := os.ReadFile(string(rs))
 			return string(bytes), err
 		}
 		if err := strvals.ParseIntoFile(value, base, reader); err != nil {
@@ -160,7 +160,7 @@ func processFilePath(currentDirectory, filePath string, result interface{}) erro
 
 	// Drain reader
 	var contentBytes []byte
-	contentBytes, err = ioutil.ReadAll(reader)
+	contentBytes, err = io.ReadAll(reader)
 	if err != nil {
 		return fmt.Errorf("unable to drain all reader content from '%s': %w", filePath, err)
 	}

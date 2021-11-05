@@ -18,7 +18,7 @@
 package vfs
 
 import (
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
@@ -67,7 +67,7 @@ func TestBundle_FS_Initialization(t *testing.T) {
 		return
 	}
 
-	payload, err := ioutil.ReadAll(f)
+	payload, err := io.ReadAll(f)
 	if err != nil {
 		t.Errorf("unable to read file from filesystem : %v", err)
 		return

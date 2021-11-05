@@ -20,7 +20,6 @@ package patch
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -43,7 +42,7 @@ func YAML(r io.Reader) (*bundlev1.Patch, error) {
 	}
 
 	// Drain reader
-	jsonData, err := ioutil.ReadAll(jsonReader)
+	jsonData, err := io.ReadAll(jsonReader)
 	if err != nil {
 		return nil, fmt.Errorf("unbale to drain all json reader content: %w", err)
 	}

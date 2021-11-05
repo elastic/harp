@@ -24,7 +24,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"github.com/awnumar/memguard"
 	"golang.org/x/crypto/blake2b"
@@ -75,7 +74,7 @@ func Load(r io.Reader) (*containerv1.Container, error) {
 	}
 
 	// Drain input reader
-	decoded, err := ioutil.ReadAll(r)
+	decoded, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("unable to container content")
 	}

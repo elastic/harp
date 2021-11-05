@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sort"
 	"strings"
 
@@ -117,7 +116,7 @@ func Load(r io.Reader) (*bundlev1.Bundle, error) {
 		return nil, fmt.Errorf("unable to process nil reader")
 	}
 
-	decoded, err := ioutil.ReadAll(r)
+	decoded, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decompress bundle content")
 	}
@@ -390,7 +389,7 @@ func FromDump(r io.Reader) (*bundlev1.Bundle, error) {
 	}
 
 	// Drain input content
-	content, err := ioutil.ReadAll(r)
+	content, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read input content: %w", err)
 	}

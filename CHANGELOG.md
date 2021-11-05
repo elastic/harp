@@ -5,6 +5,7 @@
 DIST:
 
 * go: Build with Golang 1.17.3.
+* tools: Update `golangci-lint` to `v1.43.0`. [#76](https://github.com/elastic/harp/pull/76)
 
 ## 0.2.0
 
@@ -21,7 +22,7 @@ DIST:
 
 CHANGES:
 
-* core/vault: Replace json encoded metadata in secret data by a JSON object. [#68](https://github.com/elastic/harp/pull/68)
+* core/vault: Replace JSON encoded metadata in secret data by a JSON object. [#68](https://github.com/elastic/harp/pull/68)
 * crypto/pem: Delegate PEM encoding/decoding to `go.step.sm/crypto` [#73](https://github.com/elastic/harp/pull/73)
 
 FEATURES:
@@ -31,7 +32,7 @@ FEATURES:
 * from/vault: Support legacy bundle metadata format. [#69](https://github.com/elastic/harp/pull/69)
 * template/engine: `jsonEscape` / `jsonUnescape` is added to handle string escaping using JSON character escaping strategy [#70](https://github.com/elastic/harp/pull/70)
 * template/engine: `unquote` is added to unquote a `quote` escaped string. [#70](https://github.com/elastic/harp/pull/70)
-* bundle/prefixer: Globally add a prefix to all secret package. [#74](https://github.com/elastic/harp/pull/74)
+* bundle/prefixer: Globally add a prefix to all secret packages. [#74](https://github.com/elastic/harp/pull/74)
 * plugin/kv: Promote harp-kv as builtin. [#75](https://github.com/elastic/harp/pull/75)
 
 ## 0.1.24

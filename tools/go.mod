@@ -12,7 +12,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/frapposelli/wwhrd v0.4.0
 	github.com/golang/mock v1.6.0
-	github.com/golangci/golangci-lint v1.42.1
+	github.com/golangci/golangci-lint v1.43.0
 	github.com/google/wire v0.5.0
 	github.com/izumin5210/gex v0.6.1
 	github.com/magefile/mage v1.11.0
