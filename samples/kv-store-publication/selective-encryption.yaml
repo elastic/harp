@@ -1,0 +1,15 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "selective-encryption"
+  description: "Apply annotation to enable partial encryption"
+spec:
+  rules:
+  - selector:
+      matchPath:
+        regex: "^doorbell/auth/ldap/tls"
+    package:
+      annotations:
+        add:
+          harp.elastic.co/v1/package#encryptionKeyAlias: security
+

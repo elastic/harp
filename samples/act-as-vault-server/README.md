@@ -1,6 +1,6 @@
-# Act as a readonly Vault server with mTLS
+# Act as a read only Vault server with mTLS
 
-Use harp as a Hashicorp Vault API compatible service to use Vault environment
+Use harp as a HashiCorp Vault API compatible service to use Vault environment
 tools (consul-template, etc.).
 
 > Use and prepare vault compatible tools during bootstrap phase when vault is
@@ -58,7 +58,7 @@ This will expose a Vault HTTP API based on secret created in the bundle.
 export VAULT_ADDR=http://127.0.0.1:8200
 ```
 
-> All secret path will be interpreted as a KVv2 backend as required by the CSO.
+> All secret paths will be interpreted as a KVv2 backend as required by the CSO.
 > These paths must be symmetric with secrets deployed in Vault.
 
 ```sh
@@ -139,7 +139,7 @@ export HARP_SERVER_VAULT_USETLS="false"
 ...
 ```
 
-In order to setup the fake vault server to use our freshly new pki, you have to
+In order to set up the fake vault server to use our freshly new PKI, you have to
 set environment variables.
 
 ```sh
@@ -161,7 +161,7 @@ harp-server vault \
 
 > More details about CLI [environment variables](https://www.vaultproject.io/docs/commands).
 
-Setup vault CLI to enabe TLS client authentication
+Setup vault CLI to enable TLS client authentication
 
 ```sh
 export VAULT_ADDR=https://127.0.0.1:8200
@@ -187,7 +187,7 @@ username    dbuser-userconsole-t2me7nrH
 
 #### Use consul-template
 
-Setup vault CLI to enabe TLS client authentication
+Setup vault CLI to enable TLS client authentication
 
 ```sh
 export VAULT_ADDR=https://127.0.0.1:8200

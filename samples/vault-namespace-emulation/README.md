@@ -1,6 +1,6 @@
 # Act as Vault server with namespace emulation
 
-Expose multiple harp crates as separated Vault namsepaces.
+Expose multiple harp crates as separated Vault namespaces.
 
 ## Scenario
 

@@ -11,11 +11,11 @@ Use harp to export all KV backend secret values and save it as a bundle.
 `harp` can crawl and export secret path for KV secret backends (`v1` and
 `v2`).
 
-You don't have to specify the version used, `harp` detect and setup an
+You don't have to specify the version used, `harp` detect and set up an
 internal service adapted to secret backend.
 
-You don't need to adpat your path according to KV backend neither, just specify
-the secret path and it will be translated according to the target secret backend
+You don't need to adapt your path according to KV backend neither, just specify
+the secret path, and it will be translated according to the target secret backend
  version.
 
 ### Backup

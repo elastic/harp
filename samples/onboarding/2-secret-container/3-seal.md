@@ -1,6 +1,6 @@
 # Container sealing
 
-> [Container sealing algorithm is inspired from KeyBase saltpack specification](https://saltpack.org/)
+> [Container sealing algorithm is inspired from Keybase saltpack specification](https://saltpack.org/)
 
 ## Sealing Process
 
@@ -42,7 +42,7 @@ This algorithm implements multi recipient authenticated encryption with
 * Content
   * Signature
     * Prepare `protected_content` by concatenating :
-      * the ascii string `harp encrypted signature`
+      * the ASCII string `harp encrypted signature`
       * a zero byte (`0x00`)
       * the `header_hash` content
       * the Blake2b-512 hash result of the `container_content`
@@ -50,7 +50,7 @@ This algorithm implements multi recipient authenticated encryption with
       * Sign `protected_content` with `ephemeral signing private key`
       * Save signature as `content_signature`
   * Encryption
-    * Concatenante the `content_signature` and `container_content`
+    * Concatenate the `content_signature` and `container_content`
     * Seal the result with `payload_key` and the first 24 bytes of `header_hash` as nonce
     * Set `Raw` to encryption result
 
@@ -75,7 +75,7 @@ This algorithm implements multi recipient authenticated encryption with
     * For each `Recipients` in `recipients` list
       * Compare `Identifier` with `recipient_identifier`
       * If not match continue until you find a match, unless error
-      * If match, unseal the `recipient_key` from `Key` using the `derived_recipient_key`
+      * If matched, unseal the `recipient_key` from `Key` using the `derived_recipient_key`
       * Save the result as `payload_key`
 
 * Content
@@ -94,14 +94,14 @@ This algorithm implements multi recipient authenticated encryption with
       * the `payload_key`
   * Signature
     * Prepare `protected_content` by concatenating :
-      * the ascii string `harp encrypted signature`
+      * the ASCII string `harp encrypted signature`
       * a zero byte (`0x00`)
       * the `header_hash` content
       * the Blake2b-512 hash result of the `container_content`
     * Verify using `ed25519` signature scheme
       * Verify `protected_content` with `ephemeral_signing_public_key`
       * Save signature as `content_signature`
-  * Unmarshall `payload` as `&containerv1.Container{}`
+  * Unmarshal `payload` as `&containerv1.Container{}`
 
 ---
 

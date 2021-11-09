@@ -1,4 +1,4 @@
-# Usecases
+# Use cases
 
 ## Generate environment shell script from Vault secret
 

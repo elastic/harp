@@ -8,7 +8,7 @@ This is used to store data and metadata related to objects.
 
 ### File
 
-> `File` will be renammed to `Bundle` in future version for vocabulary consistency.
+> `File` will be renamed to `Bundle` in future version for vocabulary consistency.
 
 ```cpp
 // File is a concrete secret bundle file.

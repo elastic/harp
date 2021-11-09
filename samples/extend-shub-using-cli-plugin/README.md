@@ -4,7 +4,7 @@ Heavily inspired by `kubectl` [behavior](https://kubernetes.io/docs/tasks/extend
 
 ## Scenario
 
-You have repetitive task with harp atomic operations and you want to assemble
+You have repetitive task with harp atomic operations, and you want to assemble
 them to create macro commands.
 
 ### Prepare the plugin
