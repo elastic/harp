@@ -1,6 +1,6 @@
 ## harp to object
 
-Export all data of a secret container.
+Export all data of a secret container as JSON or YAML.
 
 ```
 harp to object [flags]
@@ -18,5 +18,5 @@ harp to object [flags]
 
 ### SEE ALSO
 
-* [harp to](harp_to.md)	 - Secret container publication commands
+* [harp to](harp_to.md)	 - Secret container conversion commands
 

@@ -121,9 +121,13 @@ func runFromEtcd3(ctx context.Context, params *fromEtcd3Params) {
 		return
 	}
 
+	// Prepare store.
+	store := etcd3.Store(client)
+	defer log.SafeClose(store, "unable to close etcd3 store")
+
 	// Delegate to task
 	t := &from.ExtractKVTask{
-		Store:                   etcd3.Store(client),
+		Store:                   store,
 		ContainerWriter:         cmdutil.FileWriter(params.outputPath),
 		BasePaths:               params.basePaths,
 		LastPathItemAsSecretKey: params.lastPathItemAsSecret,

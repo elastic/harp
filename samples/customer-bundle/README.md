@@ -1,6 +1,6 @@
 # Customer BundleTemplate
 
-This defines a set of secret value that can be paramtrized at generation time.
+This defines a set of secret value that can be parametrized at generation time.
 It will generate an atomic and complete bundle for a given and defined
 compilation environment.
 
@@ -118,7 +118,7 @@ environment, for this situation you have to use the `harp-server` plugin.
 
 ##### Seal the bundle
 
-In order to export the conainer outside of your trusted zone, the container needs to
+In order to export the container outside your trusted zone, the container needs to
 be sealed.
 
 First prepare a recovery identity :
@@ -159,9 +159,9 @@ Container key : 4Vyy8xH_zNpSJbFyheC8dPgjmxs54YvLa6QZpDKE1y0
 
 Now your `Bundle` is secured as a sealed secret container.
 
-##### Expose the selaed container
+##### Expose the sealed container
 
-With harp you have multiple strategies to retrieve a bundle (local, s3, etc.)
+With harp, you have multiple strategies to retrieve a bundle (local, s3, etc.)
 
 Expose as Vault server :
 
@@ -170,7 +170,7 @@ harp server vault \
     --namespace customer1:bundle://$(pwd)/customer1-sealed.bundle\?cid=4Vyy8xH_zNpSJbFyheC8dPgjmxs54YvLa6QZpDKE1y0
 ```
 
-Expose a HTTP Server :
+Expose an HTTP Server :
 
 ```sh
 harp server http \

@@ -72,9 +72,13 @@ func runFromConsul(ctx context.Context, params *fromConsulParams) {
 		return
 	}
 
+	// Prepare store.
+	store := consul.Store(client)
+	defer log.SafeClose(store, "unable to close etcd3 store")
+
 	// Delegate to task
 	t := &from.ExtractKVTask{
-		Store:                   consul.Store(client),
+		Store:                   store,
 		ContainerWriter:         cmdutil.FileWriter(params.outputPath),
 		BasePaths:               params.basePaths,
 		LastPathItemAsSecretKey: params.lastPathItemAsSecret,

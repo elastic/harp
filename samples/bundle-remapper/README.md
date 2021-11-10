@@ -67,8 +67,8 @@ harp from vault --path services/production/global/clusters |
 
 ### Clean old secrets
 
-> There is no `rm -rf` equivalent in Vault nor SecretHub. You have to use
-> SecretHub to extract secret paths to delete  and then use `vault kv metadata delete` command.
+> There is no `rm -rf` equivalent in Vault nor Harp. You have to use
+> Harp to extract secret paths to delete and then use `vault kv metadata delete` command.
 
 ```sh
 harp bundle dump --in clusters.bundle --path-only | xargs -n 1 vault kv metadata delete
@@ -76,7 +76,7 @@ harp bundle dump --in clusters.bundle --path-only | xargs -n 1 vault kv metadata
 
 ### Bundle mapper SDK
 
-Prepare the bundle remapper go module
+Prepare the bundle mapper go module
 
 ```sh
 go mod init harp.elastic.co/v1/remapper
@@ -89,7 +89,7 @@ export HARP_HOME=<path to harp repository>
 go mod edit -replace=github.com/elastic/harp=$HARP_HOME
 ```
 
-Implement secret path remapper
+Implement secret path mapper
 
 <details><summary>main.go</summary>
 <p>

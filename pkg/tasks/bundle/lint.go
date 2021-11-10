@@ -19,10 +19,12 @@ package bundle
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/bundle/ruleset/linter"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -34,6 +36,14 @@ type LintTask struct {
 
 // Run the task.
 func (t *LintTask) Run(ctx context.Context) error {
+	// Check arguments
+	if types.IsNil(t.ContainerReader) {
+		return errors.New("unable to run task with a nil containerReader provider")
+	}
+	if types.IsNil(t.RuleSetReader) {
+		return errors.New("unable to run task with a nil ruleSetReader provider")
+	}
+
 	// Create input reader
 	reader, err := t.ContainerReader(ctx)
 	if err != nil {

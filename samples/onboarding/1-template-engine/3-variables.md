@@ -18,7 +18,7 @@ j48QQR2AaacF5N5FLFCnbCjbhDEx8mwChA==
 -----END EC PRIVATE KEY-----
 ```
 
-As you can see `$k` is instancied and used multiple times inside the same
+As you can see `$k` is instanced and used multiple times inside the same
 template (the input string).
 
 If you want to publish data in Vault based on generated crypto keys, you could do :

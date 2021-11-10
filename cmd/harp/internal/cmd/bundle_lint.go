@@ -27,12 +27,13 @@ import (
 )
 
 // -----------------------------------------------------------------------------
+type bundleLintParams struct {
+	inputPath string
+	specPath  string
+}
 
 var bundleLintCmd = func() *cobra.Command {
-	var (
-		inputPath string
-		specPath  string
-	)
+	params := &bundleLintParams{}
 
 	cmd := &cobra.Command{
 		Use:   "lint",
@@ -44,8 +45,8 @@ var bundleLintCmd = func() *cobra.Command {
 
 			// Prepare task
 			t := &bundle.LintTask{
-				ContainerReader: cmdutil.FileReader(inputPath),
-				RuleSetReader:   cmdutil.FileReader(specPath),
+				ContainerReader: cmdutil.FileReader(params.inputPath),
+				RuleSetReader:   cmdutil.FileReader(params.specPath),
 			}
 
 			// Run the task
@@ -56,8 +57,8 @@ var bundleLintCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&inputPath, "in", "-", "Container input ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&specPath, "spec", "", "RuleSet specification path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Container input ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.specPath, "spec", "", "RuleSet specification path ('-' for stdin or filename)")
 	log.CheckErr("unable to mark 'spec' flag as required.", cmd.MarkFlagRequired("spec"))
 
 	return cmd

@@ -20,5 +20,5 @@ harp to vault [flags]
 
 ### SEE ALSO
 
-* [harp to](harp_to.md)	 - Secret container publication commands
+* [harp to](harp_to.md)	 - Secret container conversion commands
 

@@ -25,6 +25,7 @@ require (
 	github.com/fernet/fernet-go v0.0.0-20191111064656-eff2850e6001
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
+	github.com/go-zookeeper/zk v1.0.2
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
@@ -46,11 +47,8 @@ require (
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/miscreant/miscreant.go v0.0.0-20200214223636-26d376326b75
 	github.com/oklog/run v1.1.0
-	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.16.0
 	github.com/pelletier/go-toml v1.9.4
 	github.com/pkg/errors v0.9.1
-	github.com/samuel/go-zookeeper v0.0.0-20201211165307-7117e9ea2414
 	github.com/sethvargo/go-diceware v0.2.1
 	github.com/sethvargo/go-password v0.2.0
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966

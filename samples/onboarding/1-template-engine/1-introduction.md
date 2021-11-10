@@ -13,11 +13,11 @@ $ echo "{{ paranoidPassword }}" | harp template
 bOLqnUZU%J@9k}df5h4h:@9a+l]hrraT3yO=VfTNT2PO_kygAcY3r2Wf4W2kNN|R
 ```
 
-> `paranoidPassword` is a template function that generate a 64 chars with
+> `paranoidPassword` is a template function that generate 64 chars with
 > 10 digits, 10 symbols with upper and lower case and repetition allowed. It's a
 > password because we decided to use this string value for password usage.
 
-If we want to use this a a password and store it in Vault, we could do :
+If we want to use this as a password and store it in Vault, we could do :
 
 ```sh
 $ echo "{{ paranoidPassword }}" | harp template | vault kv put secrets/database password=-
@@ -72,7 +72,7 @@ XBAQp]!VDIm5nIP3mHX0E5l-y#8gAGY1Ex!=kk+bn%g8H1shc9iH_RVXeaOTk?9h
 > available encrypted key / value store.
 
 We have provisioned a single password in Vault using the `harp` template
-engine and the Vault CLI directly. But we need to expand this usecase to allow
+engine and the Vault CLI directly. But we need to expand this use case to allow
 multiple secret provisioning as a parametrized `Bundle` of various `secret`
 types.
 

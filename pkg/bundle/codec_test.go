@@ -28,15 +28,6 @@ import (
 	"github.com/elastic/harp/pkg/bundle/secret"
 )
 
-func MustPack(value interface{}) []byte {
-	out, err := secret.Pack(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return out
-}
-
 var (
 	opt = cmp.FilterPath(
 		func(p cmp.Path) bool {
@@ -87,7 +78,7 @@ func Test_Bundle_DumpLoad(t *testing.T) {
 								{
 									Key:   "database_root_password",
 									Type:  "string",
-									Value: MustPack("foo"),
+									Value: secret.MustPack("foo"),
 								},
 							},
 						},
@@ -190,7 +181,7 @@ func Test_Bundle_JSONDumpLoad(t *testing.T) {
 								{
 									Key:   "database_root_password",
 									Type:  "string",
-									Value: MustPack("foo"),
+									Value: secret.MustPack("foo"),
 								},
 							},
 						},
@@ -206,7 +197,7 @@ func Test_Bundle_JSONDumpLoad(t *testing.T) {
 			t.Parallel()
 
 			output := bytes.NewBuffer(nil)
-			err := JSON(output, testCase.input)
+			err := AsProtoJSON(output, testCase.input)
 			// Assert results expectations
 			if (err != nil) != testCase.wantErr {
 				t.Errorf("error during the JSON call, error = %v, wantErr %v", err, testCase.wantErr)

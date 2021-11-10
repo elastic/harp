@@ -2,10 +2,32 @@
 
 ### Not released yet
 
+BREAKING-CHANGES:
+
+* cmd/ruleset: Ruleset generation from a Bundle has been relocated to `to ruleset` command. [#77](https://github.com/elastic/harp/pull/77)
+* bundle/filter: Parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
+* bundle/dump: Parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
+* deprecation: Package `github.com/elastic/harp/pkg/bundle/vfs` has been removed. The Golang 1.16 `fs.FS` implementation must be used and located at `github.com/elastic/harp/pkg/bundle/fs`. [#77](https://github.com/elastic/harp/pull/77)
+
+CHANGES:
+
+FEATURES:
+
+* bundle/encryption: Partial bundle encryption based on annotations. [#77](https://github.com/elastic/harp/pull/77)
+* task/bundle: Fully unit tested. [#77](https://github.com/elastic/harp/pull/77)
+* core/kv: Support KV Store publication for Etcd3/Zookeeper/Consul. [#77](https://github.com/elastic/harp/pull/77)
+* value/transformer: Transformer mock is available for testing. [#77](https://github.com/elastic/harp/pull/77)
+* value/encryption: Expose `encryption.Must(value.Transformer, error)` to build a transformer instance with a panic raised on error. [#77](https://github.com/elastic/harp/pull/77)
+* sdk/types: `IsNill()` now recognize nil function pointer. [#77](https://github.com/elastic/harp/pull/77)
+* sdk/cmdutil: `DiscardWriter()` is a `io.Writer` provider used to discard all output. [#77](https://github.com/elastic/harp/pull/77)
+* sdk/cmdutil: `DirectWriter(io.Writer)` is a `io.Writer` provider used to delegate to input writer. [#77](https://github.com/elastic/harp/pull/77)
+* sdk/cmdutil: `NewClosedWriter()` is a `io.Writer` implementation who always return on `Write()` calls. [#77](https://github.com/elastic/harp/pull/77)
+
 DIST:
 
 * go: Build with Golang 1.17.3.
 * tools: Update `golangci-lint` to `v1.43.0`. [#76](https://github.com/elastic/harp/pull/76)
+* docs: General review for typo / grammar.
 
 ## 0.2.0
 

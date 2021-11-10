@@ -19,10 +19,12 @@ package bundle
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path"
 
 	"github.com/elastic/harp/pkg/bundle"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -35,6 +37,17 @@ type PrefixerTask struct {
 
 // Run the task.
 func (t *PrefixerTask) Run(ctx context.Context) error {
+	// Check arguments
+	if types.IsNil(t.ContainerReader) {
+		return errors.New("unable to run task with a nil containerReader provider")
+	}
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
+	if t.Prefix == "" {
+		return errors.New("unable to proceed with blank prefix")
+	}
+
 	// Retrieve the container reader
 	containerReader, err := t.ContainerReader(ctx)
 	if err != nil {

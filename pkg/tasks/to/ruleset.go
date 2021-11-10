@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package ruleset
+package to
 
 import (
 	"context"
@@ -28,14 +28,14 @@ import (
 	"github.com/elastic/harp/pkg/tasks"
 )
 
-// FromBundleTask implements RuleSet generation from a bundle.
-type FromBundleTask struct {
+// RuleSetTask implements RuleSet generation from a bundle.
+type RuleSetTask struct {
 	ContainerReader tasks.ReaderProvider
 	OutputWriter    tasks.WriterProvider
 }
 
 // Run the task.
-func (t *FromBundleTask) Run(ctx context.Context) error {
+func (t *RuleSetTask) Run(ctx context.Context) error {
 	// Create input reader
 	reader, err := t.ContainerReader(ctx)
 	if err != nil {

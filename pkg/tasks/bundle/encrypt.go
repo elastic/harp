@@ -19,20 +19,24 @@ package bundle
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
 // EncryptTask implements secret container encryption task.
 type EncryptTask struct {
-	ContainerReader tasks.ReaderProvider
-	OutputWriter    tasks.WriterProvider
-	Transformer     value.Transformer
+	ContainerReader   tasks.ReaderProvider
+	OutputWriter      tasks.WriterProvider
+	BundleTransformer value.Transformer
+	TransformerMap    map[string]value.Transformer
+	SkipUnresolved    bool
 }
 
 // Run the task.
@@ -43,6 +47,14 @@ func (t *EncryptTask) Run(ctx context.Context) error {
 		b      *bundlev1.Bundle
 		err    error
 	)
+
+	// Check arguments
+	if types.IsNil(t.ContainerReader) {
+		return errors.New("unable to run task with a nil containerReader provider")
+	}
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
 
 	// Create input reader
 	reader, err = t.ContainerReader(ctx)
@@ -56,9 +68,20 @@ func (t *EncryptTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to read input as bundle: %w", err)
 	}
 
-	// Apply transformer to bundle
-	if err = bundle.Lock(ctx, b, t.Transformer); err != nil {
-		return fmt.Errorf("unable to apply bundle transformation: %w", err)
+	// Select appropriate encryption strategy.
+	switch {
+	case !types.IsNil(t.BundleTransformer):
+		// Apply transformer to bundle
+		if err = bundle.Lock(ctx, b, t.BundleTransformer); err != nil {
+			return fmt.Errorf("unable to apply bundle transformation: %w", err)
+		}
+	case len(t.TransformerMap) > 0:
+		// Apply annotation based encryption
+		if err = bundle.PartialLock(ctx, b, t.TransformerMap, t.SkipUnresolved); err != nil {
+			return fmt.Errorf("unable to apply annotation based transformation: %w", err)
+		}
+	default:
+		return errors.New("invalid encryption strategy, can't determine if it's a full bundle or a selective annotation based encryption")
 	}
 
 	// Create output writer

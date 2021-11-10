@@ -4,7 +4,7 @@ A `BundleTemplate` allows developers to describe their own secret requirements b
 designing secret values with `harp` template engine attached to a CSO
 compliant secret path.
 
-A `BundleTemplate` doesn't contains secret values, and could be parametrized for
+A `BundleTemplate` doesn't contain secret values, and could be parametrized for
 common secret generation profile (region bound bundle).
 
 It helps `developers` and `secret operators` to have a common language to
@@ -17,7 +17,7 @@ secret paths and matching values.
 
 This [specification](https://github.com/elastic/harp/blob/main/api/proto/harp/bundle/v1/template.proto) declares Bundle generation template object structure.
 
-The specification is written in YAML, in order to be human readable, but
+The specification is written in YAML, in order to be human-readable, but
 internally converted as protobuf object.
 
 ### CSO Secret Path Naming Convention
@@ -28,28 +28,28 @@ solve secret management problems.
 One of them concerns the secret storage, and more precisely the secret path
 building process.
 
-Too many people fall in the anti-pattern which consist in organizing secrets
-by team secrets ownership, or mirroring the company organization tree but
-this is wrong ! Secrets are just managed by teams and owned by softwares.
+Too many people fall in the antipattern which consist in organizing secrets
+by team secrets'ownership, or mirroring the company organization tree, but
+this is wrong ! Secrets are just managed by teams and owned by software programs.
 
 > The policy applied for secret access authorization can be considered as
 > `proof of ownership`, not the fact that the secret is stored in a folder
-> nammed by the team name.
+> named by the team name.
 >
 > Don't forget that a company is an organic life form that is in constant move.
 > It's easier to modify policies than redesigning a complete secret tree.
 
-We designed a risk-based classification ordered in "rings". Each ring evaluate
+We designed a risk-based classification ordered in "rings". Each ring evaluates
 a threat realization impact level when a ring secrets leak occurs.
 
 * `meta` (R0) - Secret used to protect secret storage (Vault authentication, etc.)
 * `infrastructure` (R1) - Infrastructure secrets can lead to multiple platform compromise.
 * `platform` (R2) - Platform secrets can lead to multiple product compromise.
 * `product` (R3) - Product related secrets shared by all instance of the same product.
-* `application` (R4) - Application secrets are instancied product in a given platform for a given quality stage.
+* `application` (R4) - Application secrets are instanced product in a given platform for a given quality stage.
 * `artifact` (R5) - Artifact secrets are secrets attached to an artifact (docker image, archive, etc.)
 
-When building a `BundleTemplate`, you have to distribute the secrets accross the rings
+When building a `BundleTemplate`, you have to distribute the secrets across the rings
 according to their sensitivity to leaks.
 
 > The CSO CheatSheet can be viewed here - <https://ela.st/cso>
@@ -83,7 +83,7 @@ spec:
 
 > Protobuf definition - [InfrastructureNS](https://github.com/elastic/harp/blob/main/api/proto/harp/bundle/v1/template.proto#L83)
 
-An `infrastructure` is a consitent set of resource provided by an infrastructure
+An `infrastructure` is a consistent set of resource provided by an infrastructure
 provider (IaaS).
 
 `Infrastructure secrets` are sensitive secrets attached to these resources.
@@ -130,7 +130,7 @@ This will generate a secret like the following one :
 A `platform` is a regionalized consistent set of infrastructure resources working
 together in order to provide services to products.
 
-> Platform regions are not necessarily infrastrcuture regions. A logical overlay
+> Platform regions are not necessarily infrastructure regions. A logical overlay
 > of physical infrastructure regions could be designed.
 
 ```yaml
@@ -200,17 +200,17 @@ This will generate 3 secrets like the following ones:
 }
 ```
 
-* `quality` path compoent is extracted from `selector.quality`
+* `quality` path component is extracted from `selector.quality`
 * `platform` path component is extracted from `selector.platform`
 
 #### Product secrets
 
 > Protobuf definition - [ProductComponentNS](https://github.com/elastic/harp/blob/main/api/proto/harp/bundle/v1/template.proto#L139)
 
-A `product` in CSO, is a virtual concept for non-instanciable resources, and
+A `product` in CSO, is a virtual concept for non-instantiable resources, and
 not related to execution.
 
-> Same secrets for all platform/stage ? => it could be a product secret.
+> Same secrets for all platform/stage ? ⇒ it could be a product secret.
 
 ```yaml
 spec:
@@ -242,18 +242,18 @@ This will generate a secret like the following one :
 }
 ```
 
-* `product` path compoent is extracted from `selector.product`
+* `product` path component is extracted from `selector.product`
 * `version` path component is extracted from `selector.version`
 
 #### Application secrets
 
 > Protobuf definition - [ApplicationComponentNS](https://github.com/elastic/harp/blob/main/api/proto/harp/bundle/v1/template.proto#L151)
 
-An `application` is an instance of a `product` running an a `platform` at a
+An `application` is an instance of a `product` running on a `platform` at a
 `quality` stage level.
 
-> Application secrets are shared by all instances of the same software. Secrets
-> must not be identic for different platform / quality.
+> Application secrets are shared by all instances of the same software. Secret
+> values must not be identical for different platform / quality.
 
 ```yaml
 spec:

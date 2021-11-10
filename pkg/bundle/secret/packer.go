@@ -26,6 +26,15 @@ const (
 	formatVersion = int(0x00000001)
 )
 
+// MustPack uses Pack but panic on error.
+func MustPack(value interface{}) []byte {
+	out, err := Pack(value)
+	if err != nil {
+		panic(err)
+	}
+	return out
+}
+
 // Pack a secret value.
 func Pack(value interface{}) ([]byte, error) {
 	// Encode the payload

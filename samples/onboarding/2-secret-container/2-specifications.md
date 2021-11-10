@@ -39,11 +39,11 @@ message Header {
 ```
 
 * The `content_encoding` is a string which defines encoding used to store `raw`
-  content. (ie. `gzip`, `compress`)
+  content. (i.e. `gzip`, `compress`)
 * The `content_type` is the serialization method used to serialize `raw`.
 * The `encryption_public_key` is the ephemeral x25519 public key used for
   container encryption.
-* The `container_box` is the public signed key encrypted with the payload key.
+* The `container_box` is the signature public key encrypted with the payload key.
 * The `recipients` is a NaCL `box` that contains the x25519 private used for
   encryption protected using the passphrase during `sealing` process.
 
@@ -62,7 +62,7 @@ message Recipient {
 
 * The `identitifer` is the anonymized recipient identifier.
 * The `key` is a NaCL `box` that contains the payload key encrypted using the
-  recipient public key, so thaht only the owner of the private key can open the
+  recipient public key, so that only the owner of the private key can open the
   box.
 
 Container definition :
@@ -104,7 +104,7 @@ struct Container {
 
 #### Container identities
 
-Container identities are `X25519` keypairs where public key is used as a
+Container identities are `X25519` key pairs where public key is used as a
 `recipient` and private key as container key to unseal the secret container.
 
 > No container identity revocation list is implemented, if a key is compromised
@@ -142,7 +142,7 @@ This will prevent modification of container consumers after each container seals
 
 Generate a master key :
 
-> Keep this key as an high sensitive secret.
+> Keep this key as a high sensitive secret.
 
 ```sh
 harp keygen master-key > master.key
@@ -160,7 +160,7 @@ Container key : ....
 ```
 
 * The `dckd-master-key` flag defines the root key used for derivation.
-* The `dckd-target` flag defines an arbitry string acting as a salt for Key
+* The `dckd-target` flag defines an arbitrary string acting as a salt for Key
   Derivation Function.
 
 ### Unsealed

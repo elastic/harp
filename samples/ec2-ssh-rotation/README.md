@@ -1,6 +1,6 @@
 # AWS EC2 SSH Rotation
 
-Generate and provision 2 SSH keypairs (RSA / Ed25519) in Vault, and then deploy
+Generate and provision 2 SSH key pairs (RSA / Ed25519) in Vault, and then deploy
 to AWS account using Terraform.
 
 ## Scenario
@@ -52,14 +52,14 @@ In this example, we specify :
 * A bundle description to describe secret bundle usage
 * That `infrastructure account` path component is an external value passed during generation
 * To create 2 secret paths :
-  * `infra/aws/{{ infra.aws.account }}/global/ec2/default/ssh/rsa_keys` to hold the RSA keypair
-  * `infra/aws/{{ infra.aws.account }}/global/ec2/default/ssh/ed25519_keys` to hold the Ed25519 keypair
+  * `infra/aws/{{ infra.aws.account }}/global/ec2/default/ssh/rsa_keys` to hold the RSA key pair
+  * `infra/aws/{{ infra.aws.account }}/global/ec2/default/ssh/ed25519_keys` to hold the Ed25519 key pair
 * To format RSA key secret value as a JSON object
   * `private` attribute to hold the RSA private key encoded for SSH usages and transform to JSON string
-  * `public` attribute to hold the RSA publickey encoded for SSH usages and trim whitespaces
+  * `public` attribute to hold the RSA public key encoded for SSH usages and trim white spaces
 * To format Ed25519 key secret value as a JSON object
   * `private` attribute to hold the Ed25519 private key encoded for SSH usages and transform to JSON string
-  * `public` attribute to hold the Ed25519 publickey encoded for SSH usages and trim whitespaces
+  * `public` attribute to hold the Ed25519 public key encoded for SSH usages and trim white spaces
 
 ### Generate the bundle
 
@@ -194,8 +194,8 @@ resource "aws_key_pair" "operation" {
 }
 ```
 
-This script used Vault as source of truth, pull the secret value and deploy a
-SSH keypair in AWS. It must be executed via a pipeline or a rundeck job to
+This script used Vault as source of truth, pull the secret value and deploy an
+SSH key pair in AWS. It must be executed via a pipeline or a Rundeck job to
 automate key deployment. So that in case of incident, just regenerate the SSH key
 using the bundle specification, push the secret to Vault and execute secret
 deployment pipeline.

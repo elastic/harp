@@ -15,38 +15,43 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package vfs
+package main
 
 import (
+	"fmt"
 	"os"
-	"time"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	"github.com/elastic/harp/pkg/bundle"
+	"github.com/elastic/harp/pkg/bundle/secret"
 )
 
-type secretFileInfo struct {
-	name string
-	size int64
-}
+func main() {
+	b := &bundlev1.Bundle{
+		Packages: []*bundlev1.Package{},
+	}
 
-func (sfi *secretFileInfo) Name() string {
-	return sfi.name
-}
+	// Create 25000 packages
+	for i := 0; i < 25000; i++ {
+		p := &bundlev1.Package{
+			Name: fmt.Sprintf("app/secret/large-bundle/%d", i),
+			Secrets: &bundlev1.SecretChain{
+				Data: []*bundlev1.KV{},
+			},
+		}
 
-func (sfi *secretFileInfo) Size() int64 {
-	return sfi.size
-}
+		for j := 0; j < 100; j++ {
+			p.Secrets.Data = append(p.Secrets.Data, &bundlev1.KV{
+				Key:   fmt.Sprintf("secret-%d", j),
+				Value: secret.MustPack("test-value"),
+			})
+		}
 
-func (sfi *secretFileInfo) Mode() os.FileMode {
-	return os.ModePerm
-}
+		b.Packages = append(b.Packages, p)
+	}
 
-func (sfi *secretFileInfo) ModTime() time.Time {
-	return time.Now().UTC()
-}
-
-func (sfi *secretFileInfo) IsDir() bool {
-	return false
-}
-
-func (sfi *secretFileInfo) Sys() interface{} {
-	return nil
+	// Save as a container in Stdout.
+	if err := bundle.ToContainerWriter(os.Stdout, b); err != nil {
+		panic(err)
+	}
 }

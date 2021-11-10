@@ -34,21 +34,21 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
 
 ## TL;DR.
 
-Harp is a toolset to handle secret data in a `reproducible` way by providing a way
-to describe how your value is technically managed and `consistently` associated
-to a `predictable` secret path with additional metadata (ownership, rotation
-period, leak severity, etc.).
+Harp is a tool set to handle secret data in a `reproducible` way by providing a
+way to describe how your value is technically managed and `consistently`
+associated to a `predictable` secret path with additional metadata (ownership,
+rotation period, leak severity, etc.).
 
-These values (path => value) form a `Bundle` stored in an immutable file named
-a `Container`. This `Container` acts as a pivot format to allow Harp commands
-to communicate and create data management pipelines.
+These values (path ⇒ value) form a `Bundle` stored in an immutable file named a
+`Container`. This `Container` acts as a pivot format to allow Harp commands to
+communicate and create data management pipelines.
 
 In addition to that, it provides a `template engine` used to generate various
-secret values (password, passphrase, crypto keys, etc.) but also as a secret
+confidence values (password, passphrase, crypto keys, etc.) but also as a secret
 consumer, it merges value placeholders from a file content to render a final
 configuration file.
 
-Finally, it provides an `SDK` to allow developers to integrate `Harp` features
+Finally, it provides a `SDK` to allow developers to integrate `Harp` features
 in their products, and/or extend the Harp pipeline features by creating new
 [plugins](#plugins).
 
@@ -74,19 +74,19 @@ in their products, and/or extend the Harp pipeline features by creating new
 
 ## Use cases
 
-* If you want to have a `single secret value` and you are asking yourself
+* You want to have a `single secret value` and you are asking yourself
   `how to generate a strong password` - Harp has a template engine with secret
   value generation functions to allow you to generate such values.
-* If you have `thousands secrets` to handle to deploy your platform/customers
+* You have `thousands secrets` to handle to deploy your platform/customers
   `on multiple cloud providers` with `different secret storages` - Harp will help you
   to define consistent secret provisioning bundles and pipelines.
-* If you are in the situation when you need an `ephemeral secret storage` to
-  `bootstrap` your long term cloud secret storage - Harp will help you to create
+* You need a `ephemeral secret storage` to `bootstrap` your long term cloud
+  secret storage - Harp will help you to create
   secret containers that can be consumed on deployment.
-* If you want to `migrate massively` your secrets from one secret storage to
+* You want to `migrate massively` your secrets from one secret storage to
   another - Harp provides you a secret container to store these secrets while
   they are going to be distributed in other secret storage implementations.
-* If you have to `alter/modifiy` a secret (rotation/deprecation/renewal) - Harp
+* You have to `alter/modifiy` a secret (rotation/deprecation/renewal) - Harp
   provides you a `GitOps-able` secret `storage agnostic operation set`, so that you
   can define a specification to describe how your secret operation is going to
   be applied offline on the secret container.
@@ -99,21 +99,21 @@ in their products, and/or extend the Harp pipeline features by creating new
 
 `harp` allows you to handle secrets using deterministic pipelines expressed
 using an atomic series of CLI operations applied to a commonly shared container
-immutable and standalone filesystem used to store secret collection (Bundle)
+immutable and standalone file system used to store secret collection (Bundle)
 generated from a template engine via user specification, or external secret
 value coming from files or external secret storage.
 
 ![Pipelines](docs/harp/img/SM-HARP.png)
 
-These pipelines use the immutable container filesystem as a data exchange
+These pipelines use the immutable container file system as a data exchange
 protocol and could be extended for new input, intermediary operation or output
 via plugins created with the `harp` SDK.
 
 ### Immutable transformation
 
-Each applied transformation create a container with transformed data inside.
+Each applied transformation creates a container with transformed data inside.
 This will enforce container reproducibility by eliminating cumulative
-side-effects applied to the same container.
+side effects applied to the same container.
 
 The container handles for you the confidentiality and integrity protection applied
 to the secret collection stored inside and manipulated by copy during the
@@ -137,18 +137,18 @@ Harp provides :
   * A path name validation library exposed as `github.com/elastic/harp/pkg/cso`
 * A CLI for secret management implementation
   * CI/CD integration;
-  * Based on human readable definitions (YAML);
+  * Based on human-readable definitions (YAML);
   * In order to create auditable and reproducible pipelines.
   * An extensible tool which can be enhanced via [plugins](https://github.com/elastic/harp-plugins).
 
 And allows :
 
 * Bundle level operations
-  * Create a bundle from scratch / template / json (more via plugins);
+  * Create a bundle from scratch / template / JSON (more via plugins);
   * Generate a complete bundle using a YAML Descriptor (`BundleTemplate`) to describe secret and their usages;
-  * Read value stored in the K/V virtual filesystem;
-  * Update the K/V virtual filesystem;
-  * Reproductible patch applied on immutable container (copy-on-write);
+  * Read value stored in the K/V virtual file system;
+  * Update the K/V virtual file system;
+  * Reproducible patch applied on immutable container (copy-on-write);
   * Import / Export to Vault.
 * Immutable container level operations
   * Seal / Unseal a container for integrity and confidentiality property conservation
@@ -162,11 +162,11 @@ And allows :
   #ChickenEggProblem
 
 * Harp is only supporting `Vault`? - No, it has been published with only vault
-  support builtin, but it supports many other secret storage implementations via
+  support built-in, but it supports many other secret storage implementations via
   plugins.
 
-* What's the difference with `Vault`? - Hashicorp Vault is an encrypted highly
-  available K/V store with advanced autorization engine, it doesn't handle
+* What's the difference with `Vault`? - HashiCorp Vault is an encrypted highly
+  available K/V store with advanced authorization engine, it doesn't handle
   secret provisioning for you. You can't ask Vault to generate secrets for your
   application and store them using a defined logic. Harp is filling this
   requirement.

@@ -4,7 +4,7 @@
   - [Secret template](#secret-template)
     - [Sample output](#sample-output)
   - [Deploy secrets](#deploy-secrets)
-    - [Hashicorp Vault](#hashicorp-vault)
+    - [HashiCorp Vault](#hashicorp-vault)
       - [Application access profile](#application-access-profile)
     - [Mozilla SOPS](#mozilla-sops)
       - [Create the identity](#create-the-identity)
@@ -47,7 +47,7 @@ app:
 
 | Secret Path | Description | Specification | Cardinality / Rotation Period |
 | ----------- | ----------- | ------------- | ----------------------------- |
-| `app/{{ env }}/database/user` | Defines the applicative user used by your application to manage service data. | Has the `app-` prefix to identify `app` service accounts, and a random alphanumeric 16 characters value as discriminent to handle multi instances of the same service. | One per instace / 90 days |
+| `app/{{ env }}/database/user` | Defines the application user used by your application to manage service data. | Has the `app-` prefix to identify `app` service accounts, and a random alphanumeric 16 characters value as discriminant to handle multi instances of the same service. | One per instance / 90 days |
 | `app/{{ env }}/database/password` | Defines the password used to authenticate to application database identity. | 64 Printable ASCII characters. | One per instance / 7 days |
 | `app/{{ env }}/server/privacy/principal` | Defines the seed used by cryptographic function to anonymize the principal. | Standard Base64 encoded 64 Printable ASCII characters. | One per environment / No rotation |
 | `app/{{ env }}/server/http/session/cookieKeyB64` | Defines the encryption key used by cookie encryption function. | Standard Base64 encoded 64 Printable ASCII characters. | One per environment / 30 days |
@@ -82,7 +82,7 @@ app:
 
 ## Deploy secrets
 
-### Hashicorp Vault
+### HashiCorp Vault
 
 ```sh
 $ harp from object --in production.yaml \
@@ -177,7 +177,7 @@ $ harp from object --in production.yaml \
 #### Application access profile
 
 Secrets are now published in Vault by the operator. We need to create a secret
-consumer role and a bound policy to retrict operations on secrets.
+consumer role and a bound policy to restrict operations on secrets.
 
 Start by defining the Application role first.
 
@@ -220,7 +220,7 @@ spec:
         capabilities: ["read"]
 ```
 
-Generate the `service` Vault AppRole and Policy using a terraform script via
+Generate the `service` Vault AppRole and Policy using terraform script via
 `harp-terraformer` plugin.
 
 ```sh
@@ -408,7 +408,7 @@ app:
                 apiKey: "1234567890"
 ```
 
-In order to convert a YAML object to an Harp Secret Bundle, you have to use
+In order to convert a YAML object to a Harp Secret Bundle, you have to use
 `harp from object`.
 
 ```sh

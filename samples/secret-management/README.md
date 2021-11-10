@@ -60,7 +60,7 @@ This template defines external `template values` :
 * `quality` to define target environment quality (`production`, `staging`, `qa`, `dev`)
 * `installation` defines a cluster instance group
 * `region` defines the logical region used to deploy the cluster
-* `clusterid` defines the clusterid
+* `clusterid` defines the cluster ID
 
 To generate a `secret container` from this specification :
 
@@ -156,7 +156,7 @@ harp from vault
 Now you have a local copy of all cluster service accounts.
 
 In order to batch patch the `secret container` you have to describe your patch
-usin a `BundlePatch` specification file.
+using a `BundlePatch` specification file.
 
 [embedmd]:# (service-account-deployer.yaml)
 ```yaml

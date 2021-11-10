@@ -157,6 +157,24 @@ func (r *TimeoutReader) Read(buf []byte) (n int, err error) {
 
 // -----------------------------------------------------------------------------
 
+// NewClosedWriter returns a io.WriteCloser instance which always fails when
+// writing data. (Used for testing purpose).
+func NewClosedWriter() io.WriteCloser {
+	return &closedWriter{}
+}
+
+type closedWriter struct{}
+
+func (c *closedWriter) Write(_ []byte) (int, error) {
+	return 0, io.EOF
+}
+
+func (c *closedWriter) Close() error {
+	return nil
+}
+
+// -----------------------------------------------------------------------------
+
 // FileReader returns lazy evaluated reader.
 func FileReader(filename string) func(context.Context) (io.Reader, error) {
 	return func(_ context.Context) (io.Reader, error) {
@@ -188,5 +206,21 @@ func StdoutWriter() func(context.Context) (io.Writer, error) {
 	return func(_ context.Context) (io.Writer, error) {
 		// No error
 		return os.Stdout, nil
+	}
+}
+
+// DiscardWriter returns discard writer.
+func DiscardWriter() func(context.Context) (io.Writer, error) {
+	return func(_ context.Context) (io.Writer, error) {
+		// No error
+		return io.Discard, nil
+	}
+}
+
+// DirectWriter returns the given writer.
+func DirectWriter(w io.Writer) func(context.Context) (io.Writer, error) {
+	return func(_ context.Context) (io.Writer, error) {
+		// No error
+		return w, nil
 	}
 }

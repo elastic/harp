@@ -47,16 +47,15 @@ $ echo "{{ .Values.certificate | sha256sum }}" | harp template --set-file certif
 
 ## Value parsers
 
-By default value file parsers are detected using the file extension. You can
-override the used parser when needed and also specificy an new root for parsed
-data.
+By default, value file parsers are detected using the file extension. You can
+override the used parser when needed and also set a new root for parsed data.
 
 ```sh
 --values=<filename>(:<parser>(:<root>)?)?
 ```
 
 * `filename` is the normal file path to load;
-* `parser` is the optinal parser to user (yaml,json,hcl,hcl2,xml,hocon);
+* `parser` is the optional parser to user (YAML, JSON, HCL, HCL2, XML, HOCON);
 * `root` is the root object name used to attach the parsed object from file;
 
 Example :

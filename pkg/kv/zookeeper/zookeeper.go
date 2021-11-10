@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strings"
 
-	zk "github.com/samuel/go-zookeeper/zk"
+	zk "github.com/go-zookeeper/zk"
 
 	"github.com/elastic/harp/pkg/kv"
 )
@@ -47,7 +47,7 @@ func (d *zkDriver) Get(_ context.Context, key string) (*kv.Pair, error) {
 		if errors.Is(err, zk.ErrNoNode) {
 			return nil, kv.ErrKeyNotFound
 		}
-		return nil, fmt.Errorf("consul: unable to retrieve '%s' key: %w", key, err)
+		return nil, fmt.Errorf("zk: unable to retrieve '%s' key: %w", key, err)
 	}
 
 	// No error
@@ -59,8 +59,38 @@ func (d *zkDriver) Get(_ context.Context, key string) (*kv.Pair, error) {
 }
 
 func (d *zkDriver) Put(_ context.Context, key string, value []byte) error {
+	// Set the value (last version)
+	_, err := d.client.Set(d.normalize(key), value, -1)
+	if err != nil {
+		return fmt.Errorf("zk: unable to set '%s' value: %w", key, err)
+	}
+
 	// No error
 	return nil
+}
+
+func (d *zkDriver) Delete(_ context.Context, key string) error {
+	// Try to delete from store.
+	err := d.client.Delete(d.normalize(key), -1)
+	if err != nil {
+		if errors.Is(err, zk.ErrNoNode) {
+			return kv.ErrKeyNotFound
+		}
+		return fmt.Errorf("zk: unable to delete '%s': %w", key, err)
+	}
+
+	// No error
+	return nil
+}
+
+func (d *zkDriver) Exists(_ context.Context, key string) (bool, error) {
+	exists, _, err := d.client.Exists(d.normalize(key))
+	if err != nil {
+		return false, fmt.Errorf("zk: unable to check key '%s' existence: %w", key, err)
+	}
+
+	// No error
+	return exists, nil
 }
 
 func (d *zkDriver) List(ctx context.Context, basePath string) ([]*kv.Pair, error) {
@@ -93,6 +123,19 @@ func (d *zkDriver) List(ctx context.Context, basePath string) ([]*kv.Pair, error
 
 	// No error
 	return results, nil
+}
+
+func (d *zkDriver) Close() error {
+	// Skip if client instance is nil
+	if d.client == nil {
+		return nil
+	}
+
+	// Close the client connection.
+	d.client.Close()
+
+	// No error
+	return nil
 }
 
 // -----------------------------------------------------------------------------

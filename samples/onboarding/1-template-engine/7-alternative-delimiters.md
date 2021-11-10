@@ -6,7 +6,7 @@ engine during template evaluation.
 
 Sometimes, you might want to create a more complex scenario where harp engine
  is used to render a `meta` template to create a template (and then use `harp`
-a second time to rendre the generated template to create the final data)
+a second time to render the generated template to create the final data)
 
 > For example, secrets construction based on application configuration files, an
 > external list of resources, etc.

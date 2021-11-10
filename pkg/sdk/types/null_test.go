@@ -42,6 +42,13 @@ func TestIsNil(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			name: "func to nil",
+			args: args{
+				c: (*func())(nil),
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

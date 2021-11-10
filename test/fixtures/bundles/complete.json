@@ -1,0 +1,56 @@
+{
+  "labels": {
+    "test": "true"
+  },
+  "annotations": {
+    "harp.elastic.co/v1/testing#bundlePurpose": "test"
+  },
+  "packages": [{
+    "labels": {
+      "okta": "true"
+    },
+    "annotations": {
+      "infosec.elastic.co/v1/SecretPolicy#rotationMethod": "rundeck",
+      "infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "180d",
+      "infosec.elastic.co/v1/SecretPolicy#serviceType": "authentication",
+      "infosec.elastic.co/v1/SecretPolicy#severity": "high",
+      "infra.elastic.co/v1/Rundeck#jobName": "rotate-adminconsole-okta-api-key",
+      "harp.elastic.co/v1/package#encryptionKeyAlias": "test"
+    },
+    "name": "app/production/customer1/ece/v1.0.0/adminconsole/authentication/otp/okta_api_key",
+    "secrets": {
+      "labels": {
+        "vendor": "true"
+      },
+      "annotations": {
+        "creationDate": "1636452457",
+        "description": "Okta API Key for OTP validation",
+        "template": "{\n  \"API_KEY\": \"{{ .Values.vendor.okta.api_key }}\"\n}"
+      },
+      "data": [{
+        "key": "API_KEY",
+        "type": "string",
+        "value": "Im9rdGEtZm9vLWFwaS0xMjM0NTY3ODki"
+      }]
+    }
+  }, {
+    "labels": {
+      "database": "postgresql"
+    },
+    "annotations": {
+      "infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "on-new-version"
+    },
+    "name": "app/production/customer1/ece/v1.0.0/adminconsole/database/usage_credentials",
+    "secrets": {
+      "data": [{
+        "key": "host",
+        "type": "string",
+        "value": "InNhbXBsZS1pbnN0YW5jZS5hYmMyZGVmZ2hpamUudXMtd2VzdC0yLnJkcy5hbWF6b25hd3MuY29tIg=="
+      }, {
+        "key": "port",
+        "type": "string",
+        "value": "IjU0MzIi"
+      }]
+    }
+  }]
+}

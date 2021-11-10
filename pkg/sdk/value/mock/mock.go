@@ -15,23 +15,27 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package mock
 
 import (
-	"github.com/spf13/cobra"
+	"context"
+
+	"github.com/elastic/harp/pkg/sdk/value"
 )
 
-// -----------------------------------------------------------------------------
-
-var rulesetCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "ruleset",
-		Aliases: []string{"rs"},
-		Short:   "RuleSet commands",
+func Transformer(err error) value.Transformer {
+	return &mockedTransformer{
+		err: err,
 	}
+}
 
-	// Bundle commands
-	cmd.AddCommand(rulesetFromBundle())
+type mockedTransformer struct {
+	err error
+}
 
-	return cmd
+func (m *mockedTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
+	return input, m.err
+}
+func (m *mockedTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
+	return input, m.err
 }

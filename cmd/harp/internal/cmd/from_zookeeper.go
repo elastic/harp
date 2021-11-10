@@ -21,7 +21,7 @@ import (
 	"context"
 	"time"
 
-	zk "github.com/samuel/go-zookeeper/zk"
+	zk "github.com/go-zookeeper/zk"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
@@ -73,9 +73,13 @@ func runFromZookeeper(ctx context.Context, params *fromZookeeperParams) {
 		return
 	}
 
+	// Prepare store.
+	store := zookeeper.Store(client)
+	defer log.SafeClose(store, "unable to close zk store")
+
 	// Delegate to task
 	t := &from.ExtractKVTask{
-		Store:                   zookeeper.Store(client),
+		Store:                   store,
 		ContainerWriter:         cmdutil.FileWriter(params.outputPath),
 		BasePaths:               params.basePaths,
 		LastPathItemAsSecretKey: params.lastPathItemAsSecret,

@@ -23,18 +23,21 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
+	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
 	"github.com/elastic/harp/pkg/tasks/bundle"
 )
 
 // -----------------------------------------------------------------------------
+type bundleDecryptParams struct {
+	inputPath          string
+	outputPath         string
+	keys               []string
+	skipNotDecryptable bool
+}
 
 var bundleDecryptCmd = func() *cobra.Command {
-	var (
-		inputPath  string
-		outputPath string
-		key        string
-	)
+	params := &bundleDecryptParams{}
 
 	cmd := &cobra.Command{
 		Use:   "decrypt",
@@ -44,17 +47,28 @@ var bundleDecryptCmd = func() *cobra.Command {
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-bundle-decrypt", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
-			// Create transformer according to used encryption key
-			transformer, err := encryption.FromKey(key)
-			if err != nil {
-				log.For(ctx).Fatal("unable to initialize transformer", zap.Error(err))
+			// Prepare transformer collection
+			transformers := []value.Transformer{}
+
+			// Split all alias / key
+			for _, keyRaw := range params.keys {
+				// Create transformer according to used encryption key
+				transformer, err := encryption.FromKey(keyRaw)
+				if err != nil {
+					log.For(ctx).Fatal("unable to initialize transformer", zap.String("key", keyRaw), zap.Error(err))
+					return
+				}
+
+				// Append to collection
+				transformers = append(transformers, transformer)
 			}
 
 			// Prepare task
 			t := &bundle.DecryptTask{
-				ContainerReader: cmdutil.FileReader(inputPath),
-				OutputWriter:    cmdutil.FileWriter(outputPath),
-				Transformer:     transformer,
+				ContainerReader:    cmdutil.FileReader(params.inputPath),
+				OutputWriter:       cmdutil.FileWriter(params.outputPath),
+				Transformers:       transformers,
+				SkipNotDecryptable: params.skipNotDecryptable,
 			}
 
 			// Run the task
@@ -65,10 +79,10 @@ var bundleDecryptCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&inputPath, "in", "", "Container input ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&outputPath, "out", "", "Container output ('-' for stdout or filename)")
-	cmd.Flags().StringVar(&key, "key", "", "Secret value decryption key")
-	log.CheckErr("unable to mark 'key' flag as required.", cmd.MarkFlagRequired("key"))
+	cmd.Flags().StringVar(&params.inputPath, "in", "", "Container input ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.outputPath, "out", "", "Container output ('-' for stdout or filename)")
+	cmd.Flags().StringSliceVar(&params.keys, "key", []string{""}, "Secret value decryption key. Repeat to add multiple keys to try.")
+	cmd.Flags().BoolVarP(&params.skipNotDecryptable, "skip-not-decryptable", "s", false, "Skip not decryptable secrets without raising an error.")
 
 	return cmd
 }
