@@ -19,10 +19,13 @@ package encryption
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
 	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/mock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFromKey(t *testing.T) {
@@ -131,6 +134,11 @@ func TestFromKey(t *testing.T) {
 				return
 			}
 
+			// Ensure not panic
+			assert.NotPanics(t, func() {
+				Must(got, err)
+			})
+
 			// Encrypt
 			msg := []byte("msg")
 			encrypted, err := got.To(context.Background(), msg)
@@ -153,4 +161,14 @@ func TestFromKey(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMust(t *testing.T) {
+	assert.Panics(t, func() {
+		Must(mock.Transformer(nil), errors.New("test"))
+	})
+
+	assert.Panics(t, func() {
+		Must(nil, nil)
+	})
 }

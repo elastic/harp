@@ -22,10 +22,9 @@ Extensible secret management tool
 * [harp keygen](harp_keygen.md)	 - Key generation commands
 * [harp passphrase](harp_passphrase.md)	 - Generate and print a diceware passphrase
 * [harp plugin](harp_plugin.md)	 - Manage harp plugins
-* [harp ruleset](harp_ruleset.md)	 - RuleSet commands
 * [harp share](harp_share.md)	 - Share secret using Vault Cubbyhole
 * [harp template](harp_template.md)	 - Read a template and execute it
-* [harp to](harp_to.md)	 - Secret container publication commands
+* [harp to](harp_to.md)	 - Secret container conversion commands
 * [harp transform](harp_transform.md)	 - Transform input value using encryption transformers
 * [harp values](harp_values.md)	 - Template value preprocessor
 * [harp version](harp_version.md)	 - Display service version

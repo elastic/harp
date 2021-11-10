@@ -19,6 +19,7 @@ package container
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"io"
 
@@ -70,6 +71,11 @@ func packRecipient(payloadKey, ephPrivKey, peerPublicKey *[32]byte) (*containerv
 }
 
 func computeHeaderHash(headers *containerv1.Header) ([]byte, error) {
+	// Check arguments
+	if headers == nil {
+		return nil, errors.New("unable process with nil headers")
+	}
+
 	// Prepare signature
 	header, err := proto.Marshal(headers)
 	if err != nil {

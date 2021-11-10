@@ -26,8 +26,8 @@ import (
 type identityTransformer struct{}
 
 // Transformer returns a non-operation transformer
-func Transformer() (value.Transformer, error) {
-	return &identityTransformer{}, nil
+func Transformer() value.Transformer {
+	return &identityTransformer{}
 }
 
 // -----------------------------------------------------------------------------

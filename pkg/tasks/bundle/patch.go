@@ -19,10 +19,12 @@ package bundle
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/bundle/patch"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -36,16 +38,15 @@ type PatchTask struct {
 
 // Run the task.
 func (t *PatchTask) Run(ctx context.Context) error {
-	// Retrieve the patch reader
-	patchReader, err := t.PatchReader(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to retrieve patch reader: %w", err)
+	// Check arguments
+	if types.IsNil(t.ContainerReader) {
+		return errors.New("unable to run task with a nil containerReader provider")
 	}
-
-	// Parse the input specification
-	spec, err := patch.YAML(patchReader)
-	if err != nil {
-		return fmt.Errorf("unable to parse patch file: %w", err)
+	if types.IsNil(t.PatchReader) {
+		return errors.New("unable to run task with a nil patchReader provider")
+	}
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
 	}
 
 	// Retrieve the container reader
@@ -58,6 +59,18 @@ func (t *PatchTask) Run(ctx context.Context) error {
 	b, err := bundle.FromContainerReader(containerReader)
 	if err != nil {
 		return fmt.Errorf("unable to load bundle content: %w", err)
+	}
+
+	// Retrieve the patch reader
+	patchReader, err := t.PatchReader(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to retrieve patch reader: %w", err)
+	}
+
+	// Parse the input specification
+	spec, err := patch.YAML(patchReader)
+	if err != nil {
+		return fmt.Errorf("unable to parse patch file: %w", err)
 	}
 
 	// Apply the patch speicification to generate an output bundle

@@ -19,6 +19,7 @@ package consul
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -76,6 +77,35 @@ func (d *consulDriver) Put(_ context.Context, key string, value []byte) error {
 	return nil
 }
 
+func (d *consulDriver) Delete(ctx context.Context, key string) error {
+	// Retrieve from store
+	if _, err := d.Exists(ctx, key); err != nil {
+		return fmt.Errorf("consul: unable to retrieve '%s' for deletion: %w", key, err)
+	}
+
+	// Delete the value
+	if _, err := d.client.KV().Delete(d.normalize(key), nil); err != nil {
+		return fmt.Errorf("consul: unable to delete '%s': %w", key, err)
+	}
+
+	// No error
+	return nil
+}
+
+func (d *consulDriver) Exists(ctx context.Context, key string) (bool, error) {
+	// Retrieve from stroe
+	_, err := d.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, kv.ErrKeyNotFound) {
+			return false, nil
+		}
+		return false, fmt.Errorf("consul: unable to check key '%s' existence: %w", key, err)
+	}
+
+	// No error
+	return true, nil
+}
+
 func (d *consulDriver) List(_ context.Context, basePath string) ([]*kv.Pair, error) {
 	// List keys from base path
 	items, _, err := d.client.KV().List(d.normalize(basePath), nil)
@@ -102,6 +132,11 @@ func (d *consulDriver) List(_ context.Context, basePath string) ([]*kv.Pair, err
 
 	// No error
 	return results, nil
+}
+
+func (d *consulDriver) Close() error {
+	// No error
+	return nil
 }
 
 // -----------------------------------------------------------------------------

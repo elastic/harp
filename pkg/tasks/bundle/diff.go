@@ -20,12 +20,14 @@ package bundle
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"sigs.k8s.io/yaml"
 
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/bundle/compare"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -39,6 +41,17 @@ type DiffTask struct {
 
 // Run the task.
 func (t *DiffTask) Run(ctx context.Context) error {
+	// Check arguments
+	if types.IsNil(t.SourceReader) {
+		return errors.New("unable to run task with a nil sourceReader provider")
+	}
+	if types.IsNil(t.DestinationReader) {
+		return errors.New("unable to run task with a nil destinationReader provider")
+	}
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
+
 	// Create input reader
 	readerSrc, err := t.SourceReader(ctx)
 	if err != nil {

@@ -23,19 +23,19 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/tasks/ruleset"
+	"github.com/elastic/harp/pkg/tasks/to"
 )
 
 // -----------------------------------------------------------------------------
 
-var rulesetFromBundle = func() *cobra.Command {
+var toRulesetCmd = func() *cobra.Command {
 	var (
 		inputPath  string
 		outputPath string
 	)
 
 	cmd := &cobra.Command{
-		Use:   "from-bundle",
+		Use:   "ruleset",
 		Short: "Genereate a RuleSet descriptor from a Bundle",
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
@@ -43,7 +43,7 @@ var rulesetFromBundle = func() *cobra.Command {
 			defer cancel()
 
 			// Prepare task
-			t := &ruleset.FromBundleTask{
+			t := &to.RuleSetTask{
 				ContainerReader: cmdutil.FileReader(inputPath),
 				OutputWriter:    cmdutil.FileWriter(outputPath),
 			}

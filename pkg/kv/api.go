@@ -28,10 +28,16 @@ var ErrKeyNotFound = errors.New("key not found")
 type Store interface {
 	// Get the value stored at the given key.
 	Get(ctx context.Context, key string) (*Pair, error)
+	// Exists checks if the key exists inside the store
+	Exists(ctx context.Context, key string) (bool, error)
+	// Delete a value addressed by "key"
+	Delete(ctx context.Context, key string) error
 	// Put the given value at the given key.
 	Put(ctx context.Context, key string, value []byte) error
 	// List subkeys at a given path
 	List(ctx context.Context, path string) ([]*Pair, error)
+	// Close closes the client connection
+	Close() error
 }
 
 // -----------------------------------------------------------------------------

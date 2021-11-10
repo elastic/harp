@@ -1,0 +1,23 @@
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QHarp is for Harpocrates (Ancient Greek: Ἁρποκράτης) the god of silence, secrets and confidentiality in the Hellenistic religion.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\Q#ChickenEggProblem\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QKubernetes\nHelm\nOpen Policy Agent ConfTest\nSaltPack\nHashicorp Vault\nAWS SDK Go\\E$"}
+{"rule":"ENGLISH_WORD_REPEAT_BEGINNING_RULE","sentence":"^\\QYou need a \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q to \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q your long term cloud secret storage - Harp will help you to create secret containers that can be consumed on deployment.\\E$"}
+{"rule":"ENGLISH_WORD_REPEAT_BEGINNING_RULE","sentence":"^\\QYou want to \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q your secrets from one secret storage to another - Harp provides you a secret container to store these secrets while they are going to be distributed in other secret storage implementations.\\E$"}
+{"rule":"ENGLISH_WORD_REPEAT_BEGINNING_RULE","sentence":"^\\QYou have to \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q a secret (rotation/deprecation/renewal) - Harp provides you a \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q secret \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q, so that you can define a specification to describe how your secret operation is going to be applied offline on the secret container.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QCustomer BundleTemplate\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QThe \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Qis the BundleTemplate used to generate the \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QThe \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q is a map of SecretChain where key is the version, and value the data.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QThe \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q sets the version number of the current SecretChain.\\E$"}
+{"rule":"MASS_AGREEMENT","sentence":"^\\QEach ring evaluate a threat realization impact level when a ring secrets leak occurs.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QProtobuf definition - InfrastructureNS\\E$"}
+{"rule":"EN_A_VS_AN","sentence":"^\\QAn \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q is a consistent set of resource provided by an infrastructure provider (IaaS).\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QProtobuf definition - PlatformNS\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QProtobuf definition - ProductComponentNS\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QProtobuf definition - ApplicationComponentNS\\E$"}
+{"rule":"EN_A_VS_AN","sentence":"^\\QAn \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q is an instance of a \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q running on a \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q at a \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q stage level.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QExtracted from Customer BundleTemplate\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QIntroduction\nBundle\nBundleTemplate\nBundlePatch\\E$"}
+{"rule":"A_NNS","sentence":"^\\QCreate a secret container from a structured file\nSecret template\nSample output\nDeploy secrets\nHashicorp Vault\nApplication access profile\nMozilla SOPS\nCreate the identity\nSeal using sops\nRetrieve a bundle from a sops encrypted file\nGenerate a YAML output from a bundle\nComplete scenario\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QGenerate the \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q Vault AppRole and Policy using a terraform script via \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q plugin.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QGenerate the \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q Vault AppRole and Policy using terraform script via \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q plugin.\\E$"}
+{"rule":"A_NNS","sentence":"^\\QRetrieve a bundle from a sops encrypted file\\E$"}

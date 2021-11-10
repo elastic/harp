@@ -27,15 +27,17 @@ import (
 )
 
 // -----------------------------------------------------------------------------
+type bundleFilterParams struct {
+	inputPath    string
+	outputPath   string
+	excludePaths []string
+	keepPaths    []string
+	jmesPath     string
+	reverseLogic bool
+}
 
 var bundleFilterCmd = func() *cobra.Command {
-	var (
-		inputPath    string
-		outputPath   string
-		excludePaths []string
-		keepPaths    []string
-		jmesPath     string
-	)
+	params := &bundleFilterParams{}
 
 	cmd := &cobra.Command{
 		Use:     "filter",
@@ -48,11 +50,12 @@ var bundleFilterCmd = func() *cobra.Command {
 
 			// Prepare task
 			t := &bundle.FilterTask{
-				ContainerReader: cmdutil.FileReader(inputPath),
-				OutputWriter:    cmdutil.FileWriter(outputPath),
-				ExcludePaths:    excludePaths,
-				KeepPaths:       keepPaths,
-				JMESPath:        jmesPath,
+				ContainerReader: cmdutil.FileReader(params.inputPath),
+				OutputWriter:    cmdutil.FileWriter(params.outputPath),
+				ExcludePaths:    params.excludePaths,
+				KeepPaths:       params.keepPaths,
+				JMESPath:        params.jmesPath,
+				ReverseLogic:    params.reverseLogic,
 			}
 
 			// Run the task
@@ -63,11 +66,12 @@ var bundleFilterCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&inputPath, "in", "", "Container input ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&outputPath, "out", "", "Container path ('-' for stdout or filename)")
-	cmd.Flags().StringArrayVar(&excludePaths, "exclude", []string{}, "Exclude path")
-	cmd.Flags().StringArrayVar(&keepPaths, "keep", []string{}, "Keep path")
-	cmd.Flags().StringVar(&jmesPath, "jmespath", "", "JMESPath query used as filter")
+	cmd.Flags().StringVar(&params.inputPath, "in", "", "Container input ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.outputPath, "out", "", "Container path ('-' for stdout or filename)")
+	cmd.Flags().StringArrayVar(&params.excludePaths, "exclude", []string{}, "Exclude path")
+	cmd.Flags().StringArrayVar(&params.keepPaths, "keep", []string{}, "Keep path")
+	cmd.Flags().StringVar(&params.jmesPath, "query", "", "JMESPath query used as package filter")
+	cmd.Flags().BoolVar(&params.reverseLogic, "not", false, "Reverse filter logic expression")
 
 	return cmd
 }

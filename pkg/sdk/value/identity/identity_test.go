@@ -57,11 +57,7 @@ func Test_Identity_From(t *testing.T) {
 
 			ctx := context.Background()
 
-			underTest, err := Transformer()
-			if err != nil {
-				t.Errorf("error raised while building transformer, %v", err)
-				return
-			}
+			underTest := Transformer()
 
 			// Do the call
 			got, err := underTest.From(ctx, testCase.input)
@@ -114,11 +110,7 @@ func Test_Identity_To(t *testing.T) {
 
 			ctx := context.Background()
 
-			underTest, err := Transformer()
-			if err != nil {
-				t.Errorf("error raised while building transformer, %v", err)
-				return
-			}
+			underTest := Transformer()
 
 			// Do the call
 			got, err := underTest.To(ctx, testCase.input)

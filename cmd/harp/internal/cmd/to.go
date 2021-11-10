@@ -26,12 +26,13 @@ import (
 var toCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "to",
-		Short: "Secret container publication commands",
+		Short: "Secret container conversion commands",
 	}
 
 	// Add sub commands
 	cmd.AddCommand(toVaultCmd())
 	cmd.AddCommand(toObjectCmd())
+	cmd.AddCommand(toRulesetCmd())
 
 	return cmd
 }

@@ -27,13 +27,14 @@ import (
 )
 
 // -----------------------------------------------------------------------------
+type bundleDiffParams struct {
+	sourcePath      string
+	destinationPath string
+	generatePatch   bool
+}
 
 var bundleDiffCmd = func() *cobra.Command {
-	var (
-		sourcePath      string
-		destinationPath string
-		generatePatch   bool
-	)
+	params := &bundleDiffParams{}
 
 	cmd := &cobra.Command{
 		Use:   "diff",
@@ -45,10 +46,10 @@ var bundleDiffCmd = func() *cobra.Command {
 
 			// Prepare task
 			t := &bundle.DiffTask{
-				SourceReader:      cmdutil.FileReader(sourcePath),
-				DestinationReader: cmdutil.FileReader(destinationPath),
+				SourceReader:      cmdutil.FileReader(params.sourcePath),
+				DestinationReader: cmdutil.FileReader(params.destinationPath),
 				OutputWriter:      cmdutil.StdoutWriter(),
-				GeneratePatch:     generatePatch,
+				GeneratePatch:     params.generatePatch,
 			}
 
 			// Run the task
@@ -59,10 +60,10 @@ var bundleDiffCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&sourcePath, "old", "", "Container path ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&destinationPath, "new", "", "Container path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.sourcePath, "old", "", "Container path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.destinationPath, "new", "", "Container path ('-' for stdin or filename)")
 	log.CheckErr("unable to mark 'dst' flag as required.", cmd.MarkFlagRequired("dst"))
-	cmd.Flags().BoolVar(&generatePatch, "patch", false, "Output as a bundle patch")
+	cmd.Flags().BoolVar(&params.generatePatch, "patch", false, "Output as a bundle patch")
 
 	return cmd
 }

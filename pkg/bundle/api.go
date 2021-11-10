@@ -41,3 +41,24 @@ type Visitor interface {
 	VisitForChain(obj *bundlev1.SecretChain)
 	VisitForKV(obj *bundlev1.KV)
 }
+
+// -----------------------------------------------------------------------------
+
+var (
+	bundleAnnotationsKey        = "harp.elastic.co/v1/bundle#annotations"
+	bundleLabelsKey             = "harp.elastic.co/v1/bundle#labels"
+	packageAnnotations          = "harp.elastic.co/v1/package#annotations"
+	packageLabels               = "harp.elastic.co/v1/package#labels"
+	packageEncryptionAnnotation = "harp.elastic.co/v1/package#encryptionKeyAlias"
+	packageEncryptedValueType   = "harp.elastic.co/v1/package#encryptedValue"
+)
+
+// AnnotationOwner defines annotations owner contract
+type AnnotationOwner interface {
+	GetAnnotations() map[string]string
+}
+
+// LabelOwner defines label owner contract
+type LabelOwner interface {
+	GetLabels() map[string]string
+}

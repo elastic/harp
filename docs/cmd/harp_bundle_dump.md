@@ -9,13 +9,14 @@ harp bundle dump [flags]
 ### Options
 
 ```
-      --content-only      Display content only (data-only alias)
-      --data-only         Display data only
-  -h, --help              help for dump
-      --in string         Container input ('-' for stdin or filename)
-      --jmespath string   Specify a JMESPath query to format output
-      --metadata-only     Display metadata only
-      --path-only         Display path only
+      --content-only    Display content only (data-only alias)
+      --data-only       Display data only
+  -h, --help            help for dump
+      --in string       Container input ('-' for stdin or filename)
+      --metadata-only   Display metadata only
+      --path-only       Display path only
+      --query string    Specify a JMESPath query to format output
+      --skip-template   Drop template from dump
 ```
 
 ### SEE ALSO

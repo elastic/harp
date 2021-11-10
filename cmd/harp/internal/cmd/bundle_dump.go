@@ -27,15 +27,17 @@ import (
 )
 
 // -----------------------------------------------------------------------------
+type bundleDumpParams struct {
+	inputPath      string
+	dataOnly       bool
+	metadataOnly   bool
+	pathOnly       bool
+	jmesPathFilter string
+	skipTemplate   bool
+}
 
 var bundleDumpCmd = func() *cobra.Command {
-	var (
-		inputPath      string
-		dataOnly       bool
-		metadataOnly   bool
-		pathOnly       bool
-		jmesPathFilter string
-	)
+	params := &bundleDumpParams{}
 
 	cmd := &cobra.Command{
 		Use:   "dump",
@@ -47,12 +49,13 @@ var bundleDumpCmd = func() *cobra.Command {
 
 			// Prepare task
 			t := &bundle.DumpTask{
-				ContainerReader: cmdutil.FileReader(inputPath),
+				ContainerReader: cmdutil.FileReader(params.inputPath),
 				OutputWriter:    cmdutil.StdoutWriter(),
-				DataOnly:        dataOnly,
-				MetadataOnly:    metadataOnly,
-				PathOnly:        pathOnly,
-				JMESPathFilter:  jmesPathFilter,
+				DataOnly:        params.dataOnly,
+				MetadataOnly:    params.metadataOnly,
+				PathOnly:        params.pathOnly,
+				JMESPathFilter:  params.jmesPathFilter,
+				IgnoreTemplate:  params.skipTemplate,
 			}
 
 			// Run the task
@@ -63,12 +66,13 @@ var bundleDumpCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&inputPath, "in", "", "Container input ('-' for stdin or filename)")
-	cmd.Flags().BoolVar(&dataOnly, "content-only", false, "Display content only (data-only alias)")
-	cmd.Flags().BoolVar(&dataOnly, "data-only", false, "Display data only")
-	cmd.Flags().BoolVar(&metadataOnly, "metadata-only", false, "Display metadata only")
-	cmd.Flags().BoolVar(&pathOnly, "path-only", false, "Display path only")
-	cmd.Flags().StringVar(&jmesPathFilter, "jmespath", "", "Specify a JMESPath query to format output")
+	cmd.Flags().StringVar(&params.inputPath, "in", "", "Container input ('-' for stdin or filename)")
+	cmd.Flags().BoolVar(&params.dataOnly, "content-only", false, "Display content only (data-only alias)")
+	cmd.Flags().BoolVar(&params.dataOnly, "data-only", false, "Display data only")
+	cmd.Flags().BoolVar(&params.metadataOnly, "metadata-only", false, "Display metadata only")
+	cmd.Flags().BoolVar(&params.pathOnly, "path-only", false, "Display path only")
+	cmd.Flags().StringVar(&params.jmesPathFilter, "query", "", "Specify a JMESPath query to format output")
+	cmd.Flags().BoolVar(&params.skipTemplate, "skip-template", false, "Drop template from dump")
 
 	return cmd
 }

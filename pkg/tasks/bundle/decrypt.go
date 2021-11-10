@@ -19,20 +19,23 @@ package bundle
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
 // DecryptTask implements secret container decryption task.
 type DecryptTask struct {
-	ContainerReader tasks.ReaderProvider
-	OutputWriter    tasks.WriterProvider
-	Transformer     value.Transformer
+	ContainerReader    tasks.ReaderProvider
+	OutputWriter       tasks.WriterProvider
+	Transformers       []value.Transformer
+	SkipNotDecryptable bool
 }
 
 // Run the task.
@@ -43,6 +46,17 @@ func (t *DecryptTask) Run(ctx context.Context) error {
 		b      *bundlev1.Bundle
 		err    error
 	)
+
+	// Check arguments
+	if types.IsNil(t.ContainerReader) {
+		return errors.New("unable to run task with a nil containerReader provider")
+	}
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
+	if len(t.Transformers) == 0 {
+		return errors.New("unable to run task with an empty transformer list")
+	}
 
 	// Create input reader
 	reader, err = t.ContainerReader(ctx)
@@ -57,7 +71,7 @@ func (t *DecryptTask) Run(ctx context.Context) error {
 	}
 
 	// Apply transformer to bundle
-	if err = bundle.UnLock(ctx, b, t.Transformer); err != nil {
+	if err = bundle.UnLock(ctx, b, t.Transformers, t.SkipNotDecryptable); err != nil {
 		return fmt.Errorf("unable to apply bundle transformation: %w", err)
 	}
 

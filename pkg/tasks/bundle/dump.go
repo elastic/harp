@@ -20,6 +20,7 @@ package bundle
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 
@@ -39,6 +40,7 @@ type DumpTask struct {
 	DataOnly        bool
 	MetadataOnly    bool
 	JMESPathFilter  string
+	IgnoreTemplate  bool
 }
 
 // Run the task.
@@ -47,6 +49,14 @@ func (t *DumpTask) Run(ctx context.Context) error {
 		reader io.Reader
 		err    error
 	)
+
+	// Check arguments
+	if types.IsNil(t.ContainerReader) {
+		return errors.New("unable to run task with a nil containerRedaer provider")
+	}
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
 
 	// Create input reader
 	reader, err = t.ContainerReader(ctx)
@@ -66,25 +76,25 @@ func (t *DumpTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to open writer: %w", err)
 	}
 
-	if t.DataOnly {
+	// Clean template if requested.
+	if t.IgnoreTemplate {
+		b.Template = nil
+	}
+
+	switch {
+	case t.DataOnly:
 		return t.dumpData(writer, b)
-	}
-
-	if t.MetadataOnly {
+	case t.MetadataOnly:
 		return t.dumpMetadata(writer, b)
-	}
-
-	if t.PathOnly {
+	case t.PathOnly:
 		return t.dumpPath(writer, b)
-	}
-
-	if t.JMESPathFilter != "" {
+	case t.JMESPathFilter != "":
 		return t.dumpFilter(writer, b)
-	}
-
-	// Dump full structure.
-	if err := bundle.JSON(writer, b); err != nil {
-		return fmt.Errorf("unable to generate JSON: %w", err)
+	default:
+		// Dump full structure.
+		if err := bundle.AsProtoJSON(writer, b); err != nil {
+			return fmt.Errorf("unable to generate JSON: %w", err)
+		}
 	}
 
 	// No error
@@ -123,34 +133,10 @@ func (t *DumpTask) dumpMetadata(writer io.Writer, b *bundlev1.Bundle) error {
 		return fmt.Errorf("unable to process nil bundle")
 	}
 
-	metaMap := bundle.KV{}
-
-	// Export bundle metadata
-	for _, p := range b.Packages {
-		metadata := bundle.KV{}
-		// Has annotations
-		if len(p.Annotations) > 0 {
-			out, err := json.Marshal(p.Annotations)
-			if err != nil {
-				return fmt.Errorf("unable to encode annotations as JSON: %w", err)
-			}
-
-			// Assign json
-			metadata["harp.elastic.io/v1/bundle#annotations"] = string(out)
-		}
-		// Has labels
-		if len(p.Labels) > 0 {
-			out, err := json.Marshal(p.Labels)
-			if err != nil {
-				return fmt.Errorf("unable to encode labels as JSON: %w", err)
-			}
-
-			// Assign json
-			metadata["harp.elastic.io/v1/bundle#labels"] = string(out)
-		}
-
-		// Assign to package
-		metaMap[p.Name] = metadata
+	// Export metadata as map
+	metaMap, err := bundle.AsMetadataMap(b)
+	if err != nil {
+		return fmt.Errorf("unbale to convert bundle content: %w", err)
 	}
 
 	// Encode as JSON

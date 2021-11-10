@@ -19,29 +19,38 @@ package bundle
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
-
-	"github.com/jmespath/go-jmespath"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/bundle/selector"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
+	"github.com/jmespath/go-jmespath"
 )
 
 // FilterTask implements secret container filtering task.
 type FilterTask struct {
 	ContainerReader tasks.ReaderProvider
 	OutputWriter    tasks.WriterProvider
+	ReverseLogic    bool
 	KeepPaths       []string
 	ExcludePaths    []string
 	JMESPath        string
 }
 
 // Run the task.
-//nolint:gocognit,gocyclo // to refactor
 func (t *FilterTask) Run(ctx context.Context) error {
+	// Check arguments
+	if types.IsNil(t.ContainerReader) {
+		return errors.New("unable to run task with a nil containerReader provider")
+	}
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
+
 	// Create input reader
 	reader, err := t.ContainerReader(ctx)
 	if err != nil {
@@ -54,69 +63,27 @@ func (t *FilterTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to load bundle content: %w", err)
 	}
 
-	// Clean up bundle
+	var errFilter error
+
 	if len(t.KeepPaths) > 0 {
-		pkgs := []*bundlev1.Package{}
-
-		for _, includePath := range t.KeepPaths {
-			includePathRegexp, errInclude := regexp.Compile(includePath)
-			if errInclude != nil {
-				return fmt.Errorf("unable to compile keep regexp '%s': %w", includePath, err)
-			}
-
-			for _, p := range b.Packages {
-				if includePathRegexp.MatchString(p.Name) {
-					pkgs = append(pkgs, p)
-				}
-			}
+		b.Packages, errFilter = t.keepFilter(b.Packages, t.KeepPaths, t.ReverseLogic)
+		if errFilter != nil {
+			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
 		}
-
-		// Override packages
-		b.Packages = pkgs
 	}
 
 	if len(t.ExcludePaths) > 0 {
-		pkgs := []*bundlev1.Package{}
-
-		for _, excludePath := range t.ExcludePaths {
-			excludePathRegexp, errExclude := regexp.Compile(excludePath)
-			if errExclude != nil {
-				return fmt.Errorf("unable to compile exclusion regexp '%s': %w", excludePath, err)
-			}
-
-			for _, p := range b.Packages {
-				if !excludePathRegexp.MatchString(p.Name) {
-					pkgs = append(pkgs, p)
-				}
-			}
+		b.Packages, errFilter = t.excludeFilter(b.Packages, t.ExcludePaths, t.ReverseLogic)
+		if errFilter != nil {
+			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
 		}
-
-		// Override packages
-		b.Packages = pkgs
 	}
 
-	// Has JMESPath filter
 	if t.JMESPath != "" {
-		pkgs := []*bundlev1.Package{}
-
-		// Compile expression first
-		exp, errJMESPath := jmespath.Compile(t.JMESPath)
-		if err != nil {
-			return fmt.Errorf("unable to compile JMESPath filter '%s': %w", t.JMESPath, errJMESPath)
+		b.Packages, errFilter = t.jmespathFilter(b.Packages, t.JMESPath, t.ReverseLogic)
+		if errFilter != nil {
+			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
 		}
-
-		// Initialize selector
-		s := selector.MatchJMESPath(exp)
-
-		// Apply package filtering
-		for _, p := range b.Packages {
-			if s.IsSatisfiedBy(p) {
-				pkgs = append(pkgs, p)
-			}
-		}
-
-		// Override packages
-		b.Packages = pkgs
 	}
 
 	// Create output writer
@@ -132,4 +99,96 @@ func (t *FilterTask) Run(ctx context.Context) error {
 
 	// No error
 	return nil
+}
+
+// -----------------------------------------------------------------------------
+
+func (t *FilterTask) keepFilter(in []*bundlev1.Package, paths []string, reverseLogic bool) ([]*bundlev1.Package, error) {
+	// Check Arguments
+	if len(in) == 0 {
+		return in, nil
+	}
+	if len(paths) == 0 {
+		return in, nil
+	}
+
+	pkgs := []*bundlev1.Package{}
+
+	for _, includePath := range paths {
+		includePathRegexp, errInclude := regexp.Compile(includePath)
+		if errInclude != nil {
+			return nil, fmt.Errorf("unable to compile keep regexp '%s': %w", includePath, errInclude)
+		}
+
+		for _, p := range in {
+			matched := includePathRegexp.MatchString(p.Name)
+			if matched && !reverseLogic || !matched && reverseLogic {
+				pkgs = append(pkgs, p)
+			}
+		}
+	}
+
+	// No error
+	return pkgs, nil
+}
+
+func (t *FilterTask) excludeFilter(in []*bundlev1.Package, paths []string, reverseLogic bool) ([]*bundlev1.Package, error) {
+	// Check Arguments
+	if len(in) == 0 {
+		return in, nil
+	}
+	if len(paths) == 0 {
+		return in, nil
+	}
+
+	pkgs := []*bundlev1.Package{}
+
+	for _, excludePath := range paths {
+		excludePathRegexp, errExclude := regexp.Compile(excludePath)
+		if errExclude != nil {
+			return nil, fmt.Errorf("unable to compile exclusion regexp '%s': %w", excludePath, errExclude)
+		}
+
+		for _, p := range in {
+			matched := !excludePathRegexp.MatchString(p.Name)
+			if matched && !reverseLogic || !matched && reverseLogic {
+				pkgs = append(pkgs, p)
+			}
+		}
+	}
+
+	// No error
+	return pkgs, nil
+}
+
+func (t *FilterTask) jmespathFilter(in []*bundlev1.Package, filter string, reverseLogic bool) ([]*bundlev1.Package, error) {
+	// Check Arguments
+	if len(in) == 0 {
+		return in, nil
+	}
+	if filter == "" {
+		return in, nil
+	}
+
+	pkgs := []*bundlev1.Package{}
+
+	// Compile expression first
+	exp, errJMESPath := jmespath.Compile(filter)
+	if errJMESPath != nil {
+		return nil, fmt.Errorf("unable to compile JMESPath filter '%s': %w", filter, errJMESPath)
+	}
+
+	// Initialize selector
+	s := selector.MatchJMESPath(exp)
+
+	// Apply package filtering
+	for _, p := range in {
+		matched := s.IsSatisfiedBy(p)
+		if matched && !reverseLogic || !matched && reverseLogic {
+			pkgs = append(pkgs, p)
+		}
+	}
+
+	// No error
+	return pkgs, nil
 }

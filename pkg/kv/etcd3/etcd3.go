@@ -20,6 +20,7 @@ package etcd3
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -84,8 +85,38 @@ func (d *etcd3Driver) Put(ctx context.Context, key string, value []byte) error {
 	return nil
 }
 
+func (d *etcd3Driver) Delete(ctx context.Context, key string) error {
+	// Try to delete from store
+	resp, err := d.client.Delete(ctx, d.normalize(key))
+	if err != nil {
+		return fmt.Errorf("etcd3: unable to delete '%s' key: %w", key, err)
+	}
+	if resp == nil {
+		return fmt.Errorf("etcd3: got nil response for '%s'", key)
+	}
+	if resp.Deleted == 0 {
+		return kv.ErrKeyNotFound
+	}
+
+	// No error
+	return nil
+}
+
+func (d *etcd3Driver) Exists(ctx context.Context, key string) (bool, error) {
+	_, err := d.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, kv.ErrKeyNotFound) {
+			return false, nil
+		}
+		return false, fmt.Errorf("etcd3: unable to check key '%s' existence: %w", key, err)
+	}
+
+	// No error
+	return true, nil
+}
+
 func (d *etcd3Driver) List(ctx context.Context, basePath string) ([]*kv.Pair, error) {
-	log.For(ctx).Debug("ETCDv3: Try to list keys", zap.String("prefix", basePath))
+	log.For(ctx).Debug("etcd3: Try to list keys", zap.String("prefix", basePath))
 
 	var (
 		results = []*kv.Pair{}
@@ -110,7 +141,7 @@ func (d *etcd3Driver) List(ctx context.Context, basePath string) ([]*kv.Pair, er
 			basePath = lastKey
 		}
 
-		log.For(ctx).Debug("ETCDv3: Get all keys", zap.String("key", basePath))
+		log.For(ctx).Debug("etcd3: Get all keys", zap.String("key", basePath))
 
 		// Retrieve key value
 		resp, err := d.client.KV.Get(ctx, d.normalize(basePath), opts...)
@@ -123,13 +154,13 @@ func (d *etcd3Driver) List(ctx context.Context, basePath string) ([]*kv.Pair, er
 
 		// Exit on empty result
 		if len(resp.Kvs) == 0 {
-			log.For(ctx).Debug("ETCDv3: No more result, stop.")
+			log.For(ctx).Debug("etcd3: No more result, stop.")
 			break
 		}
 
 		// Unpack values
 		for _, item := range resp.Kvs {
-			log.For(ctx).Debug("ETCDv3: Unpack result", zap.String("key", string(item.Key)))
+			log.For(ctx).Debug("etcd3: Unpack result", zap.String("key", string(item.Key)))
 
 			// Skip first if lastKey is defined
 			if lastKey != "" && bytes.Equal(item.Key, []byte(lastKey)) {
@@ -153,6 +184,21 @@ func (d *etcd3Driver) List(ctx context.Context, basePath string) ([]*kv.Pair, er
 
 	// No error
 	return results, nil
+}
+
+func (d *etcd3Driver) Close() error {
+	// Skip if client instance is nil
+	if d.client == nil {
+		return nil
+	}
+
+	// Try to close client connection.
+	if err := d.client.Close(); err != nil {
+		return fmt.Errorf("etcd3: unable to close client connection: %w", err)
+	}
+
+	// No error
+	return nil
 }
 
 // -----------------------------------------------------------------------------

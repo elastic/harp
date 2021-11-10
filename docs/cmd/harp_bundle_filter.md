@@ -12,9 +12,10 @@ harp bundle filter [flags]
       --exclude stringArray   Exclude path
   -h, --help                  help for filter
       --in string             Container input ('-' for stdin or filename)
-      --jmespath string       JMESPath query used as filter
       --keep stringArray      Keep path
+      --not                   Reverse filter logic expression
       --out string            Container path ('-' for stdout or filename)
+      --query string          JMESPath query used as package filter
 ```
 
 ### SEE ALSO

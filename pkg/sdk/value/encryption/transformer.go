@@ -18,9 +18,11 @@
 package encryption
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
@@ -84,4 +86,16 @@ func FromKey(keyValue string) (value.Transformer, error) {
 
 	// No error
 	return transformer, nil
+}
+
+// Must is used to panic when a transformer initialization failed.
+func Must(t value.Transformer, err error) value.Transformer {
+	if err != nil {
+		panic(err)
+	}
+	if types.IsNil(t) {
+		panic(errors.New("transformer is nil with a nil error"))
+	}
+
+	return t
 }
