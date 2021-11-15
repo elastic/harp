@@ -22,6 +22,7 @@ FEATURES:
 * sdk/cmdutil: `DiscardWriter()` is a `io.Writer` provider used to discard all output. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/cmdutil: `DirectWriter(io.Writer)` is a `io.Writer` provider used to delegate to input writer. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/cmdutil: `NewClosedWriter()` is a `io.Writer` implementation who always return on `Write()` calls. [#77](https://github.com/elastic/harp/pull/77)
+* pkg/kv: integration tests and behavior validation test suite. [#78](https://github.com/elastic/harp/pull/78)
 
 DIST:
 
