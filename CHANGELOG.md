@@ -9,6 +9,7 @@ BREAKING-CHANGES:
 * bundle/dump: parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
 * deprecation: package `github.com/elastic/harp/pkg/bundle/vfs` has been removed. The Golang 1.16 `fs.FS` implementation must be used and located at `github.com/elastic/harp/pkg/bundle/fs`. [#77](https://github.com/elastic/harp/pull/77)
 * container/identity: identities are using `ed25519` key pairs vs `x25519` keys in previous versions. Allows identities to be used for signing and encryption purpose. [#79](https://github.com/elastic/harp/pull/80)
+* sdk/transformer: Encryption transformers must be imported to be registered in the encryption transformer registry. [#80](https://github.com/elastic/harp/pull/80)
 
 FEATURES:
 
@@ -29,6 +30,8 @@ FEATURES:
   * `jwe:pbes2-a128kw:<ascii>` to initialize a PBES2 key derivation function for AES128 key wrapping with AES128 GCM Encryption transformer
   * `jwe:pbes2-a192kw:<ascii>` to initialize a PBES2 key derivation function for AES192 key wrapping with AES192 GCM Encryption transformer
   * `jwe:pbes2-a256kw:<ascii>` to initialize a PBES2 key derivation function for AES256 key wrapping with AES256 GCM Encryption transformer
+* sdk/transformer: Encryption transformer dynamic factory. [#80](https://github.com/elastic/harp/pull/80)
+  * Use `github.com/elastic/harp/pkg/value/encryption.Register(prefix, factory)` to register a transformer factory matching the given prefix.
 
 CHANGES:
 
