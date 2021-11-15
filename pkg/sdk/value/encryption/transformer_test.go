@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package encryption
+package encryption_test
 
 import (
 	"context"
@@ -24,8 +24,15 @@ import (
 	"testing"
 
 	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 	"github.com/elastic/harp/pkg/sdk/value/mock"
 	"github.com/stretchr/testify/assert"
+
+	// Register encryption transformers
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
 )
 
 func TestFromKey(t *testing.T) {
@@ -65,13 +72,6 @@ func TestFromKey(t *testing.T) {
 				keyValue: "fernet:ZER8WwNyw5Dsd65bctxillSrRMX4ObaZsQjaNW1",
 			},
 			wantErr: true,
-		},
-		{
-			name: "default",
-			args: args{
-				keyValue: "ZER8WwNyw5Dsd65bctxillSrRMX4ObaZsQjaNW1nBBI=",
-			},
-			wantErr: false,
 		},
 		{
 			name: "aes-gcm",
@@ -122,10 +122,17 @@ func TestFromKey(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "jwe",
+			args: args{
+				keyValue: "jwe:a256kw:ZER8WwNyw5Dsd65bctxillSrRMX4ObaZsQjaNW1nBBI=",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FromKey(tt.args.keyValue)
+			got, err := encryption.FromKey(tt.args.keyValue)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FromKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -136,7 +143,7 @@ func TestFromKey(t *testing.T) {
 
 			// Ensure not panic
 			assert.NotPanics(t, func() {
-				Must(got, err)
+				encryption.Must(got, err)
 			})
 
 			// Encrypt
@@ -165,10 +172,10 @@ func TestFromKey(t *testing.T) {
 
 func TestMust(t *testing.T) {
 	assert.Panics(t, func() {
-		Must(mock.Transformer(nil), errors.New("test"))
+		encryption.Must(mock.Transformer(nil), errors.New("test"))
 	})
 
 	assert.Panics(t, func() {
-		Must(nil, nil)
+		encryption.Must(nil, nil)
 	})
 }

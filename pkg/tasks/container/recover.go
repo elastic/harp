@@ -20,6 +20,7 @@ package container
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -29,6 +30,8 @@ import (
 
 	"github.com/elastic/harp/pkg/container/identity"
 	"github.com/elastic/harp/pkg/sdk/security"
+	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
+	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
 	"github.com/elastic/harp/pkg/tasks"
 	"github.com/elastic/harp/pkg/vault"
 )
@@ -99,10 +102,32 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to decode payload as JSON: %w", err)
 	}
 
+	// Build public key
+	_, pubKey, err := bech32.Decode(input.Public)
+	if err != nil {
+		return fmt.Errorf("invalid public key encoding: %w", err)
+	}
+
+	// Decode base64 public key
+	pubKeyRaw, err := base64.RawURLEncoding.DecodeString(key.X)
+	if err != nil {
+		return fmt.Errorf("invalid public key, the decoded public is corrupted")
+	}
+
 	// Check validity
-	if !security.SecureCompareString(input.Public, key.X) {
+	if !security.SecureCompare(pubKey, pubKeyRaw) {
 		return fmt.Errorf("invalid identity, key mismatch detected")
 	}
+
+	// Decode ed25519 private key
+	privKeyRaw, err := base64.RawURLEncoding.DecodeString(key.D)
+	if err != nil {
+		return fmt.Errorf("invalid identity, private key is invalid")
+	}
+
+	// Convert Ed25519 private key to x25519 key.
+	var recoveryPrivateKey [32]byte
+	extra25519.PrivateKeyToCurve25519(&recoveryPrivateKey, privKeyRaw)
 
 	// Get output writer
 	outputWriter, err := t.OutputWriter(ctx)
@@ -113,13 +138,13 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 	// Display as json
 	if t.JSONOutput {
 		if err := json.NewEncoder(outputWriter).Encode(map[string]interface{}{
-			"container_key": key.D,
+			"container_key": base64.RawURLEncoding.EncodeToString(recoveryPrivateKey[:]),
 		}); err != nil {
 			return fmt.Errorf("unable to display as json: %w", err)
 		}
 	} else {
 		// Display container key
-		fmt.Fprintf(outputWriter, "Container key : %s\n", key.D)
+		fmt.Fprintf(outputWriter, "Container key : %s\n", base64.RawURLEncoding.EncodeToString(recoveryPrivateKey[:]))
 	}
 
 	// No error

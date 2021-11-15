@@ -21,12 +21,21 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
+
+func init() {
+	encryption.Register("secretbox", Transformer)
+}
 
 // Transformer returns a Nacl SecretBox encryption value transformer
 func Transformer(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "secretbox:")
+
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {

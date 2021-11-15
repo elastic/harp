@@ -24,19 +24,6 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
-	"github.com/elastic/harp/pkg/sdk/value/encryption/aead"
-	"github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
-	"github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
-)
-
-const (
-	secretboxPrefix  = "secretbox:"
-	aesgcmPrefix     = "aes-gcm:"
-	aespmacsivPrefix = "aes-pmac-siv:"
-	aessivPrefix     = "aes-siv:"
-	fernetPrefix     = "fernet:"
-	chachaPrefix     = "chacha:"
-	xchachaPrefix    = "xchacha:"
 )
 
 // FromKey returns the value transformer that match the value format.
@@ -51,33 +38,24 @@ func FromKey(keyValue string) (value.Transformer, error) {
 		return nil, fmt.Errorf("unable to select a value transformer with blank value")
 	}
 
-	// Build the value transformer according to used prefix.
-	switch {
-	case strings.HasPrefix(keyValue, secretboxPrefix):
-		// Activate Nacl SecretBox transformer
-		transformer, err = secretbox.Transformer(strings.TrimPrefix(keyValue, secretboxPrefix))
-	case strings.HasPrefix(keyValue, aesgcmPrefix):
-		// Activate AES-GCM transformer
-		transformer, err = aead.AESGCM(strings.TrimPrefix(keyValue, aesgcmPrefix))
-	case strings.HasPrefix(keyValue, aessivPrefix):
-		// Activate AES-SIV transformer
-		transformer, err = aead.AESSIV(strings.TrimPrefix(keyValue, aessivPrefix))
-	case strings.HasPrefix(keyValue, aespmacsivPrefix):
-		// Activate AES-PMAC-SIV transformer
-		transformer, err = aead.AESPMACSIV(strings.TrimPrefix(keyValue, aespmacsivPrefix))
-	case strings.HasPrefix(keyValue, chachaPrefix):
-		// Activate ChaCha20Poly1305 transformer
-		transformer, err = aead.Chacha20Poly1305(strings.TrimPrefix(keyValue, chachaPrefix))
-	case strings.HasPrefix(keyValue, xchachaPrefix):
-		// Activate XChaCha20Poly1305 transformer
-		transformer, err = aead.XChacha20Poly1305(strings.TrimPrefix(keyValue, xchachaPrefix))
-	case strings.HasPrefix(keyValue, fernetPrefix):
-		// Activate Fernet transformer
-		transformer, err = fernet.Transformer(strings.TrimPrefix(keyValue, fernetPrefix))
-	default:
+	// Extract prefix
+	parts := strings.SplitN(keyValue, ":", 2)
+	if len(parts) != 2 {
 		// Fallback to fernet
-		transformer, err = fernet.Transformer(keyValue)
+		parts = []string{"fernet", keyValue}
 	}
+
+	// Clean prefix
+	prefix := strings.ToLower(strings.TrimSpace(parts[0]))
+
+	// Build the value transformer according to used prefix.
+	tf, ok := registry[prefix]
+	if !ok {
+		return nil, fmt.Errorf("no transformer registered for '%s' as prefix", prefix)
+	}
+
+	// Build the transformer instance
+	transformer, err = tf(keyValue)
 
 	// Check transformer initialization error
 	if transformer == nil || err != nil {

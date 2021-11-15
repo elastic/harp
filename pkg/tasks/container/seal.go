@@ -34,7 +34,7 @@ import (
 	"github.com/elastic/harp/pkg/container"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
-	"github.com/elastic/harp/pkg/sdk/security/crypto/x25519"
+	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
@@ -52,7 +52,7 @@ type SealTask struct {
 }
 
 // Run the task.
-//nolint:funlen,gocyclo // To refactor
+//nolint:gocyclo // To refactor
 func (t *SealTask) Run(ctx context.Context) error {
 	// Create input reader
 	reader, err := t.ContainerReader(ctx)
@@ -95,15 +95,12 @@ func (t *SealTask) Run(ctx context.Context) error {
 			return fmt.Errorf("invalid '%s' as public identity: %w", id, errDecode)
 		}
 
-		// Validate public key
-		if !x25519.IsValidPublicKey(publicKeyRaw) {
-			log.For(ctx).Warn("Public key ignored, it looks invalid", zap.String("key", id), zap.String("hrp", hrp))
+		// Convert ed25519 public to x25519 key
+		var publicKey [32]byte
+		if !extra25519.PublicKeyToCurve25519(&publicKey, publicKeyRaw) {
+			log.For(ctx).Warn("Public key ignored, unable to convert identity to encryption key", zap.String("key", id), zap.String("hrp", hrp))
 			continue
 		}
-
-		// Copy public key
-		var publicKey [32]byte
-		copy(publicKey[:], publicKeyRaw[:32])
 
 		// Append to identity
 		peerPublicKeys = append(peerPublicKeys, &publicKey)

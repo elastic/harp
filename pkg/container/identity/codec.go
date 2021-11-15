@@ -18,7 +18,7 @@
 package identity
 
 import (
-	"crypto/rand"
+	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -28,7 +28,6 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/gosimple/slug"
-	"golang.org/x/crypto/nacl/box"
 
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
 	"github.com/elastic/harp/pkg/sdk/types"
@@ -42,14 +41,14 @@ const (
 // -----------------------------------------------------------------------------
 
 // New identity from description.
-func New(description string) (*Identity, []byte, error) {
+func New(random io.Reader, description string) (*Identity, []byte, error) {
 	// Check arguments
 	if err := validation.Validate(description, validation.Required, is.ASCII); err != nil {
 		return nil, nil, fmt.Errorf("unable to create identity with invalid description: %w", err)
 	}
 
-	// Generate x25519 keys
-	pub, priv, err := box.GenerateKey(rand.Reader)
+	// Generate ed25519 keys as identity
+	pub, priv, err := ed25519.GenerateKey(random)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to generate identity keypair: %w", err)
 	}
@@ -57,7 +56,7 @@ func New(description string) (*Identity, []byte, error) {
 	// Wrap as JWK
 	jwk := JSONWebKey{
 		Kty: "OKP",
-		Crv: "X25519",
+		Crv: "Ed25519",
 		X:   base64.RawURLEncoding.EncodeToString(pub[:]),
 		D:   base64.RawURLEncoding.EncodeToString(priv[:]),
 	}

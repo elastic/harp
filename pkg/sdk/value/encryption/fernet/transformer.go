@@ -21,14 +21,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/fernet/fernet-go"
 
 	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
+
+func init() {
+	encryption.Register("fernet", Transformer)
+}
 
 // Transformer returns a fernet encryption transformer
 func Transformer(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "fernet:")
+
 	// Check given keys
 	k, err := fernet.DecodeKey(key)
 	if err != nil {

@@ -49,11 +49,6 @@ func DefaultClient() (ServiceFactory, error) {
 		return nil, fmt.Errorf("unable to initialize vault client: %w", err)
 	}
 
-	// Set default expiration for wrapped tokens
-	vaultClient.SetWrappingLookupFunc(func(operation, path string) string {
-		return "120s"
-	})
-
 	// Delegate to other constructor.
 	return FromVaultClient(vaultClient)
 }

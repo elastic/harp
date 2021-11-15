@@ -26,13 +26,11 @@ import (
 	"golang.org/x/crypto/cryptobyte"
 
 	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
 
-// TransformerFactoryFunc is used for transformer building for envelope internal encryption.
-type TransformerFactoryFunc func(string) (value.Transformer, error)
-
 // Transformer returns an envelope encryption value transformer.
-func Transformer(envelopeService Service, transformerFactory TransformerFactoryFunc) (value.Transformer, error) {
+func Transformer(envelopeService Service, transformerFactory encryption.TransformerFactoryFunc) (value.Transformer, error) {
 	return &envelopeTransformer{
 		envelopeService:        envelopeService,
 		transformerFactoryFunc: transformerFactory,
@@ -43,7 +41,7 @@ func Transformer(envelopeService Service, transformerFactory TransformerFactoryF
 
 type envelopeTransformer struct {
 	envelopeService        Service
-	transformerFactoryFunc TransformerFactoryFunc
+	transformerFactoryFunc encryption.TransformerFactoryFunc
 }
 
 func (t *envelopeTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
