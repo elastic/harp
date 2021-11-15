@@ -53,3 +53,5 @@ exceptions:
   - github.com/hashicorp/serf/coordinate
   # MPL-2.0 - https://github.com/hashicorp/consul/blob/main/LICENSE
   - github.com/hashicorp/consul/api
+  # BSD-2.0 - https://github.com/Nvveen/Gotty/blob/master/LICENSE
+  - github.com/Nvveen/Gotty

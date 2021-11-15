@@ -58,5 +58,7 @@ func Register(ctx context.Context, conf *Config, r *http.ServeMux) (func(), erro
 	}
 
 	// No error
-	return func() {}, nil
+	return func() {
+		agent.Close()
+	}, nil
 }

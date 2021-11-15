@@ -9,8 +9,6 @@ BREAKING-CHANGES:
 * bundle/dump: Parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
 * deprecation: Package `github.com/elastic/harp/pkg/bundle/vfs` has been removed. The Golang 1.16 `fs.FS` implementation must be used and located at `github.com/elastic/harp/pkg/bundle/fs`. [#77](https://github.com/elastic/harp/pull/77)
 
-CHANGES:
-
 FEATURES:
 
 * bundle/encryption: Partial bundle encryption based on annotations. [#77](https://github.com/elastic/harp/pull/77)
@@ -23,6 +21,20 @@ FEATURES:
 * sdk/cmdutil: `DirectWriter(io.Writer)` is a `io.Writer` provider used to delegate to input writer. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/cmdutil: `NewClosedWriter()` is a `io.Writer` implementation who always return on `Write()` calls. [#77](https://github.com/elastic/harp/pull/77)
 * pkg/kv: integration tests and behavior validation test suite. [#78](https://github.com/elastic/harp/pull/78)
+
+CHANGES:
+
+* sdk/dep: [#79](https://github.com/elastic/harp/pull/79)
+  * github.com/google/gops v0.3.22
+  * github.com/gosimple/slug v1.11.2
+  * github.com/hashicorp/consul/api v1.11.0
+  * github.com/hashicorp/vault/api v1.3.0
+  * github.com/zclconf/go-cty v1.10.0
+  * go.step.sm/crypto v0.13.0
+  * golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa
+  * golang.org/x/sys v0.0.0-20211113001501-0c823b97ae02
+  * google.golang.org/genproto v0.0.0-20211112145013-271947fe86fd
+  * google.golang.org/grpc v1.42.0
 
 DIST:
 
