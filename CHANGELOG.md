@@ -5,9 +5,10 @@
 BREAKING-CHANGES:
 
 * cmd/ruleset: Ruleset generation from a Bundle has been relocated to `to ruleset` command. [#77](https://github.com/elastic/harp/pull/77)
-* bundle/filter: Parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
-* bundle/dump: Parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
-* deprecation: Package `github.com/elastic/harp/pkg/bundle/vfs` has been removed. The Golang 1.16 `fs.FS` implementation must be used and located at `github.com/elastic/harp/pkg/bundle/fs`. [#77](https://github.com/elastic/harp/pull/77)
+* bundle/filter: parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
+* bundle/dump: parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
+* deprecation: package `github.com/elastic/harp/pkg/bundle/vfs` has been removed. The Golang 1.16 `fs.FS` implementation must be used and located at `github.com/elastic/harp/pkg/bundle/fs`. [#77](https://github.com/elastic/harp/pull/77)
+* container/identity: identities are using `ed25519` key pairs vs `x25519` keys in previous versions. Allows identities to be used for signing and encryption purpose. [#79](https://github.com/elastic/harp/pull/80)
 
 FEATURES:
 
@@ -21,6 +22,13 @@ FEATURES:
 * sdk/cmdutil: `DirectWriter(io.Writer)` is a `io.Writer` provider used to delegate to input writer. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/cmdutil: `NewClosedWriter()` is a `io.Writer` implementation who always return on `Write()` calls. [#77](https://github.com/elastic/harp/pull/77)
 * pkg/kv: integration tests and behavior validation test suite. [#78](https://github.com/elastic/harp/pull/78)
+* value/transformers: expose new JWE based encryption transformers [#80](https://github.com/elastic/harp/pull/80)
+  * `jwe:a128kw:<base64>` to initialize a AES128 Key Wrapper with AES128 GCM Encryption transformer
+  * `jwe:a192kw:<base64>` to initialize a AES192 Key Wrapper with AES192 GCM Encryption transformer
+  * `jwe:a256kw:<base64>` to initialize a AES256 Key Wrapper with AES256 GCM Encryption transformer
+  * `jwe:pbes2-a128kw:<ascii>` to initialize a PBES2 key derivation function for AES128 key wrapping with AES128 GCM Encryption transformer
+  * `jwe:pbes2-a192kw:<ascii>` to initialize a PBES2 key derivation function for AES192 key wrapping with AES192 GCM Encryption transformer
+  * `jwe:pbes2-a256kw:<ascii>` to initialize a PBES2 key derivation function for AES256 key wrapping with AES256 GCM Encryption transformer
 
 CHANGES:
 
