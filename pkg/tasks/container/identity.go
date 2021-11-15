@@ -19,12 +19,12 @@ package container
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
 	"github.com/awnumar/memguard"
-	"github.com/dchest/uniuri"
 	"golang.org/x/crypto/blake2b"
 	"gopkg.in/square/go-jose.v2"
 
@@ -72,12 +72,13 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 	}
 
 	// Create identity
-	id, payload, err := identity.New(t.Description)
+	id, payload, err := identity.New(rand.Reader, t.Description)
 	if err != nil {
 		return fmt.Errorf("unable to create a new identity: %w", err)
 	}
 
-	if t.PassPhrase != nil {
+	switch {
+	case t.PassPhrase != nil:
 		pk, errPassPhrase := t.sealWithPassPhrase(ctx, payload)
 		if errPassPhrase != nil {
 			return fmt.Errorf("unable to seal identity using passphrase: %w", errPassPhrase)
@@ -85,8 +86,7 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 
 		// Assign to identity
 		id.Private = pk
-	}
-	if t.VaultTransitKey != "" {
+	case t.VaultTransitKey != "":
 		pk, errVault := t.sealWithVaultTransitKey(ctx, payload)
 		if errVault != nil {
 			return fmt.Errorf("unable to seal identity using Vault: %w", errVault)
@@ -94,11 +94,13 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 
 		// Assign to identity
 		id.Private = pk
+	default:
+		return fmt.Errorf("a passphrase or a vault transit key must be specified")
 	}
 
 	// Check unhandled identity error
 	if id.Private == nil {
-		return fmt.Errorf("invalid identity generated")
+		return fmt.Errorf("invalid generated identity, missing private key section")
 	}
 
 	// Retrieve output writer
@@ -117,12 +119,15 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 }
 
 func (t *IdentityTask) sealWithPassPhrase(_ context.Context, payload []byte) (*identity.PrivateKey, error) {
+	// Create a salt seed
+	salt := memguard.NewBufferRandom(PBKDF2SaltSize)
+
 	// Encrypt JWK using PBES2
 	recipient := jose.Recipient{
 		Algorithm:  jose.PBES2_HS512_A256KW,
 		Key:        t.PassPhrase.Bytes(),
 		PBES2Count: PBKDF2Iterations,
-		PBES2Salt:  []byte(uniuri.NewLen(PBKDF2SaltSize)),
+		PBES2Salt:  salt.Bytes(),
 	}
 
 	// JWE Header
@@ -144,7 +149,7 @@ func (t *IdentityTask) sealWithPassPhrase(_ context.Context, payload []byte) (*i
 	// Assemble final JWE
 	identityPrivate, err := jwe.CompactSerialize()
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("unable to serialize encrypted payload: %w", err)
 	}
 
 	// Wrap private key

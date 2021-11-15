@@ -1,0 +1,11 @@
+{
+  "@apiVersion": "harp.elastic.co/v1",
+  "@kind": "ContainerIdentity",
+  "@timestamp": "2021-11-15T11:58:13.662568Z",
+  "@description": "security",
+  "public": "security1r6t9kagaafun6zvkx4ysm2kh9xswca6x79dlu4lvmg6hynywx7nsvpgple",
+  "private": {
+    "encoding": "jwe",
+    "content": "eyJhbGciOiJQQkVTMi1IUzUxMitBMjU2S1ciLCJjdHkiOiJqd2sranNvbiIsImVuYyI6IkEyNTZHQ00iLCJwMmMiOjUwMDAwMSwicDJzIjoiTlVVNVlWZDZTRVpJVldoMFNFSnNaUSJ9.pqZ9kim7OzW6lVLmPf4wXRYx8IvHmZi7ChzxmWqtGHo2zHeyp3Bhqw.x76wqFYsB-E-E0ov.1Adrme-LS8tC05n1D3FLUSiDGCMcf30lRjWDCB2CSh-3x4K2fZ2gibsvtp7aO4IjxkESnrUV6vCCAtXDa2I4f-aYAYzl1CkgSw-1JulQmVjl4l3NTcI189icJT0HxJ7-F0SGtpmTU1bGoGR9z_ERVErom3I6bSAl2OV4WcDVTfmyXBoJqM-hXYtIeIpLC0B4sxi3CFPhFQlEHF65AYwC2QgZb2qoP-tLnJG1FA.g-hH5zr7ksKhWS2aXAWP0Q"
+  }
+}
