@@ -36,6 +36,7 @@ type mockedTransformer struct {
 func (m *mockedTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 	return input, m.err
 }
+
 func (m *mockedTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
 	return input, m.err
 }
