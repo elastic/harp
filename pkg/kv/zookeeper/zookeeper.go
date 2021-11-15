@@ -66,7 +66,9 @@ func (d *zkDriver) Put(ctx context.Context, key string, value []byte) error {
 	}
 	if !exists {
 		// Create full hierarchy if the key doesn't exists
-		d.createFullPath(kv.SplitKey(strings.TrimSuffix(key, "/")))
+		if errCreate := d.createFullPath(kv.SplitKey(strings.TrimSuffix(key, "/"))); errCreate != nil {
+			return fmt.Errorf("unable to create the complete path for key '%s': %w", key, errCreate)
+		}
 	}
 
 	// Set the value (last version)
@@ -168,7 +170,7 @@ func (d *zkDriver) createFullPath(path []string) error {
 		_, err := d.client.Create(newpath, []byte{}, 0, zk.WorldACL(zk.PermAll))
 		if err != nil {
 			// Skip if node already exists
-			if err != zk.ErrNodeExists {
+			if !errors.Is(err, zk.ErrNodeExists) {
 				return err
 			}
 		}
