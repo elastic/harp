@@ -9,6 +9,7 @@ replace github.com/satori/go.uuid => github.com/satori/go.uuid v1.2.1-0.20181028
 replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 
 require (
+	filippo.io/edwards25519 v1.0.0-rc.1
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/alessio/shellescape v1.4.1
@@ -58,6 +59,7 @@ require (
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go/codec v1.2.6
+	github.com/vk-rv/pvx v0.0.0-20210912195928-ac00bc32f6e7 // indirect
 	github.com/zclconf/go-cty v1.10.0
 	gitlab.com/NebulousLabs/merkletree v0.0.0-20200118113624-07fbf710afc4
 	go.etcd.io/etcd/client/v3 v3.5.1

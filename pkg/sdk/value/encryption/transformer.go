@@ -26,6 +26,7 @@ import (
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
+	"github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
 )
 
@@ -37,6 +38,7 @@ const (
 	fernetPrefix     = "fernet:"
 	chachaPrefix     = "chacha:"
 	xchachaPrefix    = "xchacha:"
+	jwePrefix        = "jwe:"
 )
 
 // FromKey returns the value transformer that match the value format.
@@ -74,6 +76,9 @@ func FromKey(keyValue string) (value.Transformer, error) {
 	case strings.HasPrefix(keyValue, fernetPrefix):
 		// Activate Fernet transformer
 		transformer, err = fernet.Transformer(strings.TrimPrefix(keyValue, fernetPrefix))
+	case strings.HasPrefix(keyValue, jwePrefix):
+		// Active JWE transformer
+		transformer, err = jwe.Transformer(strings.TrimPrefix(keyValue, jwePrefix))
 	default:
 		// Fallback to fernet
 		transformer, err = fernet.Transformer(keyValue)

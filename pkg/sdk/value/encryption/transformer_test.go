@@ -122,6 +122,13 @@ func TestFromKey(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "jwe",
+			args: args{
+				keyValue: "jwe:a256kw:ZER8WwNyw5Dsd65bctxillSrRMX4ObaZsQjaNW1nBBI=",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
