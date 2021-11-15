@@ -46,8 +46,6 @@ require (
 	github.com/magefile/mage v1.11.0
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/miscreant/miscreant.go v0.0.0-20200214223636-26d376326b75
-	github.com/nats-io/nats-server/v2 v2.6.4 // indirect
-	github.com/nats-io/nats.go v1.13.1-0.20211018182449-f2416a8b1483
 	github.com/oklog/run v1.1.0
 	github.com/ory/dockertest/v3 v3.8.0
 	github.com/pelletier/go-toml v1.9.4
