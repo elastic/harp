@@ -15,28 +15,38 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package mock
+//go:build integration
+
+package kv
 
 import (
 	"context"
+	"testing"
+	"time"
 
-	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/kv/zookeeper"
+	"github.com/elastic/harp/test/integration/resource"
+	"github.com/go-zookeeper/zk"
+	"github.com/stretchr/testify/assert"
 )
 
-func Transformer(err error) value.Transformer {
-	return &mockedTransformer{
-		err: err,
-	}
-}
+// -----------------------------------------------------------------------------
 
-type mockedTransformer struct {
-	err error
-}
+func TestWithZookeeper(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-func (m *mockedTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
-	return input, m.err
-}
+	// Create zk instance
+	kvURI := resource.Zookeeper(ctx, t)
 
-func (m *mockedTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
-	return input, m.err
+	// Create zk client
+	conn, _, err := zk.Connect([]string{kvURI}, 10*time.Second)
+	assert.NoError(t, err)
+	assert.NotNil(t, conn)
+
+	// Initialize KV Store
+	s := zookeeper.Store(conn)
+
+	// Run test suite
+	t.Run("store", testSuite(ctx, s))
 }

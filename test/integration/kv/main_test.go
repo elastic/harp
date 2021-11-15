@@ -15,28 +15,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package mock
+//go:build integration
+
+package kv
 
 import (
-	"context"
-
-	"github.com/elastic/harp/pkg/sdk/value"
+	"os"
+	"testing"
 )
 
-func Transformer(err error) value.Transformer {
-	return &mockedTransformer{
-		err: err,
-	}
-}
-
-type mockedTransformer struct {
-	err error
-}
-
-func (m *mockedTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
-	return input, m.err
-}
-
-func (m *mockedTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
-	return input, m.err
+func TestMain(m *testing.M) {
+	os.Exit(m.Run())
 }

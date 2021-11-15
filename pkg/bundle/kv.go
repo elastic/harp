@@ -21,9 +21,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gobwas/glob"
+
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/secret"
-	"github.com/gobwas/glob"
 )
 
 // KV describes map[string]interface{} alias

@@ -74,7 +74,7 @@ func runFromConsul(ctx context.Context, params *fromConsulParams) {
 
 	// Prepare store.
 	store := consul.Store(client)
-	defer log.SafeClose(store, "unable to close etcd3 store")
+	defer log.SafeClose(store, "unable to close consul store")
 
 	// Delegate to task
 	t := &from.ExtractKVTask{

@@ -182,6 +182,11 @@ func (d *etcd3Driver) List(ctx context.Context, basePath string) ([]*kv.Pair, er
 		lastKey = string(resp.Kvs[len(resp.Kvs)-1].Key)
 	}
 
+	// Raise keynotfound if no result.
+	if len(results) == 0 {
+		return nil, kv.ErrKeyNotFound
+	}
+
 	// No error
 	return results, nil
 }

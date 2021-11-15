@@ -15,28 +15,41 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package mock
+//go:build integration
+
+package kv
 
 import (
 	"context"
+	"testing"
 
-	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/kv/consul"
+	"github.com/elastic/harp/test/integration/resource"
+	"github.com/hashicorp/consul/api"
+	"github.com/stretchr/testify/assert"
 )
 
-func Transformer(err error) value.Transformer {
-	return &mockedTransformer{
-		err: err,
-	}
-}
+// -----------------------------------------------------------------------------
 
-type mockedTransformer struct {
-	err error
-}
+func TestWithConsul(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-func (m *mockedTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
-	return input, m.err
-}
+	// Create zk instance
+	kvURI := resource.Consul(ctx, t)
 
-func (m *mockedTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
-	return input, m.err
+	config := api.DefaultConfig()
+	config.Address = kvURI
+	config.Token = "test"
+
+	// Create client instance.
+	client, err := api.NewClient(config)
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
+
+	// Initialize KV Store
+	s := consul.Store(client)
+
+	// Run test suite
+	t.Run("store", testSuite(ctx, s))
 }

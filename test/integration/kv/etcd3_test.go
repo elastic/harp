@@ -15,28 +15,41 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package mock
+//go:build integration
+
+package kv
 
 import (
 	"context"
+	"testing"
+	"time"
 
-	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/kv/etcd3"
+	"github.com/elastic/harp/test/integration/resource"
+	"github.com/stretchr/testify/assert"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-func Transformer(err error) value.Transformer {
-	return &mockedTransformer{
-		err: err,
-	}
-}
+// -----------------------------------------------------------------------------
 
-type mockedTransformer struct {
-	err error
-}
+func TestWithEtcd(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-func (m *mockedTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
-	return input, m.err
-}
+	// Create zk instance
+	kvURI := resource.Etcd(ctx, t)
 
-func (m *mockedTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
-	return input, m.err
+	// Create zk client
+	client, errClient := clientv3.New(clientv3.Config{
+		Endpoints:   []string{kvURI},
+		DialTimeout: 5 * time.Second,
+	})
+	assert.NoError(t, errClient)
+	assert.NotNil(t, client)
+
+	// Initialize KV Store
+	s := etcd3.Store(client)
+
+	// Run test suite
+	t.Run("store", testSuite(ctx, s))
 }

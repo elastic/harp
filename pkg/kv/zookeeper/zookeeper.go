@@ -58,9 +58,21 @@ func (d *zkDriver) Get(_ context.Context, key string) (*kv.Pair, error) {
 	}, nil
 }
 
-func (d *zkDriver) Put(_ context.Context, key string, value []byte) error {
+func (d *zkDriver) Put(ctx context.Context, key string, value []byte) error {
+	// Check if key exists
+	exists, err := d.Exists(ctx, key)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		// Create full hierarchy if the key doesn't exists
+		if errCreate := d.createFullPath(kv.SplitKey(strings.TrimSuffix(key, "/"))); errCreate != nil {
+			return fmt.Errorf("unable to create the complete path for key '%s': %w", key, errCreate)
+		}
+	}
+
 	// Set the value (last version)
-	_, err := d.client.Set(d.normalize(key), value, -1)
+	_, err = d.client.Set(d.normalize(key), value, -1)
 	if err != nil {
 		return fmt.Errorf("zk: unable to set '%s' value: %w", key, err)
 	}
@@ -84,7 +96,9 @@ func (d *zkDriver) Delete(_ context.Context, key string) error {
 }
 
 func (d *zkDriver) Exists(_ context.Context, key string) (bool, error) {
-	exists, _, err := d.client.Exists(d.normalize(key))
+	key = d.normalize(key)
+
+	exists, _, err := d.client.Exists(key)
 	if err != nil {
 		return false, fmt.Errorf("zk: unable to check key '%s' existence: %w", key, err)
 	}
@@ -143,5 +157,23 @@ func (d *zkDriver) Close() error {
 // Normalize the key for usage in Consul
 func (d *zkDriver) normalize(key string) string {
 	key = kv.Normalize(key)
-	return strings.TrimPrefix(key, "/")
+	return strings.TrimSuffix(key, "/")
+}
+
+// -----------------------------------------------------------------------------
+
+// createFullPath creates the entire path for a directory
+// that does not exist
+func (d *zkDriver) createFullPath(path []string) error {
+	for i := 1; i <= len(path); i++ {
+		newpath := "/" + strings.Join(path[:i], "/")
+		_, err := d.client.Create(newpath, []byte{}, 0, zk.WorldACL(zk.PermAll))
+		if err != nil {
+			// Skip if node already exists
+			if !errors.Is(err, zk.ErrNodeExists) {
+				return err
+			}
+		}
+	}
+	return nil
 }

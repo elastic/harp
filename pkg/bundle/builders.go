@@ -23,11 +23,12 @@ import (
 	"io"
 	"strings"
 
+	"google.golang.org/protobuf/encoding/protojson"
+
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/compare"
 	"github.com/elastic/harp/pkg/bundle/secret"
 	"github.com/elastic/harp/pkg/sdk/types"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // FromDump creates a bundle from a JSON Dump.

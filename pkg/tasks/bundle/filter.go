@@ -23,12 +23,13 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/jmespath/go-jmespath"
+
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/bundle/selector"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
-	"github.com/jmespath/go-jmespath"
 )
 
 // FilterTask implements secret container filtering task.
