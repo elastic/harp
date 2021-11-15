@@ -29,6 +29,9 @@ import (
 	"github.com/elastic/harp/pkg/sdk/value/identity"
 	"github.com/elastic/harp/pkg/sdk/value/mock"
 	"github.com/elastic/harp/pkg/tasks"
+
+	// Import for tests
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 )
 
 func TestDecryptTask_Run(t *testing.T) {

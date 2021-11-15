@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/hashicorp/vault/api"
 
@@ -41,7 +42,7 @@ type service struct {
 func New(client *api.Client, mountPath, keyName string) (Service, error) {
 	return &service{
 		logical:   client.Logical(),
-		mountPath: mountPath,
+		mountPath: strings.TrimSuffix(path.Clean(mountPath), "/"),
 		keyName:   keyName,
 	}, nil
 }
@@ -58,7 +59,16 @@ func (s *service) Encrypt(ctx context.Context, cleartext []byte) ([]byte, error)
 	// Send to Vault.
 	secret, err := s.logical.Write(encryptPath, data)
 	if err != nil {
-		return nil, fmt.Errorf("unable to encrypt with %s key", s.keyName)
+		return nil, fmt.Errorf("unable to encrypt with '%s' key: %w", s.keyName, err)
+	}
+
+	// Check response wrapping
+	if secret.WrapInfo != nil {
+		// Unwrap with response token
+		secret, err = s.logical.Unwrap(secret.WrapInfo.Token)
+		if err != nil {
+			return nil, fmt.Errorf("unable to unwrap the response: %w", err)
+		}
 	}
 
 	// Parse server response.
@@ -80,7 +90,16 @@ func (s *service) Decrypt(ctx context.Context, ciphertext []byte) ([]byte, error
 	// Send to Vault.
 	secret, err := s.logical.Write(decryptPath, data)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decrypt with %s key", s.keyName)
+		return nil, fmt.Errorf("unable to decrypt with '%s' key: %w", s.keyName, err)
+	}
+
+	// Check response wrapping
+	if secret.WrapInfo != nil {
+		// Unwrap with response token
+		secret, err = s.logical.Unwrap(secret.WrapInfo.Token)
+		if err != nil {
+			return nil, fmt.Errorf("unable to unwrap the response: %w", err)
+		}
 	}
 
 	// Parse server response.

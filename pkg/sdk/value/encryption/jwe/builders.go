@@ -25,10 +25,18 @@ import (
 	"gopkg.in/square/go-jose.v2"
 
 	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
+
+func init() {
+	encryption.Register("jwe", Transformer)
+}
 
 // Transformer returns an encryption transformer instance according to the given key format.
 func Transformer(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "jwe:")
+
 	switch {
 	case strings.HasPrefix(key, "a128kw:"):
 		k, err := base64.URLEncoding.DecodeString(strings.TrimPrefix(key, "a128kw:"))

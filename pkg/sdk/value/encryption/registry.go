@@ -15,33 +15,33 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package main
+package encryption
 
 import (
-	"math/rand"
-	"time"
+	"fmt"
 
-	"github.com/elastic/harp/cmd/harp/internal/cmd"
-	"github.com/elastic/harp/pkg/sdk/log"
-
-	// Register encryption transformers
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
-	_ "github.com/elastic/harp/pkg/vault/transit/transformer"
+	"github.com/elastic/harp/pkg/sdk/value"
 )
 
-func init() {
-	// Set default timezone to UTC
-	time.Local = time.UTC
+// TransformerFactoryFunc is used for transformer building for encryption.
+type TransformerFactoryFunc func(string) (value.Transformer, error)
 
-	// Initialize random number generator
-	rand.Seed(time.Now().Unix())
-}
+var (
+	registry map[string]TransformerFactoryFunc
+)
 
-func main() {
-	if err := cmd.Execute(); err != nil {
-		log.CheckErr("Unable to complete command execution", err)
+// Register a transformer with the given prefix.
+func Register(prefix string, factory TransformerFactoryFunc) {
+	// Lazy initialization
+	if registry == nil {
+		registry = map[string]TransformerFactoryFunc{}
 	}
+
+	// Check if not already registered
+	if _, ok := registry[prefix]; ok {
+		panic(fmt.Errorf("encryption transformer already registered fro '%s' prefix", prefix))
+	}
+
+	// Register the transformer
+	registry[prefix] = factory
 }

@@ -22,15 +22,36 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"fmt"
+	"strings"
 
 	miscreant "github.com/miscreant/miscreant.go"
 	"golang.org/x/crypto/chacha20poly1305"
 
 	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
+
+var (
+	aesgcmPrefix     = "aes-gcm"
+	aespmacsivPrefix = "aes-pmac-siv"
+	aessivPrefix     = "aes-siv"
+	chachaPrefix     = "chacha"
+	xchachaPrefix    = "xchacha"
+)
+
+func init() {
+	encryption.Register(aesgcmPrefix, AESGCM)
+	encryption.Register(aespmacsivPrefix, AESPMACSIV)
+	encryption.Register(aessivPrefix, AESSIV)
+	encryption.Register(chachaPrefix, Chacha20Poly1305)
+	encryption.Register(xchachaPrefix, XChacha20Poly1305)
+}
 
 // AESGCM returns an AES-GCM value transformer instance.
 func AESGCM(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "aes-gcm:")
+
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
@@ -57,6 +78,9 @@ func AESGCM(key string) (value.Transformer, error) {
 
 // AESSIV returns an AES-SIV/AES-CMAC-SIV value transformer instance.
 func AESSIV(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "aes-siv:")
+
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
@@ -80,6 +104,9 @@ func AESSIV(key string) (value.Transformer, error) {
 
 // AESPMACSIV returns an AES-PMAC-SIV value transformer instance.
 func AESPMACSIV(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "aes-pmac-siv:")
+
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
@@ -103,6 +130,9 @@ func AESPMACSIV(key string) (value.Transformer, error) {
 
 // Chacha20Poly1305 returns an ChaCha20Poly1305 value transformer instance.
 func Chacha20Poly1305(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "chacha:")
+
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
@@ -126,6 +156,9 @@ func Chacha20Poly1305(key string) (value.Transformer, error) {
 
 // XChacha20Poly1305 returns an XChaCha20Poly1305 value transformer instance.
 func XChacha20Poly1305(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "xchacha:")
+
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
