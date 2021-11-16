@@ -78,7 +78,7 @@ func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*JSONWebKe
 
 // PrivateKey wraps encoded private and related informations.
 type PrivateKey struct {
-	Encoding string `json:"encoding"`
+	Encoding string `json:"encoding,omitempty"`
 	Content  string `json:"content"`
 }
 

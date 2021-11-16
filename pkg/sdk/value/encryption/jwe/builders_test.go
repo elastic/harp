@@ -50,9 +50,9 @@ func Test_Transformer(t *testing.T) {
 		"a128kw:abSOB6OHnFK1CHIm60OXsA==",
 		"a192kw:b4JtOwQLOks1-RWxXUh5eG54nbdBihLT",
 		"a256kw:TkxS6qSV6eDBjn29JmU2ieMPnuCZNn3JelI1CDNqAQ8=",
-		"pbes2-a128kw:stalemate-parkway-hardened-jeep-shrink-dimmer-platter-pretense",
-		"pbes2-a192kw:stalemate-parkway-hardened-jeep-shrink-dimmer-platter-pretense",
-		"pbes2-a256kw:stalemate-parkway-hardened-jeep-shrink-dimmer-platter-pretense",
+		"pbes2-hs256-a128kw:stalemate-parkway-hardened-jeep-shrink-dimmer-platter-pretense",
+		"pbes2-hs384-a192kw:stalemate-parkway-hardened-jeep-shrink-dimmer-platter-pretense",
+		"pbes2-hs512-a256kw:stalemate-parkway-hardened-jeep-shrink-dimmer-platter-pretense",
 	}
 	for _, k := range keys {
 		key := k

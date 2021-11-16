@@ -31,6 +31,7 @@ type bundlePrefixerParams struct {
 	inputPath  string
 	outputPath string
 	prefix     string
+	remove     bool
 }
 
 var bundlePrefixerCmd = func() *cobra.Command {
@@ -49,6 +50,7 @@ var bundlePrefixerCmd = func() *cobra.Command {
 				ContainerReader: cmdutil.FileReader(params.inputPath),
 				OutputWriter:    cmdutil.FileWriter(params.outputPath),
 				Prefix:          params.prefix,
+				Remove:          params.remove,
 			}
 
 			// Run the task
@@ -62,6 +64,7 @@ var bundlePrefixerCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Container input ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "", "Container output ('-' for stdout or a filename)")
 	cmd.Flags().StringVar(&params.prefix, "prefix", "", "Specify prefix to prepend")
+	cmd.Flags().BoolVarP(&params.remove, "remove", "r", false, "Remove the given prefix from the package paths")
 
 	return cmd
 }

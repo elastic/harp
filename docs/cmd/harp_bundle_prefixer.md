@@ -13,6 +13,7 @@ harp bundle prefixer [flags]
       --in string       Container input ('-' for stdin or filename) (default "-")
       --out string      Container output ('-' for stdout or a filename)
       --prefix string   Specify prefix to prepend
+  -r, --remove          Remove the given prefix from the package paths
 ```
 
 ### SEE ALSO

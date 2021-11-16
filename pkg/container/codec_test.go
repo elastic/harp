@@ -26,11 +26,12 @@ import (
 
 	"github.com/awnumar/memguard"
 	"github.com/davecgh/go-spew/spew"
-	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
 	"golang.org/x/crypto/nacl/box"
+
+	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 )
 
 var (

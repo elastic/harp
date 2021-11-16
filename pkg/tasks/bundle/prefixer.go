@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"strings"
 
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/sdk/types"
@@ -33,6 +34,7 @@ type PrefixerTask struct {
 	ContainerReader tasks.ReaderProvider
 	OutputWriter    tasks.WriterProvider
 	Prefix          string
+	Remove          bool
 }
 
 // Run the task.
@@ -62,7 +64,11 @@ func (t *PrefixerTask) Run(ctx context.Context) error {
 
 	// Iterate over all packages
 	for _, p := range b.Packages {
-		p.Name = path.Clean(path.Join(t.Prefix, p.Name))
+		if t.Remove {
+			p.Name = strings.TrimPrefix(path.Clean(strings.TrimPrefix(p.Name, t.Prefix)), "/")
+		} else {
+			p.Name = path.Clean(path.Join(t.Prefix, p.Name))
+		}
 	}
 
 	// Retrieve the container reader

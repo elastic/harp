@@ -42,7 +42,7 @@ func Normalize(key string) string {
 func GetDirectory(key string) string {
 	parts := SplitKey(key)
 	parts = parts[:len(parts)-1]
-	return join(parts)
+	return "/" + join(parts)
 }
 
 // SplitKey splits the key to extract path informations

@@ -18,20 +18,18 @@
 package container
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/awnumar/memguard"
-	"gopkg.in/square/go-jose.v2"
 
 	"github.com/elastic/harp/pkg/container/identity"
 	"github.com/elastic/harp/pkg/sdk/security"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
-	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
+	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	"github.com/elastic/harp/pkg/tasks"
 	"github.com/elastic/harp/pkg/vault"
 )
@@ -70,36 +68,25 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 	}
 
 	var (
-		payload    []byte
-		errDecrypt error
+		transform      value.Transformer
+		errTransformer error
 	)
-
 	switch {
-	case input.Private.Encoding == "jwe":
-		// Parse JWE Token
-		jwe, errParse := jose.ParseEncrypted(input.Private.Content)
-		if errParse != nil {
-			return fmt.Errorf("unable to parse JWE token")
-		}
-
-		// Try to decrypt with given passphrase
-		payload, errDecrypt = jwe.Decrypt(t.PassPhrase.Bytes())
-		if errDecrypt != nil {
-			return fmt.Errorf("unable to decrypt JWE token")
-		}
-	case strings.HasPrefix(input.Private.Encoding, "kms:vault:"):
-		payload, errDecrypt = t.unsealWithVaultTransitKey(ctx, input.Private.Content)
-		if errDecrypt != nil {
-			return fmt.Errorf("unable to decrypt using Vault")
-		}
+	case t.PassPhrase != nil:
+		transform, errTransformer = jwe.Transformer(jwe.TransformerKey(jwe.PBES2_HS512_A256KW, t.PassPhrase.String()))
+	case t.VaultTransitKey != "":
+		transform, errTransformer = vault.Transformer(vault.TransformerKey(t.VaultTransitPath, t.VaultTransitKey, vault.AESGCM))
 	default:
-		return fmt.Errorf("unknown private key encoding '%s'", input.Private.Encoding)
+		return fmt.Errorf("a passphrase or a vault transit key must be specified")
+	}
+	if errTransformer != nil {
+		return fmt.Errorf("unable to initialize identity transformer: %w", errTransformer)
 	}
 
-	// Decode key
-	var key jsonWebKey
-	if err = json.NewDecoder(bytes.NewReader(payload)).Decode(&key); err != nil {
-		return fmt.Errorf("unable to decode payload as JSON: %w", err)
+	// Try to decrypt the private key
+	key, err := input.Decrypt(ctx, transform)
+	if err != nil {
+		return fmt.Errorf("unable to decrypt private key: %w", err)
 	}
 
 	// Build public key
@@ -119,15 +106,11 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 		return fmt.Errorf("invalid identity, key mismatch detected")
 	}
 
-	// Decode ed25519 private key
-	privKeyRaw, err := base64.RawURLEncoding.DecodeString(key.D)
+	// Retrieve recoevery key
+	recoveryPrivateKey, err := identity.RecoveryKey(key)
 	if err != nil {
-		return fmt.Errorf("invalid identity, private key is invalid")
+		return fmt.Errorf("unable to retrieve recovery key from identity: %w", err)
 	}
-
-	// Convert Ed25519 private key to x25519 key.
-	var recoveryPrivateKey [32]byte
-	extra25519.PrivateKeyToCurve25519(&recoveryPrivateKey, privKeyRaw)
 
 	// Get output writer
 	outputWriter, err := t.OutputWriter(ctx)
@@ -149,32 +132,4 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 
 	// No error
 	return nil
-}
-
-func (t *RecoverTask) unsealWithVaultTransitKey(ctx context.Context, cipherText string) ([]byte, error) {
-	// Connecto to Vault.
-	v, err := vault.DefaultClient()
-	if err != nil {
-		return nil, err
-	}
-
-	// Check default value
-	if t.VaultTransitPath == "" {
-		t.VaultTransitPath = "transit"
-	}
-
-	// Build a transit encryption service.
-	s, err := v.Transit(t.VaultTransitPath, t.VaultTransitKey)
-	if err != nil {
-		return nil, err
-	}
-
-	// Decrypt private key
-	clearText, err := s.Decrypt(ctx, []byte(cipherText))
-	if err != nil {
-		return nil, err
-	}
-
-	// No error
-	return clearText, nil
 }
