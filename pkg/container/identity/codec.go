@@ -21,6 +21,7 @@ import (
 	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -30,6 +31,7 @@ import (
 	"github.com/gosimple/slug"
 
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
+	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
@@ -109,4 +111,34 @@ func FromReader(r io.Reader) (*Identity, error) {
 
 	// Return no error
 	return &input, nil
+}
+
+// RecoveryKey returns the x25519 private encryption key from the private
+// identity key.
+func RecoveryKey(key *JSONWebKey) (*[32]byte, error) {
+	// Check arguments
+	if key == nil {
+		return nil, errors.New("unable to get container key from a nil identity")
+	}
+
+	// Decode ed25519 private key
+	privKeyRaw, err := base64.RawURLEncoding.DecodeString(key.D)
+	if err != nil {
+		return nil, errors.New("invalid identity, private key is invalid")
+	}
+
+	var recoveryPrivateKey [32]byte
+
+	switch key.Crv {
+	case "X25519": // Legacy keys
+		copy(recoveryPrivateKey[:], privKeyRaw)
+	case "Ed25519":
+		// Convert Ed25519 private key to x25519 key.
+		extra25519.PrivateKeyToCurve25519(&recoveryPrivateKey, privKeyRaw)
+	default:
+		return nil, fmt.Errorf("unhandled private key format '%s'", key.Crv)
+	}
+
+	// No error
+	return &recoveryPrivateKey, nil
 }

@@ -25,27 +25,13 @@ import (
 	"fmt"
 
 	"github.com/awnumar/memguard"
-	"golang.org/x/crypto/blake2b"
-	"gopkg.in/square/go-jose.v2"
 
 	"github.com/elastic/harp/pkg/container/identity"
+	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	"github.com/elastic/harp/pkg/tasks"
 	"github.com/elastic/harp/pkg/vault"
 )
-
-// PBKDF2SaltSize is the default size of the salt for PBKDF2, 128-bit salt.
-const PBKDF2SaltSize = 16
-
-// PBKDF2Iterations is the default number of iterations for PBKDF2, 100k
-// iterations. Nist recommends at least 10k, 1Passsword uses 100k.
-const PBKDF2Iterations = 500001
-
-type jsonWebKey struct {
-	Kty string `json:"kty"`
-	Crv string `json:"crv"`
-	X   string `json:"x"`
-	D   string `json:"d"`
-}
 
 // IdentityTask implements secret container identity creation task.
 type IdentityTask struct {
@@ -77,30 +63,35 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to create a new identity: %w", err)
 	}
 
+	var (
+		transform      value.Transformer
+		encoding       string
+		errTransformer error
+	)
 	switch {
 	case t.PassPhrase != nil:
-		pk, errPassPhrase := t.sealWithPassPhrase(ctx, payload)
-		if errPassPhrase != nil {
-			return fmt.Errorf("unable to seal identity using passphrase: %w", errPassPhrase)
-		}
-
-		// Assign to identity
-		id.Private = pk
+		transform, errTransformer = jwe.Transformer(jwe.TransformerKey(jwe.PBES2_HS512_A256KW, t.PassPhrase.String()))
+		encoding = "jwe"
 	case t.VaultTransitKey != "":
-		pk, errVault := t.sealWithVaultTransitKey(ctx, payload)
-		if errVault != nil {
-			return fmt.Errorf("unable to seal identity using Vault: %w", errVault)
-		}
-
-		// Assign to identity
-		id.Private = pk
+		transform, errTransformer = vault.Transformer(vault.TransformerKey(t.VaultTransitPath, t.VaultTransitKey, vault.AESGCM))
+		encoding = "vault"
 	default:
 		return fmt.Errorf("a passphrase or a vault transit key must be specified")
 	}
+	if errTransformer != nil {
+		return fmt.Errorf("unable to initialize identity transformer: %w", errTransformer)
+	}
 
-	// Check unhandled identity error
-	if id.Private == nil {
-		return fmt.Errorf("invalid generated identity, missing private key section")
+	// Encrypt the private key.
+	identityPrivate, err := transform.To(ctx, payload)
+	if err != nil {
+		return fmt.Errorf("unable to encrypt the private identity key: %w", err)
+	}
+
+	// Assign private key
+	id.Private = &identity.PrivateKey{
+		Encoding: encoding,
+		Content:  base64.RawURLEncoding.EncodeToString(identityPrivate),
 	}
 
 	// Retrieve output writer
@@ -116,79 +107,4 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 
 	// No error
 	return nil
-}
-
-func (t *IdentityTask) sealWithPassPhrase(_ context.Context, payload []byte) (*identity.PrivateKey, error) {
-	// Create a salt seed
-	salt := memguard.NewBufferRandom(PBKDF2SaltSize)
-
-	// Encrypt JWK using PBES2
-	recipient := jose.Recipient{
-		Algorithm:  jose.PBES2_HS512_A256KW,
-		Key:        t.PassPhrase.Bytes(),
-		PBES2Count: PBKDF2Iterations,
-		PBES2Salt:  salt.Bytes(),
-	}
-
-	// JWE Header
-	opts := new(jose.EncrypterOptions)
-	opts.WithContentType(jose.ContentType("jwk+json"))
-
-	// Prepare encryption using AES-256GCM
-	encrypter, err := jose.NewEncrypter(jose.A256GCM, recipient, opts)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize encrypter: %w", err)
-	}
-
-	// Encrypt the Identity JWK
-	jwe, err := encrypter.Encrypt(payload)
-	if err != nil {
-		return nil, fmt.Errorf("unable to encrypt identity keypair: %w", err)
-	}
-
-	// Assemble final JWE
-	identityPrivate, err := jwe.CompactSerialize()
-	if err != nil {
-		return nil, fmt.Errorf("unable to serialize encrypted payload: %w", err)
-	}
-
-	// Wrap private key
-	return &identity.PrivateKey{
-		Encoding: "jwe",
-		Content:  identityPrivate,
-	}, nil
-}
-
-func (t *IdentityTask) sealWithVaultTransitKey(ctx context.Context, payload []byte) (*identity.PrivateKey, error) {
-	// Connecto to Vault.
-	v, err := vault.DefaultClient()
-	if err != nil {
-		return nil, err
-	}
-
-	// Check default value
-	if t.VaultTransitPath == "" {
-		t.VaultTransitPath = "transit"
-	}
-
-	// Build a transit encryption service.
-	s, err := v.Transit(t.VaultTransitPath, t.VaultTransitKey)
-	if err != nil {
-		return nil, err
-	}
-
-	// Encrypt private key
-	cipherText, err := s.Encrypt(ctx, payload)
-	if err != nil {
-		return nil, err
-	}
-
-	// Prepare key ID
-	h := blake2b.Sum256([]byte(fmt.Sprintf("%s/%s", t.VaultTransitPath, t.VaultTransitKey)))
-
-	// No error
-	return &identity.PrivateKey{
-		Encoding: fmt.Sprintf("kms:vault:%s", base64.RawURLEncoding.EncodeToString(h[:])),
-		Content:  string(cipherText),
-	}, nil
 }

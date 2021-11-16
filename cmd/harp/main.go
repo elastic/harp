@@ -29,7 +29,7 @@ import (
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
-	_ "github.com/elastic/harp/pkg/vault/transit/transformer"
+	_ "github.com/elastic/harp/pkg/vault"
 )
 
 func init() {

@@ -8,7 +8,7 @@ BREAKING-CHANGES:
 * bundle/filter: parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
 * bundle/dump: parameter `--jmespath` as been renamed to `--query`. [#77](https://github.com/elastic/harp/pull/77)
 * deprecation: package `github.com/elastic/harp/pkg/bundle/vfs` has been removed. The Golang 1.16 `fs.FS` implementation must be used and located at `github.com/elastic/harp/pkg/bundle/fs`. [#77](https://github.com/elastic/harp/pull/77)
-* container/identity: identities are using `ed25519` key pairs vs `x25519` keys in previous versions. Allows identities to be used for signing and encryption purpose. [#79](https://github.com/elastic/harp/pull/80)
+* container/identity: identities are using `ed25519` key pairs vs `x25519` keys in previous versions. For conversion, you can still unseal a container using old `x25519` key based identities, but you can't seal with them. To be future-proof, you have to regenerate new identities. [#79](https://github.com/elastic/harp/pull/80)
 * sdk/transformer: Encryption transformers must be imported to be registered in the encryption transformer registry. [#80](https://github.com/elastic/harp/pull/80)
 
 FEATURES:
@@ -26,9 +26,9 @@ FEATURES:
   * `jwe:a128kw:<base64>` to initialize a AES128 Key Wrapper with AES128 GCM Encryption transformer
   * `jwe:a192kw:<base64>` to initialize a AES192 Key Wrapper with AES192 GCM Encryption transformer
   * `jwe:a256kw:<base64>` to initialize a AES256 Key Wrapper with AES256 GCM Encryption transformer
-  * `jwe:pbes2-a128kw:<ascii>` to initialize a PBES2 key derivation function for AES128 key wrapping with AES128 GCM Encryption transformer
-  * `jwe:pbes2-a192kw:<ascii>` to initialize a PBES2 key derivation function for AES192 key wrapping with AES192 GCM Encryption transformer
-  * `jwe:pbes2-a256kw:<ascii>` to initialize a PBES2 key derivation function for AES256 key wrapping with AES256 GCM Encryption transformer
+  * `jwe:pbes2-hs256-a128kw:<ascii>` to initialize a PBES2 key derivation function for AES128 key wrapping with AES128 GCM Encryption transformer
+  * `jwe:pbes2-hs384-a192kw:<ascii>` to initialize a PBES2 key derivation function for AES192 key wrapping with AES192 GCM Encryption transformer
+  * `jwe:pbes2-hs512-a256kw:<ascii>` to initialize a PBES2 key derivation function for AES256 key wrapping with AES256 GCM Encryption transformer
 * sdk/transformer: Encryption transformer dynamic factory. [#80](https://github.com/elastic/harp/pull/80)
   * Use `pkg/value/encryption.Register(prefix, factory)` to register a transformer factory matching the given prefix.
 * bundle/prefixer: parameter `--remove` added to support prefix removal operation [#81](https://github.com/elastic/harp/pull/81)
@@ -36,6 +36,8 @@ FEATURES:
 
 CHANGES:
 
+* container/identity: converge to `value.Transformer` usage for identity protection. [#81](https://github.com/elastic/harp/pull/81)
+* container/recover: converge to `value.Transformer` usage for container key recovery from an identity. [#81](https://github.com/elastic/harp/pull/81)
 * sdk/types: `IsNil()` now recognize nil function pointer. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/dep: [#79](https://github.com/elastic/harp/pull/79)
   * github.com/google/gops v0.3.22

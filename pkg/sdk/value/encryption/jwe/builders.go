@@ -28,6 +28,18 @@ import (
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
 
+type KeyAlgorithm string
+
+//nolint:revive,stylecheck // Accepted case
+var (
+	AES128_KW          KeyAlgorithm = "a128kw"
+	AES192_KW          KeyAlgorithm = "a192kw"
+	AES256_KW          KeyAlgorithm = "a256kw"
+	PBES2_HS256_A128KW KeyAlgorithm = "pbes2-hs256-a128kw"
+	PBES2_HS384_A192KW KeyAlgorithm = "pbes2-hs384-a192kw"
+	PBES2_HS512_A256KW KeyAlgorithm = "pbes2-hs512-a256kw"
+)
+
 func init() {
 	encryption.Register("jwe", Transformer)
 }
@@ -65,15 +77,20 @@ func Transformer(key string) (value.Transformer, error) {
 			return nil, fmt.Errorf("jwe: key too short: %w", err)
 		}
 		return transformer(k, jose.A256KW, jose.A256GCM)
-	case strings.HasPrefix(key, "pbes2-a128kw:"):
-		return transformer(strings.TrimPrefix(key, "pbes2-a128kw:"), jose.PBES2_HS256_A128KW, jose.A128GCM)
-	case strings.HasPrefix(key, "pbes2-a192kw:"):
-		return transformer(strings.TrimPrefix(key, "pbes2-a192kw:"), jose.PBES2_HS384_A192KW, jose.A192GCM)
-	case strings.HasPrefix(key, "pbes2-a256kw:"):
-		return transformer(strings.TrimPrefix(key, "pbes2-256kw:"), jose.PBES2_HS512_A256KW, jose.A256GCM)
+	case strings.HasPrefix(key, "pbes2-hs256-a128kw:"):
+		return transformer(strings.TrimPrefix(key, "pbes2-hs256-a128kw:"), jose.PBES2_HS256_A128KW, jose.A128GCM)
+	case strings.HasPrefix(key, "pbes2-hs384-a192kw:"):
+		return transformer(strings.TrimPrefix(key, "pbes2-hs384-a192kw:"), jose.PBES2_HS384_A192KW, jose.A192GCM)
+	case strings.HasPrefix(key, "pbes2-hs512-a256kw:"):
+		return transformer(strings.TrimPrefix(key, "pbes2-hs512-a256kw:"), jose.PBES2_HS512_A256KW, jose.A256GCM)
 	default:
 	}
 
 	// Unsupported encryption scheme.
 	return nil, fmt.Errorf("unsupported jwe algorithm for key '%s'", key)
+}
+
+// TransformerKey assemble a transformer key.
+func TransformerKey(algorithm KeyAlgorithm, key string) string {
+	return fmt.Sprintf("%s:%s", algorithm, key)
 }

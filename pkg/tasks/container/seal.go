@@ -18,24 +18,14 @@
 package container
 
 import (
-	"bytes"
 	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
 	"github.com/awnumar/memguard"
-	"go.uber.org/zap"
-	"golang.org/x/crypto/argon2"
-	"golang.org/x/crypto/blake2b"
-	"golang.org/x/crypto/nacl/box"
 
 	"github.com/elastic/harp/pkg/container"
-	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
-	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
-	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -52,7 +42,6 @@ type SealTask struct {
 }
 
 // Run the task.
-//nolint:gocyclo // To refactor
 func (t *SealTask) Run(ctx context.Context) error {
 	// Create input reader
 	reader, err := t.ContainerReader(ctx)
@@ -66,51 +55,23 @@ func (t *SealTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to read input container: %w", err)
 	}
 
-	// Open output file
-	writer, err := t.SealedContainerWriter(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to create output bundle: %w", err)
-	}
-
 	// If using sealing seed
-	peerPublicKeys := []*[32]byte{}
-
-	// Given identities
-	if len(t.Identities) == 0 {
-		return fmt.Errorf("at least one sealing identity must be provided for recovery")
-	}
-
-	// Filter identities
-	var filteredIdentities types.StringArray
-	// Process identities (nizk proof of private key knowledge for private key ownership proof ?)
-	for _, id := range t.Identities {
-		// Check if identity is already added
-		if !filteredIdentities.AddIfNotContains(id) {
-			continue
-		}
-
-		// Check encoding
-		hrp, publicKeyRaw, errDecode := bech32.Decode(id)
-		if errDecode != nil {
-			return fmt.Errorf("invalid '%s' as public identity: %w", id, errDecode)
-		}
-
-		// Convert ed25519 public to x25519 key
-		var publicKey [32]byte
-		if !extra25519.PublicKeyToCurve25519(&publicKey, publicKeyRaw) {
-			log.For(ctx).Warn("Public key ignored, unable to convert identity to encryption key", zap.String("key", id), zap.String("hrp", hrp))
-			continue
-		}
-
-		// Append to identity
-		peerPublicKeys = append(peerPublicKeys, &publicKey)
+	peerPublicKeys, err := container.PublicKeysFromIdentities(t.Identities...)
+	if err != nil {
+		return fmt.Errorf("unable to process identities: %w", err)
 	}
 
 	var containerKey string
 
 	if !t.DisableContainerIdentity {
+		opts := []container.GenerateOption{}
+		// Enable deterministic generation
+		if t.DCKDMasterKey != nil {
+			opts = append(opts, container.WithDeterministicKey(t.DCKDMasterKey, t.DCKDTarget))
+		}
+
 		// Generate container key
-		containerPublicKey, containerPrivateKey, errContainerGen := t.generateContainerKey()
+		containerPublicKey, containerPrivateKey, errContainerGen := container.GenerateKey(opts...)
 		if errContainerGen != nil {
 			return fmt.Errorf("unable to generate container key: %w", errContainerGen)
 		}
@@ -124,6 +85,12 @@ func (t *SealTask) Run(ctx context.Context) error {
 	sealedContainer, err := container.Seal(in, peerPublicKeys...)
 	if err != nil {
 		return fmt.Errorf("unable to seal container: %w", err)
+	}
+
+	// Open output file
+	writer, err := t.SealedContainerWriter(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to create output bundle: %w", err)
 	}
 
 	// Dump to writer
@@ -153,36 +120,4 @@ func (t *SealTask) Run(ctx context.Context) error {
 
 	// No error
 	return nil
-}
-
-func (t *SealTask) generateContainerKey() (publicKey, privateKey *[32]byte, err error) {
-	// Generate random container key
-	seed := rand.Reader
-
-	// Master key derivation
-	if t.DCKDMasterKey != nil {
-		// Argon2ID(masterKey, Blake2B-512(Target), 1, 64Mb, 4, 64)
-		// Don't clean bytes, already done by memguard.
-		masterKey := t.DCKDMasterKey.Bytes()
-
-		// Generate deterministic salt
-		salt := blake2b.Sum512([]byte(t.DCKDTarget))
-		defer memguard.WipeBytes(salt[:])
-
-		// Derive deterministic container key using Argon2id
-		dk := argon2.IDKey(masterKey[:32], salt[:], 1, 64*1024, 4, 64)
-		defer memguard.WipeBytes(dk)
-
-		// Assign to seed
-		seed = bytes.NewBuffer(dk)
-	}
-
-	// Generate container key
-	pub, priv, errGen := box.GenerateKey(seed)
-	if errGen != nil {
-		return nil, nil, fmt.Errorf("unable to generate container key: %w", errGen)
-	}
-
-	// No error
-	return pub, priv, nil
 }

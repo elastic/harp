@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package transformer
+package vault
 
 import (
 	"fmt"
@@ -27,22 +27,24 @@ import (
 	"github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/envelope"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
-	"github.com/elastic/harp/pkg/vault"
+)
+
+type DataEncryption string
+
+var (
+	AESGCM           DataEncryption = "aesgcm"
+	Chacha20Poly1305 DataEncryption = "chacha20poly1305"
+	Secretbox        DataEncryption = "secretbox"
 )
 
 func init() {
-	encryption.Register("vault", Vault)
+	encryption.Register("vault", Transformer)
 }
 
 // Vault returns an envelope encryption using a remote transit backend for key
 // encryption.
 // vault:<path>:<data encryption>
-func Vault(key string) (value.Transformer, error) {
-	// Check key format
-	if !strings.HasPrefix(key, "vault:") {
-		return nil, fmt.Errorf("invalid key format expected, invalid prefix for '%s'", key)
-	}
-
+func Transformer(key string) (value.Transformer, error) {
 	// Remove the prefix
 	key = strings.TrimPrefix(key, "vault:")
 
@@ -53,7 +55,7 @@ func Vault(key string) (value.Transformer, error) {
 	}
 
 	// Create default vault client
-	client, err := vault.DefaultClient()
+	client, err := DefaultClient()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize vault client: %w", err)
 	}
@@ -71,11 +73,11 @@ func Vault(key string) (value.Transformer, error) {
 	var dataEncryptionFunc encryption.TransformerFactoryFunc
 	dataEncryptionMethod := strings.TrimSpace(strings.ToLower(parts[1]))
 	switch dataEncryptionMethod {
-	case "aesgcm":
+	case string(AESGCM):
 		dataEncryptionFunc = aead.AESGCM
-	case "chacha20poly1305":
+	case string(Chacha20Poly1305):
 		dataEncryptionFunc = aead.Chacha20Poly1305
-	case "secretbox":
+	case string(Secretbox):
 		dataEncryptionFunc = secretbox.Transformer
 	default:
 		return nil, fmt.Errorf("unsupported data encryption '%s' for envelope transformer", dataEncryptionMethod)
@@ -83,4 +85,8 @@ func Vault(key string) (value.Transformer, error) {
 
 	// Wrap the transformer with envelope
 	return envelope.Transformer(backend, dataEncryptionFunc)
+}
+
+func TransformerKey(mountPath, keyName string, dataEncryption DataEncryption) string {
+	return fmt.Sprintf("vault:%s/%s:%s", strings.TrimSuffix(path.Clean(mountPath), "/"), strings.TrimPrefix(keyName, "/"), dataEncryption)
 }
