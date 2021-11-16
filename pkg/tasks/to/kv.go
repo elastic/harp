@@ -21,36 +21,26 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
-	"github.com/pelletier/go-toml"
-	"gopkg.in/yaml.v3"
+	"path"
 
 	"github.com/elastic/harp/pkg/bundle"
-	"github.com/elastic/harp/pkg/sdk/value/flatmap"
+	"github.com/elastic/harp/pkg/kv"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
-// ObjectTask implements secret-container publication process to json/yaml content.
-type ObjectTask struct {
+type PublishKVTask struct {
+	_               struct{}
 	ContainerReader tasks.ReaderProvider
-	OutputWriter    tasks.WriterProvider
-	Expand          bool
-	TOML            bool
-	YAML            bool
+	Store           kv.Store
+	SecretAsKey     bool
+	Prefix          string
 }
 
-// Run the task.
-func (t *ObjectTask) Run(ctx context.Context) error {
+func (t *PublishKVTask) Run(ctx context.Context) error {
 	// Create the reader
 	reader, err := t.ContainerReader(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to open input bundle reader: %w", err)
-	}
-
-	// Create output writer
-	writer, err := t.OutputWriter(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to open writer: %w", err)
 	}
 
 	// Extract bundle from container
@@ -65,31 +55,36 @@ func (t *ObjectTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to transform the bundle as a map: %w", err)
 	}
 
-	var toEncode interface{}
-
-	// Expand if required
-	if t.Expand {
-		toEncode = flatmap.Expand(bundleMap, "")
-	} else {
-		toEncode = bundleMap
-	}
-
-	// Select strategy
-	switch {
-	case t.YAML:
-		// Encode as YAML
-		if err := yaml.NewEncoder(writer).Encode(toEncode); err != nil {
-			return fmt.Errorf("unable to marshal YAML bundle content: %w", err)
+	// Foreach element in the bundle map.
+	for key, value := range bundleMap {
+		if t.Prefix != "" {
+			key = path.Join(path.Clean(t.Prefix), key)
 		}
-	case t.TOML:
-		// Encode as TOML
-		if err := toml.NewEncoder(writer).Encode(toEncode); err != nil {
-			return fmt.Errorf("unable to marshal TOML bundle content: %w", err)
-		}
-	default:
-		// Encode as JSON
-		if err := json.NewEncoder(writer).Encode(toEncode); err != nil {
-			return fmt.Errorf("unable to marshal JSON bundle content: %w", err)
+		if !t.SecretAsKey {
+			// Encode as json
+			payload, err := json.Marshal(value)
+			if err != nil {
+				return fmt.Errorf("unable to encode value as JSON for '%s': %w", key, err)
+			}
+
+			// Insert in KV store.
+			if err := t.Store.Put(ctx, key, payload); err != nil {
+				return fmt.Errorf("unable to publish '%s' secret in store: %w", key, err)
+			}
+		} else {
+			// Range over secrets
+			secrets, ok := value.(bundle.KV)
+			if !ok {
+				continue
+			}
+
+			// Publish each secret as a leaf.
+			for secKey, secValue := range secrets {
+				// Insert in KV store.
+				if err := t.Store.Put(ctx, path.Join(key, secKey), []byte(fmt.Sprintf("%v", secValue))); err != nil {
+					return fmt.Errorf("unable to publish '%s' secret in store: %w", key, err)
+				}
+			}
 		}
 	}
 

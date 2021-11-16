@@ -32,6 +32,7 @@ func TestPrefixerTask_Run(t *testing.T) {
 		ContainerReader tasks.ReaderProvider
 		OutputWriter    tasks.WriterProvider
 		Prefix          string
+		Remove          bool
 	}
 	type args struct {
 		ctx context.Context
@@ -113,6 +114,16 @@ func TestPrefixerTask_Run(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "valid - remove",
+			fields: fields{
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.bundle"),
+				OutputWriter:    cmdutil.DiscardWriter(),
+				Prefix:          "harp",
+				Remove:          true,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -120,6 +131,7 @@ func TestPrefixerTask_Run(t *testing.T) {
 				ContainerReader: tt.fields.ContainerReader,
 				OutputWriter:    tt.fields.OutputWriter,
 				Prefix:          tt.fields.Prefix,
+				Remove:          tt.fields.Remove,
 			}
 			if err := tr.Run(tt.args.ctx); (err != nil) != tt.wantErr {
 				t.Errorf("PrefixerTask.Run() error = %v, wantErr %v", err, tt.wantErr)

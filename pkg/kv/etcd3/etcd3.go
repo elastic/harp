@@ -75,8 +75,14 @@ func (d *etcd3Driver) Get(ctx context.Context, key string) (*kv.Pair, error) {
 }
 
 func (d *etcd3Driver) Put(ctx context.Context, key string, value []byte) error {
+	// Prepare a transaction
+	tx := d.client.Txn(ctx)
+
 	// Put a value
-	_, err := d.client.KV.Put(ctx, d.normalize(key), string(value))
+	tx.Then(clientv3.OpPut(key, string(value)))
+
+	// Commit transaction
+	_, err := tx.Commit()
 	if err != nil {
 		return fmt.Errorf("etcd3: unable to put '%s' value: %w", key, err)
 	}

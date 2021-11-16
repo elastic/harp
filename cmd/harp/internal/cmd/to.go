@@ -33,6 +33,9 @@ var toCmd = func() *cobra.Command {
 	cmd.AddCommand(toVaultCmd())
 	cmd.AddCommand(toObjectCmd())
 	cmd.AddCommand(toRulesetCmd())
+	cmd.AddCommand(toEtcd3Cmd())
+	cmd.AddCommand(toConsulCmd())
+	cmd.AddCommand(toZookeeperCmd())
 
 	return cmd
 }
