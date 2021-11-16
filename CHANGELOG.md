@@ -18,7 +18,6 @@ FEATURES:
 * core/kv: Support KV Store publication for Etcd3/Zookeeper/Consul. [#77](https://github.com/elastic/harp/pull/77)
 * value/transformer: Transformer mock is available for testing. [#77](https://github.com/elastic/harp/pull/77)
 * value/encryption: Expose `encryption.Must(value.Transformer, error)` to build a transformer instance with a panic raised on error. [#77](https://github.com/elastic/harp/pull/77)
-* sdk/types: `IsNill()` now recognize nil function pointer. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/cmdutil: `DiscardWriter()` is a `io.Writer` provider used to discard all output. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/cmdutil: `DirectWriter(io.Writer)` is a `io.Writer` provider used to delegate to input writer. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/cmdutil: `NewClosedWriter()` is a `io.Writer` implementation who always return on `Write()` calls. [#77](https://github.com/elastic/harp/pull/77)
@@ -31,11 +30,13 @@ FEATURES:
   * `jwe:pbes2-a192kw:<ascii>` to initialize a PBES2 key derivation function for AES192 key wrapping with AES192 GCM Encryption transformer
   * `jwe:pbes2-a256kw:<ascii>` to initialize a PBES2 key derivation function for AES256 key wrapping with AES256 GCM Encryption transformer
 * sdk/transformer: Encryption transformer dynamic factory. [#80](https://github.com/elastic/harp/pull/80)
-  * Use `github.com/elastic/harp/pkg/value/encryption.Register(prefix, factory)` to register a transformer factory matching the given prefix.
+  * Use `pkg/value/encryption.Register(prefix, factory)` to register a transformer factory matching the given prefix.
 * bundle/prefixer: parameter `--remove` added to support prefix removal operation [#81](https://github.com/elastic/harp/pull/81)
+* to/object: support `toml` format as output [#81](https://github.com/elastic/harp/pull/81)
 
 CHANGES:
 
+* sdk/types: `IsNil()` now recognize nil function pointer. [#77](https://github.com/elastic/harp/pull/77)
 * sdk/dep: [#79](https://github.com/elastic/harp/pull/79)
   * github.com/google/gops v0.3.22
   * github.com/gosimple/slug v1.11.2
