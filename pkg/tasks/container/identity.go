@@ -70,10 +70,10 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 	)
 	switch {
 	case t.PassPhrase != nil:
-		transform, errTransformer = jwe.Transformer(jwe.TransformerKey(jwe.PBES2_HS512_A256KW, t.PassPhrase.String()))
+		transform, errTransformer = jwe.Transformer(jwe.PBES2_HS512_A256KW, t.PassPhrase.String())
 		encoding = "jwe"
 	case t.VaultTransitKey != "":
-		transform, errTransformer = vault.Transformer(vault.TransformerKey(t.VaultTransitPath, t.VaultTransitKey, vault.AESGCM))
+		transform, errTransformer = vault.Transformer(t.VaultTransitPath, t.VaultTransitKey, vault.AESGCM)
 		encoding = "vault"
 	default:
 		return fmt.Errorf("a passphrase or a vault transit key must be specified")
