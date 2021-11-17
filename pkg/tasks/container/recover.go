@@ -21,38 +21,34 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 
-	"github.com/awnumar/memguard"
-
 	"github.com/elastic/harp/pkg/container/identity"
-	"github.com/elastic/harp/pkg/sdk/security"
-	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
-	"github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	"github.com/elastic/harp/pkg/tasks"
-	"github.com/elastic/harp/pkg/vault"
 )
 
 // RecoverTask implements secret container identity recovery task.
 type RecoverTask struct {
-	JSONReader       tasks.ReaderProvider
-	OutputWriter     tasks.WriterProvider
-	PassPhrase       *memguard.LockedBuffer
-	VaultTransitPath string
-	VaultTransitKey  string
-	JSONOutput       bool
+	JSONReader   tasks.ReaderProvider
+	OutputWriter tasks.WriterProvider
+	Transformer  value.Transformer
+	JSONOutput   bool
 }
 
 // Run the task.
-//nolint:gocyclo // To refactor
 func (t *RecoverTask) Run(ctx context.Context) error {
-	// Check exclusive parameters
-	if t.PassPhrase == nil && t.VaultTransitKey == "" {
-		return fmt.Errorf("passphrase or vaultTransitKey must be defined")
+	// Check arguments
+	if types.IsNil(t.JSONReader) {
+		return errors.New("unable to run task with a nil jsonReader provider")
 	}
-	if t.PassPhrase != nil && t.PassPhrase.Size() > 0 && t.VaultTransitKey != "" {
-		return fmt.Errorf("passphrase and vaultTransitKey are mutually exclusive")
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
+	if types.IsNil(t.Transformer) {
+		return errors.New("unable to run task with a nil transformer")
 	}
 
 	// Create input reader
@@ -67,43 +63,10 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to extract an identity from reader: %w", err)
 	}
 
-	var (
-		transform      value.Transformer
-		errTransformer error
-	)
-	switch {
-	case t.PassPhrase != nil:
-		transform, errTransformer = jwe.Transformer(jwe.PBES2_HS512_A256KW, t.PassPhrase.String())
-	case t.VaultTransitKey != "":
-		transform, errTransformer = vault.Transformer(t.VaultTransitPath, t.VaultTransitKey, vault.AESGCM)
-	default:
-		return fmt.Errorf("a passphrase or a vault transit key must be specified")
-	}
-	if errTransformer != nil {
-		return fmt.Errorf("unable to initialize identity transformer: %w", errTransformer)
-	}
-
 	// Try to decrypt the private key
-	key, err := input.Decrypt(ctx, transform)
+	key, err := input.Decrypt(ctx, t.Transformer)
 	if err != nil {
 		return fmt.Errorf("unable to decrypt private key: %w", err)
-	}
-
-	// Build public key
-	_, pubKey, err := bech32.Decode(input.Public)
-	if err != nil {
-		return fmt.Errorf("invalid public key encoding: %w", err)
-	}
-
-	// Decode base64 public key
-	pubKeyRaw, err := base64.RawURLEncoding.DecodeString(key.X)
-	if err != nil {
-		return fmt.Errorf("invalid public key, the decoded public is corrupted")
-	}
-
-	// Check validity
-	if !security.SecureCompare(pubKey, pubKeyRaw) {
-		return fmt.Errorf("invalid identity, key mismatch detected")
 	}
 
 	// Retrieve recoevery key
@@ -120,14 +83,16 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 
 	// Display as json
 	if t.JSONOutput {
-		if err := json.NewEncoder(outputWriter).Encode(map[string]interface{}{
+		if errJSON := json.NewEncoder(outputWriter).Encode(map[string]interface{}{
 			"container_key": base64.RawURLEncoding.EncodeToString(recoveryPrivateKey[:]),
-		}); err != nil {
-			return fmt.Errorf("unable to display as json: %w", err)
+		}); errJSON != nil {
+			return fmt.Errorf("unable to display as json: %w", errJSON)
 		}
 	} else {
 		// Display container key
-		fmt.Fprintf(outputWriter, "Container key : %s\n", base64.RawURLEncoding.EncodeToString(recoveryPrivateKey[:]))
+		if _, err := fmt.Fprintf(outputWriter, "Container key : %s\n", base64.RawURLEncoding.EncodeToString(recoveryPrivateKey[:])); err != nil {
+			return fmt.Errorf("unable to display result: %w", err)
+		}
 	}
 
 	// No error

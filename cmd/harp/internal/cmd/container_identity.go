@@ -18,19 +18,23 @@
 package cmd
 
 import (
-	"github.com/awnumar/memguard"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
+	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
+	"github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	"github.com/elastic/harp/pkg/tasks/container"
+	"github.com/elastic/harp/pkg/vault"
 )
 
 // -----------------------------------------------------------------------------
 type containerIdentityParams struct {
 	outputPath       string
 	description      string
+	key              string
 	passPhrase       string
 	vaultTransitPath string
 	vaultTransitKey  string
@@ -48,21 +52,32 @@ var containerIdentityCmd = func() *cobra.Command {
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-identity", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
-			// Check mandatory flags
-			if params.passPhrase == "" && params.vaultTransitKey == "" {
-				log.For(ctx).Fatal("passphrase or vault-transit-path flag must be defined")
+			// Prepare value transformer
+			var (
+				transformer    value.Transformer
+				errTransformer error
+			)
+			switch {
+			case params.key != "":
+				transformer, errTransformer = encryption.FromKey(params.key)
+			case params.passPhrase != "":
+				transformer, errTransformer = jwe.Transformer(jwe.PBES2_HS512_A256KW, params.passPhrase)
+			case params.vaultTransitKey != "" && params.vaultTransitPath != "":
+				transformer, errTransformer = vault.Transformer(params.vaultTransitPath, params.vaultTransitKey, vault.Chacha20Poly1305)
+			default:
+				log.For(ctx).Fatal("unable to initialize value transformer, key or vault-transit-path or passphrase must be provided")
+				return
 			}
-			if params.passPhrase != "" && params.vaultTransitKey != "" {
-				log.For(ctx).Fatal("passphrase and vault-transit-path flags are mutually exclusive")
+			if errTransformer != nil {
+				log.For(ctx).Fatal("unable to initialize value transformer", zap.Error(errTransformer))
+				return
 			}
 
 			// Prepare task
 			t := &container.IdentityTask{
-				OutputWriter:     cmdutil.FileWriter(params.outputPath),
-				PassPhrase:       memguard.NewBufferFromBytes([]byte(params.passPhrase)),
-				VaultTransitPath: params.vaultTransitPath,
-				VaultTransitKey:  params.vaultTransitKey,
-				Description:      params.description,
+				OutputWriter: cmdutil.FileWriter(params.outputPath),
+				Description:  params.description,
+				Transformer:  transformer,
 			}
 
 			// Run the task
@@ -74,6 +89,7 @@ var containerIdentityCmd = func() *cobra.Command {
 
 	// Flags
 	cmd.Flags().StringVar(&params.outputPath, "out", "", "Identity information output ('-' for stdout or filename)")
+	cmd.Flags().StringVar(&params.key, "key", "", "Transformer key")
 	cmd.Flags().StringVar(&params.passPhrase, "passphrase", "", "Identity private key passphrase")
 	cmd.Flags().StringVar(&params.vaultTransitPath, "vault-transit-path", "transit", "Vault transit backend mount path")
 	cmd.Flags().StringVar(&params.vaultTransitKey, "vault-transit-key", "", "Use Vault transit encryption to protect identity private key")

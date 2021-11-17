@@ -20,11 +20,13 @@ package container
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 
 	"github.com/awnumar/memguard"
 
 	"github.com/elastic/harp/pkg/container"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -37,6 +39,17 @@ type UnsealTask struct {
 
 // Run the task.
 func (t *UnsealTask) Run(ctx context.Context) error {
+	// Check arguments
+	if types.IsNil(t.ContainerReader) {
+		return errors.New("unable to run task with a nil containerReader provider")
+	}
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
+	if t.ContainerKey == nil {
+		return errors.New("unable to run task with a nil container key")
+	}
+
 	// Create input reader
 	reader, err := t.ContainerReader(ctx)
 	if err != nil {
