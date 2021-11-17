@@ -1,6 +1,10 @@
-## 0.2.1
+## 0.2.2
 
 ### Not released yet
+
+## 0.2.1
+
+### 2021-11-17
 
 BREAKING-CHANGES:
 
