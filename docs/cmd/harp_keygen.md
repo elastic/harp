@@ -17,6 +17,7 @@ Key generation commands
 * [harp keygen chacha](harp_keygen_chacha.md)	 - Generate and print a chacha20poly1305 key
 * [harp keygen fernet](harp_keygen_fernet.md)	 - Generate and print a fernet key
 * [harp keygen master-key](harp_keygen_master-key.md)	 - Generate and print a container master key
+* [harp keygen paseto](harp_keygen_paseto.md)	 - Generate and print an v4.local paseto key
 * [harp keygen secretbox](harp_keygen_secretbox.md)	 - Generate and print a secretbox keypair
 * [harp keygen xchacha](harp_keygen_xchacha.md)	 - Generate and print a xchacha20poly1305 key
 

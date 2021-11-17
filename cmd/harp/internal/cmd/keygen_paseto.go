@@ -18,28 +18,31 @@
 package cmd
 
 import (
+	"encoding/base64"
+	"fmt"
+	"os"
+
+	"github.com/awnumar/memguard"
 	"github.com/spf13/cobra"
+
+	"github.com/elastic/harp/pkg/sdk/cmdutil"
 )
 
 // -----------------------------------------------------------------------------
 
-var keygenCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "keygen",
-		Aliases: []string{"kg"},
-		Short:   "Key generation commands",
-	}
+var keygenPasetoCmd = func() *cobra.Command {
 
-	// Subcommands
-	cmd.AddCommand(keygenFernetCmd())
-	cmd.AddCommand(keygenSecretBoxCmd())
-	cmd.AddCommand(keygenAESCmd())
-	cmd.AddCommand(keygenMasterKeyCmd())
-	cmd.AddCommand(keygenChaChaCmd())
-	cmd.AddCommand(keygenXChaChaCmd())
-	cmd.AddCommand(keygenAESPMACSIVCmd())
-	cmd.AddCommand(keygenAESSIVCmd())
-	cmd.AddCommand(keygenPasetoCmd())
+	cmd := &cobra.Command{
+		Use:     "paseto",
+		Aliases: []string{"aes"},
+		Short:   "Generate and print an v4.local paseto key",
+		Run: func(cmd *cobra.Command, args []string) {
+			_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-paseto", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			defer cancel()
+
+			fmt.Fprintf(os.Stdout, "paseto:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
+		},
+	}
 
 	return cmd
 }
