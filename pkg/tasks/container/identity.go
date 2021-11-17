@@ -22,39 +22,33 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 
-	"github.com/awnumar/memguard"
-
 	"github.com/elastic/harp/pkg/container/identity"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
-	"github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	"github.com/elastic/harp/pkg/tasks"
-	"github.com/elastic/harp/pkg/vault"
 )
 
 // IdentityTask implements secret container identity creation task.
 type IdentityTask struct {
-	OutputWriter     tasks.WriterProvider
-	Description      string
-	PassPhrase       *memguard.LockedBuffer
-	VaultTransitPath string
-	VaultTransitKey  string
+	OutputWriter tasks.WriterProvider
+	Description  string
+	Transformer  value.Transformer
 }
 
 // Run the task.
 func (t *IdentityTask) Run(ctx context.Context) error {
 	// Check arguments
+	if types.IsNil(t.OutputWriter) {
+		return errors.New("unable to run task with a nil outputWriter provider")
+	}
+	if types.IsNil(t.Transformer) {
+		return errors.New("unable to run task with a nil transformer")
+	}
 	if t.Description == "" {
 		return fmt.Errorf("description must not be blank")
-	}
-
-	// Check exclusive parameters
-	if t.PassPhrase == nil && t.VaultTransitKey == "" {
-		return fmt.Errorf("passphrase or vaultTransitKey must be defined")
-	}
-	if t.PassPhrase != nil && t.PassPhrase.Size() > 0 && t.VaultTransitKey != "" {
-		return fmt.Errorf("passphrase and vaultTransitKey are mutually exclusive")
 	}
 
 	// Create identity
@@ -63,35 +57,15 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to create a new identity: %w", err)
 	}
 
-	var (
-		transform      value.Transformer
-		encoding       string
-		errTransformer error
-	)
-	switch {
-	case t.PassPhrase != nil:
-		transform, errTransformer = jwe.Transformer(jwe.TransformerKey(jwe.PBES2_HS512_A256KW, t.PassPhrase.String()))
-		encoding = "jwe"
-	case t.VaultTransitKey != "":
-		transform, errTransformer = vault.Transformer(vault.TransformerKey(t.VaultTransitPath, t.VaultTransitKey, vault.AESGCM))
-		encoding = "vault"
-	default:
-		return fmt.Errorf("a passphrase or a vault transit key must be specified")
-	}
-	if errTransformer != nil {
-		return fmt.Errorf("unable to initialize identity transformer: %w", errTransformer)
-	}
-
 	// Encrypt the private key.
-	identityPrivate, err := transform.To(ctx, payload)
+	identityPrivate, err := t.Transformer.To(ctx, payload)
 	if err != nil {
 		return fmt.Errorf("unable to encrypt the private identity key: %w", err)
 	}
 
 	// Assign private key
 	id.Private = &identity.PrivateKey{
-		Encoding: encoding,
-		Content:  base64.RawURLEncoding.EncodeToString(identityPrivate),
+		Content: base64.RawURLEncoding.EncodeToString(identityPrivate),
 	}
 
 	// Retrieve output writer

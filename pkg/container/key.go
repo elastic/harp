@@ -26,10 +26,6 @@ import (
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/nacl/box"
-
-	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
-	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
-	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 // GenerateOptions represents container key generation options.
@@ -102,44 +98,4 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey *[32]byte, err 
 
 	// No error
 	return pub, priv, nil
-}
-
-// PublicKeysFromIdentities convert ed25519 public key to x25519 public container key.
-func PublicKeysFromIdentities(identities ...string) ([]*[32]byte, error) {
-	// If using sealing seed
-	peerPublicKeys := []*[32]byte{}
-
-	// Given identities
-	if len(identities) == 0 {
-		return nil, fmt.Errorf("at least one identity must be provided")
-	}
-
-	// Filter identities
-	var filteredIdentities types.StringArray
-
-	// Process identities
-	for _, id := range identities {
-		// Check if identity is already added
-		if !filteredIdentities.AddIfNotContains(id) {
-			continue
-		}
-
-		// Check encoding
-		_, publicKeyRaw, errDecode := bech32.Decode(id)
-		if errDecode != nil {
-			return nil, fmt.Errorf("invalid '%s' as public identity: %w", id, errDecode)
-		}
-
-		// Convert ed25519 public to x25519 key
-		var publicKey [32]byte
-		if !extra25519.PublicKeyToCurve25519(&publicKey, publicKeyRaw) {
-			return nil, fmt.Errorf("unable to convert identity '%s' to container key", id)
-		}
-
-		// Append to identity
-		peerPublicKeys = append(peerPublicKeys, &publicKey)
-	}
-
-	// No error
-	return peerPublicKeys, nil
 }

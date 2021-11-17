@@ -79,13 +79,20 @@ var containerSealCmd = func() *cobra.Command {
 				}
 			}
 
+			// Convert identities to sealing keys
+			peerPublicKeys, err := identity.SealingKeys(params.identities...)
+			if err != nil {
+				log.For(ctx).Fatal("unable to transform identity to a sealing key", zap.Error(err))
+				return
+			}
+
 			// Prepare task
 			t := &container.SealTask{
 				ContainerReader:          cmdutil.FileReader(params.inputPath),
 				SealedContainerWriter:    cmdutil.FileWriter(params.outputPath),
 				OutputWriter:             cmdutil.StdoutWriter(),
 				JSONOutput:               params.jsonOutput,
-				Identities:               params.identities,
+				PeerPublicKeys:           peerPublicKeys,
 				DisableContainerIdentity: params.noContainerIdentity,
 			}
 

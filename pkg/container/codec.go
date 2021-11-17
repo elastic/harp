@@ -32,6 +32,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
+	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
@@ -132,6 +133,7 @@ func Dump(w io.Writer, c *containerv1.Container) error {
 }
 
 // Seal a secret container
+//nolint:funlen // To refactor
 func Seal(container *containerv1.Container, peersPublicKey ...*[32]byte) (*containerv1.Container, error) {
 	// Check parameters
 	if types.IsNil(container) {
@@ -142,6 +144,17 @@ func Seal(container *containerv1.Container, peersPublicKey ...*[32]byte) (*conta
 	}
 	if len(peersPublicKey) == 0 {
 		return nil, fmt.Errorf("unable to process empty public keys")
+	}
+	for _, pub := range peersPublicKey {
+		if pub == nil {
+			// Skip nil keys
+			continue
+		}
+
+		k := *pub
+		if extra25519.IsEdLowOrder(k[:]) {
+			return nil, fmt.Errorf("unable to process with low order public key")
+		}
 	}
 
 	// Serialize protobuf payload

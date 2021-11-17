@@ -23,16 +23,18 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
-	"github.com/elastic/harp/pkg/sdk/value/mock"
-	"github.com/stretchr/testify/assert"
 
 	// Register encryption transformers
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/paseto"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
+	"github.com/elastic/harp/pkg/sdk/value/mock"
 )
 
 func TestFromKey(t *testing.T) {
@@ -129,6 +131,13 @@ func TestFromKey(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "paseto",
+			args: args{
+				keyValue: "paseto:kP1yHnBcOhjowNFXSCyycSuXdUqTlbuE6ES5tTp-I_o=",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -150,20 +159,20 @@ func TestFromKey(t *testing.T) {
 			msg := []byte("msg")
 			encrypted, err := got.To(context.Background(), msg)
 			if err != nil {
-				t.Errorf("FromKey() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("To() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			// Decrypt
 			decrypted, err := got.From(context.Background(), encrypted)
 			if err != nil {
-				t.Errorf("FromKey() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("From() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			// Check identity
 			if !reflect.DeepEqual(msg, decrypted) {
-				t.Errorf("FromKey() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("expectd: %v, got: %v", msg, decrypted)
 				return
 			}
 		})

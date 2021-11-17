@@ -142,3 +142,43 @@ func RecoveryKey(key *JSONWebKey) (*[32]byte, error) {
 	// No error
 	return &recoveryPrivateKey, nil
 }
+
+// SealingPublicKeys convert ed25519 public key to x25519 public container key.
+func SealingKeys(publicKeys ...string) ([]*[32]byte, error) {
+	// If using sealing seed
+	peerPublicKeys := []*[32]byte{}
+
+	// Given identities
+	if len(publicKeys) == 0 {
+		return nil, fmt.Errorf("at least one public key must be provided")
+	}
+
+	// Filter identities
+	var filteredIdentities types.StringArray
+
+	// Process identities
+	for _, id := range publicKeys {
+		// Check if identity is already added
+		if !filteredIdentities.AddIfNotContains(id) {
+			continue
+		}
+
+		// Check encoding
+		_, publicKeyRaw, errDecode := bech32.Decode(id)
+		if errDecode != nil {
+			return nil, fmt.Errorf("invalid '%s' as public identity: %w", id, errDecode)
+		}
+
+		// Convert ed25519 public to x25519 key
+		var publicKey [32]byte
+		if !extra25519.PublicKeyToCurve25519(&publicKey, publicKeyRaw) {
+			return nil, fmt.Errorf("unable to convert identity '%s' to container sealing key", id)
+		}
+
+		// Append to identity
+		peerPublicKeys = append(peerPublicKeys, &publicKey)
+	}
+
+	// No error
+	return peerPublicKeys, nil
+}

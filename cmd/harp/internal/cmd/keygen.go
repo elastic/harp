@@ -39,6 +39,7 @@ var keygenCmd = func() *cobra.Command {
 	cmd.AddCommand(keygenXChaChaCmd())
 	cmd.AddCommand(keygenAESPMACSIVCmd())
 	cmd.AddCommand(keygenAESSIVCmd())
+	cmd.AddCommand(keygenPasetoCmd())
 
 	return cmd
 }

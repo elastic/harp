@@ -38,13 +38,13 @@ var (
 )
 
 func init() {
-	encryption.Register("vault", Transformer)
+	encryption.Register("vault", FromKey)
 }
 
 // Vault returns an envelope encryption using a remote transit backend for key
 // encryption.
 // vault:<path>:<data encryption>
-func Transformer(key string) (value.Transformer, error) {
+func FromKey(key string) (value.Transformer, error) {
 	// Remove the prefix
 	key = strings.TrimPrefix(key, "vault:")
 
@@ -54,14 +54,25 @@ func Transformer(key string) (value.Transformer, error) {
 		return nil, fmt.Errorf("key format error, invalid part count")
 	}
 
+	// Split transit backend path
+	mountPath, keyName := path.Split(parts[0])
+
+	// Delegate to transformer
+	return Transformer(mountPath, keyName, DataEncryption(parts[1]))
+}
+
+func TransformerKey(mountPath, keyName string, dataEncryption DataEncryption) string {
+	return fmt.Sprintf("vault:%s/%s:%s", strings.TrimSuffix(path.Clean(mountPath), "/"), strings.TrimPrefix(keyName, "/"), dataEncryption)
+}
+
+// Transformer returns an envelope encryption using a remote transit backend for key
+// encryption.
+func Transformer(mountPath, keyName string, dataEncryption DataEncryption) (value.Transformer, error) {
 	// Create default vault client
 	client, err := DefaultClient()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize vault client: %w", err)
 	}
-
-	// Split transit backend path
-	mountPath, keyName := path.Split(parts[0])
 
 	// Create transit backend service
 	backend, err := client.Transit(path.Clean(mountPath), keyName)
@@ -71,22 +82,17 @@ func Transformer(key string) (value.Transformer, error) {
 
 	// Prepare data encryption
 	var dataEncryptionFunc encryption.TransformerFactoryFunc
-	dataEncryptionMethod := strings.TrimSpace(strings.ToLower(parts[1]))
-	switch dataEncryptionMethod {
-	case string(AESGCM):
+	switch dataEncryption {
+	case AESGCM:
 		dataEncryptionFunc = aead.AESGCM
-	case string(Chacha20Poly1305):
+	case Chacha20Poly1305:
 		dataEncryptionFunc = aead.Chacha20Poly1305
-	case string(Secretbox):
+	case Secretbox:
 		dataEncryptionFunc = secretbox.Transformer
 	default:
-		return nil, fmt.Errorf("unsupported data encryption '%s' for envelope transformer", dataEncryptionMethod)
+		return nil, fmt.Errorf("unsupported data encryption '%s' for envelope transformer", dataEncryption)
 	}
 
 	// Wrap the transformer with envelope
 	return envelope.Transformer(backend, dataEncryptionFunc)
-}
-
-func TransformerKey(mountPath, keyName string, dataEncryption DataEncryption) string {
-	return fmt.Sprintf("vault:%s/%s:%s", strings.TrimSuffix(path.Clean(mountPath), "/"), strings.TrimPrefix(keyName, "/"), dataEncryption)
 }

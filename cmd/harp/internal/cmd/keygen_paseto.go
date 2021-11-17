@@ -15,31 +15,34 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package encryption
+package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
+	"os"
 
-	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/awnumar/memguard"
+	"github.com/spf13/cobra"
+
+	"github.com/elastic/harp/pkg/sdk/cmdutil"
 )
 
-// TransformerFactoryFunc is used for transformer building for encryption.
-type TransformerFactoryFunc func(string) (value.Transformer, error)
+// -----------------------------------------------------------------------------
 
-var registry map[string]TransformerFactoryFunc
+var keygenPasetoCmd = func() *cobra.Command {
 
-// Register a transformer with the given prefix.
-func Register(prefix string, factory TransformerFactoryFunc) {
-	// Lazy initialization
-	if registry == nil {
-		registry = map[string]TransformerFactoryFunc{}
+	cmd := &cobra.Command{
+		Use:     "paseto",
+		Aliases: []string{"aes"},
+		Short:   "Generate and print an v4.local paseto key",
+		Run: func(cmd *cobra.Command, args []string) {
+			_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-paseto", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			defer cancel()
+
+			fmt.Fprintf(os.Stdout, "paseto:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
+		},
 	}
 
-	// Check if not already registered
-	if _, ok := registry[prefix]; ok {
-		panic(fmt.Errorf("encryption transformer already registered fro '%s' prefix", prefix))
-	}
-
-	// Register the transformer
-	registry[prefix] = factory
+	return cmd
 }

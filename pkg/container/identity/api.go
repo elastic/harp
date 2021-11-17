@@ -25,6 +25,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/elastic/harp/pkg/sdk/security"
+	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
 )
@@ -70,6 +72,23 @@ func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*JSONWebKe
 	var key JSONWebKey
 	if err = json.NewDecoder(bytes.NewReader(clearText)).Decode(&key); err != nil {
 		return nil, fmt.Errorf("unable to decode payload as JSON: %w", err)
+	}
+
+	// Build public key
+	_, pubKey, err := bech32.Decode(i.Public)
+	if err != nil {
+		return nil, fmt.Errorf("invalid public key encoding: %w", err)
+	}
+
+	// Decode base64 public key
+	pubKeyRaw, err := base64.RawURLEncoding.DecodeString(key.X)
+	if err != nil {
+		return nil, fmt.Errorf("invalid public key, the decoded public is corrupted")
+	}
+
+	// Check validity
+	if !security.SecureCompare(pubKey, pubKeyRaw) {
+		return nil, fmt.Errorf("invalid identity, key mismatch detected")
 	}
 
 	// Return result
