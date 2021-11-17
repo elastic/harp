@@ -26,9 +26,7 @@ import (
 // TransformerFactoryFunc is used for transformer building for encryption.
 type TransformerFactoryFunc func(string) (value.Transformer, error)
 
-var (
-	registry map[string]TransformerFactoryFunc
-)
+var registry map[string]TransformerFactoryFunc
 
 // Register a transformer with the given prefix.
 func Register(prefix string, factory TransformerFactoryFunc) {
