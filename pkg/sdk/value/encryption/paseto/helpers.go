@@ -19,6 +19,7 @@ package paseto
 
 import (
 	"bytes"
+	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
@@ -31,14 +32,34 @@ import (
 	"github.com/elastic/harp/pkg/sdk/security"
 )
 
+const (
+	keyLength               = 32
+	nonceLength             = 32
+	macLength               = 32
+	encryptionKDFLength     = 56
+	authenticationKeyLength = 32
+	v4LocalPrefix           = "v4.local."
+	v4PublicPrefix          = "v4.public."
+)
+
+// PASETO v4 symmetric encryption primitive.
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#encrypt
 func encrypt(key, n, m []byte, f, i string) ([]byte, error) {
+	// Check arguments
+	if len(key) != keyLength {
+		return nil, fmt.Errorf("paseto: invalid key length, it must be % bytes long", keyLength)
+	}
+	if len(n) != nonceLength {
+		return nil, fmt.Errorf("paseto: invalid nonce length, it must be %d bytes long", nonceLength)
+	}
+
 	// Derive keys from seed and secret key
 	ek, n2, ak, err := kdf(key, n)
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to derive keys from seed: %w", err)
 	}
 
-	// Prepare XChaCha20 stream cipher
+	// Prepare XChaCha20 stream cipher (nonce > 24bytes => XChacha)
 	ciph, err := chacha20.NewUnauthenticatedCipher(ek, n2)
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to initialize XChaCha20 cipher: %w", err)
@@ -61,7 +82,7 @@ func encrypt(key, n, m []byte, f, i string) ([]byte, error) {
 	body = append(body, t...)
 
 	// Assemble final token
-	final := append([]byte("v4.local."), []byte(base64.RawURLEncoding.EncodeToString(body))...)
+	final := append([]byte(v4LocalPrefix), []byte(base64.RawURLEncoding.EncodeToString(body))...)
 	if f != "" {
 		final = append(final, append([]byte("."), []byte(base64.RawURLEncoding.EncodeToString([]byte(f)))...)...)
 	}
@@ -70,6 +91,8 @@ func encrypt(key, n, m []byte, f, i string) ([]byte, error) {
 	return final, nil
 }
 
+// PASETO v4 symmetric decryption primitive
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#decrypt
 func decrypt(key, input []byte, f, i string) ([]byte, error) {
 	// Check token header
 	if !strings.HasPrefix(string(input), v4LocalPrefix) {
@@ -77,7 +100,7 @@ func decrypt(key, input []byte, f, i string) ([]byte, error) {
 	}
 
 	// Trim prefix
-	input = input[9:]
+	input = input[len(v4LocalPrefix):]
 
 	// Check footer usage
 	if f != "" {
@@ -109,9 +132,9 @@ func decrypt(key, input []byte, f, i string) ([]byte, error) {
 	}
 
 	// Extract components
-	n := raw[:32]
-	t := raw[len(raw)-32:]
-	c := raw[32 : len(raw)-32]
+	n := raw[:nonceLength]
+	t := raw[len(raw)-macLength:]
+	c := raw[macLength : len(raw)-macLength]
 
 	// Derive keys from seed and secret key
 	ek, n2, ak, err := kdf(key, n)
@@ -144,11 +167,98 @@ func decrypt(key, input []byte, f, i string) ([]byte, error) {
 	return m, nil
 }
 
+// PASETO v4 public signature primitive.
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#sign
+//nolint:deadcode,unused // to be used in incoming release
+func sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
+	// Compute protected content
+	m2, err := pae([]byte(v4PublicPrefix), m, []byte(f), []byte(i))
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
+	}
+
+	// Sign protected content
+	sig := ed25519.Sign(sk, m2)
+
+	// Prepare content
+	body := append([]byte{}, m...)
+	body = append(body, sig...)
+
+	// Assemble final token
+	final := append([]byte(v4PublicPrefix), []byte(base64.RawURLEncoding.EncodeToString(body))...)
+	if f != "" {
+		final = append(final, append([]byte("."), []byte(base64.RawURLEncoding.EncodeToString([]byte(f)))...)...)
+	}
+
+	// No error
+	return final, nil
+}
+
+// PASETO v4 signature verification primitive.
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#verify
+//nolint:deadcode,unused // to be used in incoming release
+func verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
+	// Check token header
+	if !strings.HasPrefix(string(sm), v4PublicPrefix) {
+		return nil, errors.New("paseto: invalid token")
+	}
+
+	// Trim prefix
+	sm = sm[len(v4PublicPrefix):]
+
+	// Check footer usage
+	if f != "" {
+		// Split the footer and the body
+		parts := strings.SplitN(string(sm), ".", 2)
+		if len(parts) != 2 {
+			return nil, errors.New("paseto: invalid token, footer is missing but expected")
+		}
+
+		// Decode footer
+		footer, err := base64.RawURLEncoding.DecodeString(parts[1])
+		if err != nil {
+			return nil, fmt.Errorf("paseto: invalid token, footer has invalid encoding: %w", err)
+		}
+
+		// Compare footer
+		if !security.SecureCompareString(f, string(footer)) {
+			return nil, errors.New("paseto: invalid token, footer mismatch")
+		}
+
+		// Continue without footer
+		sm = []byte(parts[0])
+	}
+
+	// Decode token
+	raw, err := base64.RawURLEncoding.DecodeString(string(sm))
+	if err != nil {
+		return nil, fmt.Errorf("paseto: invalid token body: %w", err)
+	}
+
+	// Extract components
+	m := raw[:len(raw)-ed25519.SignatureSize]
+	s := raw[len(raw)-ed25519.SignatureSize:]
+
+	// Compute protected content
+	m2, err := pae([]byte(v4PublicPrefix), m, []byte(f), []byte(i))
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepare protected content: %w", err)
+	}
+
+	// Check signature
+	if !ed25519.Verify(pk, m2, s) {
+		return nil, errors.New("paseto: invalid token signature")
+	}
+
+	// No error
+	return m, nil
+}
+
 // -----------------------------------------------------------------------------
 
 func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
 	// Derive encryption key
-	encKDF, err := blake2b.New(56, key)
+	encKDF, err := blake2b.New(encryptionKDFLength, key)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("unable to initialize encryption kdf: %w", err)
 	}
@@ -158,11 +268,11 @@ func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
 	tmp := encKDF.Sum(nil)
 
 	// Split encryption key (Ek) and nonce (n2)
-	ek = tmp[:32]
-	n2 = tmp[32:]
+	ek = tmp[:keyLength]
+	n2 = tmp[keyLength:]
 
 	// Derive authentication key
-	authKDF, err := blake2b.New(32, key)
+	authKDF, err := blake2b.New(authenticationKeyLength, key)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("unable to initialize authentication kdf: %w", err)
 	}
@@ -175,7 +285,28 @@ func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
 	return ek, n2, ak, nil
 }
 
-func preAuthenticationEncoding(pieces ...[]byte) ([]byte, error) {
+func mac(ak []byte, h string, n, c []byte, f, i string) ([]byte, error) {
+	// Compute pre-authentication message
+	preAuth, err := pae([]byte(h), n, c, []byte(f), []byte(i))
+	if err != nil {
+		return nil, fmt.Errorf("unable to compute pre-authentication content: %w", err)
+	}
+
+	// Compute MAC
+	mac, err := blake2b.New(macLength, ak)
+	if err != nil {
+		return nil, fmt.Errorf("unable to in initialize MAC kdf: %w", err)
+	}
+
+	// Hash pre-authentication content
+	mac.Write(preAuth)
+
+	// No error
+	return mac.Sum(nil), nil
+}
+
+// https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Common.md#authentication-padding
+func pae(pieces ...[]byte) ([]byte, error) {
 	output := &bytes.Buffer{}
 
 	// Encode piece count
@@ -199,24 +330,4 @@ func preAuthenticationEncoding(pieces ...[]byte) ([]byte, error) {
 
 	// No error
 	return output.Bytes(), nil
-}
-
-func mac(ak []byte, h string, n, c []byte, f, i string) ([]byte, error) {
-	// Compute pre-authentication message
-	preAuth, err := preAuthenticationEncoding([]byte(h), n, c, []byte(f), []byte(i))
-	if err != nil {
-		return nil, fmt.Errorf("unable to compute pre-authentication content: %w", err)
-	}
-
-	// Compute MAC
-	mac, err := blake2b.New(32, ak)
-	if err != nil {
-		return nil, fmt.Errorf("unable to in initialize MAC kdf: %w", err)
-	}
-
-	// Hash pre-authentication content
-	mac.Write(preAuth)
-
-	// No error
-	return mac.Sum(nil), nil
 }

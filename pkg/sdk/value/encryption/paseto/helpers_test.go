@@ -18,6 +18,7 @@
 package paseto
 
 import (
+	"crypto/ed25519"
 	"encoding/hex"
 	"testing"
 
@@ -25,7 +26,7 @@ import (
 )
 
 // https://github.com/paseto-standard/test-vectors/blob/master/v4.json
-func Test_Paseto_Vector(t *testing.T) {
+func Test_Paseto_LocalVector(t *testing.T) {
 	testCases := []struct {
 		name              string
 		expectFail        bool
@@ -150,6 +151,99 @@ func Test_Paseto_Vector(t *testing.T) {
 			message, err := decrypt(key, []byte(testCase.token), testCase.footer, testCase.implicitAssertion)
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the decrypt call, error = %v, wantErr %v", err, testCase.expectFail)
+				return
+			}
+			assert.Equal(t, testCase.payload, string(message))
+		})
+	}
+}
+
+// https://github.com/paseto-standard/test-vectors/blob/master/v4.json
+func Test_Paseto_PublicVector(t *testing.T) {
+	testCases := []struct {
+		name              string
+		expectFail        bool
+		publicKey         string
+		secretKey         string
+		secretKeySeed     string
+		secretKeyPem      string
+		publicKeyPem      string
+		token             string
+		payload           string
+		footer            string
+		implicitAssertion string
+	}{
+		{
+			name:              "4-S-1",
+			expectFail:        false,
+			publicKey:         "1eb9dbbbbc047c03fd70604e0071f0987e16b28b757225c11f00415d0e20b1a2",
+			secretKey:         "b4cbfb43df4ce210727d953e4a713307fa19bb7d9f85041438d9e11b942a37741eb9dbbbbc047c03fd70604e0071f0987e16b28b757225c11f00415d0e20b1a2",
+			secretKeySeed:     "b4cbfb43df4ce210727d953e4a713307fa19bb7d9f85041438d9e11b942a3774",
+			secretKeyPem:      "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEILTL+0PfTOIQcn2VPkpxMwf6Gbt9n4UEFDjZ4RuUKjd0\n-----END PRIVATE KEY-----",
+			publicKeyPem:      "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAHrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=\n-----END PUBLIC KEY-----",
+			token:             "v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9bg_XBBzds8lTZShVlwwKSgeKpLT3yukTw6JUz3W4h_ExsQV-P0V54zemZDcAxFaSeef1QlXEFtkqxT1ciiQEDA",
+			payload:           "{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
+			footer:            "",
+			implicitAssertion: "",
+		},
+		{
+			name:              "4-S-2",
+			expectFail:        false,
+			publicKey:         "1eb9dbbbbc047c03fd70604e0071f0987e16b28b757225c11f00415d0e20b1a2",
+			secretKey:         "b4cbfb43df4ce210727d953e4a713307fa19bb7d9f85041438d9e11b942a37741eb9dbbbbc047c03fd70604e0071f0987e16b28b757225c11f00415d0e20b1a2",
+			secretKeySeed:     "b4cbfb43df4ce210727d953e4a713307fa19bb7d9f85041438d9e11b942a3774",
+			secretKeyPem:      "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEILTL+0PfTOIQcn2VPkpxMwf6Gbt9n4UEFDjZ4RuUKjd0\n-----END PRIVATE KEY-----",
+			publicKeyPem:      "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAHrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=\n-----END PUBLIC KEY-----",
+			token:             "v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9v3Jt8mx_TdM2ceTGoqwrh4yDFn0XsHvvV_D0DtwQxVrJEBMl0F2caAdgnpKlt4p7xBnx1HcO-SPo8FPp214HDw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
+			payload:           "{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
+			footer:            "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}",
+			implicitAssertion: "",
+		},
+		{
+			name:              "4-S-3",
+			expectFail:        false,
+			publicKey:         "1eb9dbbbbc047c03fd70604e0071f0987e16b28b757225c11f00415d0e20b1a2",
+			secretKey:         "b4cbfb43df4ce210727d953e4a713307fa19bb7d9f85041438d9e11b942a37741eb9dbbbbc047c03fd70604e0071f0987e16b28b757225c11f00415d0e20b1a2",
+			secretKeySeed:     "b4cbfb43df4ce210727d953e4a713307fa19bb7d9f85041438d9e11b942a3774",
+			secretKeyPem:      "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEILTL+0PfTOIQcn2VPkpxMwf6Gbt9n4UEFDjZ4RuUKjd0\n-----END PRIVATE KEY-----",
+			publicKeyPem:      "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAHrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=\n-----END PUBLIC KEY-----",
+			token:             "v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9NPWciuD3d0o5eXJXG5pJy-DiVEoyPYWs1YSTwWHNJq6DZD3je5gf-0M4JR9ipdUSJbIovzmBECeaWmaqcaP0DQ.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
+			payload:           "{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}",
+			footer:            "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}",
+			implicitAssertion: "{\"test-vector\":\"4-S-3\"}",
+		},
+	}
+
+	// For each testcase
+	for _, tc := range testCases {
+		testCase := tc
+		t.Run(testCase.name, func(t *testing.T) {
+			// Decode input
+			publicKey, err := hex.DecodeString(testCase.publicKey)
+			assert.NoError(t, err)
+			secretKey, err := hex.DecodeString(testCase.secretKey)
+			assert.NoError(t, err)
+			secretKeySeed, err := hex.DecodeString(testCase.secretKeySeed)
+			assert.NoError(t, err)
+
+			// Generate ed25519 key pair
+			sk := ed25519.NewKeyFromSeed(secretKeySeed)
+			assert.Equal(t, secretKey, []byte(sk))
+			pk := sk.Public().(ed25519.PublicKey)
+			assert.Equal(t, publicKey, []byte(pk))
+
+			// Sign
+			token, err := sign([]byte(testCase.payload), sk, testCase.footer, testCase.implicitAssertion)
+			if (err != nil) != testCase.expectFail {
+				t.Errorf("error during the sign call, error = %v, wantErr %v", err, testCase.expectFail)
+				return
+			}
+			assert.Equal(t, testCase.token, string(token))
+
+			// Verify
+			message, err := verify([]byte(testCase.token), pk, testCase.footer, testCase.implicitAssertion)
+			if (err != nil) != testCase.expectFail {
+				t.Errorf("error during the verify call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
 			}
 			assert.Equal(t, testCase.payload, string(message))
