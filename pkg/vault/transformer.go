@@ -27,6 +27,7 @@ import (
 	"github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/envelope"
 	"github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
+	vaultpath "github.com/elastic/harp/pkg/vault/path"
 )
 
 type DataEncryption string
@@ -62,7 +63,7 @@ func FromKey(key string) (value.Transformer, error) {
 }
 
 func TransformerKey(mountPath, keyName string, dataEncryption DataEncryption) string {
-	return fmt.Sprintf("vault:%s/%s:%s", strings.TrimSuffix(path.Clean(mountPath), "/"), strings.TrimPrefix(keyName, "/"), dataEncryption)
+	return fmt.Sprintf("vault:%s/%s:%s", vaultpath.SanitizePath(mountPath), strings.TrimPrefix(keyName, "/"), dataEncryption)
 }
 
 // Transformer returns an envelope encryption using a remote transit backend for key
@@ -75,7 +76,7 @@ func Transformer(mountPath, keyName string, dataEncryption DataEncryption) (valu
 	}
 
 	// Create transit backend service
-	backend, err := client.Transit(path.Clean(mountPath), keyName)
+	backend, err := client.Transit(vaultpath.SanitizePath(mountPath), keyName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize vault transit backend service: %w", err)
 	}
