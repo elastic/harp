@@ -32,11 +32,6 @@ func init() {
 	encryption.Register("paseto", Transformer)
 }
 
-const (
-	keyLength     = 32
-	v4LocalPrefix = "v4.local."
-)
-
 func Transformer(key string) (value.Transformer, error) {
 	// Remove the prefix
 	key = strings.TrimPrefix(key, "paseto:")
