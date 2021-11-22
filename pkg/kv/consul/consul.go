@@ -26,13 +26,14 @@ import (
 	api "github.com/hashicorp/consul/api"
 
 	"github.com/elastic/harp/pkg/kv"
+	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 type consulDriver struct {
-	client *api.Client
+	client Client
 }
 
-func Store(client *api.Client) kv.Store {
+func Store(client Client) kv.Store {
 	return &consulDriver{
 		client: client,
 	}
@@ -41,8 +42,13 @@ func Store(client *api.Client) kv.Store {
 // -----------------------------------------------------------------------------
 
 func (d *consulDriver) Get(_ context.Context, key string) (*kv.Pair, error) {
+	// Check arguments
+	if types.IsNil(d.client) {
+		return nil, errors.New("consul: unable to query with nil client")
+	}
+
 	// Retrieve from backend
-	item, meta, err := d.client.KV().Get(d.normalize(key), &api.QueryOptions{
+	item, meta, err := d.client.Get(d.normalize(key), &api.QueryOptions{
 		AllowStale:        false,
 		RequireConsistent: true,
 	})
@@ -62,6 +68,11 @@ func (d *consulDriver) Get(_ context.Context, key string) (*kv.Pair, error) {
 }
 
 func (d *consulDriver) Put(_ context.Context, key string, value []byte) error {
+	// Check arguments
+	if types.IsNil(d.client) {
+		return errors.New("consul: unable to query with nil client")
+	}
+
 	// Prepare the item to put
 	item := &api.KVPair{
 		Key:   d.normalize(key),
@@ -69,7 +80,7 @@ func (d *consulDriver) Put(_ context.Context, key string, value []byte) error {
 	}
 
 	// Delegate to client
-	if _, err := d.client.KV().Put(item, nil); err != nil {
+	if _, err := d.client.Put(item, nil); err != nil {
 		return fmt.Errorf("consul: unable to put '%s' value: %w", key, err)
 	}
 
@@ -78,13 +89,22 @@ func (d *consulDriver) Put(_ context.Context, key string, value []byte) error {
 }
 
 func (d *consulDriver) Delete(ctx context.Context, key string) error {
+	// Check arguments
+	if types.IsNil(d.client) {
+		return errors.New("consul: unable to query with nil client")
+	}
+
 	// Retrieve from store
-	if _, err := d.Exists(ctx, key); err != nil {
+	found, err := d.Exists(ctx, key)
+	if err != nil {
 		return fmt.Errorf("consul: unable to retrieve '%s' for deletion: %w", key, err)
+	}
+	if !found {
+		return kv.ErrKeyNotFound
 	}
 
 	// Delete the value
-	if _, err := d.client.KV().Delete(d.normalize(key), nil); err != nil {
+	if _, err := d.client.Delete(d.normalize(key), nil); err != nil {
 		return fmt.Errorf("consul: unable to delete '%s': %w", key, err)
 	}
 
@@ -107,8 +127,13 @@ func (d *consulDriver) Exists(ctx context.Context, key string) (bool, error) {
 }
 
 func (d *consulDriver) List(_ context.Context, basePath string) ([]*kv.Pair, error) {
+	// Check arguments
+	if types.IsNil(d.client) {
+		return nil, errors.New("consul: unable to query with nil client")
+	}
+
 	// List keys from base path
-	items, _, err := d.client.KV().List(d.normalize(basePath), nil)
+	items, _, err := d.client.List(d.normalize(basePath), nil)
 	if err != nil {
 		return nil, fmt.Errorf("consul: unable to list keys from '%s': %w", basePath, err)
 	}

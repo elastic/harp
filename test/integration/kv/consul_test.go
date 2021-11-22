@@ -48,7 +48,7 @@ func TestWithConsul(t *testing.T) {
 	assert.NotNil(t, client)
 
 	// Initialize KV Store
-	s := consul.Store(client)
+	s := consul.Store(client.KV())
 
 	// Run test suite
 	t.Run("store", testSuite(ctx, s))

@@ -58,7 +58,7 @@ var toConsulCmd = func() *cobra.Command {
 			}
 
 			// Prepare store.
-			store := consul.Store(client)
+			store := consul.Store(client.KV())
 			defer log.SafeClose(store, "unable to close consul store")
 
 			// Delegate to task
