@@ -1,10 +1,15 @@
-## 0.2.2
+## 0.2.3
 
 ### Not released yet
 
+## 0.2.2
+
+### 2021-11-24
+
 CHANGES:
 
-* cso/v1: Support ibm
+* cso/v1: Support new Azure and IBM regions. [#84](https://github.com/elastic/harp/pull/84)
+
 ## 0.2.1
 
 ### 2021-11-17
