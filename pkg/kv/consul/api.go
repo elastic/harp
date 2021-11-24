@@ -18,7 +18,7 @@ package consul
 
 import api "github.com/hashicorp/consul/api"
 
-//go:generate mockgen -destination mock/client_mock.gen.go -package mock github.com/elastic/harp/pkg/kv/consul Client
+//go:generate mockgen -destination mock/client_mock.go -package mock github.com/elastic/harp/pkg/kv/consul Client
 type Client interface {
 	Get(key string, q *api.QueryOptions) (*api.KVPair, *api.QueryMeta, error)
 	Put(p *api.KVPair, q *api.WriteOptions) (*api.WriteMeta, error)
