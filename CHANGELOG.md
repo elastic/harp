@@ -2,6 +2,14 @@
 
 ### Not released yet
 
+CHANGES:
+
+* crypto/paseto: move PASETO v4 primitives to `sdk/security/paseto/v4`. [#87](https://github.com/elastic/harp/pull/87)
+
+DIST:
+
+* nix/shell: Expose `shell.nix` to get a consistent development environment. [#87](https://github.com/elastic/harp/pull/87)
+
 ## 0.2.2
 
 ### 2021-11-24

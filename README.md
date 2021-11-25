@@ -16,13 +16,14 @@
   - [License](#license)
 - [Homebrew install](#homebrew-install)
 - [Build instructions](#build-instructions)
-  - [First time](#first-time)
+  - [Clone repository](#clone-repository)
+  - [Manual dev environment](#manual-dev-environment)
     - [Check your go version](#check-your-go-version)
     - [Install mage](#install-mage)
       - [From source](#from-source)
-      - [From brew formula](#from-brew-formula)
-    - [Clone repository](#clone-repository)
-  - [Daily](#daily)
+    - [Daily](#daily)
+  - [With nix-shell](#with-nix-shell)
+  - [Bootstrap tools](#bootstrap-tools)
   - [Docker](#docker)
 - [Plugins](#plugins)
 - [Community](#community)
@@ -190,7 +191,14 @@ brew install elastic/harp/harp
 
 Download a [release](https://github.com/elastic/harp/releases) or build from source.
 
-## First time
+## Clone repository
+
+```sh
+$ git clone git@github.com:elastic/harp.git
+$ export HARP_REPOSITORY=$(pwd)/harp
+```
+
+## Manual dev environment
 
 ### Check your go version
 
@@ -219,27 +227,36 @@ cd mage
 go run bootstrap.go
 ```
 
-#### From brew formula
+### Daily
 
 ```sh
-brew install mage
-```
-
-### Clone repository
-
-```sh
-git clone git@github.com:elastic/harp.git
-# Go to tools submodule
-cd harp/tools
-# Pull tools sources, compile them and install executable in tools/bin
+export PATH=$HARP_REPOSITORY/tools/bin:$PATH
+# Build harp in bin folder
 mage
 ```
 
-## Daily
+## With nix-shell
+
+Install `nix` on your system, if not already installed.
 
 ```sh
-export PATH=$HARP_REPO/tools/bin:$PATH
-# Build harp in bin folder
+$ sudo install -d -m755 -o $(id -u) -g $(id -g) /nix
+$ curl -L https://nixos.org/nix/install | sh
+```
+
+> More information? - <https://nixos.wiki/wiki/Nix_Installation_Guide>
+
+```sh
+$ cd $HARP_REPOSITORY
+$ nix-shell
+```
+
+## Bootstrap tools
+
+```sh
+# Go to tools submodule
+cd $HARP_REPOSITORY/tools
+# Pull tools sources, compile them and install executable in tools/bin
 mage
 ```
 
