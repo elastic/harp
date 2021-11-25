@@ -19,6 +19,7 @@ package paseto
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"strings"
@@ -66,5 +67,5 @@ func (d *pasetoTransformer) From(_ context.Context, input []byte) ([]byte, error
 
 func (d *pasetoTransformer) To(_ context.Context, input []byte) ([]byte, error) {
 	// Encrypt with paseto v4.local
-	return pasetov4.Encrypt(d.key[:], input, "", "")
+	return pasetov4.Encrypt(rand.Reader, d.key[:], input, "", "")
 }

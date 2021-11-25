@@ -19,6 +19,7 @@ package v4
 
 import (
 	"crypto/ed25519"
+	"crypto/rand"
 	"encoding/hex"
 	"testing"
 
@@ -259,11 +260,11 @@ func Test_Paseto_Local_EncryptDecrypt(t *testing.T) {
 	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
 	i := "{\"test-vector\":\"4-S-3\"}"
 
-	token1, err := Encrypt(key, m, f, i)
+	token1, err := Encrypt(rand.Reader, key, m, f, i)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token1)
 
-	token2, err := Encrypt(key, m, f, i)
+	token2, err := Encrypt(rand.Reader, key, m, f, i)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token2)
 
@@ -278,7 +279,10 @@ func Test_Paseto_Local_EncryptDecrypt(t *testing.T) {
 
 func benchmarkEncrypt(key, m []byte, f, i string, b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		Encrypt(key, m, f, i)
+		_, err := Encrypt(rand.Reader, key, m, f, i)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -290,12 +294,18 @@ func Benchmark_Paseto_Encrypt(b *testing.B) {
 	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
 	i := "{\"test-vector\":\"4-S-3\"}"
 
+	b.ReportAllocs()
+	b.ResetTimer()
+
 	benchmarkEncrypt(key, m, f, i, b)
 }
 
 func benchmarkDecrypt(key, m []byte, f, i string, b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		Decrypt(key, m, f, i)
+		_, err := Decrypt(key, m, f, i)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -307,5 +317,54 @@ func Benchmark_Paseto_Decrypt(b *testing.B) {
 	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
 	i := "{\"test-vector\":\"4-E-8\"}"
 
+	b.ReportAllocs()
+	b.ResetTimer()
+
 	benchmarkDecrypt(key, m, f, i, b)
+}
+
+func benchmarkSign(m []byte, sk ed25519.PrivateKey, f, i string, b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		_, err := Sign(m, sk, f, i)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func Benchmark_Paseto_Sign(b *testing.B) {
+	sk, err := hex.DecodeString("b4cbfb43df4ce210727d953e4a713307fa19bb7d9f85041438d9e11b942a37741eb9dbbbbc047c03fd70604e0071f0987e16b28b757225c11f00415d0e20b1a2")
+	assert.NoError(b, err)
+
+	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
+	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
+	i := "{\"test-vector\":\"4-S-3\"}"
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	benchmarkSign(m, sk, f, i, b)
+}
+
+func benchmarkVerify(m []byte, pk ed25519.PublicKey, f, i string, b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		_, err := Verify(m, pk, f, i)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func Benchmark_Paseto_Verify(b *testing.B) {
+	pk, err := hex.DecodeString("1eb9dbbbbc047c03fd70604e0071f0987e16b28b757225c11f00415d0e20b1a2")
+	assert.NoError(b, err)
+
+	token := []byte("v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9NPWciuD3d0o5eXJXG5pJy-DiVEoyPYWs1YSTwWHNJq6DZD3je5gf-0M4JR9ipdUSJbIovzmBECeaWmaqcaP0DQ.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9")
+	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
+	i := "{\"test-vector\":\"4-S-3\"}"
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	benchmarkVerify(token, pk, f, i, b)
 }
