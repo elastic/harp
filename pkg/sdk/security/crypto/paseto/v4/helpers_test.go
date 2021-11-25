@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package paseto
+package v4
 
 import (
 	"crypto/ed25519"
@@ -148,7 +148,7 @@ func Test_Paseto_LocalVector(t *testing.T) {
 			assert.Equal(t, testCase.token, string(token))
 
 			// Decrypt
-			message, err := decrypt(key, []byte(testCase.token), testCase.footer, testCase.implicitAssertion)
+			message, err := Decrypt(key, []byte(testCase.token), testCase.footer, testCase.implicitAssertion)
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the decrypt call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -233,7 +233,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			assert.Equal(t, publicKey, []byte(pk))
 
 			// Sign
-			token, err := sign([]byte(testCase.payload), sk, testCase.footer, testCase.implicitAssertion)
+			token, err := Sign([]byte(testCase.payload), sk, testCase.footer, testCase.implicitAssertion)
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the sign call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -241,7 +241,7 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			assert.Equal(t, testCase.token, string(token))
 
 			// Verify
-			message, err := verify([]byte(testCase.token), pk, testCase.footer, testCase.implicitAssertion)
+			message, err := Verify([]byte(testCase.token), pk, testCase.footer, testCase.implicitAssertion)
 			if (err != nil) != testCase.expectFail {
 				t.Errorf("error during the verify call, error = %v, wantErr %v", err, testCase.expectFail)
 				return
@@ -249,4 +249,63 @@ func Test_Paseto_PublicVector(t *testing.T) {
 			assert.Equal(t, testCase.payload, string(message))
 		})
 	}
+}
+
+func Test_Paseto_Local_EncryptDecrypt(t *testing.T) {
+	key, err := hex.DecodeString("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f")
+	assert.NoError(t, err)
+
+	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
+	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
+	i := "{\"test-vector\":\"4-S-3\"}"
+
+	token1, err := Encrypt(key, m, f, i)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, token1)
+
+	token2, err := Encrypt(key, m, f, i)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, token2)
+
+	assert.NotEqual(t, token1, token2)
+
+	p, err := Decrypt(key, token1, f, i)
+	assert.NoError(t, err)
+	assert.Equal(t, m, p)
+}
+
+// -----------------------------------------------------------------------------
+
+func benchmarkEncrypt(key, m []byte, f, i string, b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		Encrypt(key, m, f, i)
+	}
+}
+
+func Benchmark_Paseto_Encrypt(b *testing.B) {
+	key, err := hex.DecodeString("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f")
+	assert.NoError(b, err)
+
+	m := []byte("{\"data\":\"this is a signed message\",\"exp\":\"2022-01-01T00:00:00+00:00\"}")
+	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
+	i := "{\"test-vector\":\"4-S-3\"}"
+
+	benchmarkEncrypt(key, m, f, i, b)
+}
+
+func benchmarkDecrypt(key, m []byte, f, i string, b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		Decrypt(key, m, f, i)
+	}
+}
+
+func Benchmark_Paseto_Decrypt(b *testing.B) {
+	key, err := hex.DecodeString("707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f")
+	assert.NoError(b, err)
+
+	m := []byte("v4.local.32VIErrEkmY4JVILovbmfPXKW9wT1OdQepjMTC_MOtjA4kiqw7_tcaOM5GNEcnTxl60WiA8rd3wgFSNb_UdJPXjpzm0KW9ojM5f4O2mRvE2IcweP-PRdoHjd5-RHCiExR1IK6t5uvqQbMGlLLNYBc7A6_x7oqnpUK5WLvj24eE4DVPDZjw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9")
+	f := "{\"kid\":\"zVhMiPBP9fRf2snEcT7gFTioeA9COcNy9DfgL1W60haN\"}"
+	i := "{\"test-vector\":\"4-E-8\"}"
+
+	benchmarkDecrypt(key, m, f, i, b)
 }

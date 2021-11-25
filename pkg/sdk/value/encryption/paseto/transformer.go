@@ -19,11 +19,11 @@ package paseto
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"strings"
 
+	pasetov4 "github.com/elastic/harp/pkg/sdk/security/crypto/paseto/v4"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
@@ -41,12 +41,12 @@ func Transformer(key string) (value.Transformer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable to decode key: %w", err)
 	}
-	if l := len(k); l != keyLength {
+	if l := len(k); l != pasetov4.KeyLength {
 		return nil, fmt.Errorf("paseto: invalid secret key length (%d)", l)
 	}
 
 	// Copy secret key
-	var secretKey [keyLength]byte
+	var secretKey [pasetov4.KeyLength]byte
 	copy(secretKey[:], k)
 
 	return &pasetoTransformer{
@@ -57,20 +57,14 @@ func Transformer(key string) (value.Transformer, error) {
 // -----------------------------------------------------------------------------
 
 type pasetoTransformer struct {
-	key [keyLength]byte
+	key [pasetov4.KeyLength]byte
 }
 
 func (d *pasetoTransformer) From(_ context.Context, input []byte) ([]byte, error) {
-	return decrypt(d.key[:], input, "", "")
+	return pasetov4.Decrypt(d.key[:], input, "", "")
 }
 
 func (d *pasetoTransformer) To(_ context.Context, input []byte) ([]byte, error) {
-	// Create random seed
-	var n [32]byte
-	if _, err := rand.Read(n[:]); err != nil {
-		return nil, fmt.Errorf("paseto: unable to generate random seed: %w", err)
-	}
-
 	// Encrypt with paseto v4.local
-	return encrypt(d.key[:], n[:], input, "", "")
+	return pasetov4.Encrypt(d.key[:], input, "", "")
 }

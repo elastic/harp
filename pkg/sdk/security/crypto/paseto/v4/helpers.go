@@ -15,11 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package paseto
+package v4
 
 import (
 	"bytes"
 	"crypto/ed25519"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
@@ -33,7 +34,8 @@ import (
 )
 
 const (
-	keyLength               = 32
+	// KeyLength is the requested encryption key size.
+	KeyLength               = 32
 	nonceLength             = 32
 	macLength               = 32
 	encryptionKDFLength     = 56
@@ -44,56 +46,31 @@ const (
 
 // PASETO v4 symmetric encryption primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#encrypt
-func encrypt(key, n, m []byte, f, i string) ([]byte, error) {
-	// Check arguments
-	if len(key) != keyLength {
-		return nil, fmt.Errorf("paseto: invalid key length, it must be % bytes long", keyLength)
-	}
-	if len(n) != nonceLength {
-		return nil, fmt.Errorf("paseto: invalid nonce length, it must be %d bytes long", nonceLength)
+func Encrypt(key, m []byte, f, i string) ([]byte, error) {
+	// Create random seed
+	var n [32]byte
+	if _, err := rand.Read(n[:]); err != nil {
+		return nil, fmt.Errorf("paseto: unable to generate random seed: %w", err)
 	}
 
-	// Derive keys from seed and secret key
-	ek, n2, ak, err := kdf(key, n)
-	if err != nil {
-		return nil, fmt.Errorf("paseto: unable to derive keys from seed: %w", err)
-	}
-
-	// Prepare XChaCha20 stream cipher (nonce > 24bytes => XChacha)
-	ciph, err := chacha20.NewUnauthenticatedCipher(ek, n2)
-	if err != nil {
-		return nil, fmt.Errorf("paseto: unable to initialize XChaCha20 cipher: %w", err)
-	}
-
-	// Encrypt the payload
-	c := make([]byte, len(m))
-	ciph.XORKeyStream(c, m)
-
-	// Compute MAC
-	t, err := mac(ak, v4LocalPrefix, n, c, f, i)
-	if err != nil {
-		return nil, fmt.Errorf("paseto: unable to compute MAC: %w", err)
-	}
-
-	// Serialize final token
-	// h || base64url(n || c || t)
-	body := append([]byte{}, n...)
-	body = append(body, c...)
-	body = append(body, t...)
-
-	// Assemble final token
-	final := append([]byte(v4LocalPrefix), []byte(base64.RawURLEncoding.EncodeToString(body))...)
-	if f != "" {
-		final = append(final, append([]byte("."), []byte(base64.RawURLEncoding.EncodeToString([]byte(f)))...)...)
-	}
-
-	// No error
-	return final, nil
+	// Delegate to primitive
+	return encrypt(key, n[:], m, f, i)
 }
 
 // PASETO v4 symmetric decryption primitive
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#decrypt
-func decrypt(key, input []byte, f, i string) ([]byte, error) {
+func Decrypt(key, input []byte, f, i string) ([]byte, error) {
+	// Check arguments
+	if key == nil {
+		return nil, errors.New("paseto: key is nil")
+	}
+	if len(key) != KeyLength {
+		return nil, fmt.Errorf("paseto: invalid key length, it must be %d bytes long", KeyLength)
+	}
+	if input == nil {
+		return nil, errors.New("paseto: input is nil")
+	}
+
 	// Check token header
 	if !strings.HasPrefix(string(input), v4LocalPrefix) {
 		return nil, errors.New("paseto: invalid token")
@@ -169,8 +146,7 @@ func decrypt(key, input []byte, f, i string) ([]byte, error) {
 
 // PASETO v4 public signature primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#sign
-//nolint:deadcode,unused // to be used in incoming release
-func sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
+func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 	// Compute protected content
 	m2, err := pae([]byte(v4PublicPrefix), m, []byte(f), []byte(i))
 	if err != nil {
@@ -196,8 +172,7 @@ func sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 
 // PASETO v4 signature verification primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#verify
-//nolint:deadcode,unused // to be used in incoming release
-func verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
+func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 	// Check token header
 	if !strings.HasPrefix(string(sm), v4PublicPrefix) {
 		return nil, errors.New("paseto: invalid token")
@@ -256,6 +231,53 @@ func verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 
 // -----------------------------------------------------------------------------
 
+func encrypt(key, n, m []byte, f, i string) ([]byte, error) {
+	// Check arguments
+	if len(key) != KeyLength {
+		return nil, fmt.Errorf("paseto: invalid key length, it must be %d bytes long", KeyLength)
+	}
+	if len(n) != nonceLength {
+		return nil, fmt.Errorf("paseto: invalid nonce length, it must be %d bytes long", nonceLength)
+	}
+
+	// Derive keys from seed and secret key
+	ek, n2, ak, err := kdf(key, n)
+	if err != nil {
+		return nil, fmt.Errorf("paseto: unable to derive keys from seed: %w", err)
+	}
+
+	// Prepare XChaCha20 stream cipher (nonce > 24bytes => XChacha)
+	ciph, err := chacha20.NewUnauthenticatedCipher(ek, n2)
+	if err != nil {
+		return nil, fmt.Errorf("paseto: unable to initialize XChaCha20 cipher: %w", err)
+	}
+
+	// Encrypt the payload
+	c := make([]byte, len(m))
+	ciph.XORKeyStream(c, m)
+
+	// Compute MAC
+	t, err := mac(ak, v4LocalPrefix, n, c, f, i)
+	if err != nil {
+		return nil, fmt.Errorf("paseto: unable to compute MAC: %w", err)
+	}
+
+	// Serialize final token
+	// h || base64url(n || c || t)
+	body := append([]byte{}, n...)
+	body = append(body, c...)
+	body = append(body, t...)
+
+	// Assemble final token
+	final := append([]byte(v4LocalPrefix), []byte(base64.RawURLEncoding.EncodeToString(body))...)
+	if f != "" {
+		final = append(final, append([]byte("."), []byte(base64.RawURLEncoding.EncodeToString([]byte(f)))...)...)
+	}
+
+	// No error
+	return final, nil
+}
+
 func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
 	// Derive encryption key
 	encKDF, err := blake2b.New(encryptionKDFLength, key)
@@ -268,8 +290,8 @@ func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
 	tmp := encKDF.Sum(nil)
 
 	// Split encryption key (Ek) and nonce (n2)
-	ek = tmp[:keyLength]
-	n2 = tmp[keyLength:]
+	ek = tmp[:KeyLength]
+	n2 = tmp[KeyLength:]
 
 	// Derive authentication key
 	authKDF, err := blake2b.New(authenticationKeyLength, key)
