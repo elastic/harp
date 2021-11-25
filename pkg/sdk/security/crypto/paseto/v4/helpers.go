@@ -20,12 +20,11 @@ package v4
 import (
 	"bytes"
 	"crypto/ed25519"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"strings"
+	"io"
 
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/chacha20"
@@ -46,10 +45,10 @@ const (
 
 // PASETO v4 symmetric encryption primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#encrypt
-func Encrypt(key, m []byte, f, i string) ([]byte, error) {
+func Encrypt(r io.Reader, key, m []byte, f, i string) ([]byte, error) {
 	// Create random seed
-	var n [32]byte
-	if _, err := rand.Read(n[:]); err != nil {
+	var n [nonceLength]byte
+	if _, err := io.ReadFull(r, n[:]); err != nil {
 		return nil, fmt.Errorf("paseto: unable to generate random seed: %w", err)
 	}
 
@@ -72,7 +71,7 @@ func Decrypt(key, input []byte, f, i string) ([]byte, error) {
 	}
 
 	// Check token header
-	if !strings.HasPrefix(string(input), v4LocalPrefix) {
+	if !bytes.HasPrefix(input, []byte(v4LocalPrefix)) {
 		return nil, errors.New("paseto: invalid token")
 	}
 
@@ -82,29 +81,29 @@ func Decrypt(key, input []byte, f, i string) ([]byte, error) {
 	// Check footer usage
 	if f != "" {
 		// Split the footer and the body
-		parts := strings.SplitN(string(input), ".", 2)
+		parts := bytes.SplitN(input, []byte("."), 2)
 		if len(parts) != 2 {
 			return nil, errors.New("paseto: invalid token, footer is missing but expected")
 		}
 
 		// Decode footer
-		footer, err := base64.RawURLEncoding.DecodeString(parts[1])
-		if err != nil {
+		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(parts[1])))
+		if _, err := base64.RawURLEncoding.Decode(footer, parts[1]); err != nil {
 			return nil, fmt.Errorf("paseto: invalid token, footer has invalid encoding: %w", err)
 		}
 
 		// Compare footer
-		if !security.SecureCompareString(f, string(footer)) {
+		if !security.SecureCompare([]byte(f), footer) {
 			return nil, errors.New("paseto: invalid token, footer mismatch")
 		}
 
 		// Continue without footer
-		input = []byte(parts[0])
+		input = parts[0]
 	}
 
 	// Decode token
-	raw, err := base64.RawURLEncoding.DecodeString(string(input))
-	if err != nil {
+	raw := make([]byte, base64.RawURLEncoding.DecodedLen(len(input)))
+	if _, err := base64.RawURLEncoding.Decode(raw, input); err != nil {
 		return nil, fmt.Errorf("paseto: invalid token body: %w", err)
 	}
 
@@ -160,10 +159,19 @@ func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 	body := append([]byte{}, m...)
 	body = append(body, sig...)
 
+	// Encode body as RawURLBase64
+	encodedBody := make([]byte, base64.RawURLEncoding.EncodedLen(len(body)))
+	base64.RawURLEncoding.Encode(encodedBody, body)
+
 	// Assemble final token
-	final := append([]byte(v4PublicPrefix), []byte(base64.RawURLEncoding.EncodeToString(body))...)
+	final := append([]byte(v4PublicPrefix), encodedBody...)
 	if f != "" {
-		final = append(final, append([]byte("."), []byte(base64.RawURLEncoding.EncodeToString([]byte(f)))...)...)
+		// Encode footer as RawURLBase64
+		encodedFooter := make([]byte, base64.RawURLEncoding.EncodedLen(len(f)))
+		base64.RawURLEncoding.Encode(encodedFooter, []byte(f))
+
+		// Assemble body and footer
+		final = append(final, append([]byte("."), encodedFooter...)...)
 	}
 
 	// No error
@@ -174,7 +182,7 @@ func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#verify
 func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 	// Check token header
-	if !strings.HasPrefix(string(sm), v4PublicPrefix) {
+	if !bytes.HasPrefix(sm, []byte(v4PublicPrefix)) {
 		return nil, errors.New("paseto: invalid token")
 	}
 
@@ -184,29 +192,29 @@ func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 	// Check footer usage
 	if f != "" {
 		// Split the footer and the body
-		parts := strings.SplitN(string(sm), ".", 2)
+		parts := bytes.SplitN(sm, []byte("."), 2)
 		if len(parts) != 2 {
 			return nil, errors.New("paseto: invalid token, footer is missing but expected")
 		}
 
 		// Decode footer
-		footer, err := base64.RawURLEncoding.DecodeString(parts[1])
-		if err != nil {
+		footer := make([]byte, base64.RawURLEncoding.DecodedLen(len(parts[1])))
+		if _, err := base64.RawURLEncoding.Decode(footer, parts[1]); err != nil {
 			return nil, fmt.Errorf("paseto: invalid token, footer has invalid encoding: %w", err)
 		}
 
 		// Compare footer
-		if !security.SecureCompareString(f, string(footer)) {
+		if !security.SecureCompare([]byte(f), footer) {
 			return nil, errors.New("paseto: invalid token, footer mismatch")
 		}
 
 		// Continue without footer
-		sm = []byte(parts[0])
+		sm = parts[0]
 	}
 
 	// Decode token
-	raw, err := base64.RawURLEncoding.DecodeString(string(sm))
-	if err != nil {
+	raw := make([]byte, base64.RawURLEncoding.DecodedLen(len(sm)))
+	if _, err := base64.RawURLEncoding.Decode(raw, sm); err != nil {
 		return nil, fmt.Errorf("paseto: invalid token body: %w", err)
 	}
 
@@ -268,10 +276,19 @@ func encrypt(key, n, m []byte, f, i string) ([]byte, error) {
 	body = append(body, c...)
 	body = append(body, t...)
 
+	// Encode body as RawURLBase64
+	encodedBody := make([]byte, base64.RawURLEncoding.EncodedLen(len(body)))
+	base64.RawURLEncoding.Encode(encodedBody, body)
+
 	// Assemble final token
-	final := append([]byte(v4LocalPrefix), []byte(base64.RawURLEncoding.EncodeToString(body))...)
+	final := append([]byte(v4LocalPrefix), encodedBody...)
 	if f != "" {
-		final = append(final, append([]byte("."), []byte(base64.RawURLEncoding.EncodeToString([]byte(f)))...)...)
+		// Encode footer as RawURLBase64
+		encodedFooter := make([]byte, base64.RawURLEncoding.EncodedLen(len(f)))
+		base64.RawURLEncoding.Encode(encodedFooter, []byte(f))
+
+		// Assemble body and footer
+		final = append(final, append([]byte("."), encodedFooter...)...)
 	}
 
 	// No error
@@ -285,6 +302,7 @@ func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
 		return nil, nil, nil, fmt.Errorf("unable to initialize encryption kdf: %w", err)
 	}
 
+	// Domain separation (we use the same seed for 2 different purposes)
 	encKDF.Write([]byte("paseto-encryption-key"))
 	encKDF.Write(n)
 	tmp := encKDF.Sum(nil)
@@ -299,6 +317,7 @@ func kdf(key, n []byte) (ek, n2, ak []byte, err error) {
 		return nil, nil, nil, fmt.Errorf("unable to initialize authentication kdf: %w", err)
 	}
 
+	// Domain separation (we use the same seed for 2 different purposes)
 	authKDF.Write([]byte("paseto-auth-key-for-aead"))
 	authKDF.Write(n)
 	ak = authKDF.Sum(nil)
