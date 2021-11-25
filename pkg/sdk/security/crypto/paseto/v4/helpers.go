@@ -146,7 +146,6 @@ func Decrypt(key, input []byte, f, i string) ([]byte, error) {
 
 // PASETO v4 public signature primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#sign
-//nolint:deadcode,unused // to be used in incoming release
 func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 	// Compute protected content
 	m2, err := pae([]byte(v4PublicPrefix), m, []byte(f), []byte(i))
@@ -173,7 +172,6 @@ func Sign(m []byte, sk ed25519.PrivateKey, f, i string) ([]byte, error) {
 
 // PASETO v4 signature verification primitive.
 // https://github.com/paseto-standard/paseto-spec/blob/master/docs/01-Protocol-Versions/Version4.md#verify
-//nolint:deadcode,unused // to be used in incoming release
 func Verify(sm []byte, pk ed25519.PublicKey, f, i string) ([]byte, error) {
 	// Check token header
 	if !strings.HasPrefix(string(sm), v4PublicPrefix) {
