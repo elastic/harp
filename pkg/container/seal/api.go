@@ -27,10 +27,35 @@ import (
 
 // Streategy describes the sealing/unsealing contract.
 type Strategy interface {
-	// PublicKeys return the appropriate key format used by the sealing strategy.
-	PublicKeys(keys ...string) ([]interface{}, error)
+	// CenerateKey create an key pair used as container identifier.
+	GenerateKey(...GenerateOption) (publicKey, privateKey string, err error)
 	// Seal the given container using the implemented algorithm.
-	Seal(io.Reader, *containerv1.Container, ...interface{}) (*containerv1.Container, error)
+	Seal(io.Reader, *containerv1.Container, ...string) (*containerv1.Container, error)
 	// Unseal the given container using the given identity.
 	Unseal(*containerv1.Container, *memguard.LockedBuffer) (*containerv1.Container, error)
+}
+
+// GenerateOptions represents container key generation options.
+type GenerateOptions struct {
+	DCKDMasterKey *memguard.LockedBuffer
+	DCKDTarget    string
+	RandomSource  io.Reader
+}
+
+// GenerateOption represents functional pattern builder for optional parameters.
+type GenerateOption func(o *GenerateOptions)
+
+// WithDeterministicKey enables deterministic container key generation.
+func WithDeterministicKey(masterKey *memguard.LockedBuffer, target string) GenerateOption {
+	return func(o *GenerateOptions) {
+		o.DCKDMasterKey = masterKey
+		o.DCKDTarget = target
+	}
+}
+
+// WithRandom provides the random source for key generation.
+func WithRandom(random io.Reader) GenerateOption {
+	return func(o *GenerateOptions) {
+		o.RandomSource = random
+	}
 }

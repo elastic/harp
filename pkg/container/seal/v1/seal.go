@@ -35,7 +35,7 @@ import (
 
 // Seal a secret container
 //nolint:funlen,gocyclo // To refactor
-func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, peersPublicKey ...interface{}) (*containerv1.Container, error) {
+func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, encodedPeerPublicKeys ...string) (*containerv1.Container, error) {
 	// Check parameters
 	if types.IsNil(container) {
 		return nil, fmt.Errorf("unable to process nil container")
@@ -43,14 +43,20 @@ func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, peersPu
 	if types.IsNil(container.Headers) {
 		return nil, fmt.Errorf("unable to process nil container headers")
 	}
-	if len(peersPublicKey) == 0 {
+	if len(encodedPeerPublicKeys) == 0 {
 		return nil, fmt.Errorf("unable to process empty public keys")
+	}
+
+	// Convert public keys
+	peerPublicKeys, err := a.publicKeys(encodedPeerPublicKeys...)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert peer public keys: %w", err)
 	}
 
 	// Serialize protobuf payload
 	content, err := proto.Marshal(container)
 	if err != nil {
-		return container, fmt.Errorf("unable to encode container content: %w", err)
+		return nil, fmt.Errorf("unable to encode container content: %w", err)
 	}
 
 	// Check cleartext message size.
@@ -92,14 +98,9 @@ func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, peersPu
 	}
 
 	// Process recipients
-	for _, peerPublicKeyRaw := range peersPublicKey {
-		if types.IsNil(peerPublicKeyRaw) {
+	for _, peerPublicKey := range peerPublicKeys {
+		if types.IsNil(peerPublicKey) {
 			// Ignore nil key
-			continue
-		}
-		peerPublicKey, ok := peerPublicKeyRaw.(*[publicKeySize]byte)
-		if !ok {
-			// Ignore invalid key types
 			continue
 		}
 		if extra25519.IsEdLowOrder(peerPublicKey[:]) {

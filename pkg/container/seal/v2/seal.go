@@ -30,7 +30,7 @@ import (
 )
 
 // Seal a secret container
-func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, peersPublicKey ...interface{}) (*containerv1.Container, error) {
+func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, encodedPeersPublicKey ...string) (*containerv1.Container, error) {
 	// Check parameters
 	if types.IsNil(container) {
 		return nil, fmt.Errorf("unable to process nil container")
@@ -38,8 +38,14 @@ func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, peersPu
 	if types.IsNil(container.Headers) {
 		return nil, fmt.Errorf("unable to process nil container headers")
 	}
-	if len(peersPublicKey) == 0 {
+	if len(encodedPeersPublicKey) == 0 {
 		return nil, fmt.Errorf("unable to process empty public keys")
+	}
+
+	// Convert public keys
+	peersPublicKey, err := a.publicKeys(encodedPeersPublicKey...)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert peer public keys: %w", err)
 	}
 
 	// Generate encryption key
@@ -70,13 +76,9 @@ func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, peersPu
 	}
 
 	// Process recipients
-	for _, peerPublicKeyRaw := range peersPublicKey {
+	for _, peerPublicKey := range peersPublicKey {
 		// Ignore nil key
-		if peerPublicKeyRaw == nil {
-			continue
-		}
-		peerPublicKey, ok := peerPublicKeyRaw.(*ecdsa.PublicKey)
-		if !ok {
+		if peerPublicKey == nil {
 			continue
 		}
 

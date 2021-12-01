@@ -36,8 +36,52 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
+	"github.com/elastic/harp/pkg/sdk/security"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
+
+func tryRecipientKeys(derivedKey *[32]byte, recipients []*containerv1.Recipient) ([]byte, error) {
+	// Calculate recipient identifier
+	identifier, err := keyIdentifierFromDerivedKey(derivedKey)
+	if err != nil {
+		return nil, fmt.Errorf("unable to generate identifier: %w", err)
+	}
+
+	// Create AES block cipher
+	block, err := aes.NewCipher(derivedKey[:])
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize block cipher: %w", err)
+	}
+
+	// Initialize AEAD cipher chain
+	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize aead chain: %w", err)
+	}
+
+	// Find matching recipient
+	for _, r := range recipients {
+		// Check recipient identifiers
+		if !security.SecureCompare(identifier, r.Identifier) {
+			continue
+		}
+
+		var nonce [nonceSize]byte
+		copy(nonce[:], r.Key[:nonceSize])
+
+		// Try to decrypt the secretbox with the derived key.
+		payloadKey, err := decrypt(r.Key[nonceSize:], nonce[:], aead)
+		if err != nil {
+			return nil, fmt.Errorf("invalid recipient encryption key")
+		}
+
+		// Encryption key found, return no error.
+		return payloadKey, nil
+	}
+
+	// No recipient found in list.
+	return nil, fmt.Errorf("no recipient found")
+}
 
 func prepareSignature(block cipher.Block) (*ecdsa.PrivateKey, []byte, error) {
 	// Generate ephemeral signing key

@@ -17,7 +17,6 @@
 package v1
 
 import (
-	"bytes"
 	"crypto/rand"
 	"testing"
 
@@ -26,7 +25,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/crypto/nacl/box"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 )
@@ -52,12 +50,10 @@ var (
 // -----------------------------------------------------------------------------
 
 func TestSeal(t *testing.T) {
-	publicKey1, _, _ := box.GenerateKey(bytes.NewReader([]byte("deterministic-generation-for-tests-0002")))
-	publicKey2, _, _ := box.GenerateKey(bytes.NewReader([]byte("deterministic-generation-for-tests-0003")))
 
 	type args struct {
 		container      *containerv1.Container
-		peersPublicKey []interface{}
+		peersPublicKey []string
 	}
 	tests := []struct {
 		name    string
@@ -91,9 +87,9 @@ func TestSeal(t *testing.T) {
 				container: &containerv1.Container{
 					Headers: &containerv1.Header{},
 				},
-				peersPublicKey: []interface{}{
-					publicKey1,
-					publicKey2,
+				peersPublicKey: []string{
+					"v1.pk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E",
+					"v1.pk.sYp90gC29yKfUUtr50pMR4Faf7c3d4-YX4xZsbwAs10",
 				},
 			},
 			wantErr: false,
@@ -105,9 +101,9 @@ func TestSeal(t *testing.T) {
 					Headers: &containerv1.Header{},
 					Raw:     memguard.NewBufferRandom(1024).Bytes(),
 				},
-				peersPublicKey: []interface{}{
-					publicKey1,
-					publicKey2,
+				peersPublicKey: []string{
+					"v1.pk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E",
+					"v1.pk.sYp90gC29yKfUUtr50pMR4Faf7c3d4-YX4xZsbwAs10",
 				},
 			},
 			wantErr: false,
@@ -128,10 +124,10 @@ func TestSeal(t *testing.T) {
 // -----------------------------------------------------------------------------
 
 func Test_Seal_Unseal(t *testing.T) {
-	publicKey1, privateKey1, err := box.GenerateKey(bytes.NewReader([]byte("deterministic-generation-for-tests-0002")))
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
+	adapter := New()
+
+	publicKey1, privateKey1, err := adapter.GenerateKey()
+	assert.NoError(t, err)
 
 	input := &containerv1.Container{
 		Headers: &containerv1.Header{
@@ -141,14 +137,12 @@ func Test_Seal_Unseal(t *testing.T) {
 		Raw: memguard.NewBufferRandom(1024).Bytes(),
 	}
 
-	adapter := New()
-
-	sealed, err := adapter.Seal(rand.Reader, input, nil, publicKey1)
+	sealed, err := adapter.Seal(rand.Reader, input, publicKey1)
 	if err != nil {
 		t.Fatalf("unable to seal container: %v", err)
 	}
 
-	unsealed, err := adapter.Unseal(sealed, memguard.NewBufferFromBytes(privateKey1[:]))
+	unsealed, err := adapter.Unseal(sealed, memguard.NewBufferFromBytes([]byte(privateKey1)))
 	if err != nil {
 		t.Fatalf("unable to unseal container: %v", err)
 	}
@@ -166,9 +160,7 @@ func Test_Seal_Fuzz(t *testing.T) {
 		f := fuzz.New()
 
 		// Prepare arguments
-		var (
-			publicKey [32]byte
-		)
+		var publicKey string
 		input := containerv1.Container{
 			Headers: &containerv1.Header{},
 			Raw:     []byte{0x00, 0x00},
@@ -179,7 +171,7 @@ func Test_Seal_Fuzz(t *testing.T) {
 		f.Fuzz(&publicKey)
 
 		// Execute
-		adapter.Seal(rand.Reader, &input, &publicKey)
+		adapter.Seal(rand.Reader, &input, publicKey)
 	}
 }
 
@@ -209,7 +201,7 @@ func Test_UnSeal_Fuzz(t *testing.T) {
 }
 
 // -----------------------------------------------------------------------------
-func benchmarkSeal(container *containerv1.Container, peersPublicKeys []interface{}, b *testing.B) {
+func benchmarkSeal(container *containerv1.Container, peersPublicKeys []string, b *testing.B) {
 	adapter := New()
 	for n := 0; n < b.N; n++ {
 		_, err := adapter.Seal(rand.Reader, container, peersPublicKeys...)
@@ -220,7 +212,7 @@ func benchmarkSeal(container *containerv1.Container, peersPublicKeys []interface
 }
 
 func Benchmark_Seal(b *testing.B) {
-	publicKey, _, err := box.GenerateKey(bytes.NewReader([]byte("deterministic-generation-for-tests-0002")))
+	publicKey, _, err := New().GenerateKey()
 	assert.NoError(b, err)
 
 	input := &containerv1.Container{
@@ -231,5 +223,5 @@ func Benchmark_Seal(b *testing.B) {
 		Raw: make([]byte, 1024),
 	}
 
-	benchmarkSeal(input, []interface{}{publicKey}, b)
+	benchmarkSeal(input, []string{publicKey}, b)
 }

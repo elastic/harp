@@ -21,13 +21,16 @@ import (
 	"testing"
 
 	"github.com/awnumar/memguard"
+	"github.com/elastic/harp/pkg/container/seal"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateKey(t *testing.T) {
+	adapter := New()
+
 	t.Run("deterministic", func(t *testing.T) {
-		pub, pk, err := GenerateKey(
-			WithDeterministicKey(memguard.NewBufferFromBytes([]byte("deterministic-seed-for-test-00001")), "Release 64"),
+		pub, pk, err := adapter.GenerateKey(
+			seal.WithDeterministicKey(memguard.NewBufferFromBytes([]byte("deterministic-seed-for-test-00001")), "Release 64"),
 		)
 		assert.NoError(t, err)
 		assert.NotNil(t, pk)
@@ -37,8 +40,8 @@ func TestGenerateKey(t *testing.T) {
 	})
 
 	t.Run("deterministic - same key with different target", func(t *testing.T) {
-		pub, pk, err := GenerateKey(
-			WithDeterministicKey(memguard.NewBufferFromBytes([]byte("deterministic-seed-for-test-00001")), "Release 65"),
+		pub, pk, err := adapter.GenerateKey(
+			seal.WithDeterministicKey(memguard.NewBufferFromBytes([]byte("deterministic-seed-for-test-00001")), "Release 65"),
 		)
 		assert.NoError(t, err)
 		assert.NotNil(t, pk)
@@ -48,8 +51,8 @@ func TestGenerateKey(t *testing.T) {
 	})
 
 	t.Run("master key too short", func(t *testing.T) {
-		pub, pk, err := GenerateKey(
-			WithDeterministicKey(memguard.NewBufferFromBytes([]byte("too-short-masterkey")), "Release 64"),
+		pub, pk, err := adapter.GenerateKey(
+			seal.WithDeterministicKey(memguard.NewBufferFromBytes([]byte("too-short-masterkey")), "Release 64"),
 		)
 		assert.Error(t, err)
 		assert.Empty(t, pk)
@@ -57,7 +60,7 @@ func TestGenerateKey(t *testing.T) {
 	})
 
 	t.Run("default with given random source", func(t *testing.T) {
-		pub, pk, err := GenerateKey(WithRandom(bytes.NewReader([]byte("UlLYMVJzTrAv0KYbl2KqCo9fnsyPLu9YNAO5iUsABeYMmkKe2TnSp8JLD9zThZk"))))
+		pub, pk, err := adapter.GenerateKey(seal.WithRandom(bytes.NewReader([]byte("UlLYMVJzTrAv0KYbl2KqCo9fnsyPLu9YNAO5iUsABeYMmkKe2TnSp8JLD9zThZk"))))
 		assert.NoError(t, err)
 		assert.NotNil(t, pk)
 		assert.Equal(t, "v2.sk.VHJBdjBLWWJsMktxQ285ZoFXc5G4HY_0qSMZAibGlchUmqt915byglIOGeel-5X5", pk)
@@ -67,7 +70,7 @@ func TestGenerateKey(t *testing.T) {
 	})
 
 	t.Run("default", func(t *testing.T) {
-		pub, pk, err := GenerateKey()
+		pub, pk, err := adapter.GenerateKey()
 		assert.NoError(t, err)
 		assert.NotEmpty(t, pk)
 		assert.NotEmpty(t, pub)

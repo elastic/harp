@@ -4,6 +4,7 @@
 
 CHANGES:
 
+* container/seal: FIPS compatible container sealing process (ECDH+AES256-GCM / ECDSA P-384 / HMAC-SHA386). [#89](https://github.com/elastic/harp/pull/89)
 * crypto/paseto: move PASETO v4 primitives to `sdk/security/paseto/v4`. [#87](https://github.com/elastic/harp/pull/87)
 
 DIST:

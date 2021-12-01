@@ -19,7 +19,9 @@ package v1
 
 import (
 	"crypto/ed25519"
+	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/awnumar/memguard"
 	"golang.org/x/crypto/nacl/secretbox"
@@ -30,7 +32,7 @@ import (
 )
 
 // Unseal a sealed container with the given identity
-//nolint:gocyclo // To refactor
+//nolint:gocyclo,funlen // To refactor
 func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (*containerv1.Container, error) {
 	// Check parameters
 	if types.IsNil(container) {
@@ -55,8 +57,11 @@ func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.Lo
 	var publicKey [publicKeySize]byte
 	copy(publicKey[:], container.Headers.EncryptionPublicKey[:publicKeySize])
 
-	// Check identity private encryption key
-	privRaw := identity.Bytes()
+	// Decode private key
+	privRaw, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(identity.String(), PrivateKeyPrefix))
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode private key: %w", err)
+	}
 	if len(privRaw) != privateKeySize {
 		return nil, fmt.Errorf("invalid identity private key length")
 	}

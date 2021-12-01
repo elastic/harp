@@ -17,8 +17,6 @@
 package v2
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"testing"
 
@@ -26,6 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
+	"github.com/stretchr/testify/assert"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 )
@@ -51,12 +50,9 @@ var (
 // -----------------------------------------------------------------------------
 
 func TestSeal(t *testing.T) {
-	privKey, _ := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	pubKey := privKey.PublicKey
-
 	type args struct {
 		container      *containerv1.Container
-		peersPublicKey []interface{}
+		peersPublicKey []string
 	}
 	tests := []struct {
 		name    string
@@ -84,18 +80,6 @@ func TestSeal(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		{
-			name: "nil public keys",
-			args: args{
-				container: &containerv1.Container{
-					Headers: &containerv1.Header{},
-				},
-				peersPublicKey: []interface{}{
-					nil,
-				},
-			},
-			wantErr: true,
-		},
 		// ---------------------------------------------------------------------
 		{
 			name: "valid",
@@ -104,8 +88,9 @@ func TestSeal(t *testing.T) {
 					Headers: &containerv1.Header{},
 					Raw:     []byte{0x01, 0x02, 0x03, 0x04},
 				},
-				peersPublicKey: []interface{}{
-					&pubKey,
+				peersPublicKey: []string{
+					"v2.pk.AuSjVpMZben6n9fXiaDj8bMjSvhcZ9n7c82VOt7v9_UBzZJaMLamkQUFAVp_9frpAg",
+					"v2.pk.A0V1xCxGNtVAE9EVhaKi-pIADhd1in8xV_FI5Y0oHSHLAkew9gDAqiALSd6VgvBCbQ",
 				},
 			},
 			wantErr: false,
@@ -126,8 +111,10 @@ func TestSeal(t *testing.T) {
 // -----------------------------------------------------------------------------
 
 func Test_Seal_Unseal(t *testing.T) {
-	privKey, _ := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	pubKey := privKey.PublicKey
+	adapter := New()
+
+	pubKey, privKey, err := adapter.GenerateKey()
+	assert.NoError(t, err)
 
 	input := &containerv1.Container{
 		Headers: &containerv1.Header{
@@ -137,13 +124,12 @@ func Test_Seal_Unseal(t *testing.T) {
 		Raw: []byte{0x00, 0x00},
 	}
 
-	adapter := New()
-	sealed, err := adapter.Seal(rand.Reader, input, &pubKey)
+	sealed, err := adapter.Seal(rand.Reader, input, pubKey)
 	if err != nil {
 		t.Fatalf("unable to seal container: %v", err)
 	}
 
-	unsealed, err := adapter.Unseal(sealed, memguard.NewBufferFromBytes(privKey.D.Bytes()))
+	unsealed, err := adapter.Unseal(sealed, memguard.NewBufferFromBytes([]byte(privKey)))
 	if err != nil {
 		t.Fatalf("unable to unseal container: %v", err)
 	}
@@ -162,7 +148,7 @@ func Test_Seal_Fuzz(t *testing.T) {
 
 		// Prepare arguments
 		var (
-			publicKey [32]byte
+			publicKey string
 		)
 		input := containerv1.Container{
 			Headers: &containerv1.Header{},
@@ -174,37 +160,12 @@ func Test_Seal_Fuzz(t *testing.T) {
 		f.Fuzz(&publicKey)
 
 		// Execute
-		adapter.Seal(rand.Reader, &input, &publicKey)
-	}
-}
-
-func Test_UnSeal_Fuzz(t *testing.T) {
-	// Memguard buffer is excluded from fuzz for random race condition error
-	// investigation will be done in a separated thread.
-	identity := memguard.NewBufferRandom(32)
-
-	adapter := New()
-
-	// Making sure the function never panics
-	for i := 0; i < 500; i++ {
-		f := fuzz.New()
-
-		// Prepare arguments
-		input := containerv1.Container{
-			Headers: &containerv1.Header{},
-			Raw:     []byte{0x00, 0x00},
-		}
-
-		f.Fuzz(&input.Headers)
-		f.Fuzz(&input.Raw)
-
-		// Execute
-		adapter.Unseal(&input, identity)
+		adapter.Seal(rand.Reader, &input, publicKey)
 	}
 }
 
 // -----------------------------------------------------------------------------
-func benchmarkSeal(container *containerv1.Container, peersPublicKeys []interface{}, b *testing.B) {
+func benchmarkSeal(container *containerv1.Container, peersPublicKeys []string, b *testing.B) {
 	adapter := New()
 	for n := 0; n < b.N; n++ {
 		_, err := adapter.Seal(rand.Reader, container, peersPublicKeys...)
@@ -215,16 +176,16 @@ func benchmarkSeal(container *containerv1.Container, peersPublicKeys []interface
 }
 
 func Benchmark_Seal(b *testing.B) {
-	privKey, _ := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	pubKey := privKey.PublicKey
+	publicKey, _, err := New().GenerateKey()
+	assert.NoError(b, err)
 
 	input := &containerv1.Container{
 		Headers: &containerv1.Header{
 			ContentEncoding: "gzip",
 			ContentType:     "application/vnd.harp.v1.Bundle",
 		},
-		Raw: []byte{0x00, 0x00},
+		Raw: make([]byte, 1024),
 	}
 
-	benchmarkSeal(input, []interface{}{&pubKey}, b)
+	benchmarkSeal(input, []string{publicKey}, b)
 }

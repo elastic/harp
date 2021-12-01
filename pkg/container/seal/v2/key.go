@@ -25,11 +25,12 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/awnumar/memguard"
 	"golang.org/x/crypto/pbkdf2"
+
+	"github.com/elastic/harp/pkg/container/seal"
 )
 
 const (
@@ -37,40 +38,13 @@ const (
 	PrivateKeyPrefix = "v2.sk."
 )
 
-// GenerateOptions represents container key generation options.
-type generateOptions struct {
-	dckdMasterKey *memguard.LockedBuffer
-	dckdTarget    string
-	randomSource  io.Reader
-}
-
-// GenerateOption represents functional pattern builder for optional parameters.
-type GenerateOption func(o *generateOptions)
-
-// WithDeterministicKey enables deterministic container key generation.
-func WithDeterministicKey(masterKey *memguard.LockedBuffer, target string) GenerateOption {
-	return func(o *generateOptions) {
-		o.dckdMasterKey = masterKey
-		o.dckdTarget = target
-	}
-}
-
-// WithRandom provides the random source for key generation.
-func WithRandom(random io.Reader) GenerateOption {
-	return func(o *generateOptions) {
-		o.randomSource = random
-	}
-}
-
-// -----------------------------------------------------------------------------
-
 // CenerateKey create an ECDSA P-384 key pair used as container identifier.
-func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err error) {
+func (a *adapter) GenerateKey(fopts ...seal.GenerateOption) (publicKey, privateKey string, err error) {
 	// Prepare defaults
-	opts := &generateOptions{
-		dckdMasterKey: nil,
-		dckdTarget:    "",
-		randomSource:  rand.Reader,
+	opts := &seal.GenerateOptions{
+		DCKDMasterKey: nil,
+		DCKDTarget:    "",
+		RandomSource:  rand.Reader,
 	}
 
 	// Apply optional parameters
@@ -79,17 +53,17 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err err
 	}
 
 	// Master key derivation
-	if opts.dckdMasterKey != nil {
+	if opts.DCKDMasterKey != nil {
 		// PBKDF2-SHA512(masterKey, HMAC-SHA-512('harp deterministic salt v2', Target), 250000, 64)
 		// Don't clean bytes, already done by memguard.
-		masterKey := opts.dckdMasterKey.Bytes()
+		masterKey := opts.DCKDMasterKey.Bytes()
 		if len(masterKey) < 32 {
 			return "", "", fmt.Errorf("the master key must be 32 bytes long at least")
 		}
 
 		// Generate deterministic salt
 		h := hmac.New(sha512.New, []byte("harp deterministic salt v2"))
-		h.Write([]byte(opts.dckdTarget))
+		h.Write([]byte(opts.DCKDTarget))
 		salt := h.Sum(nil)
 		defer memguard.WipeBytes(salt)
 
@@ -98,11 +72,11 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err err
 		defer memguard.WipeBytes(dk)
 
 		// Assign to seed
-		opts.randomSource = bytes.NewBuffer(dk)
+		opts.RandomSource = bytes.NewBuffer(dk)
 	}
 
 	// Generate ECDSA P-384 container key pair
-	priv, errGen := ecdsa.GenerateKey(elliptic.P384(), opts.randomSource)
+	priv, errGen := ecdsa.GenerateKey(elliptic.P384(), opts.RandomSource)
 	if errGen != nil {
 		return "", "", fmt.Errorf("unable to generate container key: %w", errGen)
 	}
@@ -116,16 +90,11 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err err
 }
 
 // PublicKeys return the appropriate key format used by the sealing strategy.
-func (a *adapter) PublicKeys(keys ...string) ([]interface{}, error) {
-	// v1.pk.[data]
-	res := []interface{}{}
+func (a *adapter) publicKeys(keys ...string) ([]*ecdsa.PublicKey, error) {
+	// v2.pk.[data]
+	res := []*ecdsa.PublicKey{}
 
 	for _, key := range keys {
-		// Check prefix
-		if !strings.HasPrefix(key, PublicKeyPrefix) {
-			return nil, fmt.Errorf("iunexpected public key '%s' for v2 sealing process", key)
-		}
-
 		// Remove prefix if exists
 		key = strings.TrimPrefix(key, PublicKeyPrefix)
 

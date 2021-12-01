@@ -23,15 +23,16 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/sha512"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/awnumar/memguard"
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
-	"github.com/elastic/harp/pkg/sdk/security"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
@@ -67,8 +68,11 @@ func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.Lo
 		return nil, errors.New("invalid container signing public key")
 	}
 
-	// Check identity private encryption key
-	privRaw := identity.Bytes()
+	// Decode private key
+	privRaw, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(identity.String(), PrivateKeyPrefix))
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode private key: %w", err)
+	}
 	if len(privRaw) != privateKeySize {
 		return nil, fmt.Errorf("invalid identity private key length")
 	}
@@ -163,49 +167,4 @@ func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.Lo
 
 	// No error
 	return out, nil
-}
-
-// -----------------------------------------------------------------------------
-
-func tryRecipientKeys(derivedKey *[32]byte, recipients []*containerv1.Recipient) ([]byte, error) {
-	// Calculate recipient identifier
-	identifier, err := keyIdentifierFromDerivedKey(derivedKey)
-	if err != nil {
-		return nil, fmt.Errorf("unable to generate identifier: %w", err)
-	}
-
-	// Create AES block cipher
-	block, err := aes.NewCipher(derivedKey[:])
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize block cipher: %w", err)
-	}
-
-	// Initialize AEAD cipher chain
-	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize aead chain: %w", err)
-	}
-
-	// Find matching recipient
-	for _, r := range recipients {
-		// Check recipient identifiers
-		if !security.SecureCompare(identifier, r.Identifier) {
-			continue
-		}
-
-		var nonce [nonceSize]byte
-		copy(nonce[:], r.Key[:nonceSize])
-
-		// Try to decrypt the secretbox with the derived key.
-		payloadKey, err := decrypt(r.Key[nonceSize:], nonce[:], aead)
-		if err != nil {
-			return nil, fmt.Errorf("invalid recipient encryption key")
-		}
-
-		// Encryption key found, return no error.
-		return payloadKey, nil
-	}
-
-	// No recipient found in list.
-	return nil, fmt.Errorf("no recipient found")
 }

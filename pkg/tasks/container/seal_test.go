@@ -23,7 +23,6 @@ import (
 	"io"
 	"testing"
 
-	"github.com/awnumar/memguard"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/tasks"
 	fuzz "github.com/google/gofuzz"
@@ -37,7 +36,7 @@ func TestSealTask_Run_V1(t *testing.T) {
 		SealedContainerWriter    tasks.WriterProvider
 		OutputWriter             tasks.WriterProvider
 		PeerPublicKeys           []string
-		DCKDMasterKey            *memguard.LockedBuffer
+		DCKDMasterKey            string
 		DCKDTarget               string
 		JSONOutput               bool
 		DisableContainerIdentity bool
@@ -172,7 +171,7 @@ func TestSealTask_Run_V2(t *testing.T) {
 		SealedContainerWriter    tasks.WriterProvider
 		OutputWriter             tasks.WriterProvider
 		PeerPublicKeys           []string
-		DCKDMasterKey            *memguard.LockedBuffer
+		DCKDMasterKey            string
 		DCKDTarget               string
 		JSONOutput               bool
 		DisableContainerIdentity bool

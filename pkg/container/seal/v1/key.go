@@ -22,7 +22,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/awnumar/memguard"
@@ -30,6 +29,7 @@ import (
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/nacl/box"
 
+	"github.com/elastic/harp/pkg/container/seal"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
 )
 
@@ -38,40 +38,15 @@ const (
 	PrivateKeyPrefix = "v1.sk."
 )
 
-// GenerateOptions represents container key generation options.
-type generateOptions struct {
-	dckdMasterKey *memguard.LockedBuffer
-	dckdTarget    string
-	randomSource  io.Reader
-}
-
-// GenerateOption represents functional pattern builder for optional parameters.
-type GenerateOption func(o *generateOptions)
-
-// WithDeterministicKey enables deterministic container key generation.
-func WithDeterministicKey(masterKey *memguard.LockedBuffer, target string) GenerateOption {
-	return func(o *generateOptions) {
-		o.dckdMasterKey = masterKey
-		o.dckdTarget = target
-	}
-}
-
-// WithRandom provides the random source for key generation.
-func WithRandom(random io.Reader) GenerateOption {
-	return func(o *generateOptions) {
-		o.randomSource = random
-	}
-}
-
 // -----------------------------------------------------------------------------
 
 // CenerateKey create an X25519 key pair used as container identifier.
-func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err error) {
+func (a *adapter) GenerateKey(fopts ...seal.GenerateOption) (publicKey, privateKey string, err error) {
 	// Prepare defaults
-	opts := &generateOptions{
-		dckdMasterKey: nil,
-		dckdTarget:    "",
-		randomSource:  rand.Reader,
+	opts := &seal.GenerateOptions{
+		DCKDMasterKey: nil,
+		DCKDTarget:    "",
+		RandomSource:  rand.Reader,
 	}
 
 	// Apply optional parameters
@@ -80,10 +55,10 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err err
 	}
 
 	// Master key derivation
-	if opts.dckdMasterKey != nil {
+	if opts.DCKDMasterKey != nil {
 		// Argon2ID(masterKey, Blake2B-512('harp deterministic salt v1', Target), 1, 64Mb, 4, 64)
 		// Don't clean bytes, already done by memguard.
-		masterKey := opts.dckdMasterKey.Bytes()
+		masterKey := opts.DCKDMasterKey.Bytes()
 		if len(masterKey) < 32 {
 			return "", "", fmt.Errorf("the master key must be 32 bytes long at least")
 		}
@@ -93,7 +68,7 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err err
 		if err != nil {
 			return "", "", fmt.Errorf("unable to initialize salt derivation: %w", err)
 		}
-		h.Write([]byte(opts.dckdTarget))
+		h.Write([]byte(opts.DCKDTarget))
 		salt := h.Sum(nil)
 		defer memguard.WipeBytes(salt)
 
@@ -102,11 +77,11 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err err
 		defer memguard.WipeBytes(dk)
 
 		// Assign to seed
-		opts.randomSource = bytes.NewBuffer(dk)
+		opts.RandomSource = bytes.NewBuffer(dk)
 	}
 
 	// Generate x25519 container key pair
-	pub, priv, errGen := box.GenerateKey(opts.randomSource)
+	pub, priv, errGen := box.GenerateKey(opts.RandomSource)
 	if errGen != nil {
 		return "", "", fmt.Errorf("unable to generate container key: %w", errGen)
 	}
@@ -120,9 +95,9 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err err
 }
 
 // PublicKeys return the appropriate key format used by the sealing strategy.
-func (a *adapter) PublicKeys(keys ...string) ([]interface{}, error) {
+func (a *adapter) publicKeys(keys ...string) ([]*[ed25519.PublicKeySize]byte, error) {
 	// v1.pk.[data]
-	res := []interface{}{}
+	res := []*[ed25519.PublicKeySize]byte{}
 
 	for _, key := range keys {
 		// Remove prefix if exists

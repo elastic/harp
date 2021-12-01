@@ -101,7 +101,7 @@ func TestUnsealTask_Run(t *testing.T) {
 		{
 			name: "outputWriter error",
 			fields: fields{
-				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.sealed"),
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v1.sealed"),
 				OutputWriter: func(ctx context.Context) (io.Writer, error) {
 					return nil, errors.New("test")
 				},
@@ -112,7 +112,7 @@ func TestUnsealTask_Run(t *testing.T) {
 		{
 			name: "outputWriter closed",
 			fields: fields{
-				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.sealed"),
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v1.sealed"),
 				OutputWriter: func(ctx context.Context) (io.Writer, error) {
 					return cmdutil.NewClosedWriter(), nil
 				},
@@ -120,22 +120,58 @@ func TestUnsealTask_Run(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "v2 without prefix",
+			fields: fields{
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v2.sealed"),
+				OutputWriter:    cmdutil.DiscardWriter(),
+				ContainerKey:    memguard.NewBufferFromBytes([]byte("dAYx4CeTMRGKfpFHA7Q926qMz8imo1VJIToMw9uvH7HfPJTRpLUSMUS07JAdV-1R")),
+			},
+			wantErr: true,
+		},
 		// ---------------------------------------------------------------------
 		{
-			name: "valid",
+			name: "valid - v1",
 			fields: fields{
-				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.sealed"),
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v1.sealed"),
 				OutputWriter:    cmdutil.DiscardWriter(),
 				ContainerKey:    memguard.NewBufferFromBytes([]byte("MiVGh4KOmdzZbej17BZGChkCPZ9uK9uBWdPNU0GlBNg")),
 			},
 			wantErr: false,
 		},
 		{
-			name: "valid - with identity recovery key",
+			name: "valid - v1 - with identity recovery key",
 			fields: fields{
-				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.sealed"),
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v1.sealed"),
 				OutputWriter:    cmdutil.DiscardWriter(),
 				ContainerKey:    memguard.NewBufferFromBytes([]byte("IO6bCjACnqsCP0ahT--CVBhryzhe-ZFroVzn5Dx3D0U")),
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - v1 - with identity recovery key with prefix",
+			fields: fields{
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v1.sealed"),
+				OutputWriter:    cmdutil.DiscardWriter(),
+				ContainerKey:    memguard.NewBufferFromBytes([]byte("v1.sk.IO6bCjACnqsCP0ahT--CVBhryzhe-ZFroVzn5Dx3D0U")),
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - v2",
+			fields: fields{
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v2.sealed"),
+				OutputWriter:    cmdutil.DiscardWriter(),
+				ContainerKey:    memguard.NewBufferFromBytes([]byte("v2.sk.P5l8Li3hRAsmCv4DPAPGr5VUMi4MGUsiSki1IDqIb0y6neJIU7VPBKqqhE0UR-x4")),
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - v2 - with identity recovery key",
+			fields: fields{
+				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v2.sealed"),
+				OutputWriter:    cmdutil.DiscardWriter(),
+				ContainerKey:    memguard.NewBufferFromBytes([]byte("v2.sk.VHJBdjBLWWJsMktxQ285ZoFXc5G4HY_0qSMZAibGlchUmqt915byglIOGeel-5X5")),
 			},
 			wantErr: false,
 		},
