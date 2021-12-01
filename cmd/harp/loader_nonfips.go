@@ -15,26 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
+//go:build !fips
+
 package main
 
 import (
-	"math/rand"
-	"time"
-
-	"github.com/elastic/harp/cmd/harp/internal/cmd"
-	"github.com/elastic/harp/pkg/sdk/log"
+	// Register encryption transformers
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/paseto"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
+	_ "github.com/elastic/harp/pkg/vault"
 )
-
-func init() {
-	// Set default timezone to UTC
-	time.Local = time.UTC
-
-	// Initialize random number generator
-	rand.Seed(time.Now().Unix())
-}
-
-func main() {
-	if err := cmd.Execute(); err != nil {
-		log.CheckErr("Unable to complete command execution", err)
-	}
-}
