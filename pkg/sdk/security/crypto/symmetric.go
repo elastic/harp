@@ -23,6 +23,9 @@ import (
 
 	"github.com/awnumar/memguard"
 	"github.com/fernet/fernet-go"
+	"github.com/pkg/errors"
+
+	"github.com/elastic/harp/build/fips"
 )
 
 // -----------------------------------------------------------------------------
@@ -40,12 +43,21 @@ func Key(keyType string) (string, error) {
 		key := memguard.NewBufferRandom(32).Bytes()
 		return base64.StdEncoding.EncodeToString(key), nil
 	case "aes:siv":
+		if fips.Enabled() {
+			return "", errors.New("aes:siv key generation is disabled in FIPS Mode")
+		}
 		key := memguard.NewBufferRandom(64).Bytes()
 		return base64.StdEncoding.EncodeToString(key), nil
 	case "secretbox":
+		if fips.Enabled() {
+			return "", errors.New("secretbox key generation is disabled in FIPS Mode")
+		}
 		key := memguard.NewBufferRandom(32).Bytes()
 		return base64.StdEncoding.EncodeToString(key), nil
 	case "chacha20":
+		if fips.Enabled() {
+			return "", errors.New("chacha20 key generation is disabled in FIPS Mode")
+		}
 		key := memguard.NewBufferRandom(32).Bytes()
 		return base64.StdEncoding.EncodeToString(key), nil
 	case "fernet":

@@ -14,7 +14,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-package fips
+package v2
 
 import (
 	"crypto/ecdsa"
@@ -25,6 +25,7 @@ import (
 	"github.com/awnumar/memguard"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	fuzz "github.com/google/gofuzz"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 )
@@ -112,7 +113,8 @@ func TestSeal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := Seal(tt.args.container, tt.args.peersPublicKey...)
+			adapter := New()
+			_, err := adapter.Seal(rand.Reader, tt.args.container, tt.args.peersPublicKey...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Seal() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -135,12 +137,13 @@ func Test_Seal_Unseal(t *testing.T) {
 		Raw: []byte{0x00, 0x00},
 	}
 
-	sealed, err := Seal(input, &pubKey)
+	adapter := New()
+	sealed, err := adapter.Seal(rand.Reader, input, &pubKey)
 	if err != nil {
 		t.Fatalf("unable to seal container: %v", err)
 	}
 
-	unsealed, err := Unseal(sealed, memguard.NewBufferFromBytes(privKey.D.Bytes()))
+	unsealed, err := adapter.Unseal(sealed, memguard.NewBufferFromBytes(privKey.D.Bytes()))
 	if err != nil {
 		t.Fatalf("unable to unseal container: %v", err)
 	}
@@ -148,4 +151,80 @@ func Test_Seal_Unseal(t *testing.T) {
 	if diff := cmp.Diff(unsealed, input, ignoreOpts...); diff != "" {
 		t.Errorf("Seal/Unseal()\n-got/+want\ndiff %s", diff)
 	}
+}
+
+func Test_Seal_Fuzz(t *testing.T) {
+	adapter := New()
+
+	// Making sure the function never panics
+	for i := 0; i < 500; i++ {
+		f := fuzz.New()
+
+		// Prepare arguments
+		var (
+			publicKey [32]byte
+		)
+		input := containerv1.Container{
+			Headers: &containerv1.Header{},
+			Raw:     []byte{0x00, 0x00},
+		}
+
+		f.Fuzz(&input.Headers)
+		f.Fuzz(&input.Raw)
+		f.Fuzz(&publicKey)
+
+		// Execute
+		adapter.Seal(rand.Reader, &input, &publicKey)
+	}
+}
+
+func Test_UnSeal_Fuzz(t *testing.T) {
+	// Memguard buffer is excluded from fuzz for random race condition error
+	// investigation will be done in a separated thread.
+	identity := memguard.NewBufferRandom(32)
+
+	adapter := New()
+
+	// Making sure the function never panics
+	for i := 0; i < 500; i++ {
+		f := fuzz.New()
+
+		// Prepare arguments
+		input := containerv1.Container{
+			Headers: &containerv1.Header{},
+			Raw:     []byte{0x00, 0x00},
+		}
+
+		f.Fuzz(&input.Headers)
+		f.Fuzz(&input.Raw)
+
+		// Execute
+		adapter.Unseal(&input, identity)
+	}
+}
+
+// -----------------------------------------------------------------------------
+func benchmarkSeal(container *containerv1.Container, peersPublicKeys []interface{}, b *testing.B) {
+	adapter := New()
+	for n := 0; n < b.N; n++ {
+		_, err := adapter.Seal(rand.Reader, container, peersPublicKeys...)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func Benchmark_Seal(b *testing.B) {
+	privKey, _ := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	pubKey := privKey.PublicKey
+
+	input := &containerv1.Container{
+		Headers: &containerv1.Header{
+			ContentEncoding: "gzip",
+			ContentType:     "application/vnd.harp.v1.Bundle",
+		},
+		Raw: []byte{0x00, 0x00},
+	}
+
+	benchmarkSeal(input, []interface{}{&pubKey}, b)
 }

@@ -15,30 +15,101 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package fips
+package v2
 
 import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/hmac"
-	"crypto/rand"
+	cryptorand "crypto/rand"
 	"crypto/sha512"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
 
-	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
+	"github.com/awnumar/memguard"
 	"golang.org/x/crypto/hkdf"
 	"google.golang.org/protobuf/proto"
+
+	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
+	"github.com/elastic/harp/pkg/sdk/types"
 )
 
-func generatedEncryptionKey() (*[32]byte, cipher.Block, error) {
+func prepareSignature(block cipher.Block) (*ecdsa.PrivateKey, []byte, error) {
+	// Generate ephemeral signing key
+	sigPriv, err := ecdsa.GenerateKey(signatureCurve, cryptorand.Reader)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to generate signing keypair")
+	}
+
+	// Compress public key point
+	sigPub := elliptic.MarshalCompressed(sigPriv.Curve, sigPriv.PublicKey.X, sigPriv.PublicKey.Y)
+
+	// Encrypt public signature key
+	var pubSigNonce [nonceSize]byte
+	copy(pubSigNonce[:], "harp_psigkey")
+
+	// Initialize AEAD cipher chain
+	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to initialize aead chain: %w", err)
+	}
+
+	// Encrypt public signing key
+	encryptedPubSig, err := encrypt(sigPub, pubSigNonce[:], aead)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to encrypt public signing key: %w", err)
+	}
+
+	// Cleanup
+	memguard.WipeBytes(pubSigNonce[:])
+	memguard.WipeBytes(sigPub)
+
+	// No error
+	return sigPriv, encryptedPubSig, nil
+}
+
+func signContainer(sigPriv *ecdsa.PrivateKey, headers *containerv1.Header, container *containerv1.Container) (content, containerSig, sigNonce []byte, err error) {
+	// Serialize protobuf payload
+	content, err = proto.Marshal(container)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("unable to encode container content: %w", err)
+	}
+
+	// Compute header hash
+	headerHash, err := computeHeaderHash(headers)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("unable to compute header hash: %w", err)
+	}
+
+	// Compute protected content hash
+	protectedHash := computeProtectedHash(headerHash, content)
+
+	// Sign the protected content
+	r, s, err := ecdsa.Sign(cryptorand.Reader, sigPriv, protectedHash)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("unable to sign protected content: %w", err)
+	}
+
+	// Container signature
+	containerSig = append(r.Bytes(), s.Bytes()...)
+
+	// Prepare encryption nonce form sigHash
+	sigNonce = make([]byte, nonceSize)
+	copy(sigNonce, headerHash[:nonceSize])
+
+	// No error
+	return content, containerSig, sigNonce, nil
+}
+
+func generatedEncryptionKey(rand io.Reader) (*[32]byte, cipher.Block, error) {
 	// Generate payload encryption key
 	var payloadKey [encryptionKeySize]byte
-	if _, err := io.ReadFull(rand.Reader, payloadKey[:]); err != nil {
+	if _, err := io.ReadFull(rand, payloadKey[:]); err != nil {
 		return nil, nil, fmt.Errorf("unable to generate payload key for encryption")
 	}
 
@@ -52,19 +123,32 @@ func generatedEncryptionKey() (*[32]byte, cipher.Block, error) {
 	return &payloadKey, block, err
 }
 
-func encrypt(plaintext []byte, n []byte, ciph cipher.AEAD) ([]byte, error) {
-	if len(plaintext) > 64*1024*1024 {
+func encrypt(plaintext, n []byte, ciph cipher.AEAD) ([]byte, error) {
+	// Check cleartext message size.
+	if len(plaintext) > messageLimit {
 		return nil, errors.New("value too large")
 	}
+	if types.IsNil(ciph) {
+		return nil, errors.New("aead cipher must not be nil")
+	}
+
+	// Allocate output buffer
 	out := make([]byte, 0, ciph.Overhead()+len(plaintext))
+
+	// Seal with aead (nonce is handled externally)
 	out = ciph.Seal(out, n, plaintext, nil)
 
+	// No error
 	return out, nil
 }
 
 func decrypt(ciphertext, nonce []byte, ciph cipher.AEAD) ([]byte, error) {
+	// Check arguments
 	if len(ciphertext) < ciph.NonceSize() {
 		return nil, errors.New("ciphered text too short")
+	}
+	if types.IsNil(ciph) {
+		return nil, errors.New("aead cipher must not be nil")
 	}
 
 	clearText, err := ciph.Open(nil, nonce, ciphertext, nil)
@@ -72,6 +156,7 @@ func decrypt(ciphertext, nonce []byte, ciph cipher.AEAD) ([]byte, error) {
 		return nil, errors.New("failed to decrypt given message")
 	}
 
+	// No error
 	return clearText, nil
 }
 
@@ -94,7 +179,7 @@ func computeHeaderHash(headers *containerv1.Header) ([]byte, error) {
 	return hash[:], nil
 }
 
-func computeProtectedHash(container *containerv1.Container, headerHash, content []byte) ([]byte, error) {
+func computeProtectedHash(headerHash, content []byte) []byte {
 	// Prepare protected content
 	protected := bytes.Buffer{}
 	protected.Write([]byte("harp fips encrypted signature"))
@@ -104,10 +189,10 @@ func computeProtectedHash(container *containerv1.Container, headerHash, content 
 	protected.Write(contentHash[:])
 
 	// No error
-	return protected.Bytes(), nil
+	return protected.Bytes()
 }
 
-func packRecipient(payloadKey *[32]byte, ephPrivKey *ecdsa.PrivateKey, peerPublicKey *ecdsa.PublicKey) (*containerv1.Recipient, error) {
+func packRecipient(rand io.Reader, payloadKey *[32]byte, ephPrivKey *ecdsa.PrivateKey, peerPublicKey *ecdsa.PublicKey) (*containerv1.Recipient, error) {
 	// Check arguments
 	if payloadKey == nil {
 		return nil, fmt.Errorf("unable to proceed with nil payload key")
@@ -133,7 +218,7 @@ func packRecipient(payloadKey *[32]byte, ephPrivKey *ecdsa.PrivateKey, peerPubli
 
 	// Generate recipient nonce
 	var recipientNonce [nonceSize]byte
-	if _, err := io.ReadFull(rand.Reader, recipientNonce[:]); err != nil {
+	if _, errRand := io.ReadFull(rand, recipientNonce[:]); errRand != nil {
 		return nil, fmt.Errorf("unable to generate recipient nonce for encryption")
 	}
 
@@ -209,7 +294,7 @@ func lengthPrefixedArray(value []byte) []byte {
 
 func uint32ToBytes(value uint32) []byte {
 	result := make([]byte, 4)
-	binary.BigEndian.PutUint32(result, uint32(value))
+	binary.BigEndian.PutUint32(result, value)
 
 	return result
 }

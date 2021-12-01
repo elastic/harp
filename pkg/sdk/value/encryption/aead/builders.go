@@ -27,6 +27,7 @@ import (
 	miscreant "github.com/miscreant/miscreant.go"
 	"golang.org/x/crypto/chacha20poly1305"
 
+	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
@@ -41,10 +42,13 @@ var (
 
 func init() {
 	encryption.Register(aesgcmPrefix, AESGCM)
-	encryption.Register(aespmacsivPrefix, AESPMACSIV)
-	encryption.Register(aessivPrefix, AESSIV)
-	encryption.Register(chachaPrefix, Chacha20Poly1305)
-	encryption.Register(xchachaPrefix, XChacha20Poly1305)
+
+	if !fips.Enabled() {
+		encryption.Register(aespmacsivPrefix, AESPMACSIV)
+		encryption.Register(aessivPrefix, AESSIV)
+		encryption.Register(chachaPrefix, Chacha20Poly1305)
+		encryption.Register(xchachaPrefix, XChacha20Poly1305)
+	}
 }
 
 // AESGCM returns an AES-GCM value transformer instance.

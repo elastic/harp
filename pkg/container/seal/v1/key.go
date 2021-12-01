@@ -14,18 +14,28 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-package container
+package v1
 
 import (
 	"bytes"
+	"crypto/ed25519"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/awnumar/memguard"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/nacl/box"
+
+	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
+)
+
+const (
+	PublicKeyPrefix  = "v1.pk."
+	PrivateKeyPrefix = "v1.sk."
 )
 
 // GenerateOptions represents container key generation options.
@@ -56,7 +66,7 @@ func WithRandom(random io.Reader) GenerateOption {
 // -----------------------------------------------------------------------------
 
 // CenerateKey create an X25519 key pair used as container identifier.
-func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey *[32]byte, err error) {
+func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey string, err error) {
 	// Prepare defaults
 	opts := &generateOptions{
 		dckdMasterKey: nil,
@@ -71,19 +81,24 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey *[32]byte, err 
 
 	// Master key derivation
 	if opts.dckdMasterKey != nil {
-		// Argon2ID(masterKey, Blake2B-512(Target), 1, 64Mb, 4, 64)
+		// Argon2ID(masterKey, Blake2B-512('harp deterministic salt v1', Target), 1, 64Mb, 4, 64)
 		// Don't clean bytes, already done by memguard.
 		masterKey := opts.dckdMasterKey.Bytes()
 		if len(masterKey) < 32 {
-			return nil, nil, fmt.Errorf("the master key must be 32 bytes long at least")
+			return "", "", fmt.Errorf("the master key must be 32 bytes long at least")
 		}
 
 		// Generate deterministic salt
-		salt := blake2b.Sum512([]byte(opts.dckdTarget))
-		defer memguard.WipeBytes(salt[:])
+		h, err := blake2b.New512([]byte("harp deterministic salt v1"))
+		if err != nil {
+			return "", "", fmt.Errorf("unable to initialize salt derivation: %w", err)
+		}
+		h.Write([]byte(opts.dckdTarget))
+		salt := h.Sum(nil)
+		defer memguard.WipeBytes(salt)
 
 		// Derive deterministic container key using Argon2id
-		dk := argon2.IDKey(masterKey[:32], salt[:], 1, 64*1024, 4, 64)
+		dk := argon2.IDKey(masterKey[:32], salt, 1, 64*1024, 4, 64)
 		defer memguard.WipeBytes(dk)
 
 		// Assign to seed
@@ -93,9 +108,48 @@ func GenerateKey(fopts ...GenerateOption) (publicKey, privateKey *[32]byte, err 
 	// Generate x25519 container key pair
 	pub, priv, errGen := box.GenerateKey(opts.randomSource)
 	if errGen != nil {
-		return nil, nil, fmt.Errorf("unable to generate container key: %w", errGen)
+		return "", "", fmt.Errorf("unable to generate container key: %w", errGen)
+	}
+
+	// Encode keys
+	encodedPub := append([]byte(PublicKeyPrefix), base64.RawURLEncoding.EncodeToString(pub[:])...)
+	encodedPriv := append([]byte(PrivateKeyPrefix), base64.RawURLEncoding.EncodeToString(priv[:])...)
+
+	// No error
+	return string(encodedPub), string(encodedPriv), nil
+}
+
+// PublicKeys return the appropriate key format used by the sealing strategy.
+func (a *adapter) PublicKeys(keys ...string) ([]interface{}, error) {
+	// v1.pk.[data]
+	res := []interface{}{}
+
+	for _, key := range keys {
+		// Remove prefix if exists
+		key = strings.TrimPrefix(key, PublicKeyPrefix)
+
+		// Decode key
+		keyRaw, err := base64.RawURLEncoding.DecodeString(key)
+		if err != nil {
+			return nil, fmt.Errorf("unable to decode public key '%s': %w", key, err)
+		}
+
+		// Public key sanity checks
+		if len(keyRaw) != ed25519.PublicKeySize {
+			return nil, fmt.Errorf("invalid public key length for key '%s'", key)
+		}
+		if extra25519.IsEdLowOrder(keyRaw) {
+			return nil, fmt.Errorf("low order public key usage is forbidden for key '%s, try to generate a new one to fix the issue", key)
+		}
+
+		// Copy the public key
+		var pk [ed25519.PublicKeySize]byte
+		copy(pk[:], keyRaw[:ed25519.PublicKeySize])
+
+		// Append it to sealing keys
+		res = append(res, &pk)
 	}
 
 	// No error
-	return pub, priv, nil
+	return res, nil
 }

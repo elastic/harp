@@ -24,12 +24,9 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/awnumar/memguard"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
-	"golang.org/x/crypto/nacl/box"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 )
@@ -191,112 +188,6 @@ func TestLoad(t *testing.T) {
 	}
 }
 
-func TestSeal(t *testing.T) {
-	publicKey1, _, _ := box.GenerateKey(bytes.NewReader([]byte("deterministic-generation-for-tests-0002")))
-	publicKey2, _, _ := box.GenerateKey(bytes.NewReader([]byte("deterministic-generation-for-tests-0003")))
-
-	type args struct {
-		container      *containerv1.Container
-		peersPublicKey []*[32]byte
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *containerv1.Container
-		wantErr bool
-	}{
-		{
-			name:    "nil",
-			wantErr: true,
-		},
-		{
-			name: "empty container",
-			args: args{
-				container: &containerv1.Container{},
-			},
-			wantErr: true,
-		},
-		{
-			name: "empty container headers",
-			args: args{
-				container: &containerv1.Container{
-					Headers: &containerv1.Header{},
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "empty container with public keys",
-			args: args{
-				container: &containerv1.Container{
-					Headers: &containerv1.Header{},
-				},
-				peersPublicKey: []*[32]byte{
-					publicKey1,
-					publicKey2,
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "valid container with public keys",
-			args: args{
-				container: &containerv1.Container{
-					Headers: &containerv1.Header{},
-					Raw:     []byte{0x01, 0x02, 0x03, 0x04},
-				},
-				peersPublicKey: []*[32]byte{
-					publicKey1,
-					publicKey2,
-				},
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := Seal(tt.args.container, tt.args.peersPublicKey...)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Seal() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-		})
-	}
-}
-
-// -----------------------------------------------------------------------------
-
-func Test_Seal_Unseal(t *testing.T) {
-	publicKey1, privateKey1, err := box.GenerateKey(bytes.NewReader([]byte("deterministic-generation-for-tests-0002")))
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-
-	input := &containerv1.Container{
-		Headers: &containerv1.Header{
-			ContentEncoding: "gzip",
-			ContentType:     "application/vnd.harp.v1.Bundle",
-		},
-		Raw: []byte{0x00, 0x00},
-	}
-
-	sealed, err := Seal(input, nil, publicKey1)
-	if err != nil {
-		t.Fatalf("unable to seal container: %v", err)
-	}
-
-	spew.Dump(sealed)
-
-	unsealed, err := Unseal(sealed, memguard.NewBufferFromBytes(privateKey1[:]))
-	if err != nil {
-		t.Fatalf("unable to unseal container: %v", err)
-	}
-
-	if diff := cmp.Diff(unsealed, input, ignoreOpts...); diff != "" {
-		t.Errorf("Seal/Unseal()\n-got/+want\ndiff %s", diff)
-	}
-}
-
 // -----------------------------------------------------------------------------
 
 func Test_Load_Fuzz(t *testing.T) {
@@ -330,51 +221,5 @@ func Test_Dump_Fuzz(t *testing.T) {
 
 		// Execute
 		Dump(ioutil.Discard, &input)
-	}
-}
-
-func Test_Seal_Fuzz(t *testing.T) {
-	// Making sure the function never panics
-	for i := 0; i < 500; i++ {
-		f := fuzz.New()
-
-		// Prepare arguments
-		var (
-			publicKey [32]byte
-		)
-		input := containerv1.Container{
-			Headers: &containerv1.Header{},
-			Raw:     []byte{0x00, 0x00},
-		}
-
-		f.Fuzz(&input.Headers)
-		f.Fuzz(&input.Raw)
-		f.Fuzz(&publicKey)
-
-		// Execute
-		Seal(&input, &publicKey)
-	}
-}
-
-func Test_UnSeal_Fuzz(t *testing.T) {
-	// Memguard buffer is excluded from fuzz for random race condition error
-	// investigation will be done in a separated thread.
-	identity := memguard.NewBufferRandom(32)
-
-	// Making sure the function never panics
-	for i := 0; i < 500; i++ {
-		f := fuzz.New()
-
-		// Prepare arguments
-		input := containerv1.Container{
-			Headers: &containerv1.Header{},
-			Raw:     []byte{0x00, 0x00},
-		}
-
-		f.Fuzz(&input.Headers)
-		f.Fuzz(&input.Raw)
-
-		// Execute
-		Unseal(&input, identity)
 	}
 }

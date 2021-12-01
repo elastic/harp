@@ -15,25 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package fips
+package v2
 
 import (
 	"crypto/cipher"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/rand"
 	"errors"
 	"fmt"
+	"io"
 
-	"github.com/awnumar/memguard"
-	"github.com/davecgh/go-spew/spew"
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 	"github.com/elastic/harp/pkg/sdk/types"
-	"google.golang.org/protobuf/proto"
 )
 
 // Seal a secret container
-func Seal(container *containerv1.Container, peersPublicKey ...interface{}) (*containerv1.Container, error) {
+func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, peersPublicKey ...interface{}) (*containerv1.Container, error) {
 	// Check parameters
 	if types.IsNil(container) {
 		return nil, fmt.Errorf("unable to process nil container")
@@ -46,7 +43,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...interface{}) (*con
 	}
 
 	// Generate encryption key
-	payloadKey, block, err := generatedEncryptionKey()
+	payloadKey, block, err := generatedEncryptionKey(rand)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate encryption key: %w", err)
 	}
@@ -58,7 +55,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...interface{}) (*con
 	}
 
 	// Generate ephemeral encryption key
-	encPriv, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	encPriv, err := ecdsa.GenerateKey(encryptionCurve, rand)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate ephemeral encryption keypair")
 	}
@@ -69,6 +66,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...interface{}) (*con
 		EncryptionPublicKey: elliptic.MarshalCompressed(encPriv.Curve, encPriv.PublicKey.X, encPriv.PublicKey.Y),
 		ContainerBox:        encryptedPubSig,
 		Recipients:          []*containerv1.Recipient{},
+		SealVersion:         SealVersion,
 	}
 
 	// Process recipients
@@ -83,7 +81,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...interface{}) (*con
 		}
 
 		// Pack recipient using its public key
-		r, errPack := packRecipient(payloadKey, encPriv, peerPublicKey)
+		r, errPack := packRecipient(rand, payloadKey, encPriv, peerPublicKey)
 		if errPack != nil {
 			return nil, fmt.Errorf("unable to pack container recipient (%X): %w", *peerPublicKey, err)
 		}
@@ -103,8 +101,6 @@ func Seal(container *containerv1.Container, peersPublicKey ...interface{}) (*con
 		return nil, fmt.Errorf("unable to sign container data: %w", err)
 	}
 
-	spew.Dump(content)
-
 	// Initialize AEAD cipher chain
 	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
 	if err != nil {
@@ -112,7 +108,7 @@ func Seal(container *containerv1.Container, peersPublicKey ...interface{}) (*con
 	}
 
 	// Encrypt payload
-	encryptedPayload, err := encrypt(append(containerSig, content...), sigNonce[:], aead)
+	encryptedPayload, err := encrypt(append(containerSig, content...), sigNonce, aead)
 	if err != nil {
 		return nil, fmt.Errorf("unable to encrypt container data: %w", err)
 	}
@@ -122,75 +118,4 @@ func Seal(container *containerv1.Container, peersPublicKey ...interface{}) (*con
 		Headers: containerHeaders,
 		Raw:     encryptedPayload,
 	}, nil
-}
-
-// -----------------------------------------------------------------------------
-
-func prepareSignature(block cipher.Block) (*ecdsa.PrivateKey, []byte, error) {
-	// Generate ephemeral signing key
-	sigPriv, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to generate signing keypair")
-	}
-
-	// Compress public key point
-	sigPub := elliptic.MarshalCompressed(sigPriv.Curve, sigPriv.PublicKey.X, sigPriv.PublicKey.Y)
-
-	// Encrypt public signature key
-	var pubSigNonce [nonceSize]byte
-	copy(pubSigNonce[:], "harp_psigkey")
-
-	// Initialize AEAD cipher chain
-	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to initialize aead chain: %w", err)
-	}
-
-	// Encrypt public signing key
-	encryptedPubSig, err := encrypt(sigPub, pubSigNonce[:], aead)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to encrypt public signing key: %w", err)
-	}
-
-	// Cleanup
-	memguard.WipeBytes(pubSigNonce[:])
-
-	// No error
-	return sigPriv, encryptedPubSig, nil
-}
-
-func signContainer(sigPriv *ecdsa.PrivateKey, headers *containerv1.Header, container *containerv1.Container) (content, containerSig, sigNonce []byte, err error) {
-	// Serialize protobuf payload
-	content, err = proto.Marshal(container)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to encode container content: %w", err)
-	}
-
-	// Compute header hash
-	headerHash, err := computeHeaderHash(headers)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to compute header hash: %w", err)
-	}
-
-	// Compute protected content hash
-	protectedHash, err := computeProtectedHash(container, headerHash, content)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to compute protected hash: %w", err)
-	}
-
-	// Sign the protected content
-	r, s, err := ecdsa.Sign(rand.Reader, sigPriv, protectedHash[:])
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to sign protected content: %w", err)
-	}
-
-	// Container signature
-	containerSig = append(r.Bytes(), s.Bytes()...)
-
-	// Prepare encryption nonce form sigHash
-	sigNonce = make([]byte, nonceSize)
-	copy(sigNonce[:], headerHash[:nonceSize])
-
-	// No error
-	return content, containerSig, sigNonce, nil
 }

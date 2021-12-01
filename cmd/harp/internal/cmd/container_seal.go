@@ -18,12 +18,10 @@
 package cmd
 
 import (
-	"encoding/base64"
-
-	"github.com/awnumar/memguard"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
+	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/container/identity"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
@@ -41,6 +39,7 @@ type containerSealParams struct {
 	target              string
 	noContainerIdentity bool
 	jsonOutput          bool
+	sealVersion         uint
 }
 
 var containerSealCmd = func() *cobra.Command {
@@ -79,46 +78,14 @@ var containerSealCmd = func() *cobra.Command {
 				}
 			}
 
-			// Convert identities to sealing keys
-			peerPublicKeys, err := identity.SealingKeys(params.identities...)
-			if err != nil {
-				log.For(ctx).Fatal("unable to transform identity to a sealing key", zap.Error(err))
-				return
-			}
-
 			// Prepare task
 			t := &container.SealTask{
-				ContainerReader:          cmdutil.FileReader(params.inputPath),
-				SealedContainerWriter:    cmdutil.FileWriter(params.outputPath),
-				OutputWriter:             cmdutil.StdoutWriter(),
-				JSONOutput:               params.jsonOutput,
-				PeerPublicKeys:           peerPublicKeys,
-				DisableContainerIdentity: params.noContainerIdentity,
-			}
-
-			// Check container sealing master key usage
-			if params.masterKey != "" {
-				// Process target
-				if params.target == "" {
-					log.For(ctx).Fatal("target flag (string) is mandatory for key derivation")
-				}
-
-				// Assign target parameter
-				t.DCKDTarget = params.target
-
-				// Decode master key
-				masterKeyRaw, err := base64.RawURLEncoding.DecodeString(params.masterKey)
-				if err != nil {
-					log.For(ctx).Fatal("unable to decode master key", zap.Error(err))
-				}
-
-				// Check appropriate lengh
-				if len(masterKeyRaw) != 32 {
-					log.For(ctx).Fatal("invalid master key length, it should be 32 bytes after decoding")
-				}
-
-				// Assign as seed
-				t.DCKDMasterKey = memguard.NewBufferFromBytes(masterKeyRaw)
+				ContainerReader:       cmdutil.FileReader(params.inputPath),
+				SealedContainerWriter: cmdutil.FileWriter(params.outputPath),
+				OutputWriter:          cmdutil.StdoutWriter(),
+				JSONOutput:            params.jsonOutput,
+				PeerPublicKeys:        params.identities,
+				SealVersion:           params.sealVersion,
 			}
 
 			// Run the task
@@ -126,6 +93,11 @@ var containerSealCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to execute task", zap.Error(err))
 			}
 		},
+	}
+
+	sealVersion := uint(1)
+	if fips.Enabled() {
+		sealVersion = uint(2)
 	}
 
 	// Parameters
@@ -138,6 +110,7 @@ var containerSealCmd = func() *cobra.Command {
 	cmd.Flags().BoolVar(&params.noContainerIdentity, "no-container-identity", false, "Disable container identity")
 	cmd.Flags().StringVar(&params.masterKey, "dckd-master-key", "", "Master key used for deterministic container key derivation")
 	cmd.Flags().StringVar(&params.target, "dckd-target", "", "Target parameter for deterministic container key derivation")
+	cmd.Flags().UintVar(&params.sealVersion, "seal-version", sealVersion, "Select the sealing strategy version (1:modern, 2:fips-compliant)")
 
 	return cmd
 }

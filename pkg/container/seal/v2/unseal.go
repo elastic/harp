@@ -15,14 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package fips
+package v2
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdsa"
-	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/sha512"
 	"errors"
@@ -30,7 +28,6 @@ import (
 	"math/big"
 
 	"github.com/awnumar/memguard"
-	"github.com/davecgh/go-spew/spew"
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
@@ -40,7 +37,7 @@ import (
 
 // Unseal a sealed container with the given identity
 //nolint:funlen,gocyclo // To refactor
-func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (*containerv1.Container, error) {
+func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (*containerv1.Container, error) {
 	// Check parameters
 	if types.IsNil(container) {
 		return nil, fmt.Errorf("unable to process nil container")
@@ -99,7 +96,7 @@ func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (
 	copy(encryptionKey[:], payloadKey[:encryptionKeySize])
 
 	// Create AES block cipher
-	block, err := aes.NewCipher(payloadKey[:])
+	block, err := aes.NewCipher(payloadKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize block cipher: %w", err)
 	}
@@ -135,26 +132,19 @@ func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (
 
 	// Decrypt payload
 	payloadRaw, err := decrypt(container.Raw, payloadNonce[:], aead)
-	if err != nil || len(payloadRaw) < ed25519.SignatureSize {
+	if err != nil || len(payloadRaw) < signatureSize {
 		return nil, fmt.Errorf("invalid ciphered content")
 	}
 
 	// Prepare protected content
-	protected := bytes.Buffer{}
-	protected.Write([]byte("harp fips encrypted signature"))
-	protected.WriteByte(0x00)
-	protected.Write(headerHash)
-	contentHash := sha512.Sum512(payloadRaw)
-	protected.Write(contentHash[:])
+	protectedHash := computeProtectedHash(headerHash, payloadRaw)
 
 	// Extract signature / content
 	detachedSig := payloadRaw[:signatureSize]
 	content := payloadRaw[signatureSize:]
 
-	spew.Dump(payloadRaw)
-
 	// Compute SHA-384 checksum
-	digest := sha512.Sum384(protected.Bytes())
+	digest := sha512.Sum384(protectedHash)
 
 	var (
 		r = big.NewInt(0).SetBytes(detachedSig[:48])

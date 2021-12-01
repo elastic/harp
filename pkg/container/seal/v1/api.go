@@ -15,22 +15,36 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//go:build !fips
-
-// Package tlsconfig provides primitives to retrieve secure-enough TLS configurations for both clients and servers.
-//
-package tlsconfig
+package v1
 
 import (
-	"crypto/tls"
+	"crypto/ed25519"
+
+	"github.com/elastic/harp/pkg/container/seal"
 )
 
-// Client TLS cipher suites (dropping CBC ciphers for client preferred suite set)
-var clientCipherSuites = []uint16{
-	tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
-	tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
-	tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-	tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-	tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+const (
+	SealVersion = 1
+)
+
+const (
+	containerSealedContentType = "application/vnd.harp.v1.SealedContainer"
+	publicKeySize              = 32
+	privateKeySize             = 32
+	encryptionKeySize          = 32
+	keyIdentifierSize          = 32
+	nonceSize                  = 24
+	signatureSize              = ed25519.SignatureSize
+	messageLimit               = 64 * 1024 * 1024
+
+	staticSignatureNonce      = "harp_container_psigk_box"
+	signatureDomainSeparation = "harp encrypted signature"
+)
+
+// -----------------------------------------------------------------------------
+
+func New() seal.Strategy {
+	return &adapter{}
 }
+
+type adapter struct{}

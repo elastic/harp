@@ -15,13 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
+//go:build !fips
+
 package fips
 
-const (
-	containerSealedContentType = "application/vnd.harp.v1.SealedContainer+fips"
-	publicKeySize              = 49
-	privateKeySize             = 48
-	encryptionKeySize          = 32
-	nonceSize                  = 12
-	signatureSize              = 96
-)
+import "os"
+
+func Enabled() bool {
+	// Get from env.
+	return os.Getenv("HARP_FIPS_MODE") != ""
+}

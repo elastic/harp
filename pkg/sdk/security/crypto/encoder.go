@@ -29,6 +29,7 @@ import (
 	"encoding/pem"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"go.step.sm/crypto/pemutil"
 
 	// Import Blake2b
@@ -36,6 +37,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	jose "gopkg.in/square/go-jose.v2"
 
+	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
@@ -50,8 +52,16 @@ func ToJWK(key interface{}) (string, error) {
 	// Wrap key
 	keyWrapper := jose.JSONWebKey{Key: key, KeyID: ""}
 
+	// Don't process Ed25519 keys
+	if fips.Enabled() {
+		switch key.(type) {
+		case ed25519.PrivateKey, ed25519.PublicKey:
+			return "", errors.New("ed25519 key processing is disabled in FIPS Mode")
+		}
+	}
+
 	// Generate thumbprint
-	thumb, err := keyWrapper.Thumbprint(crypto.BLAKE2b_256)
+	thumb, err := keyWrapper.Thumbprint(crypto.SHA512_256)
 	if err != nil {
 		return "", err
 	}
@@ -78,6 +88,14 @@ func FromJWK(jwk string) (interface{}, error) {
 		return nil, fmt.Errorf("unable to decode JWK: %w", err)
 	}
 
+	// Don't process Ed25519 keys
+	if fips.Enabled() {
+		switch k.Key.(type) {
+		case ed25519.PrivateKey, ed25519.PublicKey:
+			return "", errors.New("ed25519 key processing is disabled in FIPS Mode")
+		}
+	}
+
 	if k.IsPublic() {
 		// No error
 		return struct {
@@ -102,6 +120,14 @@ func ToPEM(key interface{}) (string, error) {
 	// Check key
 	if types.IsNil(key) {
 		return "", fmt.Errorf("unable to encode nil key")
+	}
+
+	// Don't process Ed25519 keys
+	if fips.Enabled() {
+		switch key.(type) {
+		case ed25519.PrivateKey, ed25519.PublicKey:
+			return "", errors.New("ed25519 key processing is disabled in FIPS Mode")
+		}
 	}
 
 	// Delegate to smallstep library
@@ -132,6 +158,9 @@ func KeyToBytes(key interface{}) ([]byte, error) {
 			return nil, err
 		}
 	case ed25519.PrivateKey:
+		if fips.Enabled() {
+			return nil, errors.New("ed25519 private key processing is disabled in FIPS Mode")
+		}
 		out = []byte(k)
 	// Public keys ------------------------------------------------------------
 	case *rsa.PublicKey:
@@ -142,6 +171,9 @@ func KeyToBytes(key interface{}) ([]byte, error) {
 	case *ecdsa.PublicKey:
 		out = elliptic.MarshalCompressed(k.Curve, k.X, k.Y)
 	case ed25519.PublicKey:
+		if fips.Enabled() {
+			return nil, errors.New("ed25519 private key processing is disabled in FIPS Mode")
+		}
 		out = []byte(k)
 	default:
 		return nil, fmt.Errorf("given key type is not supported")
@@ -188,6 +220,9 @@ func ToSSH(key interface{}) (string, error) {
 	switch k := key.(type) {
 	// Public keys ------------------------------------------------------------
 	case *rsa.PublicKey, *ecdsa.PublicKey, ed25519.PublicKey:
+		if _, ok := k.(ed25519.PublicKey); ok && fips.Enabled() {
+			return "", errors.New("ed25519 public key processing is disabled in FIPS Mode")
+		}
 		pubKey, err := ssh.NewPublicKey(k)
 		if err != nil {
 			return "", fmt.Errorf("unable to convert key as ssh public key: %w", err)
@@ -195,6 +230,9 @@ func ToSSH(key interface{}) (string, error) {
 		result = ssh.MarshalAuthorizedKey(pubKey)
 	// Private keys --------------------------------------------------------
 	default:
+		if _, ok := k.(ed25519.PrivateKey); ok && fips.Enabled() {
+			return "", errors.New("ed25519 private key processing is disabled in FIPS Mode")
+		}
 		pemBlock, err := pemutil.Serialize(key, pemutil.WithOpenSSH(true))
 		if err != nil {
 			return "", fmt.Errorf("unable to encode SSH key: %w", err)
@@ -272,6 +310,9 @@ func ToJWS(payload, privkey interface{}) (string, error) {
 			alg = jose.ES512
 		}
 	case ed25519.PrivateKey:
+		if fips.Enabled() {
+			return "", errors.New("signature with Ed25519 key is disabled in FIPS Mode")
+		}
 		alg = jose.EdDSA
 	default:
 		return "", fmt.Errorf("this private key type is not supported '%T'", privkey)

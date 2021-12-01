@@ -15,12 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package fips
+package v2
 
 import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
+	"crypto/rand"
 	"testing"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
@@ -79,7 +80,7 @@ func Test_packRecipient(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, key2)
 
-	recipient, err := packRecipient(payloadKey, key1, &key2.PublicKey)
+	recipient, err := packRecipient(rand.Reader, payloadKey, key1, &key2.PublicKey)
 	assert.NoError(t, err)
 	assert.NotNil(t, recipient)
 	assert.Equal(t, []byte{0xeb, 0xe4, 0xc2, 0xff, 0xf7, 0xb5, 0x59, 0x92, 0xf1, 0x6a, 0x2e, 0xe, 0xfd, 0x6c, 0x3b, 0x83, 0x8e, 0xbc, 0x71, 0x83, 0x5f, 0xda, 0x2f, 0xcf, 0x2d, 0x72, 0x9d, 0x59, 0xc0, 0x4, 0xf7, 0x67}, recipient.Identifier)
@@ -97,7 +98,7 @@ func Test_tryRecipientKeys(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, key2)
 
-	recipient, err := packRecipient(payloadKey, key1, &key2.PublicKey)
+	recipient, err := packRecipient(rand.Reader, payloadKey, key1, &key2.PublicKey)
 	assert.NoError(t, err)
 	assert.NotNil(t, recipient)
 	assert.Equal(t, []byte{0xeb, 0xe4, 0xc2, 0xff, 0xf7, 0xb5, 0x59, 0x92, 0xf1, 0x6a, 0x2e, 0xe, 0xfd, 0x6c, 0x3b, 0x83, 0x8e, 0xbc, 0x71, 0x83, 0x5f, 0xda, 0x2f, 0xcf, 0x2d, 0x72, 0x9d, 0x59, 0xc0, 0x4, 0xf7, 0x67}, recipient.Identifier)

@@ -41,6 +41,8 @@ message Header {
   bytes container_box = 4;
   // Recipient list for identity bound secret container.
   repeated Recipient recipients = 6;
+  // Seal strategy
+  uint32 seal_version = 7;
 }
 
 // Recipient describes container recipient informations.

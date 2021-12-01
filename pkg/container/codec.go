@@ -22,19 +22,20 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/awnumar/memguard"
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
+	"github.com/elastic/harp/pkg/container/seal"
+	v1 "github.com/elastic/harp/pkg/container/seal/v1"
+	v2 "github.com/elastic/harp/pkg/container/seal/v2"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 const (
+	containerSealedContentType = "application/vnd.harp.v1.SealedContainer"
 	containerMagic             = uint32(0x53CB3701)
 	containerVersion           = uint16(0x0002)
-	containerSealedContentType = "application/vnd.harp.v1.SealedContainer"
-	publicKeySize              = 32
-	privateKeySize             = 32
-	encryptionKeySize          = 32
 )
 
 // Load a reader to extract as a container.
@@ -122,4 +123,35 @@ func Dump(w io.Writer, c *containerv1.Container) error {
 
 	// No error
 	return nil
+}
+
+// Unseal a sealed container with the given identity
+func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (*containerv1.Container, error) {
+	// Check parameters
+	if types.IsNil(container) {
+		return nil, fmt.Errorf("unable to process nil container")
+	}
+	if types.IsNil(container.Headers) {
+		return nil, fmt.Errorf("unable to process nil container headers")
+	}
+	if identity == nil {
+		return nil, fmt.Errorf("unable to process without container key")
+	}
+
+	// Check headers
+	if container.Headers.ContentType != containerSealedContentType {
+		return nil, fmt.Errorf("unable to unseal container")
+	}
+
+	// Build appropriate unseal strategy processor.
+	var ss seal.Strategy
+	switch container.Headers.SealVersion {
+	case 2:
+		ss = v2.New()
+	default:
+		ss = v1.New()
+	}
+
+	// Delegate to strategy
+	return ss.Unseal(container, identity)
 }
