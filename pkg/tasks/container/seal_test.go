@@ -29,7 +29,7 @@ import (
 )
 
 func TestSealTask_Run_V1(t *testing.T) {
-	pub := "v1.pk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E"
+	pub := "v1.sk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E"
 
 	type fields struct {
 		ContainerReader          tasks.ReaderProvider
@@ -164,7 +164,7 @@ func TestSealTask_Run_V1(t *testing.T) {
 }
 
 func TestSealTask_Run_V2(t *testing.T) {
-	pk := "v2.pk.A0V1xCxGNtVAE9EVhaKi-pIADhd1in8xV_FI5Y0oHSHLAkew9gDAqiALSd6VgvBCbQ"
+	pk := "v2.sk.A0V1xCxGNtVAE9EVhaKi-pIADhd1in8xV_FI5Y0oHSHLAkew9gDAqiALSd6VgvBCbQ"
 
 	type fields struct {
 		ContainerReader          tasks.ReaderProvider

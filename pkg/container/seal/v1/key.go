@@ -33,8 +33,8 @@ import (
 )
 
 const (
-	PublicKeyPrefix  = "v1.pk."
-	PrivateKeyPrefix = "v1.sk."
+	PublicKeyPrefix  = "v1.sk."
+	PrivateKeyPrefix = "v1.ck."
 )
 
 // -----------------------------------------------------------------------------

@@ -89,8 +89,8 @@ func TestSeal(t *testing.T) {
 					Raw:     []byte{0x01, 0x02, 0x03, 0x04},
 				},
 				peersPublicKey: []string{
-					"v2.pk.AuSjVpMZben6n9fXiaDj8bMjSvhcZ9n7c82VOt7v9_UBzZJaMLamkQUFAVp_9frpAg",
-					"v2.pk.A0V1xCxGNtVAE9EVhaKi-pIADhd1in8xV_FI5Y0oHSHLAkew9gDAqiALSd6VgvBCbQ",
+					"v2.sk.AuSjVpMZben6n9fXiaDj8bMjSvhcZ9n7c82VOt7v9_UBzZJaMLamkQUFAVp_9frpAg",
+					"v2.sk.A0V1xCxGNtVAE9EVhaKi-pIADhd1in8xV_FI5Y0oHSHLAkew9gDAqiALSd6VgvBCbQ",
 				},
 			},
 			wantErr: false,

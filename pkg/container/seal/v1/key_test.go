@@ -34,9 +34,9 @@ func TestGenerateKey(t *testing.T) {
 		)
 		assert.NoError(t, err)
 		assert.NotNil(t, pk)
-		assert.Equal(t, "v1.sk.8B_H8o7_ygAD27fFbqhgq97hLeJb5Nh4v3xy0C9JYPg", pk)
+		assert.Equal(t, "v1.ck.8B_H8o7_ygAD27fFbqhgq97hLeJb5Nh4v3xy0C9JYPg", pk)
 		assert.NotNil(t, pub)
-		assert.Equal(t, "v1.pk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E", pub)
+		assert.Equal(t, "v1.sk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E", pub)
 	})
 
 	t.Run("deterministic - same key with different target", func(t *testing.T) {
@@ -45,9 +45,9 @@ func TestGenerateKey(t *testing.T) {
 		)
 		assert.NoError(t, err)
 		assert.NotNil(t, pk)
-		assert.Equal(t, "v1.sk.RIdVmnxg69ZKXkd7YknoIfvsnyfOTi792AhwlAIcaJ8", pk)
+		assert.Equal(t, "v1.ck.RIdVmnxg69ZKXkd7YknoIfvsnyfOTi792AhwlAIcaJ8", pk)
 		assert.NotNil(t, pub)
-		assert.Equal(t, "v1.pk.SLP3GYe7UT-ADwuS2Ak-UEFCKR3ddvMawbwlgUSDG3k", pub)
+		assert.Equal(t, "v1.sk.SLP3GYe7UT-ADwuS2Ak-UEFCKR3ddvMawbwlgUSDG3k", pub)
 	})
 
 	t.Run("master key too short", func(t *testing.T) {
@@ -63,9 +63,9 @@ func TestGenerateKey(t *testing.T) {
 		pub, pk, err := adapter.GenerateKey(seal.WithRandom(bytes.NewReader([]byte("deterministic-seed-for-test-00001"))))
 		assert.NoError(t, err)
 		assert.NotNil(t, pk)
-		assert.Equal(t, "v1.sk.ZGV0ZXJtaW5pc3RpYy1zZWVkLWZvci10ZXN0LTAwMDA", pk)
+		assert.Equal(t, "v1.ck.ZGV0ZXJtaW5pc3RpYy1zZWVkLWZvci10ZXN0LTAwMDA", pk)
 		assert.NotNil(t, pub)
-		assert.Equal(t, "v1.pk.sYp90gC29yKfUUtr50pMR4Faf7c3d4-YX4xZsbwAs10", pub)
+		assert.Equal(t, "v1.sk.sYp90gC29yKfUUtr50pMR4Faf7c3d4-YX4xZsbwAs10", pub)
 
 	})
 

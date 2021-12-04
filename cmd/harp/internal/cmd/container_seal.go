@@ -25,6 +25,7 @@ import (
 	"github.com/elastic/harp/pkg/container/identity"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks/container"
 )
 
@@ -53,29 +54,41 @@ var containerSealCmd = func() *cobra.Command {
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-container-seal", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
+			var sealingPublicKeys types.StringArray
+
 			// Load idenity from files
-			if len(params.identityFilePaths) > 0 {
-				for _, f := range params.identityFilePaths {
-					if f == "" {
-						// Ignore empty
-						continue
-					}
-
-					// Open for reading
-					r, err := cmdutil.Reader(f)
-					if err != nil {
-						log.For(ctx).Fatal("unable to read identity file", zap.Error(err), zap.String("identity", f))
-					}
-
-					// Decode identity
-					id, err := identity.FromReader(r)
-					if err != nil {
-						log.For(ctx).Fatal("unable to decode identity from file", zap.Error(err), zap.String("identity", f))
-					}
-
-					// Append to identity list
-					params.identities = append(params.identities, id.Public)
+			for _, f := range params.identityFilePaths {
+				if f == "" {
+					// Ignore empty
+					continue
 				}
+
+				// Open for reading
+				r, err := cmdutil.Reader(f)
+				if err != nil {
+					log.For(ctx).Fatal("unable to read identity file", zap.Error(err), zap.String("identity", f))
+				}
+
+				// Decode identity
+				id, err := identity.FromReader(r)
+				if err != nil {
+					log.For(ctx).Fatal("unable to decode identity from file", zap.Error(err), zap.String("identity", f))
+				}
+
+				// Append to identity list
+				params.identities = append(params.identities, id.Public)
+			}
+
+			// Process identities
+			for _, ipk := range params.identities {
+				// Convert to sealing public key
+				sealingPubllicKey, err := identity.SealingPublicKey(ipk)
+				if err != nil {
+					log.For(ctx).Fatal("unable to convert identity to sealing key", zap.Error(err), zap.String("ipk", ipk))
+				}
+
+				// Add to sealing keys
+				sealingPublicKeys.AddIfNotContains(sealingPubllicKey)
 			}
 
 			// Prepare task
@@ -84,7 +97,7 @@ var containerSealCmd = func() *cobra.Command {
 				SealedContainerWriter: cmdutil.FileWriter(params.outputPath),
 				OutputWriter:          cmdutil.StdoutWriter(),
 				JSONOutput:            params.jsonOutput,
-				PeerPublicKeys:        params.identities,
+				PeerPublicKeys:        sealingPublicKeys,
 				SealVersion:           params.sealVersion,
 			}
 

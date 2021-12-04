@@ -88,8 +88,8 @@ func TestSeal(t *testing.T) {
 					Headers: &containerv1.Header{},
 				},
 				peersPublicKey: []string{
-					"v1.pk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E",
-					"v1.pk.sYp90gC29yKfUUtr50pMR4Faf7c3d4-YX4xZsbwAs10",
+					"v1.sk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E",
+					"v1.sk.sYp90gC29yKfUUtr50pMR4Faf7c3d4-YX4xZsbwAs10",
 				},
 			},
 			wantErr: false,
@@ -102,8 +102,8 @@ func TestSeal(t *testing.T) {
 					Raw:     memguard.NewBufferRandom(1024).Bytes(),
 				},
 				peersPublicKey: []string{
-					"v1.pk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E",
-					"v1.pk.sYp90gC29yKfUUtr50pMR4Faf7c3d4-YX4xZsbwAs10",
+					"v1.sk.qKXPnUP6-2Bb_4nYnmxOXyCdN4IV3AR5HooB33N3g2E",
+					"v1.sk.sYp90gC29yKfUUtr50pMR4Faf7c3d4-YX4xZsbwAs10",
 				},
 			},
 			wantErr: false,

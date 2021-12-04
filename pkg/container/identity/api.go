@@ -172,13 +172,14 @@ type JSONWebKey struct {
 func (jwk *JSONWebKey) Sign(message []byte) (string, error) {
 	var sig []byte
 
+	// Decode private key
+	d, err := base64.RawURLEncoding.DecodeString(jwk.D)
+	if err != nil {
+		return "", fmt.Errorf("unable to decode private key: %w", err)
+	}
+
 	switch jwk.Crv {
 	case "Ed25519":
-		// Decode private key
-		d, err := base64.RawURLEncoding.DecodeString(jwk.D)
-		if err != nil {
-			return "", fmt.Errorf("unable to decode private key: %w", err)
-		}
 		if len(d) != ed25519.PrivateKeySize {
 			return "", errors.New("invalid private key size")
 		}
@@ -186,11 +187,6 @@ func (jwk *JSONWebKey) Sign(message []byte) (string, error) {
 		// Sign the message
 		sig = ed25519.Sign(ed25519.PrivateKey(d), message)
 	case "P-384":
-		// Decode private key
-		d, err := base64.RawURLEncoding.DecodeString(jwk.D)
-		if err != nil {
-			return "", fmt.Errorf("unable to decode private key: %w", err)
-		}
 		if len(d) != 48 {
 			return "", errors.New("invalid private key size")
 		}

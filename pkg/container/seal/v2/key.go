@@ -34,8 +34,8 @@ import (
 )
 
 const (
-	PublicKeyPrefix  = "v2.pk."
-	PrivateKeyPrefix = "v2.sk."
+	PublicKeyPrefix  = "v2.sk."
+	PrivateKeyPrefix = "v2.ck."
 )
 
 // CenerateKey create an ECDSA P-384 key pair used as container identifier.
