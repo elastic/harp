@@ -18,7 +18,6 @@ package v1
 
 import (
 	"bytes"
-	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -95,9 +94,9 @@ func (a *adapter) GenerateKey(fopts ...seal.GenerateOption) (publicKey, privateK
 }
 
 // PublicKeys return the appropriate key format used by the sealing strategy.
-func (a *adapter) publicKeys(keys ...string) ([]*[ed25519.PublicKeySize]byte, error) {
+func (a *adapter) publicKeys(keys ...string) ([]*[32]byte, error) {
 	// v1.pk.[data]
-	res := []*[ed25519.PublicKeySize]byte{}
+	res := []*[publicKeySize]byte{}
 
 	for _, key := range keys {
 		// Remove prefix if exists
@@ -110,7 +109,7 @@ func (a *adapter) publicKeys(keys ...string) ([]*[ed25519.PublicKeySize]byte, er
 		}
 
 		// Public key sanity checks
-		if len(keyRaw) != ed25519.PublicKeySize {
+		if len(keyRaw) != publicKeySize {
 			return nil, fmt.Errorf("invalid public key length for key '%s'", key)
 		}
 		if extra25519.IsEdLowOrder(keyRaw) {
@@ -118,8 +117,8 @@ func (a *adapter) publicKeys(keys ...string) ([]*[ed25519.PublicKeySize]byte, er
 		}
 
 		// Copy the public key
-		var pk [ed25519.PublicKeySize]byte
-		copy(pk[:], keyRaw[:ed25519.PublicKeySize])
+		var pk [publicKeySize]byte
+		copy(pk[:], keyRaw[:publicKeySize])
 
 		// Append it to sealing keys
 		res = append(res, &pk)

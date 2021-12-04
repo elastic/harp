@@ -18,8 +18,9 @@
 package cmd
 
 import (
-	"github.com/elastic/harp/build/fips"
 	"github.com/spf13/cobra"
+
+	"github.com/elastic/harp/build/fips"
 )
 
 // -----------------------------------------------------------------------------

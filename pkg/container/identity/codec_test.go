@@ -25,41 +25,75 @@ import (
 )
 
 var (
-	securityIdentity = []byte(`{"@apiVersion": "harp.elastic.co/v1", "@kind": "ContainerIdentity", "@timestamp": "2021-11-15T11:58:13.662568Z", "@description": "security", "public": "security1r6t9kagaafun6zvkx4ysm2kh9xswca6x79dlu4lvmg6hynywx7nsvpgple", "private": { "encoding": "jwe", "content": "eyJhbGciOiJQQkVTMi1IUzUxMitBMjU2S1ciLCJjdHkiOiJqd2sranNvbiIsImVuYyI6IkEyNTZHQ00iLCJwMmMiOjUwMDAwMSwicDJzIjoiTlVVNVlWZDZTRVpJVldoMFNFSnNaUSJ9.pqZ9kim7OzW6lVLmPf4wXRYx8IvHmZi7ChzxmWqtGHo2zHeyp3Bhqw.x76wqFYsB-E-E0ov.1Adrme-LS8tC05n1D3FLUSiDGCMcf30lRjWDCB2CSh-3x4K2fZ2gibsvtp7aO4IjxkESnrUV6vCCAtXDa2I4f-aYAYzl1CkgSw-1JulQmVjl4l3NTcI189icJT0HxJ7-F0SGtpmTU1bGoGR9z_ERVErom3I6bSAl2OV4WcDVTfmyXBoJqM-hXYtIeIpLC0B4sxi3CFPhFQlEHF65AYwC2QgZb2qoP-tLnJG1FA.g-hH5zr7ksKhWS2aXAWP0Q"}}`)
-	publicOnly       = []byte(`{"@apiVersion": "harp.elastic.co/v1", "@kind": "ContainerIdentity", "@timestamp": "2021-11-15T11:58:13.662568Z", "@description": "security", "public": "security1r6t9kagaafun6zvkx4ysm2kh9xswca6x79dlu4lvmg6hynywx7nsvpgple"}`)
+	v1SecurityIdentity = []byte(`{"@apiVersion":"harp.elastic.co/v1","@kind":"ContainerIdentity","@timestamp":"2021-12-01T22:15:11.144249Z","@description":"security","public":"v1.ipk.7u8B1VFrHyMeWyt8Jzj1Nj2BgVB7z-umD8R-OOnJahE","private":{"content":"ZXlKaGJHY2lPaUpRUWtWVE1pMUlVelV4TWl0Qk1qVTJTMWNpTENKbGJtTWlPaUpCTWpVMlIwTk5JaXdpY0RKaklqbzFNREF3TURFc0luQXljeUk2SW1obU1UVnpUVmRwTmtaMmNUSlVZM0p5TVhReVZtY2lmUS5ZOGtfVXR2dWtmcVRxTE5fQ2l5ajdTejU2dThOYV9uMG1FTG5jMHFCQ1d0MkVqX2VHRk80RmcuN0p2ekhGYkZrRXdXWGxOeC5ycVJLSno1ZWFGajRqSl9wOVAzUVBuUUs3dXhkWUhBOUNIZFUxTEswWkQ3Q2dickJzUDFRRFRTRU1lX3lqbTZVQ1dpNzFUVmxfX3JISVdSR3VDVVpWSE1KMXNtRnR5c2UzdHBURkdnZFRCaVQxTmw4dWlNZ2JiUEN1cHJ4Uy0wUjRGU2dobXFLU0s3TGhRcUxFWFVaNFF0SVliMDd6Y19vMnRZNlVnU3NMaFBlSUFPM1M2WlBwQXFYU3lfSjR3NzEzdFhEU1ZTX2ZuOFJ5MlF2NTJmOHg0cXBiN0Q3NGlTTndOb052Zy5rcHVzTTVoZ21RT3JhS1luNGxTVjZ3"},"signature":"Kq1OJlAOexIvt9TXETYeYGotqqCz8PiqFEYuSbHmJPVBqtYpI2Q_zNE0fO5hs-JdTqG3p6oLiITHK9cYyx2hBw"}`)
+	publicOnly         = []byte(`{"@apiVersion":"harp.elastic.co/v1","@kind":"ContainerIdentity","@timestamp":"2021-12-01T20:56:30.832199Z","@description":"security","public":"v1.ipk.PRdbQ8qbrDsfTLA-aeQIdUF0VwnauvWqQF-CXNFp9oM"}`)
+	v2SecurityIdentity = []byte(`{"@apiVersion":"harp.elastic.co/v1","@kind":"ContainerIdentity","@timestamp":"2021-12-01T22:15:07.586373Z","@description":"security","public":"v2.ipk.AkLr_HHMO5Loy2bK42mvCADrJ7s2PSYCRTnqDWJV8PCK2EXmu-GTV8HmNJwmA8IJ8Q","private":{"content":"ZXlKaGJHY2lPaUpRUWtWVE1pMUlVelV4TWl0Qk1qVTJTMWNpTENKbGJtTWlPaUpCTWpVMlIwTk5JaXdpY0RKaklqbzFNREF3TURFc0luQXljeUk2SWpCMFozUk5OMm80TmxacFNrWXpjemhYWDBsb05VRWlmUS5QXzVVMTdSR3JSRVg4UHoyNGpRQkQzdGROWGU3ci1UMVh2bnBnT21aMkwweGZXQXNfT2dWcVEuYUpuekZCQTNBWllXSld2TC53SVAtZlRERjN5R0NaRGtldThOM3A1NUZPRF9ZX3QzSV9ubHN2MDVqcWNLdlJLczFfWjVfM2Zhc2Z0cU0tMlRoN25VdDZIaXZWLVB1ckVIQ2hBRENHaF9SZTBySVVwZkV4OHBCcUk4V3BIYTdSYktUTUN3RmNpSDMzeTQxZ1duT1lpN1R1TmJBamhNMjZMdDZZMFN0ekcyRi1FUm9jSWotWklwMDJwcGZjdUpKOU91S1BDOThKTl9ZV3EzcVA2TW55Ym1WTnFFZ1hwdWFVZm9GcTN3ZWlSX2paVkNsRzU5cTBGdWplVHN0UnRzU2xuZFlndTVBTl9LanFWRmluNDBXNGcxZWRMdWZDM1U0UGZhZVMzUlQxSS0wRkVnN0ZGMnE0QVdINy01aF9IQWg4WFR4eXBCTjR3THE1TTd6ZExRLlkzTTlBeDc1bGNYbmNNaGNxV3dOMXc"},"signature":"dpbnMGAPvFbHSjEXs1GMyO8Kmw9cZqTOKI5wAA1ApcO1RXtFGS_GyC1zAtuFDhhVmTWdFzS4HdVg0LEhxBivbqsr_cft_9CR-7uVUPpkb2Hz2d4BkL3yzDo9bkLfllaM"}`)
 )
 
 func TestCodec_New(t *testing.T) {
 	t.Run("invalid description", func(t *testing.T) {
-		id, pub, err := New(rand.Reader, "é")
+		id, pub, err := New(rand.Reader, "é", Ed25519)
 		assert.Error(t, err)
 		assert.Nil(t, pub)
 		assert.Nil(t, id)
 	})
 
-	t.Run("large description", func(t *testing.T) {
-		id, pub, err := New(rand.Reader, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+	t.Run("ed25519 - invalid random source", func(t *testing.T) {
+		id, pub, err := New(bytes.NewBuffer(nil), "test", Ed25519)
 		assert.Error(t, err)
 		assert.Nil(t, pub)
 		assert.Nil(t, id)
 	})
 
-	t.Run("invalid random source", func(t *testing.T) {
-		id, pub, err := New(bytes.NewBuffer(nil), "test")
+	t.Run("p384 - invalid random source", func(t *testing.T) {
+		id, pub, err := New(bytes.NewBuffer(nil), "test", P384)
 		assert.Error(t, err)
 		assert.Nil(t, pub)
 		assert.Nil(t, id)
 	})
 
-	t.Run("valid", func(t *testing.T) {
-		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001")), "security")
+	t.Run("legacy - invalid random source", func(t *testing.T) {
+		id, pub, err := New(bytes.NewBuffer(nil), "test", Legacy)
+		assert.Error(t, err)
+		assert.Nil(t, pub)
+		assert.Nil(t, id)
+	})
+
+	t.Run("valid - ed25519", func(t *testing.T) {
+		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001")), "security", Ed25519)
 		assert.NoError(t, err)
 		assert.NotNil(t, pub)
 		assert.NotNil(t, id)
 		assert.Equal(t, "harp.elastic.co/v1", id.APIVersion)
 		assert.Equal(t, "security", id.Description)
 		assert.Equal(t, "ContainerIdentity", id.Kind)
-		assert.Equal(t, "security1mqtkctl32wy695wryccfgrdw4hr8cn9smk9vduc9yy5l3dfwr69swl0vee", id.Public)
+		assert.Equal(t, "v1.ipk.2BdsL_FTiaLRwyYwlA2urcZ8TLDdisbzBSEp-LUuHos", id.Public)
+		assert.Nil(t, id.Private)
+		assert.False(t, id.HasPrivateKey())
+	})
+
+	t.Run("valid - p-384", func(t *testing.T) {
+		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001-1ioQiLEbVCm1Y7NfWCf6oNWoV6p5E4spJgRXKQHdV44XcNvqywMnIYYcL8qZ4Wk")), "security", P384)
+		assert.NoError(t, err)
+		assert.NotNil(t, pub)
+		assert.NotNil(t, id)
+		assert.Equal(t, "harp.elastic.co/v1", id.APIVersion)
+		assert.Equal(t, "security", id.Description)
+		assert.Equal(t, "ContainerIdentity", id.Kind)
+		assert.Equal(t, "v2.ipk.A0X20rlE8Pqp-YoMG8SNOop918AyfoSF_R9Z7MF5vP5nUoc_ZSRWauQR6cL4DqgrRA", id.Public)
+		assert.Nil(t, id.Private)
+		assert.False(t, id.HasPrivateKey())
+	})
+
+	t.Run("valid - legacy", func(t *testing.T) {
+		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001")), "security", Legacy)
+		assert.NoError(t, err)
+		assert.NotNil(t, pub)
+		assert.NotNil(t, id)
+		assert.Equal(t, "harp.elastic.co/v1", id.APIVersion)
+		assert.Equal(t, "security", id.Description)
+		assert.Equal(t, "ContainerIdentity", id.Kind)
+		assert.Equal(t, "ZxTKWxgrG341_FxatkkfAxedMtfz1zJzAm6FUmitxHM", id.Public)
 		assert.Nil(t, id.Private)
 		assert.False(t, id.HasPrivateKey())
 	})
@@ -90,52 +124,79 @@ func TestCodec_FromReader(t *testing.T) {
 		assert.Nil(t, id)
 	})
 
-	t.Run("valid", func(t *testing.T) {
-		id, err := FromReader(bytes.NewReader(securityIdentity))
+	t.Run("valid - v1", func(t *testing.T) {
+		id, err := FromReader(bytes.NewReader(v1SecurityIdentity))
+		assert.NoError(t, err)
+		assert.NotNil(t, id)
+	})
+
+	t.Run("valid - v2", func(t *testing.T) {
+		id, err := FromReader(bytes.NewReader(v2SecurityIdentity))
 		assert.NoError(t, err)
 		assert.NotNil(t, id)
 	})
 }
 
-func TestPublicKeysFromIdentities(t *testing.T) {
-	t.Run("empty", func(t *testing.T) {
-		identities := []string{}
-		publicKeys, err := SealingKeys(identities...)
+var (
+	legacyPrivateKey = &JSONWebKey{
+		Kty: "OKP",
+		Crv: "X25519",
+		X:   "ZxTKWxgrG341_FxatkkfAxedMtfz1zJzAm6FUmitxHM",
+		D:   "ZGV0ZXJtaW5pc3RpYy1yYW5kb20tc291cmNlLWZvci0",
+	}
+	v1PrivateKey = &JSONWebKey{
+		Kty: "OKP",
+		Crv: "Ed25519",
+		X:   "2BdsL_FTiaLRwyYwlA2urcZ8TLDdisbzBSEp-LUuHos",
+		D:   "ZGV0ZXJtaW5pc3RpYy1yYW5kb20tc291cmNlLWZvci3YF2wv8VOJotHDJjCUDa6txnxMsN2KxvMFISn4tS4eiw",
+	}
+	v2PrivateKey = &JSONWebKey{
+		Kty: "EC",
+		Crv: "P-384",
+		X:   "RfbSuUTw-qn5igwbxI06in3XwDJ-hIX9H1nswXm8_mdShz9lJFZq5BHpwvgOqCtE",
+		Y:   "ag16lWruEPkhWChmZnO52ne1iyLGAEVNbyx38NPMOqNZzV7yP9ugrzCa7pCz8eBr",
+		D:   "aXN0aWMtcmFuZG9tLXNvdYiXCnZ-xg0Te8QN3AId4n-bdBdDfhXJjz1OngEo78g8",
+	}
+)
+
+func TestCodec_RecoveryKey(t *testing.T) {
+	t.Run("nil", func(t *testing.T) {
+		id, err := RecoveryKey(nil)
 		assert.Error(t, err)
-		assert.Nil(t, publicKeys)
+		assert.Nil(t, id)
 	})
 
-	t.Run("invalid bech32 encoding", func(t *testing.T) {
-		identities := []string{
-			"recovery1hytnx4qpta252s5s7wypzq7rp3puks38vd8p4x9nhysvfylyjl/q^^wvr6",
-		}
-		publicKeys, err := SealingKeys(identities...)
+	t.Run("D has invalid encoding", func(t *testing.T) {
+		id, err := RecoveryKey(&JSONWebKey{
+			D: "é",
+		})
 		assert.Error(t, err)
-		assert.Nil(t, publicKeys)
+		assert.Nil(t, id)
 	})
 
-	t.Run("valid", func(t *testing.T) {
-		identities := []string{
-			"recovery1hytnx4qpta252s5s7wypzq7rp3puks38vd8p4x9nhysvfylyjlwscswvr6",
-			"security1eervzac2v26wxehktnf6lq0vpegrqcpg4uv4uxdr5vpzzmtdpflqttlghh",
-		}
-		publicKeys, err := SealingKeys(identities...)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, publicKeys)
-		assert.Equal(t, [32]byte{0xc1, 0x48, 0x9f, 0x5a, 0x41, 0xc7, 0x32, 0xa1, 0x3, 0xc1, 0x65, 0x9e, 0xeb, 0xc1, 0x95, 0x47, 0xd6, 0xea, 0x53, 0x7f, 0xf5, 0x48, 0x2d, 0x61, 0xa0, 0x60, 0x81, 0xe2, 0xe9, 0x37, 0x8, 0x2}, *publicKeys[0])
-		assert.Equal(t, [32]byte{0x74, 0x70, 0x5d, 0xdc, 0x92, 0xa0, 0x95, 0x8b, 0xa6, 0x45, 0xfd, 0x52, 0xe0, 0x10, 0x69, 0x71, 0x9f, 0x92, 0x5d, 0xdf, 0x7d, 0x86, 0x6b, 0xf7, 0x20, 0x80, 0xfa, 0xd4, 0x5c, 0x59, 0x70, 0x70}, *publicKeys[1])
+	t.Run("unhandled private key", func(t *testing.T) {
+		id, err := RecoveryKey(&JSONWebKey{
+			Crv: "P-256",
+		})
+		assert.Error(t, err)
+		assert.Nil(t, id)
 	})
 
-	t.Run("valid - dedup", func(t *testing.T) {
-		identities := []string{
-			"recovery1hytnx4qpta252s5s7wypzq7rp3puks38vd8p4x9nhysvfylyjlwscswvr6",
-			"recovery1hytnx4qpta252s5s7wypzq7rp3puks38vd8p4x9nhysvfylyjlwscswvr6",
-			"security1eervzac2v26wxehktnf6lq0vpegrqcpg4uv4uxdr5vpzzmtdpflqttlghh",
-		}
-		publicKeys, err := SealingKeys(identities...)
+	t.Run("valid - legacy", func(t *testing.T) {
+		id, err := RecoveryKey(legacyPrivateKey)
 		assert.NoError(t, err)
-		assert.NotEmpty(t, publicKeys)
-		assert.Equal(t, [32]byte{0xc1, 0x48, 0x9f, 0x5a, 0x41, 0xc7, 0x32, 0xa1, 0x3, 0xc1, 0x65, 0x9e, 0xeb, 0xc1, 0x95, 0x47, 0xd6, 0xea, 0x53, 0x7f, 0xf5, 0x48, 0x2d, 0x61, 0xa0, 0x60, 0x81, 0xe2, 0xe9, 0x37, 0x8, 0x2}, *publicKeys[0])
-		assert.Equal(t, [32]byte{0x74, 0x70, 0x5d, 0xdc, 0x92, 0xa0, 0x95, 0x8b, 0xa6, 0x45, 0xfd, 0x52, 0xe0, 0x10, 0x69, 0x71, 0x9f, 0x92, 0x5d, 0xdf, 0x7d, 0x86, 0x6b, 0xf7, 0x20, 0x80, 0xfa, 0xd4, 0x5c, 0x59, 0x70, 0x70}, *publicKeys[1])
+		assert.Equal(t, []byte{0x64, 0x65, 0x74, 0x65, 0x72, 0x6d, 0x69, 0x6e, 0x69, 0x73, 0x74, 0x69, 0x63, 0x2d, 0x72, 0x61, 0x6e, 0x64, 0x6f, 0x6d, 0x2d, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x2d, 0x66, 0x6f, 0x72, 0x2d}, id)
+	})
+
+	t.Run("valid - v1", func(t *testing.T) {
+		id, err := RecoveryKey(v1PrivateKey)
+		assert.NoError(t, err)
+		assert.Equal(t, []byte{0xe8, 0xe7, 0xf7, 0x83, 0xaa, 0xad, 0xf8, 0xd3, 0xc1, 0xcd, 0x74, 0x8c, 0x36, 0x5e, 0x23, 0x3c, 0x86, 0x5b, 0xad, 0x92, 0x8, 0xc2, 0x89, 0xd3, 0xda, 0x99, 0xfb, 0x18, 0x27, 0x38, 0x8b, 0x7a}, id)
+	})
+
+	t.Run("valid - v2", func(t *testing.T) {
+		id, err := RecoveryKey(v2PrivateKey)
+		assert.NoError(t, err)
+		assert.Equal(t, []byte{0x69, 0x73, 0x74, 0x69, 0x63, 0x2d, 0x72, 0x61, 0x6e, 0x64, 0x6f, 0x6d, 0x2d, 0x73, 0x6f, 0x75, 0x88, 0x97, 0xa, 0x76, 0x7e, 0xc6, 0xd, 0x13, 0x7b, 0xc4, 0xd, 0xdc, 0x2, 0x1d, 0xe2, 0x7f, 0x9b, 0x74, 0x17, 0x43, 0x7e, 0x15, 0xc9, 0x8f, 0x3d, 0x4e, 0x9e, 0x1, 0x28, 0xef, 0xc8, 0x3c}, id)
 	})
 }
