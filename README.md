@@ -122,7 +122,7 @@ pipeline execution.
 
 ## What can I do?
 
-> New to harp, let's start with [onboarding tutorial](samples/onboarding/README.md) !
+> New to harp, let's start with [onboarding tutorial](docs/onboarding/README.md) !
 > TL;DR - [Features overview](FEATURES.md)
 
 Harp provides :

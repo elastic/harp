@@ -162,7 +162,7 @@ func TestUnsealTask_Run(t *testing.T) {
 			fields: fields{
 				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v2.sealed"),
 				OutputWriter:    cmdutil.DiscardWriter(),
-				ContainerKey:    memguard.NewBufferFromBytes([]byte("v2.ck.P5l8Li3hRAsmCv4DPAPGr5VUMi4MGUsiSki1IDqIb0y6neJIU7VPBKqqhE0UR-x4")),
+				ContainerKey:    memguard.NewBufferFromBytes([]byte("v2.ck.Uax9mvwB4NpH44297qNlmoDzY8pnAEDAi1E8n_72d1dAYf3l5yFQyyzZX5DMnY9_")),
 			},
 			wantErr: false,
 		},
@@ -171,7 +171,7 @@ func TestUnsealTask_Run(t *testing.T) {
 			fields: fields{
 				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v2.sealed"),
 				OutputWriter:    cmdutil.DiscardWriter(),
-				ContainerKey:    memguard.NewBufferFromBytes([]byte("v2.ck.VHJBdjBLWWJsMktxQ285ZoFXc5G4HY_0qSMZAibGlchUmqt915byglIOGeel-5X5")),
+				ContainerKey:    memguard.NewBufferFromBytes([]byte("v2.ck.8DwD8D-TUB9w-NzXBXySz4PkAIrWUc09TOJKdJ495MJ-AJ2lvDlj1Pnw1rSUAwVg")),
 			},
 			wantErr: false,
 		},

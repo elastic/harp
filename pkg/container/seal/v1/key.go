@@ -99,6 +99,11 @@ func (a *adapter) publicKeys(keys ...string) ([]*[32]byte, error) {
 	res := []*[publicKeySize]byte{}
 
 	for _, key := range keys {
+		// Check key prefix
+		if !strings.HasPrefix(key, PublicKeyPrefix) {
+			return nil, fmt.Errorf("unsuppored public key '%s' for v1 seal algorithm", key)
+		}
+
 		// Remove prefix if exists
 		key = strings.TrimPrefix(key, PublicKeyPrefix)
 

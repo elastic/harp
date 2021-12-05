@@ -2,7 +2,11 @@
 
 > [Container sealing algorithm is inspired from Keybase saltpack specification](https://saltpack.org/)
 
-## Sealing Process
+This sealing process is based on Public Key Encryption scheme.
+
+## Version 1 - Modern (Ed25519 / X25519 / CHACHA20+Poly1305 / Blake2b)
+
+### Sealing Process
 
 This algorithm implements multi recipient authenticated encryption with
 `sign-then-encrypt` pattern.
@@ -54,7 +58,7 @@ This algorithm implements multi recipient authenticated encryption with
     * Seal the result with `payload_key` and the first 24 bytes of `header_hash` as nonce
     * Set `Raw` to encryption result
 
-## Unsealing Process
+### Unsealing Process
 
 * Requirements
   * A set of `identity_private_key`
@@ -102,6 +106,10 @@ This algorithm implements multi recipient authenticated encryption with
       * Verify `protected_content` with `ephemeral_signing_public_key`
       * Save signature as `content_signature`
   * Unmarshal `payload` as `&containerv1.Container{}`
+
+## Version 2 - Modern NIST (ECDSA P-384 / EC P-384 / AES-CTR+HMAC-SHA512 / HKDF-HMAC-SHA512)
+
+TODO
 
 ---
 

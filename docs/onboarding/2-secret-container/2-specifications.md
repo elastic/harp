@@ -35,6 +35,8 @@ message Header {
   bytes container_box = 4;
   // Recipient list for identity bound secret container.
   repeated Recipient recipients = 6;
+  // Seal strategy
+  uint32 seal_version = 7;
 }
 ```
 
@@ -46,6 +48,7 @@ message Header {
 * The `container_box` is the signature public key encrypted with the payload key.
 * The `recipients` is a NaCL `box` that contains the x25519 private used for
   encryption protected using the passphrase during `sealing` process.
+* The `seal_version` indicates the algorithm used to seal the container.
 
 Recipient definition :
 

@@ -29,10 +29,12 @@ const (
 
 const (
 	containerSealedContentType = "application/vnd.harp.v1.SealedContainer"
+	seedSize                   = 32
 	publicKeySize              = 49
 	privateKeySize             = 48
 	encryptionKeySize          = 32
-	nonceSize                  = 12
+	nonceSize                  = 16
+	macSize                    = 48
 	signatureSize              = 96
 	messageLimit               = 64 * 1024 * 1024
 )

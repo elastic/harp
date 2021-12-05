@@ -95,6 +95,11 @@ func (a *adapter) publicKeys(keys ...string) ([]*ecdsa.PublicKey, error) {
 	res := []*ecdsa.PublicKey{}
 
 	for _, key := range keys {
+		// Check key prefix
+		if !strings.HasPrefix(key, PublicKeyPrefix) {
+			return nil, fmt.Errorf("unsuppored public key '%s' for v2 seal algorithm", key)
+		}
+
 		// Remove prefix if exists
 		key = strings.TrimPrefix(key, PublicKeyPrefix)
 

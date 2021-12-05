@@ -37,26 +37,13 @@ import (
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 	"github.com/elastic/harp/pkg/sdk/security"
-	"github.com/elastic/harp/pkg/sdk/types"
 )
 
-func tryRecipientKeys(derivedKey *[32]byte, recipients []*containerv1.Recipient) ([]byte, error) {
+func tryRecipientKeys(derivedKey *[32]byte, recipients []*containerv1.Recipient) (*[32]byte, error) {
 	// Calculate recipient identifier
 	identifier, err := keyIdentifierFromDerivedKey(derivedKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate identifier: %w", err)
-	}
-
-	// Create AES block cipher
-	block, err := aes.NewCipher(derivedKey[:])
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize block cipher: %w", err)
-	}
-
-	// Initialize AEAD cipher chain
-	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize aead chain: %w", err)
 	}
 
 	// Find matching recipient
@@ -66,24 +53,24 @@ func tryRecipientKeys(derivedKey *[32]byte, recipients []*containerv1.Recipient)
 			continue
 		}
 
-		var nonce [nonceSize]byte
-		copy(nonce[:], r.Key[:nonceSize])
-
 		// Try to decrypt the secretbox with the derived key.
-		payloadKey, err := decrypt(r.Key[nonceSize:], nonce[:], aead)
+		clearText, err := decrypt(r.Key, derivedKey)
 		if err != nil {
 			return nil, fmt.Errorf("invalid recipient encryption key")
 		}
 
+		var payloadKey [32]byte
+		copy(payloadKey[:], clearText)
+
 		// Encryption key found, return no error.
-		return payloadKey, nil
+		return &payloadKey, nil
 	}
 
 	// No recipient found in list.
 	return nil, fmt.Errorf("no recipient found")
 }
 
-func prepareSignature(block cipher.Block) (*ecdsa.PrivateKey, []byte, error) {
+func prepareSignature(rand io.Reader, encryptionKey *[32]byte) (*ecdsa.PrivateKey, []byte, error) {
 	// Generate ephemeral signing key
 	sigPriv, err := ecdsa.GenerateKey(signatureCurve, cryptorand.Reader)
 	if err != nil {
@@ -93,41 +80,30 @@ func prepareSignature(block cipher.Block) (*ecdsa.PrivateKey, []byte, error) {
 	// Compress public key point
 	sigPub := elliptic.MarshalCompressed(sigPriv.Curve, sigPriv.PublicKey.X, sigPriv.PublicKey.Y)
 
-	// Encrypt public signature key
-	var pubSigNonce [nonceSize]byte
-	copy(pubSigNonce[:], "harp_psigkey")
-
-	// Initialize AEAD cipher chain
-	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to initialize aead chain: %w", err)
-	}
-
 	// Encrypt public signing key
-	encryptedPubSig, err := encrypt(sigPub, pubSigNonce[:], aead)
+	encryptedPubSig, err := encrypt(rand, sigPub, encryptionKey)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to encrypt public signing key: %w", err)
 	}
 
 	// Cleanup
-	memguard.WipeBytes(pubSigNonce[:])
 	memguard.WipeBytes(sigPub)
 
 	// No error
 	return sigPriv, encryptedPubSig, nil
 }
 
-func signContainer(sigPriv *ecdsa.PrivateKey, headers *containerv1.Header, container *containerv1.Container) (content, containerSig, sigNonce []byte, err error) {
+func signContainer(sigPriv *ecdsa.PrivateKey, headers *containerv1.Header, container *containerv1.Container) (content, containerSig []byte, err error) {
 	// Serialize protobuf payload
 	content, err = proto.Marshal(container)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to encode container content: %w", err)
+		return nil, nil, fmt.Errorf("unable to encode container content: %w", err)
 	}
 
 	// Compute header hash
 	headerHash, err := computeHeaderHash(headers)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to compute header hash: %w", err)
+		return nil, nil, fmt.Errorf("unable to compute header hash: %w", err)
 	}
 
 	// Compute protected content hash
@@ -136,72 +112,113 @@ func signContainer(sigPriv *ecdsa.PrivateKey, headers *containerv1.Header, conta
 	// Sign the protected content
 	r, s, err := ecdsa.Sign(cryptorand.Reader, sigPriv, protectedHash)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("unable to sign protected content: %w", err)
+		return nil, nil, fmt.Errorf("unable to sign protected content: %w", err)
 	}
 
 	// Container signature
 	containerSig = append(r.Bytes(), s.Bytes()...)
 
-	// Prepare encryption nonce form sigHash
-	sigNonce = make([]byte, nonceSize)
-	copy(sigNonce, headerHash[:nonceSize])
-
 	// No error
-	return content, containerSig, sigNonce, nil
+	return content, containerSig, nil
 }
 
-func generatedEncryptionKey(rand io.Reader) (*[32]byte, cipher.Block, error) {
+func generatedEncryptionKey(rand io.Reader) (*[32]byte, error) {
 	// Generate payload encryption key
 	var payloadKey [encryptionKeySize]byte
 	if _, err := io.ReadFull(rand, payloadKey[:]); err != nil {
-		return nil, nil, fmt.Errorf("unable to generate payload key for encryption")
-	}
-
-	// Create AES block cipher
-	block, err := aes.NewCipher(payloadKey[:])
-	if err != nil {
-		return nil, block, fmt.Errorf("unable to initialize block cipher: %w", err)
+		return nil, fmt.Errorf("unable to generate payload key for encryption")
 	}
 
 	// No error
-	return &payloadKey, block, err
+	return &payloadKey, nil
 }
 
-func encrypt(plaintext, n []byte, ciph cipher.AEAD) ([]byte, error) {
+func encrypt(rand io.Reader, plaintext []byte, key *[32]byte) ([]byte, error) {
 	// Check cleartext message size.
 	if len(plaintext) > messageLimit {
 		return nil, errors.New("value too large")
 	}
-	if types.IsNil(ciph) {
-		return nil, errors.New("aead cipher must not be nil")
+
+	// Generate random nonce
+	var seed [seedSize]byte
+	if _, err := io.ReadFull(rand, seed[:]); err != nil {
+		return nil, fmt.Errorf("unable to generate random encryption nonce: %w", err)
 	}
 
-	// Allocate output buffer
-	out := make([]byte, 0, ciph.Overhead()+len(plaintext))
+	// Derive keys from seed and secret key
+	ek, n2, ak, err := kdf(key, seed[:])
+	if err != nil {
+		return nil, fmt.Errorf("unable to derive keys from seed: %w", err)
+	}
 
-	// Seal with aead (nonce is handled externally)
-	out = ciph.Seal(out, n, plaintext, nil)
+	// Prepare an AES-256-CTR stream cipher
+	block, err := aes.NewCipher(ek)
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepare block cipher: %w", err)
+	}
+	ciph := cipher.NewCTR(block, n2)
+
+	// Encrypt the payload
+	c := make([]byte, len(plaintext))
+	ciph.XORKeyStream(c, plaintext)
+
+	// Compute MAC
+	t, err := mac(ak, seed[:], c)
+	if err != nil {
+		return nil, fmt.Errorf("paseto: unable to compute MAC: %w", err)
+	}
+
+	// Serialize final payload
+	// n || c || t
+	body := append([]byte{}, seed[:]...)
+	body = append(body, c...)
+	body = append(body, t...)
 
 	// No error
-	return out, nil
+	return body, nil
 }
 
-func decrypt(ciphertext, nonce []byte, ciph cipher.AEAD) ([]byte, error) {
+func decrypt(ciphertext []byte, key *[32]byte) ([]byte, error) {
 	// Check arguments
-	if len(ciphertext) < ciph.NonceSize() {
+	if len(ciphertext) < nonceSize {
 		return nil, errors.New("ciphered text too short")
 	}
-	if types.IsNil(ciph) {
-		return nil, errors.New("aead cipher must not be nil")
+
+	// Extract components
+	n := ciphertext[:seedSize]
+	t := ciphertext[len(ciphertext)-macSize:]
+	c := ciphertext[seedSize : len(ciphertext)-macSize]
+
+	// Derive keys from seed and secret key
+	ek, n2, ak, err := kdf(key, n)
+	if err != nil {
+		return nil, fmt.Errorf("unable to derive keys from seed: %w", err)
 	}
 
-	clearText, err := ciph.Open(nil, nonce, ciphertext, nil)
+	// Compute MAC
+	t2, err := mac(ak, n, c)
 	if err != nil {
-		return nil, errors.New("failed to decrypt given message")
+		return nil, fmt.Errorf("unable to compute MAC: %w", err)
 	}
+
+	// Time-constant compare MAC
+	if !security.SecureCompare(t, t2) {
+		return nil, errors.New("invalid pre-authentication header")
+	}
+
+	// Prepare an AES-256-CTR stream cipher
+	block, err := aes.NewCipher(ek)
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepare block cipher: %w", err)
+	}
+	ciph := cipher.NewCTR(block, n2)
+
+	// Decrypt the payload
+	m := make([]byte, len(c))
+	ciph.XORKeyStream(m, c)
 
 	// No error
-	return clearText, nil
+	return m, nil
 }
 
 func computeHeaderHash(headers *containerv1.Header) ([]byte, error) {
@@ -260,26 +277,8 @@ func packRecipient(rand io.Reader, payloadKey *[32]byte, ephPrivKey *ecdsa.Priva
 		return nil, fmt.Errorf("unable to derive key identifier: %w", err)
 	}
 
-	// Generate recipient nonce
-	var recipientNonce [nonceSize]byte
-	if _, errRand := io.ReadFull(rand, recipientNonce[:]); errRand != nil {
-		return nil, fmt.Errorf("unable to generate recipient nonce for encryption")
-	}
-
-	// Create AES block cipher
-	block, err := aes.NewCipher(recipientKey[:])
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize block cipher: %w", err)
-	}
-
-	// Initialize AEAD cipher chain
-	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize aead chain: %w", err)
-	}
-
 	// Encrypt the payload key
-	encryptedKey, err := encrypt(payloadKey[:], recipientNonce[:], aead)
+	encryptedKey, err := encrypt(rand, payloadKey[:], recipientKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to encrypt payload key for recipient: %w", err)
 	}
@@ -287,7 +286,7 @@ func packRecipient(rand io.Reader, payloadKey *[32]byte, ephPrivKey *ecdsa.Priva
 	// Pack recipient
 	recipient := &containerv1.Recipient{
 		Identifier: identifier,
-		Key:        append(recipientNonce[:], encryptedKey...),
+		Key:        encryptedKey,
 	}
 
 	// Return recipient
@@ -300,7 +299,7 @@ func deriveSharedKeyFromRecipient(publicKey *ecdsa.PublicKey, privateKey *ecdsa.
 
 	// Prepare info: ( AlgorithmID || PartyInfo || KeyLength )
 	fixedInfo := []byte{}
-	fixedInfo = append(fixedInfo, lengthPrefixedArray([]byte("A256GCM"))...)
+	fixedInfo = append(fixedInfo, lengthPrefixedArray([]byte("A256CTR"))...)
 	fixedInfo = append(fixedInfo, uint32ToBytes(encryptionKeySize)...)
 
 	// HKDF-HMAC-SHA512
@@ -341,4 +340,50 @@ func uint32ToBytes(value uint32) []byte {
 	binary.BigEndian.PutUint32(result, value)
 
 	return result
+}
+
+func kdf(key *[32]byte, n []byte) (ek, n2, ak []byte, err error) {
+	// Check arguments
+	if key == nil {
+		return nil, nil, nil, errors.New("unable to derive keys from a nil seed")
+	}
+
+	// Prepare HKDF-HMAC-SHA384
+	encKDF := hkdf.New(sha512.New384, key[:], nil, append([]byte("harp-encryption-key-v2"), n...))
+
+	// Derive encryption key
+	tmp := make([]byte, encryptionKeySize+nonceSize)
+	if _, err := io.ReadFull(encKDF, tmp); err != nil {
+		return nil, nil, nil, fmt.Errorf("unable to generate encryption key from seed: %w", err)
+	}
+
+	// Split encryption key (Ek) and nonce (n2)
+	ek = tmp[:encryptionKeySize]
+	n2 = tmp[encryptionKeySize:]
+
+	// Derive authentication key
+	authKDF := hkdf.New(sha512.New384, key[:], nil, append([]byte("harp-auth-key-for-aead"), n...))
+
+	// Derive authentication key
+	ak = make([]byte, nonceSize)
+	if _, err := io.ReadFull(authKDF, ak); err != nil {
+		return nil, nil, nil, fmt.Errorf("unable to generate authentication key from seed: %w", err)
+	}
+
+	// No error
+	return ek, n2, ak, nil
+}
+
+func mac(ak []byte, n, c []byte) ([]byte, error) {
+	// Compute MAC
+	mac := hmac.New(sha512.New384, ak)
+
+	// Hash pre-authentication content
+	mac.Write([]byte("harp-authentication-tag"))
+	mac.Write([]byte{0x00})
+	mac.Write(n)
+	mac.Write(c)
+
+	// No error
+	return mac.Sum(nil), nil
 }

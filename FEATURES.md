@@ -1,43 +1,45 @@
 # Features overview
 
-* [Glossary](#glossary)
-* [Bundle management](#bundle-management)
-  * [Features](#features)
-  * [Pipelines](#pipelines)
-* [Template Engine](#template-engine)
-  * [Render a template](#render-a-template)
-  * [Set external values](#set-external-values)
-  * [Load values from file](#load-values-from-file)
-  * [Value object debugger](#value-object-debugger)
-  * [Load from different filetypes](#load-from-different-filetypes)
-* [Secret Bundle](#secret-bundle)
-  * [Create a bundle from template](#create-a-bundle-from-template)
-  * [Create a bundle from a JSON map](#create-a-bundle-from-a-json-map)
-  * [Read a secret value](#read-a-secret-value)
-  * [Patch a bundle](#patch-a-bundle)
-  * [Calculate a bundle difference](#calculate-a-bundle-difference)
-  * [Dump a secret bundle](#dump-a-secret-bundle)
-  * [Encrypt secret values](#encrypt-secret-values)
-  * [Decrypt secret values](#decrypt-secret-values)
-  * [Linter / Structure checker](#linter--structure-checker)
-    * [Check that all packages are CSO compliant](#check-that-all-packages-are-cso-compliant)
-    * [Validate a secret structure](#validate-a-secret-structure)
-    * [Generate a ruleset from a bundle](#generate-a-ruleset-from-a-bundle)
-* [Secret Container](#secret-container)
-  * [Seal a secret container](#seal-a-secret-container)
-    * [Create an identity](#create-an-identity)
-      * [Use a passphrase as private key protection](#use-a-passphrase-as-private-key-protection)
-    * [Ephemeral Container Key](#ephemeral-container-key)
-    * [Deterministic Container Key](#deterministic-container-key)
-  * [Recover a container key from indentity](#recover-a-container-key-from-indentity)
-  * [Unseal a secret container](#unseal-a-secret-container)
-* [Vault specific commands](#vault-specific-commands)
-  * [Export a complete secret backend from Vault](#export-a-complete-secret-backend-from-vault)
-  * [Import a bundle in a target secret backend in Vault](#import-a-bundle-in-a-target-secret-backend-in-vault)
-  * [Share simple secret between 2 users](#share-simple-secret-between-2-users)
-  * [Share a container](#share-a-container)
-  * [Prepare a secret bundle for an ephemeral worker](#prepare-a-secret-bundle-for-an-ephemeral-worker)
-  * [Use Vault in\-transit key to encrypt a container identity](#use-vault-in-transit-key-to-encrypt-a-container-identity)
+- [Features overview](#features-overview)
+  - [Glossary](#glossary)
+  - [Bundle management](#bundle-management)
+    - [Features](#features)
+    - [Pipelines](#pipelines)
+  - [Template Engine](#template-engine)
+    - [Render a template](#render-a-template)
+    - [Set external values](#set-external-values)
+    - [Load values from file](#load-values-from-file)
+    - [Value object debugger](#value-object-debugger)
+    - [Load from different filetypes](#load-from-different-filetypes)
+  - [Secret Bundle](#secret-bundle)
+    - [Create a bundle from template](#create-a-bundle-from-template)
+    - [Create a bundle from a JSON map](#create-a-bundle-from-a-json-map)
+    - [Read a secret value](#read-a-secret-value)
+      - [Example](#example)
+    - [Patch a bundle](#patch-a-bundle)
+    - [Calculate a bundle difference](#calculate-a-bundle-difference)
+    - [Dump a secret bundle](#dump-a-secret-bundle)
+    - [Encrypt secret values](#encrypt-secret-values)
+    - [Decrypt secret values](#decrypt-secret-values)
+    - [Linter / Structure checker](#linter--structure-checker)
+      - [Check that all packages are CSO compliant](#check-that-all-packages-are-cso-compliant)
+      - [Validate a secret structure](#validate-a-secret-structure)
+      - [Generate a ruleset from a bundle](#generate-a-ruleset-from-a-bundle)
+  - [Secret Container](#secret-container)
+    - [Seal a secret container](#seal-a-secret-container)
+      - [Create an identity](#create-an-identity)
+        - [Use a passphrase as private key protection](#use-a-passphrase-as-private-key-protection)
+      - [Ephemeral Container Key](#ephemeral-container-key)
+      - [Deterministic Container Key](#deterministic-container-key)
+    - [Recover a container key from identity](#recover-a-container-key-from-identity)
+    - [Unseal a secret container](#unseal-a-secret-container)
+  - [Vault specific commands](#vault-specific-commands)
+    - [Export a complete secret backend from Vault](#export-a-complete-secret-backend-from-vault)
+    - [Import a bundle in a target secret backend in Vault](#import-a-bundle-in-a-target-secret-backend-in-vault)
+    - [Share simple secret between 2 users](#share-simple-secret-between-2-users)
+    - [Share a container](#share-a-container)
+    - [Prepare a secret bundle for an ephemeral worker](#prepare-a-secret-bundle-for-an-ephemeral-worker)
+    - [Use Vault in-transit key to encrypt a container identity](#use-vault-in-transit-key-to-encrypt-a-container-identity)
 
 ## Glossary
 
@@ -79,33 +81,33 @@ and reproductible.
 ### Pipelines
 
 `harp` allows you to handle secret using deterministic pipelines expressed
-using a serie of atomic cli operations.
+using series of atomic cli operations.
 
 ![Pipelines](docs/harp/img/SM-HARP.png)
 
 > The main objective is to reach as soon as possible the harp native
 > container to be used by the harp core cli.
 > If you need to pull or push secret from / to external secret storage engine,
-> just use the SDK du generate a harp plugin to pull secret and store
+> just use the SDK to generate a harp plugin to pull secret and store
 > them as a harp container.
 
 ## Template Engine
 
 The provided template engine is used to describe and implement the value
 generation algorithms. You can use it for secret data generation but also for
-various other usecases. [Sample usecases](./samples/onboarding/1-template-engine/9-usecases.md)
+various other use cases. [Sample use cases](./docs/onboarding/1-template-engine/9-usecases.md)
 
-As input you can take almost anything which is a string stream.
+As an input you can take almost anything which is a string stream.
 
 > For more information about the template engine, please read the dedicated
-> section - [Template Engine](./samples/onboarding/1-template-engine/1-introduction.md)
+> section - [Template Engine](./docs/onboarding/1-template-engine/1-introduction.md)
 
 ### Render a template
 
 `harp` exposes data generation function used to generate the data according to
 the specification described by the user.
 
-> Generate an EC P-256 curve keypar, and output the public key using JWK encoding
+> Generate an EC P-256 curve keypair, and output the public key using JWK encoding
 
 ```sh
 echo '{{ $key := cryptoPair "ec:p256" }}{{ $key.Public | toJwk }}' | harp template
@@ -223,7 +225,7 @@ $ harp values
 
 ## Secret Bundle
 
-The `SecretBundle` [object](./samples/onboarding/3-secret-bundle/2-bundle.md) is
+The `SecretBundle` [object](./docs/onboarding/3-secret-bundle/2-bundle.md) is
 used to represent the secret tree mapped using a K/V store.
 
 ### Create a bundle from template
@@ -889,7 +891,7 @@ Container key : ....
 * The `dckd-target` flag defines an arbitry string acting as a salt for Key
     Derivation Function.
 
-### Recover a container key from indentity
+### Recover a container key from identity
 
 When the container key is lost, you can use attached one of identity private keys
 to unseal the container.
@@ -901,7 +903,7 @@ $ harp container recover --identity recovery.json --passphrase $(cat passphrase.
 Container key : mPjzX1A5PcGtZ0nacxkhjl0pZE8XYw84KYF5NO6jhVA
 ```
 
-Fo Vault recovery :
+For Vault recovery :
 
 ```sh
 harp container recover --vault-transit-key harp --identity recovery.json

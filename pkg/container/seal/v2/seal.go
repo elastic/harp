@@ -18,7 +18,6 @@
 package v2
 
 import (
-	"crypto/cipher"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"errors"
@@ -49,13 +48,13 @@ func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, encoded
 	}
 
 	// Generate encryption key
-	payloadKey, block, err := generatedEncryptionKey(rand)
+	payloadKey, err := generatedEncryptionKey(rand)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate encryption key: %w", err)
 	}
 
 	// Prepare signature identity
-	sigPriv, encryptedPubSig, err := prepareSignature(block)
+	sigPriv, encryptedPubSig, err := prepareSignature(rand, payloadKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare signature materials: %w", err)
 	}
@@ -98,19 +97,13 @@ func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, encoded
 	}
 
 	// Sign given container
-	content, containerSig, sigNonce, err := signContainer(sigPriv, containerHeaders, container)
+	content, containerSig, err := signContainer(sigPriv, containerHeaders, container)
 	if err != nil {
 		return nil, fmt.Errorf("unable to sign container data: %w", err)
 	}
 
-	// Initialize AEAD cipher chain
-	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize aead chain: %w", err)
-	}
-
 	// Encrypt payload
-	encryptedPayload, err := encrypt(append(containerSig, content...), sigNonce, aead)
+	encryptedPayload, err := encrypt(rand, append(containerSig, content...), payloadKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to encrypt container data: %w", err)
 	}

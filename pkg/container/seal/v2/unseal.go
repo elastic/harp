@@ -18,8 +18,6 @@
 package v2
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/sha512"
@@ -99,24 +97,8 @@ func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.Lo
 	var encryptionKey [encryptionKeySize]byte
 	copy(encryptionKey[:], payloadKey[:encryptionKeySize])
 
-	// Create AES block cipher
-	block, err := aes.NewCipher(payloadKey)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize block cipher: %w", err)
-	}
-
-	// Initialize AEAD cipher chain
-	aead, err := cipher.NewGCMWithNonceSize(block, nonceSize)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize aead chain: %w", err)
-	}
-
-	// Prepare sig nonce
-	var pubSigNonce [nonceSize]byte
-	copy(pubSigNonce[:], "harp_psigkey")
-
 	// Decrypt signing public key
-	containerSignKeyRaw, err := decrypt(container.Headers.ContainerBox, pubSigNonce[:], aead)
+	containerSignKeyRaw, err := decrypt(container.Headers.ContainerBox, payloadKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid container key")
 	}
@@ -130,12 +112,8 @@ func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.Lo
 		return nil, fmt.Errorf("unable to compute header hash: %w", err)
 	}
 
-	// Extract payload nonce
-	var payloadNonce [nonceSize]byte
-	copy(payloadNonce[:], headerHash[:nonceSize])
-
 	// Decrypt payload
-	payloadRaw, err := decrypt(container.Raw, payloadNonce[:], aead)
+	payloadRaw, err := decrypt(container.Raw, &encryptionKey)
 	if err != nil || len(payloadRaw) < signatureSize {
 		return nil, fmt.Errorf("invalid ciphered content")
 	}
