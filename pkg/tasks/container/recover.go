@@ -63,13 +63,13 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 	}
 
 	// Try to decrypt the private key
-	key, err := input.Decrypt(ctx, t.Transformer)
+	privateKey, err := input.Decrypt(ctx, t.Transformer)
 	if err != nil {
 		return fmt.Errorf("unable to decrypt private key: %w", err)
 	}
 
-	// Retrieve recoevery key
-	recoveryPrivateKey, err := identity.RecoveryKey(key)
+	// Retrieve recovery key
+	recoveryPrivateKey, err := privateKey.RecoveryKey()
 	if err != nil {
 		return fmt.Errorf("unable to retrieve recovery key from identity: %w", err)
 	}

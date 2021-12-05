@@ -27,6 +27,7 @@ import (
 
 	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/container/identity"
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/tasks"
@@ -65,15 +66,15 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 	var generator identity.PrivateKeyGeneratorFunc
 
 	if fips.Enabled() {
-		generator = identity.P384
+		generator = key.P384
 	} else {
 		switch t.Version {
 		case LegacyIdentity:
-			generator = identity.Legacy
+			generator = key.Legacy
 		case ModernIdentity:
-			generator = identity.Ed25519
+			generator = key.Ed25519
 		case NISTIdentity:
-			generator = identity.P384
+			generator = key.P384
 		default:
 			return fmt.Errorf("invalid or unsupported identity version '%d'", t.Version)
 		}

@@ -162,7 +162,7 @@ func TestUnsealTask_Run(t *testing.T) {
 			fields: fields{
 				ContainerReader: cmdutil.FileReader("../../../test/fixtures/bundles/complete.v2.sealed"),
 				OutputWriter:    cmdutil.DiscardWriter(),
-				ContainerKey:    memguard.NewBufferFromBytes([]byte("v2.ck.Uax9mvwB4NpH44297qNlmoDzY8pnAEDAi1E8n_72d1dAYf3l5yFQyyzZX5DMnY9_")),
+				ContainerKey:    memguard.NewBufferFromBytes([]byte("v2.ck.CLMEUoY-EgvMGKCcKeByPdJjQDod6fqTnqvxtD_Z0_SX4PMITu_emttDL91z_61D")),
 			},
 			wantErr: false,
 		},

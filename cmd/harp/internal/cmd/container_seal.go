@@ -23,6 +23,7 @@ import (
 
 	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/container/identity"
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/sdk/types"
@@ -82,13 +83,19 @@ var containerSealCmd = func() *cobra.Command {
 			// Process identities
 			for _, ipk := range params.identities {
 				// Convert to sealing public key
-				sealingPubllicKey, err := identity.SealingPublicKey(ipk)
+				identityPublicKey, err := key.FromString(ipk)
 				if err != nil {
-					log.For(ctx).Fatal("unable to convert identity to sealing key", zap.Error(err), zap.String("ipk", ipk))
+					log.For(ctx).Fatal("unbale to parse identity public key", zap.Error(err), zap.String("ipk", ipk))
+				}
+
+				// Try to convert the key
+				sealingPublicKey := identityPublicKey.SealingKey()
+				if sealingPublicKey == "" {
+					log.For(ctx).Fatal("unbale to convert identity public key to a sealing key", zap.Error(err), zap.String("ipk", ipk))
 				}
 
 				// Add to sealing keys
-				sealingPublicKeys.AddIfNotContains(sealingPubllicKey)
+				sealingPublicKeys.AddIfNotContains(sealingPublicKey)
 			}
 
 			// Prepare task

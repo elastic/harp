@@ -21,6 +21,7 @@ import (
 	"crypto/rand"
 	"testing"
 
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,35 +33,35 @@ var (
 
 func TestCodec_New(t *testing.T) {
 	t.Run("invalid description", func(t *testing.T) {
-		id, pub, err := New(rand.Reader, "é", Ed25519)
+		id, pub, err := New(rand.Reader, "é", key.Ed25519)
 		assert.Error(t, err)
 		assert.Nil(t, pub)
 		assert.Nil(t, id)
 	})
 
 	t.Run("ed25519 - invalid random source", func(t *testing.T) {
-		id, pub, err := New(bytes.NewBuffer(nil), "test", Ed25519)
+		id, pub, err := New(bytes.NewBuffer(nil), "test", key.Ed25519)
 		assert.Error(t, err)
 		assert.Nil(t, pub)
 		assert.Nil(t, id)
 	})
 
 	t.Run("p384 - invalid random source", func(t *testing.T) {
-		id, pub, err := New(bytes.NewBuffer(nil), "test", P384)
+		id, pub, err := New(bytes.NewBuffer(nil), "test", key.P384)
 		assert.Error(t, err)
 		assert.Nil(t, pub)
 		assert.Nil(t, id)
 	})
 
 	t.Run("legacy - invalid random source", func(t *testing.T) {
-		id, pub, err := New(bytes.NewBuffer(nil), "test", Legacy)
+		id, pub, err := New(bytes.NewBuffer(nil), "test", key.Legacy)
 		assert.Error(t, err)
 		assert.Nil(t, pub)
 		assert.Nil(t, id)
 	})
 
 	t.Run("valid - ed25519", func(t *testing.T) {
-		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001")), "security", Ed25519)
+		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001")), "security", key.Ed25519)
 		assert.NoError(t, err)
 		assert.NotNil(t, pub)
 		assert.NotNil(t, id)
@@ -73,7 +74,7 @@ func TestCodec_New(t *testing.T) {
 	})
 
 	t.Run("valid - p-384", func(t *testing.T) {
-		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001-1ioQiLEbVCm1Y7NfWCf6oNWoV6p5E4spJgRXKQHdV44XcNvqywMnIYYcL8qZ4Wk")), "security", P384)
+		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001-1ioQiLEbVCm1Y7NfWCf6oNWoV6p5E4spJgRXKQHdV44XcNvqywMnIYYcL8qZ4Wk")), "security", key.P384)
 		assert.NoError(t, err)
 		assert.NotNil(t, pub)
 		assert.NotNil(t, id)
@@ -86,7 +87,7 @@ func TestCodec_New(t *testing.T) {
 	})
 
 	t.Run("valid - legacy", func(t *testing.T) {
-		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001")), "security", Legacy)
+		id, pub, err := New(bytes.NewBuffer([]byte("deterministic-random-source-for-test-0001")), "security", key.Legacy)
 		assert.NoError(t, err)
 		assert.NotNil(t, pub)
 		assert.NotNil(t, id)
@@ -134,69 +135,5 @@ func TestCodec_FromReader(t *testing.T) {
 		id, err := FromReader(bytes.NewReader(v2SecurityIdentity))
 		assert.NoError(t, err)
 		assert.NotNil(t, id)
-	})
-}
-
-var (
-	legacyPrivateKey = &JSONWebKey{
-		Kty: "OKP",
-		Crv: "X25519",
-		X:   "ZxTKWxgrG341_FxatkkfAxedMtfz1zJzAm6FUmitxHM",
-		D:   "ZGV0ZXJtaW5pc3RpYy1yYW5kb20tc291cmNlLWZvci0",
-	}
-	v1PrivateKey = &JSONWebKey{
-		Kty: "OKP",
-		Crv: "Ed25519",
-		X:   "2BdsL_FTiaLRwyYwlA2urcZ8TLDdisbzBSEp-LUuHos",
-		D:   "ZGV0ZXJtaW5pc3RpYy1yYW5kb20tc291cmNlLWZvci3YF2wv8VOJotHDJjCUDa6txnxMsN2KxvMFISn4tS4eiw",
-	}
-	v2PrivateKey = &JSONWebKey{
-		Kty: "EC",
-		Crv: "P-384",
-		X:   "RfbSuUTw-qn5igwbxI06in3XwDJ-hIX9H1nswXm8_mdShz9lJFZq5BHpwvgOqCtE",
-		Y:   "ag16lWruEPkhWChmZnO52ne1iyLGAEVNbyx38NPMOqNZzV7yP9ugrzCa7pCz8eBr",
-		D:   "aXN0aWMtcmFuZG9tLXNvdYiXCnZ-xg0Te8QN3AId4n-bdBdDfhXJjz1OngEo78g8",
-	}
-)
-
-func TestCodec_RecoveryKey(t *testing.T) {
-	t.Run("nil", func(t *testing.T) {
-		id, err := RecoveryKey(nil)
-		assert.Error(t, err)
-		assert.Empty(t, id)
-	})
-
-	t.Run("D has invalid encoding", func(t *testing.T) {
-		id, err := RecoveryKey(&JSONWebKey{
-			D: "é",
-		})
-		assert.Error(t, err)
-		assert.Empty(t, id)
-	})
-
-	t.Run("unhandled private key", func(t *testing.T) {
-		id, err := RecoveryKey(&JSONWebKey{
-			Crv: "P-256",
-		})
-		assert.Error(t, err)
-		assert.Empty(t, id)
-	})
-
-	t.Run("valid - legacy", func(t *testing.T) {
-		id, err := RecoveryKey(legacyPrivateKey)
-		assert.NoError(t, err)
-		assert.Equal(t, "ZGV0ZXJtaW5pc3RpYy1yYW5kb20tc291cmNlLWZvci0", id)
-	})
-
-	t.Run("valid - v1", func(t *testing.T) {
-		id, err := RecoveryKey(v1PrivateKey)
-		assert.NoError(t, err)
-		assert.Equal(t, "v1.ck.6Of3g6qt-NPBzXSMNl4jPIZbrZIIwonT2pn7GCc4i3o", id)
-	})
-
-	t.Run("valid - v2", func(t *testing.T) {
-		id, err := RecoveryKey(v2PrivateKey)
-		assert.NoError(t, err)
-		assert.Equal(t, "v2.ck.aXN0aWMtcmFuZG9tLXNvdYiXCnZ-xg0Te8QN3AId4n-bdBdDfhXJjz1OngEo78g8", id)
 	})
 }

@@ -18,20 +18,15 @@
 package identity
 
 import (
-	"crypto/ed25519"
-	"crypto/elliptic"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"strings"
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 
-	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
@@ -42,7 +37,7 @@ const (
 
 // -----------------------------------------------------------------------------
 
-type PrivateKeyGeneratorFunc func(io.Reader) (*JSONWebKey, string, error)
+type PrivateKeyGeneratorFunc func(io.Reader) (*key.JSONWebKey, string, error)
 
 // New identity from description.
 func New(random io.Reader, description string, generator PrivateKeyGeneratorFunc) (*Identity, []byte, error) {
@@ -116,77 +111,4 @@ func FromReader(r io.Reader) (*Identity, error) {
 
 	// Return no error
 	return &input, nil
-}
-
-// RecoveryKey returns the private encryption key from the private identity key.
-func RecoveryKey(key *JSONWebKey) (string, error) {
-	// Check arguments
-	if key == nil {
-		return "", errors.New("unable to get container key from a nil identity")
-	}
-
-	// Decode private key
-	privKeyRaw, err := base64.RawURLEncoding.DecodeString(key.D)
-	if err != nil {
-		return "", errors.New("invalid identity, private key is invalid")
-	}
-
-	switch key.Crv {
-	case "X25519": // Legacy keys
-		return base64.RawURLEncoding.EncodeToString(privKeyRaw), nil
-	case "Ed25519":
-		// Convert Ed25519 private key to x25519 key.
-		var sk [32]byte
-		extra25519.PrivateKeyToCurve25519(&sk, privKeyRaw)
-		return fmt.Sprintf("v1.ck.%s", base64.RawURLEncoding.EncodeToString(sk[:])), nil
-	case "P-384":
-		// FIPS compliant sealing process use ECDSA P-384 key.
-		return fmt.Sprintf("v2.ck.%s", base64.RawURLEncoding.EncodeToString(privKeyRaw)), nil
-	default:
-	}
-
-	// Unhandled key
-	return "", fmt.Errorf("unhandled private key format '%s'", key.Crv)
-}
-
-func SealingPublicKey(ipk string) (string, error) {
-	// Check arguments
-	if ipk == "" {
-		return "", errors.New("unable to get container sealing key from a blank public key")
-	}
-
-	switch {
-	case strings.HasPrefix(ipk, "v1.ipk."):
-		// Decode public key
-		pk, err := base64.RawURLEncoding.DecodeString(ipk[7:])
-		if err != nil {
-			return "", fmt.Errorf("unable to decode public key: %w", err)
-		}
-		if len(pk) != ed25519.PublicKeySize {
-			return "", errors.New("invalid public key size")
-		}
-
-		// Convert Ed25519 to X25519
-		var pkRaw [32]byte
-		if !extra25519.PublicKeyToCurve25519(&pkRaw, pk) {
-			return "", errors.New("unable to convert identity public key to container sealing key")
-		}
-
-		return fmt.Sprintf("v1.sk.%s", base64.RawURLEncoding.EncodeToString(pkRaw[:])), nil
-	case strings.HasPrefix(ipk, "v2.ipk."):
-		// Decode public key
-		pkRaw, err := base64.RawURLEncoding.DecodeString(ipk[7:])
-		if err != nil {
-			return "", fmt.Errorf("unable to decode public key: %w", err)
-		}
-		x, y := elliptic.UnmarshalCompressed(elliptic.P384(), pkRaw)
-		if x == nil || y == nil {
-			return "", errors.New("unable to unmarshal the public key")
-		}
-
-		return fmt.Sprintf("v2.sk.%s", base64.RawURLEncoding.EncodeToString(pkRaw)), nil
-	default:
-	}
-
-	return "", errors.New("identiy public key is not supported")
 }

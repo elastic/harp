@@ -374,16 +374,45 @@ func kdf(key *[32]byte, n []byte) (ek, n2, ak []byte, err error) {
 	return ek, n2, ak, nil
 }
 
-func mac(ak []byte, n, c []byte) ([]byte, error) {
+func mac(ak, n, c []byte) ([]byte, error) {
+	// Compute pre-authenticated content
+	preAuth, err := pae([]byte("harp-authentication-tag-v2"), n, c)
+	if err != nil {
+		return nil, err
+	}
+
 	// Compute MAC
 	mac := hmac.New(sha512.New384, ak)
 
 	// Hash pre-authentication content
-	mac.Write([]byte("harp-authentication-tag"))
-	mac.Write([]byte{0x00})
-	mac.Write(n)
-	mac.Write(c)
+	mac.Write(preAuth)
 
 	// No error
 	return mac.Sum(nil), nil
+}
+
+func pae(pieces ...[]byte) ([]byte, error) {
+	output := &bytes.Buffer{}
+
+	// Encode piece count
+	count := len(pieces)
+	if err := binary.Write(output, binary.LittleEndian, uint64(count)); err != nil {
+		return nil, err
+	}
+
+	// For each element
+	for i := range pieces {
+		// Encode size
+		if err := binary.Write(output, binary.LittleEndian, uint64(len(pieces[i]))); err != nil {
+			return nil, err
+		}
+
+		// Encode data
+		if _, err := output.Write(pieces[i]); err != nil {
+			return nil, err
+		}
+	}
+
+	// No error
+	return output.Bytes(), nil
 }

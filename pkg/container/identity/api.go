@@ -20,19 +20,13 @@ package identity
 import (
 	"bytes"
 	"context"
-	"crypto/ecdsa"
-	"crypto/ed25519"
-	"crypto/elliptic"
-	"crypto/rand"
-	"crypto/sha512"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
-	"strings"
 	"time"
 
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
 )
@@ -54,7 +48,7 @@ func (i *Identity) HasPrivateKey() bool {
 }
 
 // Decrypt private key with given transformer.
-func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*JSONWebKey, error) {
+func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*key.JSONWebKey, error) {
 	// Check arguments
 	if types.IsNil(t) {
 		return nil, fmt.Errorf("can't process with nil transformer")
@@ -76,13 +70,13 @@ func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*JSONWebKe
 	}
 
 	// Decode key
-	var key JSONWebKey
-	if err = json.NewDecoder(bytes.NewReader(clearText)).Decode(&key); err != nil {
+	var pk key.JSONWebKey
+	if err = json.NewDecoder(bytes.NewReader(clearText)).Decode(&pk); err != nil {
 		return nil, fmt.Errorf("unable to decode payload as JSON: %w", err)
 	}
 
 	// Return result
-	return &key, nil
+	return &pk, nil
 }
 
 // Verify the identity signature using its own public key.
@@ -107,46 +101,15 @@ func (i *Identity) Verify() error {
 		return fmt.Errorf("unable to decode the signature: %w", err)
 	}
 
-	// Verify the signature
-	switch {
-	case strings.HasPrefix(i.Public, "v1.ipk."):
-		// Decode public key
-		pk, err := base64.RawURLEncoding.DecodeString(i.Public[7:])
-		if err != nil {
-			return fmt.Errorf("unable to decode public key: %w", err)
-		}
-		if len(pk) != ed25519.PublicKeySize {
-			return errors.New("invalid public key size")
-		}
+	// Decode public key
+	pubKey, err := key.FromString(id.Public)
+	if err != nil {
+		return fmt.Errorf("unable to decode public key: %w", err)
+	}
 
-		// Verify the signature
-		if ed25519.Verify(ed25519.PublicKey(pk), protected, sig) {
-			return nil
-		}
-	case strings.HasPrefix(i.Public, "v2.ipk"):
-		// Decode public key
-		pkRaw, err := base64.RawURLEncoding.DecodeString(i.Public[7:])
-		if err != nil {
-			return fmt.Errorf("unable to decode public key: %w", err)
-		}
-		x, y := elliptic.UnmarshalCompressed(elliptic.P384(), pkRaw)
-		if x == nil || y == nil {
-			return errors.New("unable to unmarshal the public key")
-		}
-
-		// Rebuild the public key
-		var pk ecdsa.PublicKey
-		pk.Curve = elliptic.P384()
-		pk.X = x
-		pk.Y = y
-
-		r := new(big.Int).SetBytes(sig[:48])
-		s := new(big.Int).SetBytes(sig[48:])
-
-		digest := sha512.Sum384(protected)
-		if ecdsa.Verify(&pk, digest[:], r, s) {
-			return nil
-		}
+	// Validate signature
+	if pubKey.Verify(protected, sig) {
+		return nil
 	}
 
 	return errors.New("unable to validate identity signature")
@@ -156,56 +119,4 @@ func (i *Identity) Verify() error {
 type PrivateKey struct {
 	Encoding string `json:"encoding,omitempty"`
 	Content  string `json:"content"`
-}
-
-// -----------------------------------------------------------------------------
-
-// JSONWebKey holds internal container key attributes.
-type JSONWebKey struct {
-	Kty string `json:"kty"`
-	Crv string `json:"crv"`
-	X   string `json:"x,omitempty"`
-	Y   string `json:"y,omitempty"`
-	D   string `json:"d,omitempty"`
-}
-
-func (jwk *JSONWebKey) Sign(message []byte) (string, error) {
-	var sig []byte
-
-	// Decode private key
-	d, err := base64.RawURLEncoding.DecodeString(jwk.D)
-	if err != nil {
-		return "", fmt.Errorf("unable to decode private key: %w", err)
-	}
-
-	switch jwk.Crv {
-	case "Ed25519":
-		if len(d) != ed25519.PrivateKeySize {
-			return "", errors.New("invalid private key size")
-		}
-
-		// Sign the message
-		sig = ed25519.Sign(ed25519.PrivateKey(d), message)
-	case "P-384":
-		if len(d) != 48 {
-			return "", errors.New("invalid private key size")
-		}
-
-		// Rebuild the private key
-		var sk ecdsa.PrivateKey
-		sk.Curve = elliptic.P384()
-		sk.D = new(big.Int).SetBytes(d)
-
-		digest := sha512.Sum384(message)
-		r, s, err := ecdsa.Sign(rand.Reader, &sk, digest[:])
-		if err != nil {
-			return "", fmt.Errorf("unable to sign the identity: %w", err)
-		}
-
-		// Assemble the signature
-		sig = append(r.Bytes(), s.Bytes()...)
-	}
-
-	// Encode the signature
-	return base64.RawURLEncoding.EncodeToString(sig), nil
 }

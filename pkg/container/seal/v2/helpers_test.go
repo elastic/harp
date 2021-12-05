@@ -22,6 +22,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"reflect"
 	"testing"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
@@ -135,4 +136,51 @@ func Test_tryRecipientKeys(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, payloadKey, decodedPayloadKey)
+}
+
+func TestPreAuthenticationEncoding(t *testing.T) {
+	type args struct {
+		pieces [][]byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "empty",
+			args: args{
+				pieces: nil,
+			},
+			wantErr: false,
+			want:    []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		},
+		{
+			name: "one",
+			args: args{
+				pieces: [][]byte{
+					[]byte("test"),
+				},
+			},
+			wantErr: false,
+			want: []byte{
+				0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Count
+				0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Length
+				't', 'e', 's', 't',
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := pae(tt.args.pieces...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("pae() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("pae() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
