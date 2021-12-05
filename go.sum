@@ -1139,3 +1139,7 @@ rsc.io/sampler v1.3.0/go.mod h1:T1hPZKmBbMNahiBKFy5HrXp6adAjACjK9JXDnKaTXpA=
 sigs.k8s.io/yaml v1.2.0/go.mod h1:yfXDCHCao9+ENCvLSE62v9VSji2MKu5jeNfTrofGhJc=
 sigs.k8s.io/yaml v1.3.0 h1:a2VclLzOGrwOHDiV8EfBGhvjHvP46CtW5j6POvhYGGo=
 sigs.k8s.io/yaml v1.3.0/go.mod h1:GeOyir5tyXNByN85N/dRIT9es5UQNerPYEKK56eTBm8=
+zntr.io/paseto v1.0.0 h1:JA2iGUWVsheX7j6JZLUdQ4vsptgDSFOaVn1kc7+pB6E=
+zntr.io/paseto v1.0.0/go.mod h1:yGgxVSKGZfSR2fL8CgqWzOOOytv8Hd63Fn6z4/RLPeo=
+zntr.io/paseto v1.1.0 h1:vob039eJ9Z6sCVuMRRaioXi+IdMTR/VpwWCxr6LqB/s=
+zntr.io/paseto v1.1.0/go.mod h1:yGgxVSKGZfSR2fL8CgqWzOOOytv8Hd63Fn6z4/RLPeo=

@@ -25,31 +25,29 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/sdk/value/encryption"
+	"github.com/elastic/harp/pkg/sdk/value/signature"
 )
 
 // -----------------------------------------------------------------------------
 
-var transformEncryptionCmd = func() *cobra.Command {
+var transformSignCmd = func() *cobra.Command {
 	var (
 		inputPath  string
 		outputPath string
 		keyRaw     string
-		revert     bool
 	)
 
 	cmd := &cobra.Command{
-		Use:        "encryption",
-		Short:      "Encryption value transformer",
-		Aliases:    []string{"enc"},
-		Deprecated: "Use encrypt/decrypt commands.",
+		Use:     "sign",
+		Short:   "Sign the given value with a transformer",
+		Aliases: []string{"s"},
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
-			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-encryption", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-sign", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
 			// Resolve tranformer
-			t, err := encryption.FromKey(keyRaw)
+			t, err := signature.FromKey(keyRaw)
 			if err != nil {
 				log.For(ctx).Fatal("unable to initialize a transformer form key", zap.Error(err))
 			}
@@ -75,19 +73,10 @@ var transformEncryptionCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to drain input reader", zap.Error(err))
 			}
 
-			var out []byte
-			if !revert {
-				// Apply transformation
-				out, err = t.To(ctx, content)
-				if err != nil {
-					log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
-				}
-			} else {
-				// Apply transformation
-				out, err = t.From(ctx, content)
-				if err != nil {
-					log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
-				}
+			// Apply transformation
+			out, err := t.To(ctx, content)
+			if err != nil {
+				log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
 			}
 
 			if _, err = writer.Write(out); err != nil {
@@ -102,7 +91,6 @@ var transformEncryptionCmd = func() *cobra.Command {
 
 	cmd.Flags().StringVar(&inputPath, "in", "-", "Input path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&outputPath, "out", "-", "Output path ('-' for stdin or filename)")
-	cmd.Flags().BoolVar(&revert, "revert", false, "Decrypt the input (default encrypt)")
 
 	return cmd
 }

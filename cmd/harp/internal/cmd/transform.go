@@ -29,8 +29,14 @@ var transformCmd = func() *cobra.Command {
 		Short: "Transform input value using encryption transformers",
 	}
 
-	// Add commands
+	// Deprecated
 	cmd.AddCommand(transformEncryptionCmd())
+
+	// Add commands
+	cmd.AddCommand(transformEncryptCmd())
+	cmd.AddCommand(transformDecryptCmd())
+	cmd.AddCommand(transformSignCmd())
+	cmd.AddCommand(transformVerifyCmd())
 
 	return cmd
 }

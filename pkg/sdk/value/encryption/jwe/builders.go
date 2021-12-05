@@ -25,7 +25,6 @@ import (
 
 	"gopkg.in/square/go-jose.v2"
 
-	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
@@ -43,9 +42,7 @@ var (
 )
 
 func init() {
-	if !fips.Enabled() {
-		encryption.Register("jwe", FromKey)
-	}
+	encryption.Register("jwe", FromKey)
 }
 
 // FromKey returns an encryption transformer instance according to the given key format.
