@@ -12,6 +12,7 @@ harp container recover [flags]
   -h, --help                        help for recover
       --identity string             Identity input  ('-' for stdout or filename)
       --json                        Display container key as json
+      --key string                  Transformer key
       --passphrase string           Identity private key passphrase
       --vault-transit-key string    Use Vault transit encryption to protect identity private key
       --vault-transit-path string   Vault transit backend mount path (default "transit")

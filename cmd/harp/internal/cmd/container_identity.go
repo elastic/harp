@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
+	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/sdk/value"
@@ -38,6 +39,7 @@ type containerIdentityParams struct {
 	passPhrase       string
 	vaultTransitPath string
 	vaultTransitKey  string
+	version          uint
 }
 
 var containerIdentityCmd = func() *cobra.Command {
@@ -78,6 +80,7 @@ var containerIdentityCmd = func() *cobra.Command {
 				OutputWriter: cmdutil.FileWriter(params.outputPath),
 				Description:  params.description,
 				Transformer:  transformer,
+				Version:      container.IdentityVersion(params.version + 1),
 			}
 
 			// Run the task
@@ -85,6 +88,12 @@ var containerIdentityCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to execute task", zap.Error(err))
 			}
 		},
+	}
+
+	// Select default identity version.
+	identityVersion := uint(container.ModernIdentity)
+	if fips.Enabled() {
+		identityVersion = uint(container.NISTIdentity)
 	}
 
 	// Flags
@@ -95,6 +104,6 @@ var containerIdentityCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&params.vaultTransitKey, "vault-transit-key", "", "Use Vault transit encryption to protect identity private key")
 	cmd.Flags().StringVar(&params.description, "description", "", "Identity description")
 	log.CheckErr("unable to mark 'description' flag as required.", cmd.MarkFlagRequired("description"))
-
+	cmd.Flags().UintVar(&params.version, "version", identityVersion-1, "Select identity version (0:legacy, 1:modern, 2:nist)")
 	return cmd
 }

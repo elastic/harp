@@ -18,20 +18,15 @@
 package identity
 
 import (
-	"crypto/ed25519"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-	"github.com/gosimple/slug"
 
-	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
-	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
@@ -42,25 +37,19 @@ const (
 
 // -----------------------------------------------------------------------------
 
+type PrivateKeyGeneratorFunc func(io.Reader) (*key.JSONWebKey, string, error)
+
 // New identity from description.
-func New(random io.Reader, description string) (*Identity, []byte, error) {
+func New(random io.Reader, description string, generator PrivateKeyGeneratorFunc) (*Identity, []byte, error) {
 	// Check arguments
 	if err := validation.Validate(description, validation.Required, is.ASCII); err != nil {
 		return nil, nil, fmt.Errorf("unable to create identity with invalid description: %w", err)
 	}
 
-	// Generate ed25519 keys as identity
-	pub, priv, err := ed25519.GenerateKey(random)
+	// Delegate to generator
+	jwk, encodedPub, err := generator(random)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to generate identity keypair: %w", err)
-	}
-
-	// Wrap as JWK
-	jwk := JSONWebKey{
-		Kty: "OKP",
-		Crv: "Ed25519",
-		X:   base64.RawURLEncoding.EncodeToString(pub[:]),
-		D:   base64.RawURLEncoding.EncodeToString(priv[:]),
+		return nil, nil, fmt.Errorf("unable to generate identity private key: %w", err)
 	}
 
 	// Encode JWK as json
@@ -69,20 +58,32 @@ func New(random io.Reader, description string) (*Identity, []byte, error) {
 		return nil, nil, fmt.Errorf("unable to serialize identity keypair: %w", err)
 	}
 
-	// Encode public key using Bech32 with description as hrp
-	encoded, err := bech32.Encode(slug.Make(description), pub[:])
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to encode public key: %w", err)
-	}
-
-	// Return unsealed identity
-	return &Identity{
+	// Prepae identity object
+	id := &Identity{
 		APIVersion:  apiVersion,
 		Kind:        kind,
 		Timestamp:   time.Now().UTC(),
 		Description: description,
-		Public:      encoded,
-	}, payload, nil
+		Public:      encodedPub,
+	}
+
+	// Encode to json for signature
+	protected, err := json.Marshal(id)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to serialize identity for signature: %w", err)
+	}
+
+	// Sign the protected data
+	sig, err := jwk.Sign(protected)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to sign protected data: %w", err)
+	}
+
+	// Auto-assign the signature
+	id.Signature = sig
+
+	// Return unsealed identity
+	return id, payload, nil
 }
 
 // FromReader extract identity instance from reader.
@@ -98,87 +99,16 @@ func FromReader(r io.Reader) (*Identity, error) {
 		return nil, fmt.Errorf("unable to decode input JSON: %w", err)
 	}
 
-	// Check public key encoding
-	_, _, err := bech32.Decode(input.Public)
-	if err != nil {
-		return nil, fmt.Errorf("invalid public key encoding")
-	}
-
 	// Check component
 	if input.Private == nil {
 		return nil, fmt.Errorf("invalid identity: missing private component")
 	}
 
+	// Validate self signature
+	if errVerify := input.Verify(); errVerify != nil {
+		return nil, fmt.Errorf("unable to verify identity: %w", errVerify)
+	}
+
 	// Return no error
 	return &input, nil
-}
-
-// RecoveryKey returns the x25519 private encryption key from the private
-// identity key.
-func RecoveryKey(key *JSONWebKey) (*[32]byte, error) {
-	// Check arguments
-	if key == nil {
-		return nil, errors.New("unable to get container key from a nil identity")
-	}
-
-	// Decode ed25519 private key
-	privKeyRaw, err := base64.RawURLEncoding.DecodeString(key.D)
-	if err != nil {
-		return nil, errors.New("invalid identity, private key is invalid")
-	}
-
-	var recoveryPrivateKey [32]byte
-
-	switch key.Crv {
-	case "X25519": // Legacy keys
-		copy(recoveryPrivateKey[:], privKeyRaw)
-	case "Ed25519":
-		// Convert Ed25519 private key to x25519 key.
-		extra25519.PrivateKeyToCurve25519(&recoveryPrivateKey, privKeyRaw)
-	default:
-		return nil, fmt.Errorf("unhandled private key format '%s'", key.Crv)
-	}
-
-	// No error
-	return &recoveryPrivateKey, nil
-}
-
-// SealingPublicKeys convert ed25519 public key to x25519 public container key.
-func SealingKeys(publicKeys ...string) ([]*[32]byte, error) {
-	// If using sealing seed
-	peerPublicKeys := []*[32]byte{}
-
-	// Given identities
-	if len(publicKeys) == 0 {
-		return nil, fmt.Errorf("at least one public key must be provided")
-	}
-
-	// Filter identities
-	var filteredIdentities types.StringArray
-
-	// Process identities
-	for _, id := range publicKeys {
-		// Check if identity is already added
-		if !filteredIdentities.AddIfNotContains(id) {
-			continue
-		}
-
-		// Check encoding
-		_, publicKeyRaw, errDecode := bech32.Decode(id)
-		if errDecode != nil {
-			return nil, fmt.Errorf("invalid '%s' as public identity: %w", id, errDecode)
-		}
-
-		// Convert ed25519 public to x25519 key
-		var publicKey [32]byte
-		if !extra25519.PublicKeyToCurve25519(&publicKey, publicKeyRaw) {
-			return nil, fmt.Errorf("unable to convert identity '%s' to container sealing key", id)
-		}
-
-		// Append to identity
-		peerPublicKeys = append(peerPublicKeys, &publicKey)
-	}
-
-	// No error
-	return peerPublicKeys, nil
 }

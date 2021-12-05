@@ -31,7 +31,6 @@ import (
 // -----------------------------------------------------------------------------
 
 var keygenPasetoCmd = func() *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:   "paseto",
 		Short: "Generate and print an v4.local paseto key",

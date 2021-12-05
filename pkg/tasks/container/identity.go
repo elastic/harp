@@ -25,10 +25,20 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/container/identity"
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/tasks"
+)
+
+type IdentityVersion uint
+
+const (
+	LegacyIdentity IdentityVersion = 1
+	ModernIdentity IdentityVersion = 2
+	NISTIdentity   IdentityVersion = 3
 )
 
 // IdentityTask implements secret container identity creation task.
@@ -36,6 +46,7 @@ type IdentityTask struct {
 	OutputWriter tasks.WriterProvider
 	Description  string
 	Transformer  value.Transformer
+	Version      IdentityVersion
 }
 
 // Run the task.
@@ -51,8 +62,26 @@ func (t *IdentityTask) Run(ctx context.Context) error {
 		return fmt.Errorf("description must not be blank")
 	}
 
+	// Select appropriate strategy.
+	var generator identity.PrivateKeyGeneratorFunc
+
+	if fips.Enabled() {
+		generator = key.P384
+	} else {
+		switch t.Version {
+		case LegacyIdentity:
+			generator = key.Legacy
+		case ModernIdentity:
+			generator = key.Ed25519
+		case NISTIdentity:
+			generator = key.P384
+		default:
+			return fmt.Errorf("invalid or unsupported identity version '%d'", t.Version)
+		}
+	}
+
 	// Create identity
-	id, payload, err := identity.New(rand.Reader, t.Description)
+	id, payload, err := identity.New(rand.Reader, t.Description, generator)
 	if err != nil {
 		return fmt.Errorf("unable to create a new identity: %w", err)
 	}

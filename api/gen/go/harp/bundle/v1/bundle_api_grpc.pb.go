@@ -58,21 +58,19 @@ func (c *bundleAPIClient) GetSecret(ctx context.Context, in *GetSecretRequest, o
 }
 
 // BundleAPIServer is the server API for BundleAPI service.
-// All implementations must embed UnimplementedBundleAPIServer
+// All implementations should embed UnimplementedBundleAPIServer
 // for forward compatibility
 type BundleAPIServer interface {
 	// GetSecret returns the matching RAW secret value according to requested path.
 	GetSecret(context.Context, *GetSecretRequest) (*GetSecretResponse, error)
-	mustEmbedUnimplementedBundleAPIServer()
 }
 
-// UnimplementedBundleAPIServer must be embedded to have forward compatible implementations.
+// UnimplementedBundleAPIServer should be embedded to have forward compatible implementations.
 type UnimplementedBundleAPIServer struct{}
 
 func (UnimplementedBundleAPIServer) GetSecret(context.Context, *GetSecretRequest) (*GetSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecret not implemented")
 }
-func (UnimplementedBundleAPIServer) mustEmbedUnimplementedBundleAPIServer() {}
 
 // UnsafeBundleAPIServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to BundleAPIServer will

@@ -35,6 +35,7 @@ func TestIdentityTask_Run(t *testing.T) {
 		OutputWriter tasks.WriterProvider
 		Description  string
 		Transformer  value.Transformer
+		Version      IdentityVersion
 	}
 	type args struct {
 		ctx context.Context
@@ -104,13 +105,43 @@ func TestIdentityTask_Run(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		// ---------------------------------------------------------------------
 		{
-			name: "valid",
+			name: "version unspecified",
 			fields: fields{
 				OutputWriter: cmdutil.DiscardWriter(),
 				Description:  "test",
 				Transformer:  identity.Transformer(),
+			},
+			wantErr: true,
+		},
+		// ---------------------------------------------------------------------
+		{
+			name: "valid - v1",
+			fields: fields{
+				OutputWriter: cmdutil.DiscardWriter(),
+				Description:  "test",
+				Transformer:  identity.Transformer(),
+				Version:      LegacyIdentity,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - v2",
+			fields: fields{
+				OutputWriter: cmdutil.DiscardWriter(),
+				Description:  "test",
+				Transformer:  identity.Transformer(),
+				Version:      ModernIdentity,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - v3",
+			fields: fields{
+				OutputWriter: cmdutil.DiscardWriter(),
+				Description:  "test",
+				Transformer:  identity.Transformer(),
+				Version:      NISTIdentity,
 			},
 			wantErr: false,
 		},
@@ -121,6 +152,7 @@ func TestIdentityTask_Run(t *testing.T) {
 				OutputWriter: tt.fields.OutputWriter,
 				Description:  tt.fields.Description,
 				Transformer:  tt.fields.Transformer,
+				Version:      tt.fields.Version,
 			}
 			if err := tr.Run(tt.args.ctx); (err != nil) != tt.wantErr {
 				t.Errorf("IdentityTask.Run() error = %v, wantErr %v", err, tt.wantErr)

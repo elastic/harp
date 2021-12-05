@@ -19,7 +19,6 @@ package container
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -64,13 +63,13 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 	}
 
 	// Try to decrypt the private key
-	key, err := input.Decrypt(ctx, t.Transformer)
+	privateKey, err := input.Decrypt(ctx, t.Transformer)
 	if err != nil {
 		return fmt.Errorf("unable to decrypt private key: %w", err)
 	}
 
-	// Retrieve recoevery key
-	recoveryPrivateKey, err := identity.RecoveryKey(key)
+	// Retrieve recovery key
+	recoveryPrivateKey, err := privateKey.RecoveryKey()
 	if err != nil {
 		return fmt.Errorf("unable to retrieve recovery key from identity: %w", err)
 	}
@@ -84,13 +83,13 @@ func (t *RecoverTask) Run(ctx context.Context) error {
 	// Display as json
 	if t.JSONOutput {
 		if errJSON := json.NewEncoder(outputWriter).Encode(map[string]interface{}{
-			"container_key": base64.RawURLEncoding.EncodeToString(recoveryPrivateKey[:]),
+			"container_key": recoveryPrivateKey,
 		}); errJSON != nil {
 			return fmt.Errorf("unable to display as json: %w", errJSON)
 		}
 	} else {
 		// Display container key
-		if _, err := fmt.Fprintf(outputWriter, "Container key : %s\n", base64.RawURLEncoding.EncodeToString(recoveryPrivateKey[:])); err != nil {
+		if _, err := fmt.Fprintf(outputWriter, "Container key : %s\n", recoveryPrivateKey); err != nil {
 			return fmt.Errorf("unable to display result: %w", err)
 		}
 	}

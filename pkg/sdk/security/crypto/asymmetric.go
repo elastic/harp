@@ -25,7 +25,10 @@ import (
 	"crypto/rsa"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/nacl/box"
+
+	"github.com/elastic/harp/build/fips"
 )
 
 // Keypair generates crypto keys according to given key type.
@@ -48,6 +51,7 @@ func Keypair(keyType string) (interface{}, error) {
 
 // -----------------------------------------------------------------------------
 
+//nolint:gocyclo // To refactor
 func generateKeyPair(keyType string) (publicKey, privateKey interface{}, err error) {
 	switch keyType {
 	case "rsa", "rsa:normal", "rsa:2048":
@@ -86,12 +90,18 @@ func generateKeyPair(keyType string) (publicKey, privateKey interface{}, err err
 		pub := key.Public()
 		return pub, key, nil
 	case "ssh", "ed25519":
+		if fips.Enabled() {
+			return nil, nil, errors.New("ed25519 key processing is disabled in FIPS Mode")
+		}
 		pub, priv, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to generate ed25519 key: %w", err)
 		}
 		return pub, priv, nil
 	case "naclbox", "x25519":
+		if fips.Enabled() {
+			return nil, nil, errors.New("x25519 key processing is disabled in FIPS Mode")
+		}
 		pub, priv, err := box.GenerateKey(rand.Reader)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to generate naclbox key: %w", err)

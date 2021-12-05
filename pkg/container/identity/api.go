@@ -22,11 +22,11 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/elastic/harp/pkg/sdk/security"
-	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
 )
@@ -39,6 +39,7 @@ type Identity struct {
 	Description string      `json:"@description"`
 	Public      string      `json:"public"`
 	Private     *PrivateKey `json:"private"`
+	Signature   string      `json:"signature"`
 }
 
 // HasPrivateKey returns true if identity as a wrapped private.
@@ -47,7 +48,7 @@ func (i *Identity) HasPrivateKey() bool {
 }
 
 // Decrypt private key with given transformer.
-func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*JSONWebKey, error) {
+func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*key.JSONWebKey, error) {
 	// Check arguments
 	if types.IsNil(t) {
 		return nil, fmt.Errorf("can't process with nil transformer")
@@ -69,42 +70,53 @@ func (i *Identity) Decrypt(ctx context.Context, t value.Transformer) (*JSONWebKe
 	}
 
 	// Decode key
-	var key JSONWebKey
-	if err = json.NewDecoder(bytes.NewReader(clearText)).Decode(&key); err != nil {
+	var pk key.JSONWebKey
+	if err = json.NewDecoder(bytes.NewReader(clearText)).Decode(&pk); err != nil {
 		return nil, fmt.Errorf("unable to decode payload as JSON: %w", err)
 	}
 
-	// Build public key
-	_, pubKey, err := bech32.Decode(i.Public)
-	if err != nil {
-		return nil, fmt.Errorf("invalid public key encoding: %w", err)
-	}
-
-	// Decode base64 public key
-	pubKeyRaw, err := base64.RawURLEncoding.DecodeString(key.X)
-	if err != nil {
-		return nil, fmt.Errorf("invalid public key, the decoded public is corrupted")
-	}
-
-	// Check validity
-	if !security.SecureCompare(pubKey, pubKeyRaw) {
-		return nil, fmt.Errorf("invalid identity, key mismatch detected")
-	}
-
 	// Return result
-	return &key, nil
+	return &pk, nil
+}
+
+// Verify the identity signature using its own public key.
+func (i *Identity) Verify() error {
+	// Clear the signature
+	id := &Identity{}
+	*id = *i
+
+	// Clean protected
+	id.Signature = ""
+	id.Private = nil
+
+	// Prepare protected
+	protected, err := json.Marshal(id)
+	if err != nil {
+		return fmt.Errorf("unable to serialize identity for signature: %w", err)
+	}
+
+	// Decode the signature
+	sig, err := base64.RawURLEncoding.DecodeString(i.Signature)
+	if err != nil {
+		return fmt.Errorf("unable to decode the signature: %w", err)
+	}
+
+	// Decode public key
+	pubKey, err := key.FromString(id.Public)
+	if err != nil {
+		return fmt.Errorf("unable to decode public key: %w", err)
+	}
+
+	// Validate signature
+	if pubKey.Verify(protected, sig) {
+		return nil
+	}
+
+	return errors.New("unable to validate identity signature")
 }
 
 // PrivateKey wraps encoded private and related informations.
 type PrivateKey struct {
 	Encoding string `json:"encoding,omitempty"`
 	Content  string `json:"content"`
-}
-
-// JSONWebKey holds internal container key attributes.
-type JSONWebKey struct {
-	Kty string `json:"kty"`
-	Crv string `json:"crv"`
-	X   string `json:"x"`
-	D   string `json:"d"`
 }

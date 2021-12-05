@@ -64,7 +64,7 @@ func TestRecoverTask_Run(t *testing.T) {
 		{
 			name: "nil outputWriter",
 			fields: fields{
-				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.json"),
+				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.v1.json"),
 				OutputWriter: nil,
 			},
 			wantErr: true,
@@ -72,7 +72,7 @@ func TestRecoverTask_Run(t *testing.T) {
 		{
 			name: "nil transformer",
 			fields: fields{
-				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.json"),
+				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.v1.json"),
 				OutputWriter: cmdutil.DiscardWriter(),
 				Transformer:  nil,
 			},
@@ -99,7 +99,7 @@ func TestRecoverTask_Run(t *testing.T) {
 		{
 			name: "transformer error",
 			fields: fields{
-				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.json"),
+				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.v1.json"),
 				OutputWriter: cmdutil.DiscardWriter(),
 				Transformer:  mock.Transformer(errors.New("test")),
 			},
@@ -108,7 +108,7 @@ func TestRecoverTask_Run(t *testing.T) {
 		{
 			name: "outputWriter error",
 			fields: fields{
-				JSONReader: cmdutil.FileReader("../../../test/fixtures/identity/security.json"),
+				JSONReader: cmdutil.FileReader("../../../test/fixtures/identity/security.v1.json"),
 				OutputWriter: func(ctx context.Context) (io.Writer, error) {
 					return nil, errors.New("test")
 				},
@@ -119,7 +119,7 @@ func TestRecoverTask_Run(t *testing.T) {
 		{
 			name: "outputWriter closed",
 			fields: fields{
-				JSONReader:  cmdutil.FileReader("../../../test/fixtures/identity/security.json"),
+				JSONReader:  cmdutil.FileReader("../../../test/fixtures/identity/security.v1.json"),
 				Transformer: encryption.Must(encryption.FromKey("jwe:pbes2-hs512-a256kw:test")),
 				OutputWriter: func(ctx context.Context) (io.Writer, error) {
 					return cmdutil.NewClosedWriter(), nil
@@ -130,7 +130,7 @@ func TestRecoverTask_Run(t *testing.T) {
 		{
 			name: "outputWriter closed - json",
 			fields: fields{
-				JSONReader:  cmdutil.FileReader("../../../test/fixtures/identity/security.json"),
+				JSONReader:  cmdutil.FileReader("../../../test/fixtures/identity/security.v1.json"),
 				Transformer: encryption.Must(encryption.FromKey("jwe:pbes2-hs512-a256kw:test")),
 				OutputWriter: func(ctx context.Context) (io.Writer, error) {
 					return cmdutil.NewClosedWriter(), nil
@@ -141,18 +141,37 @@ func TestRecoverTask_Run(t *testing.T) {
 		},
 		// ---------------------------------------------------------------------
 		{
-			name: "valid",
+			name: "valid - v1",
 			fields: fields{
-				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.json"),
+				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.v1.json"),
 				OutputWriter: cmdutil.DiscardWriter(),
 				Transformer:  encryption.Must(encryption.FromKey("jwe:pbes2-hs512-a256kw:test")),
 			},
 			wantErr: false,
 		},
 		{
-			name: "valid - json output",
+			name: "valid - v1 - json output",
 			fields: fields{
-				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.json"),
+				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.v2.json"),
+				OutputWriter: cmdutil.DiscardWriter(),
+				Transformer:  encryption.Must(encryption.FromKey("jwe:pbes2-hs512-a256kw:test")),
+				JSONOutput:   true,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - v2",
+			fields: fields{
+				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.v2.json"),
+				OutputWriter: cmdutil.DiscardWriter(),
+				Transformer:  encryption.Must(encryption.FromKey("jwe:pbes2-hs512-a256kw:test")),
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - v2 - json output",
+			fields: fields{
+				JSONReader:   cmdutil.FileReader("../../../test/fixtures/identity/security.v2.json"),
 				OutputWriter: cmdutil.DiscardWriter(),
 				Transformer:  encryption.Must(encryption.FromKey("jwe:pbes2-hs512-a256kw:test")),
 				JSONOutput:   true,

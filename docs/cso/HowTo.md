@@ -64,7 +64,7 @@ The `platform` directory is used for storing secrets relating to the software ru
 
 ### `product` - product keys and registration information
 
-The `product` directory is used for product-related secrets. The basic structure is `/product/[name]/[version]/[component]/[secret]`. 
+The `product` directory is used for product-related secrets. The basic structure is `/product/[name]/[version]/[component]/[secret]`.
 
  - `/product/macosx/v11.0.2/antivirus/enterprise/registration-key`
  - `/product/elastic/v7.10.1/xpack/license/serialnumber`
@@ -97,7 +97,7 @@ Now that we have some idea how to structure the secrets, we need to store them. 
 
 `Harp` uses specification documents called `spec` files to determine what to store where. These can be formatted as either YAML or JSON. The format allows `harp` to validate both the location (based on the directory paths above) and the format of a secret. If needed, the `spec` file will instruct `harp` on how to generate a secret based on specific criteria if one does not exist. It is possible, with the right syntax, to populate a completely blank `secret store` with all the values needed for a new service deployment automatically.
 
-The spec file is documented in full in the [https://github.com/elastic/harp/tree/main/samples/onboarding/1-template-engine](Harp Onboarding Docs). There is a LOT in there, and we cannot possible cover all the cases in this document.
+The spec file is documented in full in the [https://github.com/elastic/harp/tree/main/docs/onboarding/1-template-engine](Harp Onboarding Docs). There is a LOT in there, and we cannot possible cover all the cases in this document.
 
 ### A Sample set of secrets
 
@@ -168,7 +168,7 @@ spec:
                           "private_key": "{{ .Values.secrets.infra.local.global.ssh_private_key }}"
                       }
       - provider: aws
-        description: aws keys 
+        description: aws keys
         account: "elastic-cloud.com"
         regions:
           - name: us-east-1
@@ -187,7 +187,7 @@ spec:
 
 ### OK, Now what?
 
-Great question! Now it is time to actually store those secrets in a locked bundle. 
+Great question! Now it is time to actually store those secrets in a locked bundle.
 
 ### Working with Bundles
 
@@ -215,7 +215,7 @@ Be aware that the command line below is NOT secure. You should probably use a `s
 harp bundle encrypt --in example.bundle --out example.encrypted.bundle --key [some base64 string]
 ```
 
-In order to decerypt the bundle, you can use the same key with the `decrypt` command. 
+In order to decerypt the bundle, you can use the same key with the `decrypt` command.
 
 ```bash
 harp bundle decrypt --in example.encrypted.bundle --out example.bundle --key [some base64 string]
@@ -227,7 +227,7 @@ Since the `--in` and `--out` commands can also read and write to the console wit
 harp from bundle-template --in example.spec.yaml --values example.values.yaml --out - | harp bundle encrypt --in - --out example.encrypted.bundle --key [some base64 string]
 ```
 
-This creates a new bundle and pipes the data into the encrypt command, resulting in an encrypted bundle. 
+This creates a new bundle and pipes the data into the encrypt command, resulting in an encrypted bundle.
 
 If we want to be SUPERFANCY, we can add some `jq` parsing to the `decrypt` command and pull a single value out.
 

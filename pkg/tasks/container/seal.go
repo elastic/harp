@@ -19,6 +19,7 @@ package container
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -27,6 +28,9 @@ import (
 	"github.com/awnumar/memguard"
 
 	"github.com/elastic/harp/pkg/container"
+	"github.com/elastic/harp/pkg/container/seal"
+	sealv1 "github.com/elastic/harp/pkg/container/seal/v1"
+	sealv2 "github.com/elastic/harp/pkg/container/seal/v2"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
@@ -36,15 +40,16 @@ type SealTask struct {
 	ContainerReader          tasks.ReaderProvider
 	SealedContainerWriter    tasks.WriterProvider
 	OutputWriter             tasks.WriterProvider
-	PeerPublicKeys           []*[32]byte
-	DCKDMasterKey            *memguard.LockedBuffer
+	PeerPublicKeys           []string
+	DCKDMasterKey            string
 	DCKDTarget               string
 	JSONOutput               bool
 	DisableContainerIdentity bool
+	SealVersion              uint
 }
 
 // Run the task.
-//nolint:gocyclo // to refactor
+//nolint:funlen,gocyclo // to refactor
 func (t *SealTask) Run(ctx context.Context) error {
 	// Check arguments
 	if types.IsNil(t.ContainerReader) {
@@ -72,29 +77,53 @@ func (t *SealTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to read input container: %w", err)
 	}
 
+	// Initialize seal strategy
+	var ss seal.Strategy
+	switch t.SealVersion {
+	case 1:
+		ss = sealv1.New()
+	case 2:
+		ss = sealv2.New()
+	default:
+		ss = sealv1.New()
+	}
+
 	var containerKey string
 	if !t.DisableContainerIdentity {
-		opts := []container.GenerateOption{}
-		// Enable deterministic generation
-		if t.DCKDMasterKey != nil {
-			opts = append(opts, container.WithDeterministicKey(t.DCKDMasterKey, t.DCKDTarget))
+		opts := []seal.GenerateOption{}
+
+		// Check container sealing master key usage
+		if t.DCKDMasterKey != "" {
+			// Process target
+			if t.DCKDTarget == "" {
+				return errors.New("target flag (string) is mandatory for key derivation")
+			}
+
+			// Decode master key
+			masterKeyRaw, errDecode := base64.RawURLEncoding.DecodeString(t.DCKDMasterKey)
+			if errDecode != nil {
+				return fmt.Errorf("unable to decode master key: %w", errDecode)
+			}
+
+			// Enable deterministic container key generation
+			opts = append(opts, seal.WithDeterministicKey(memguard.NewBufferFromBytes(masterKeyRaw), t.DCKDTarget))
 		}
 
 		// Generate container key
-		containerPublicKey, containerPrivateKey, errContainerGen := container.GenerateKey(opts...)
-		if errContainerGen != nil {
-			return fmt.Errorf("unable to generate container key: %w", errContainerGen)
+		containerPublicKey, containerSecretKey, errGenerate := ss.GenerateKey(opts...)
+		if errGenerate != nil {
+			return fmt.Errorf("unable to generate container key: %w", errGenerate)
 		}
 
-		// Append to identity
+		// Append to identities
 		t.PeerPublicKeys = append(t.PeerPublicKeys, containerPublicKey)
 
-		// Serialize container key
-		containerKey = base64.RawURLEncoding.EncodeToString(containerPrivateKey[:])
+		// Assign container key
+		containerKey = containerSecretKey
 	}
 
 	// Seal the container
-	sealedContainer, err := container.Seal(in, t.PeerPublicKeys...)
+	sealedContainer, err := ss.Seal(rand.Reader, in, t.PeerPublicKeys...)
 	if err != nil {
 		return fmt.Errorf("unable to seal container: %w", err)
 	}
@@ -110,13 +139,13 @@ func (t *SealTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to write sealed container: %w", err)
 	}
 
-	// Get output writer
-	outputWriter, err := t.OutputWriter(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to retrieve output writer: %w", err)
-	}
-
 	if !t.DisableContainerIdentity {
+		// Get output writer
+		outputWriter, err := t.OutputWriter(ctx)
+		if err != nil {
+			return fmt.Errorf("unable to retrieve output writer: %w", err)
+		}
+
 		// Display as json
 		if t.JSONOutput {
 			if err := json.NewEncoder(outputWriter).Encode(map[string]interface{}{

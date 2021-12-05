@@ -19,6 +19,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/elastic/harp/build/fips"
 )
 
 // -----------------------------------------------------------------------------
@@ -32,14 +34,16 @@ var keygenCmd = func() *cobra.Command {
 
 	// Subcommands
 	cmd.AddCommand(keygenFernetCmd())
-	cmd.AddCommand(keygenSecretBoxCmd())
 	cmd.AddCommand(keygenAESCmd())
 	cmd.AddCommand(keygenMasterKeyCmd())
-	cmd.AddCommand(keygenChaChaCmd())
-	cmd.AddCommand(keygenXChaChaCmd())
-	cmd.AddCommand(keygenAESPMACSIVCmd())
-	cmd.AddCommand(keygenAESSIVCmd())
-	cmd.AddCommand(keygenPasetoCmd())
 
+	if !fips.Enabled() {
+		cmd.AddCommand(keygenSecretBoxCmd())
+		cmd.AddCommand(keygenChaChaCmd())
+		cmd.AddCommand(keygenXChaChaCmd())
+		cmd.AddCommand(keygenAESPMACSIVCmd())
+		cmd.AddCommand(keygenAESSIVCmd())
+		cmd.AddCommand(keygenPasetoCmd())
+	}
 	return cmd
 }

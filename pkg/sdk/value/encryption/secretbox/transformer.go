@@ -23,12 +23,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
 
 func init() {
-	encryption.Register("secretbox", Transformer)
+	if !fips.Enabled() {
+		encryption.Register("secretbox", Transformer)
+	}
 }
 
 // Transformer returns a Nacl SecretBox encryption value transformer

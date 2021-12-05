@@ -19,7 +19,6 @@ package container
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 
@@ -62,15 +61,8 @@ func (t *UnsealTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to read input container: %w", err)
 	}
 
-	// Decode container key
-	privateKeyRaw, err := base64.RawURLEncoding.DecodeString(t.ContainerKey.String())
-	if err != nil {
-		return fmt.Errorf("unable to decode container key: %w", err)
-	}
-	defer memguard.WipeBytes(privateKeyRaw)
-
 	// Unseal the bundle
-	out, err := container.Unseal(in, memguard.NewBufferFromBytes(privateKeyRaw))
+	out, err := container.Unseal(in, t.ContainerKey)
 	if err != nil {
 		return fmt.Errorf("unable to unseal bundle content: %w", err)
 	}

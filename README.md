@@ -122,7 +122,7 @@ pipeline execution.
 
 ## What can I do?
 
-> New to harp, let's start with [onboarding tutorial](samples/onboarding/README.md) !
+> New to harp, let's start with [onboarding tutorial](docs/onboarding/README.md) !
 > TL;DR - [Features overview](FEATURES.md)
 
 Harp provides :
@@ -208,7 +208,7 @@ $ export HARP_REPOSITORY=$(pwd)/harp
 
 ```sh
 $ go version
-go version go1.17.3 linux/amd64
+go version go1.17.4 linux/amd64
 ```
 
 > Simple go version manager - <https://github.com/stefanmaric/g>

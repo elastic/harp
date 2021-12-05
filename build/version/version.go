@@ -24,6 +24,8 @@ import (
 	"runtime/debug"
 
 	"github.com/dchest/uniuri"
+
+	"github.com/elastic/harp/build/fips"
 )
 
 // Build information. Populated at build-time.
@@ -71,6 +73,10 @@ type Info struct {
 
 // Full returns full composed version string
 func (i *Info) String() string {
+	if fips.Enabled() {
+		return fmt.Sprintf("%s [%s:%s] (Go: %s, FIPS Mode, Flags: %s, Date: %s)", i.Version, i.GitBranch, i.GitCommit, i.GoVersion, i.BuildTags, BuildDate)
+	}
+
 	return fmt.Sprintf("%s [%s:%s] (Go: %s, Flags: %s, Date: %s)", i.Version, i.GitBranch, i.GitCommit, i.GoVersion, i.BuildTags, BuildDate)
 }
 

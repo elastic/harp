@@ -32,7 +32,7 @@ harp template \
   --in privaas.env.sh.tmpl \
   --out privaas.env.sh \
   --secrets-from privaas.container \
-  --secrets-from vault # Fallback to vault if secret value not found.
+  --secrets-from vault # Fallback to vault if secret value is not found.
 ```
 
 ## Generate AWS profile settings based on TF variable

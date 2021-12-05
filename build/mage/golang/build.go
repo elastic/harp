@@ -83,6 +83,7 @@ func GOARM(value string) BuildOption {
 // -----------------------------------------------------------------------------
 
 // Build the given binary using the given package.
+//nolint:funlen // to refactor
 func Build(name, packageName, version string, opts ...BuildOption) func() error {
 	const (
 		defaultCgoEnabled = false
@@ -115,6 +116,14 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 
 		// Compilation flags
 		compilationFlags := []string{}
+
+		// Check if fips is enabled
+		buildTags := "-tags=!fips"
+		if os.Getenv("HARP_BUILD_FIPS_MODE") == "1" {
+			artifactName = fmt.Sprintf("%s-fips", artifactName)
+			compilationFlags = append(compilationFlags, "fips")
+			buildTags = "-tags=fips"
+		}
 
 		// Check if CGO is enabled
 		if defaultOpts.cgoEnabled {
@@ -178,6 +187,6 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 			filename = fmt.Sprintf("%s.exe", filename)
 		}
 
-		return sh.RunWith(env, "go", "build", buildMode, "-trimpath", "-mod=readonly", "-ldflags", ldflagsValue, "-o", filename, packageName)
+		return sh.RunWith(env, "go", "build", buildMode, buildTags, "-trimpath", "-mod=readonly", "-ldflags", ldflagsValue, "-o", filename, packageName)
 	}
 }

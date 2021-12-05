@@ -15,10 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package container
+package v1
 
 import (
-	"crypto/rand"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -33,41 +33,22 @@ import (
 	"github.com/elastic/harp/pkg/sdk/security"
 )
 
-func packRecipient(payloadKey, ephPrivKey, peerPublicKey *[32]byte) (*containerv1.Recipient, error) {
-	// Check arguments
-	if payloadKey == nil {
-		return nil, fmt.Errorf("unable to proceed with nil payload key")
-	}
-	if ephPrivKey == nil {
-		return nil, fmt.Errorf("unable to proceed with nil private key")
-	}
-	if peerPublicKey == nil {
-		return nil, fmt.Errorf("unable to proceed with nil public key")
-	}
+func deriveSharedKeyFromRecipient(publicKey, privateKey *[privateKeySize]byte) *[encryptionKeySize]byte {
+	// Prepare nonce
+	var nonce [nonceSize]byte
+	copy(nonce[:], "harp_derived_id_sboxkey0")
 
-	// Create identifier
-	recipientKey := deriveSharedKeyFromRecipient(peerPublicKey, ephPrivKey)
+	// Prepare payload
+	zero := make([]byte, 32)
+	memguard.WipeBytes(zero)
 
-	// Calculate identifier
-	identifier, err := keyIdentifierFromDerivedKey(&recipientKey)
-	if err != nil {
-		return nil, fmt.Errorf("unable to derive key identifier: %w", err)
-	}
+	// Use box as a key agreement function
+	var sharedKey [encryptionKeySize]byte
+	derivedKey := box.Seal(nil, zero, &nonce, publicKey, privateKey)
+	copy(sharedKey[:], derivedKey[len(derivedKey)-encryptionKeySize:])
 
-	// Generate recipient nonce
-	var recipientNonce [24]byte
-	if _, err := io.ReadFull(rand.Reader, recipientNonce[:]); err != nil {
-		return nil, fmt.Errorf("unable to generate recipient nonce for encryption")
-	}
-
-	// Pack recipient
-	recipient := &containerv1.Recipient{
-		Identifier: identifier,
-		Key:        secretbox.Seal(recipientNonce[:], payloadKey[:], &recipientNonce, &recipientKey),
-	}
-
-	// Return recipient
-	return recipient, nil
+	// No error
+	return &sharedKey
 }
 
 func computeHeaderHash(headers *containerv1.Header) ([]byte, error) {
@@ -89,25 +70,57 @@ func computeHeaderHash(headers *containerv1.Header) ([]byte, error) {
 	return hash[:], nil
 }
 
-func deriveSharedKeyFromRecipient(publicKey, privateKey *[32]byte) [32]byte {
-	// Prepare nonce
-	var nonce [24]byte
-	copy(nonce[:], "harp_derived_id_sboxkey0")
-
-	// Prepare payload
-	zero := make([]byte, 32)
-	memguard.WipeBytes(zero)
-
-	// Use box as a key agreement function
-	var sharedKey [32]byte
-	derivedKey := box.Seal(nil, zero, &nonce, publicKey, privateKey)
-	copy(sharedKey[:], derivedKey[len(derivedKey)-32:])
+func computeProtectedHash(headerHash, content []byte) []byte {
+	// Prepare protected content
+	protected := bytes.Buffer{}
+	protected.Write([]byte(signatureDomainSeparation))
+	protected.WriteByte(0x00)
+	protected.Write(headerHash)
+	contentHash := blake2b.Sum512(content)
+	protected.Write(contentHash[:])
 
 	// No error
-	return sharedKey
+	return protected.Bytes()
 }
 
-func keyIdentifierFromDerivedKey(derivedKey *[32]byte) ([]byte, error) {
+func packRecipient(rand io.Reader, payloadKey, ephPrivKey, peerPublicKey *[publicKeySize]byte) (*containerv1.Recipient, error) {
+	// Check arguments
+	if payloadKey == nil {
+		return nil, fmt.Errorf("unable to proceed with nil payload key")
+	}
+	if ephPrivKey == nil {
+		return nil, fmt.Errorf("unable to proceed with nil private key")
+	}
+	if peerPublicKey == nil {
+		return nil, fmt.Errorf("unable to proceed with nil public key")
+	}
+
+	// Create identifier
+	recipientKey := deriveSharedKeyFromRecipient(peerPublicKey, ephPrivKey)
+
+	// Calculate identifier
+	identifier, err := keyIdentifierFromDerivedKey(recipientKey)
+	if err != nil {
+		return nil, fmt.Errorf("unable to derive key identifier: %w", err)
+	}
+
+	// Generate recipient nonce
+	var recipientNonce [nonceSize]byte
+	if _, err := io.ReadFull(rand, recipientNonce[:]); err != nil {
+		return nil, fmt.Errorf("unable to generate recipient nonce for encryption")
+	}
+
+	// Pack recipient
+	recipient := &containerv1.Recipient{
+		Identifier: identifier,
+		Key:        secretbox.Seal(recipientNonce[:], payloadKey[:], &recipientNonce, recipientKey),
+	}
+
+	// Return recipient
+	return recipient, nil
+}
+
+func keyIdentifierFromDerivedKey(derivedKey *[encryptionKeySize]byte) ([]byte, error) {
 	// Hash the derived key
 	h, err := blake2b.New512([]byte("harp signcryption box key identifier"))
 	if err != nil {
@@ -118,10 +131,10 @@ func keyIdentifierFromDerivedKey(derivedKey *[32]byte) ([]byte, error) {
 	}
 
 	// Return 32 bytes trucanted hash.
-	return h.Sum(nil)[0:32], nil
+	return h.Sum(nil)[0:keyIdentifierSize], nil
 }
 
-func tryRecipientKeys(derivedKey *[32]byte, recipients []*containerv1.Recipient) ([]byte, error) {
+func tryRecipientKeys(derivedKey *[encryptionKeySize]byte, recipients []*containerv1.Recipient) ([]byte, error) {
 	// Calculate recipient identifier
 	identifier, err := keyIdentifierFromDerivedKey(derivedKey)
 	if err != nil {
@@ -135,11 +148,11 @@ func tryRecipientKeys(derivedKey *[32]byte, recipients []*containerv1.Recipient)
 			continue
 		}
 
-		var nonce [24]byte
-		copy(nonce[:], r.Key[:24])
+		var nonce [nonceSize]byte
+		copy(nonce[:], r.Key[:nonceSize])
 
 		// Try to decrypt the secretbox with the derived key.
-		payloadKey, isValid := secretbox.Open(nil, r.Key[24:], &nonce, derivedKey)
+		payloadKey, isValid := secretbox.Open(nil, r.Key[nonceSize:], &nonce, derivedKey)
 		if !isValid {
 			return nil, fmt.Errorf("invalid recipient encryption key")
 		}

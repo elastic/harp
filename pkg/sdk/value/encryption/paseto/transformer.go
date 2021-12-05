@@ -24,13 +24,16 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/elastic/harp/build/fips"
 	pasetov4 "github.com/elastic/harp/pkg/sdk/security/crypto/paseto/v4"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
 
 func init() {
-	encryption.Register("paseto", Transformer)
+	if !fips.Enabled() {
+		encryption.Register("paseto", Transformer)
+	}
 }
 
 func Transformer(key string) (value.Transformer, error) {

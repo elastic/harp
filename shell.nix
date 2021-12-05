@@ -18,6 +18,7 @@ mkShell {
     protobuf
     golangci-lint
     upx
+    go-task
   ];
   shellHook =
   ''

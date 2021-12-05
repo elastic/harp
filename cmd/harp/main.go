@@ -23,14 +23,6 @@ import (
 
 	"github.com/elastic/harp/cmd/harp/internal/cmd"
 	"github.com/elastic/harp/pkg/sdk/log"
-
-	// Register encryption transformers
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/paseto"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
-	_ "github.com/elastic/harp/pkg/vault"
 )
 
 func init() {

@@ -2,12 +2,18 @@
 
 ### Not released yet
 
+BREAKING-CHANGES:
+
+* container/seal: introduce a naming convention for identity and container keys. [#89](https://github.com/elastic/harp/pull/89)
+
 CHANGES:
 
+* container/seal: FIPS compatible container sealing process (ECDH+AES256-CTR+HMAC-SHA384 / ECDSA P-384 / HMAC-SHA512). [#89](https://github.com/elastic/harp/pull/89)
 * crypto/paseto: move PASETO v4 primitives to `sdk/security/paseto/v4`. [#87](https://github.com/elastic/harp/pull/87)
 
 DIST:
 
+* go: Build with Golang 1.17.4.
 * nix/shell: Expose `shell.nix` to get a consistent development environment. [#87](https://github.com/elastic/harp/pull/87)
 
 ## 0.2.2

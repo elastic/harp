@@ -18,6 +18,7 @@ harp container seal [flags]
       --json                        Display seal info as json
       --no-container-identity       Disable container identity
       --out string                  Sealed container output ('-' for stdout or filename)
+      --seal-version uint           Select the sealing strategy version (1:modern, 2:fips-compliant) (default 1)
 ```
 
 ### SEE ALSO
