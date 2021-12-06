@@ -24,6 +24,7 @@ import (
 	"gopkg.in/square/go-jose.v2"
 
 	"github.com/elastic/harp/pkg/sdk/types"
+	"github.com/elastic/harp/pkg/sdk/value/signature"
 )
 
 type jwsTransformer struct {
@@ -33,7 +34,7 @@ type jwsTransformer struct {
 
 // -----------------------------------------------------------------------------
 
-func (d *jwsTransformer) To(_ context.Context, input []byte) ([]byte, error) {
+func (d *jwsTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 	if types.IsNil(d.key.Key) {
 		return nil, fmt.Errorf("jws: signer key must not be nil")
 	}
@@ -50,17 +51,26 @@ func (d *jwsTransformer) To(_ context.Context, input []byte) ([]byte, error) {
 		return nil, fmt.Errorf("jws: unable to sign the content: %w", err)
 	}
 
-	// Serialize content
-	out, err := sig.CompactSerialize()
-	if err != nil {
-		return nil, fmt.Errorf("jws: unable to serialize final payload: %w", err)
+	var (
+		out              string
+		errSerialization error
+	)
+
+	if signature.IsDetached(ctx) {
+		out, errSerialization = sig.DetachedCompactSerialize()
+	} else {
+		// Serialize content
+		out, errSerialization = sig.CompactSerialize()
+	}
+	if errSerialization != nil {
+		return nil, fmt.Errorf("jws: unable to serialize final payload: %w", errSerialization)
 	}
 
 	// No error
 	return []byte(out), nil
 }
 
-func (d *jwsTransformer) From(_ context.Context, input []byte) ([]byte, error) {
+func (d *jwsTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
 	// Parse the signed object
 	sig, err := jose.ParseSigned(string(input))
 	if err != nil {

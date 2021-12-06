@@ -18,6 +18,8 @@
 package cmd
 
 import (
+	"encoding/base64"
+	"encoding/hex"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -25,40 +27,26 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/sdk/value/signature"
 )
 
 // -----------------------------------------------------------------------------
 
-type transformSignParams struct {
-	inputPath   string
-	outputPath  string
-	keyRaw      string
-	preHashed   bool
-	detached    bool
-	determistic bool
+type transformEncodeParams struct {
+	inputPath  string
+	outputPath string
+	encoding   string
 }
 
-var transformSignCmd = func() *cobra.Command {
-	params := &transformSignParams{}
+var transformEncodeCmd = func() *cobra.Command {
+	params := &transformEncodeParams{}
 
 	cmd := &cobra.Command{
-		Use:     "sign",
-		Short:   "Sign the given value with a transformer",
-		Aliases: []string{"s"},
+		Use:   "encode",
+		Short: "Encode given input",
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
-			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-sign", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-encode", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
-
-			// Resolve tranformer
-			t, err := signature.FromKey(params.keyRaw)
-			if err != nil {
-				log.For(ctx).Fatal("unable to initialize a transformer form key", zap.Error(err))
-			}
-			if t == nil {
-				log.For(ctx).Fatal("transformer is nil")
-			}
 
 			// Read input
 			reader, err := cmdutil.Reader(params.inputPath)
@@ -78,38 +66,39 @@ var transformSignCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to drain input reader", zap.Error(err))
 			}
 
-			// Transformation flag
-			if params.detached {
-				ctx = signature.WithDetachedSignature(ctx, true)
-			}
-			if params.determistic {
-				ctx = signature.WithDetermisticSignature(ctx, true)
-			}
-			if params.preHashed {
-				ctx = signature.WithInputPreHashed(ctx, true)
-			}
+			var (
+				out string
+			)
 
 			// Apply transformation
-			out, err := t.To(ctx, content)
-			if err != nil {
-				log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
+			switch params.encoding {
+			case "identity":
+				out = string(content)
+			case "hex":
+				out = hex.EncodeToString(content)
+			case "base64":
+				out = base64.StdEncoding.EncodeToString(content)
+			case "base64raw":
+				out = base64.RawStdEncoding.EncodeToString(content)
+			case "base64url":
+				out = base64.URLEncoding.EncodeToString(content)
+			case "base64urlraw":
+				out = base64.RawURLEncoding.EncodeToString(content)
+			default:
+				log.For(ctx).Fatal("unhandled encoding strategy", zap.String("encoding", params.encoding))
 			}
 
-			if _, err = writer.Write(out); err != nil {
+			// Dump as output
+			if _, err = writer.Write([]byte(out)); err != nil {
 				log.For(ctx).Fatal("unable to write result to writer", zap.Error(err))
 			}
 		},
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&params.keyRaw, "key", "", "Transformer key")
-	log.CheckErr("unable to mark 'key' flag as required.", cmd.MarkFlagRequired("key"))
-
 	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Input path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdin or filename)")
-	cmd.Flags().BoolVar(&params.detached, "detached", false, "Returns the signature only")
-	cmd.Flags().BoolVar(&params.preHashed, "pre-hashed", false, "The input is already pre-hashed")
-	cmd.Flags().BoolVar(&params.determistic, "deterministic", false, "Use determisitic signature algorithm variant (if available)")
+	cmd.Flags().StringVar(&params.encoding, "encoding", "identity", "Encoding strategy (hex, base64, base64raw, base64url, base64urlraw)")
 
 	return cmd
 }

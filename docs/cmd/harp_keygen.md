@@ -16,6 +16,7 @@ Key generation commands
 * [harp keygen aes-siv](harp_keygen_aes-siv.md)	 - Generate and print an AES-SIV key
 * [harp keygen chacha](harp_keygen_chacha.md)	 - Generate and print a chacha20poly1305 key
 * [harp keygen fernet](harp_keygen_fernet.md)	 - Generate and print a fernet key
+* [harp keygen jwk](harp_keygen_jwk.md)	 - Generate a JWK encoded key pair
 * [harp keygen master-key](harp_keygen_master-key.md)	 - Generate and print a container master key
 * [harp keygen paseto](harp_keygen_paseto.md)	 - Generate and print an v4.local paseto key
 * [harp keygen secretbox](harp_keygen_secretbox.md)	 - Generate and print a secretbox keypair
