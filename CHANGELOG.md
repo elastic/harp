@@ -10,6 +10,16 @@ CHANGES:
 
 * container/seal: FIPS compatible container sealing process (ECDH+AES256-CTR+HMAC-SHA384 / ECDSA P-384 / HMAC-SHA512). [#89](https://github.com/elastic/harp/pull/89)
 * crypto/paseto: move PASETO v4 primitives to `sdk/security/paseto/v4`. [#87](https://github.com/elastic/harp/pull/87)
+* sdk/deps [#91](https://github.com/elastic/harp/pull/91)
+  * GHSA - Security freeze
+    * github.com/opencontainers/image-spec v1.0.2
+    * github.com/opencontainers/runc v1.0.3
+  * github.com/hashicorp/hcl/v2 v2.11.1
+  *	github.com/ory/dockertest/v3 v3.8.1
+  * golang.org/x/crypto v0.0.0-20210915214749-c084706c2272
+  * golang.org/x/sys v0.0.0-20210915083310-ed5796bab164
+  * golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+  * google.golang.org/genproto v0.0.0-20211207154714-918901c715cf
 
 DIST:
 
