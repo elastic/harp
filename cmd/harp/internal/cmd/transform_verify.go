@@ -79,6 +79,7 @@ var transformVerifyCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
 			}
 
+			// Dump as output
 			if _, err = writer.Write(out); err != nil {
 				log.For(ctx).Fatal("unable to write result to writer", zap.Error(err))
 			}

@@ -79,15 +79,9 @@ var transformSignCmd = func() *cobra.Command {
 			}
 
 			// Transformation flag
-			if params.detached {
-				ctx = signature.WithDetachedSignature(ctx, true)
-			}
-			if params.determistic {
-				ctx = signature.WithDetermisticSignature(ctx, true)
-			}
-			if params.preHashed {
-				ctx = signature.WithInputPreHashed(ctx, true)
-			}
+			ctx = signature.WithDetachedSignature(ctx, params.detached)
+			ctx = signature.WithDetermisticSignature(ctx, params.determistic)
+			ctx = signature.WithInputPreHashed(ctx, params.preHashed)
 
 			// Apply transformation
 			out, err := t.To(ctx, content)
@@ -95,6 +89,7 @@ var transformSignCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
 			}
 
+			// Dump as output
 			if _, err = writer.Write(out); err != nil {
 				log.For(ctx).Fatal("unable to write result to writer", zap.Error(err))
 			}
@@ -109,7 +104,7 @@ var transformSignCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdin or filename)")
 	cmd.Flags().BoolVar(&params.detached, "detached", false, "Returns the signature only")
 	cmd.Flags().BoolVar(&params.preHashed, "pre-hashed", false, "The input is already pre-hashed")
-	cmd.Flags().BoolVar(&params.determistic, "deterministic", false, "Use determisitic signature algorithm variant (if available)")
+	cmd.Flags().BoolVar(&params.determistic, "deterministic", false, "Use deterministic signature algorithm variant (if key permits)")
 
 	return cmd
 }
