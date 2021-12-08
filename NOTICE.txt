@@ -461,31 +461,6 @@ SOFTWARE.
 
 
 --------------------------------------------------------------------------------
-Module  : github.com/davecgh/go-spew
-Version : v1.1.1
-Time    : 2018-02-21T23:26:28Z
-Licence : ISC
-
-Contents of probable licence file $GOMODCACHE/github.com/davecgh/go-spew@v1.1.1/LICENSE:
-
-ISC License
-
-Copyright (c) 2012-2016 Dave Collins <dave@davec.name>
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-
---------------------------------------------------------------------------------
 Module  : github.com/dchest/uniuri
 Version : v0.0.0-20200228104902-7aecb25e1fe5
 Time    : 2020-02-28T10:49:02Z
@@ -3280,11 +3255,11 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 --------------------------------------------------------------------------------
 Module  : github.com/hashicorp/hcl/v2
-Version : v2.10.1
-Time    : 2021-07-21T12:56:47Z
+Version : v2.11.1
+Time    : 2021-12-01T17:26:16Z
 Licence : MPL-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/hashicorp/hcl/v2@v2.10.1/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/hashicorp/hcl/v2@v2.11.1/LICENSE:
 
 Mozilla Public License, version 2.0
 
@@ -4595,11 +4570,11 @@ Contents of probable licence file $GOMODCACHE/github.com/oklog/run@v1.1.0/LICENS
 
 --------------------------------------------------------------------------------
 Module  : github.com/ory/dockertest/v3
-Version : v3.8.0
-Time    : 2021-09-21T05:35:10Z
+Version : v3.8.1
+Time    : 2021-11-28T18:09:21Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/ory/dockertest/v3@v3.8.0/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/ory/dockertest/v3@v3.8.1/LICENSE:
 
                                  Apache License
                            Version 2.0, January 2004
@@ -6164,11 +6139,11 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 Module  : golang.org/x/crypto
-Version : v0.0.0-20211108221036-ceb1ce70b4fa
-Time    : 2021-11-08T22:10:36Z
+Version : v0.0.0-20210915214749-c084706c2272
+Time    : 2021-09-15T21:47:49Z
 Licence : BSD-3-Clause
 
-Contents of probable licence file $GOMODCACHE/golang.org/x/crypto@v0.0.0-20211108221036-ceb1ce70b4fa/LICENSE:
+Contents of probable licence file $GOMODCACHE/golang.org/x/crypto@v0.0.0-20210915214749-c084706c2272/LICENSE:
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -6238,11 +6213,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : golang.org/x/sys
-Version : v0.0.0-20211113001501-0c823b97ae02
-Time    : 2021-11-13T00:15:01Z
+Version : v0.0.0-20210915083310-ed5796bab164
+Time    : 2021-09-15T08:33:10Z
 Licence : BSD-3-Clause
 
-Contents of probable licence file $GOMODCACHE/golang.org/x/sys@v0.0.0-20211113001501-0c823b97ae02/LICENSE:
+Contents of probable licence file $GOMODCACHE/golang.org/x/sys@v0.0.0-20210915083310-ed5796bab164/LICENSE:
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -6275,11 +6250,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : golang.org/x/term
-Version : v0.0.0-20210927222741-03fcf44c2211
-Time    : 2021-09-27T22:27:41Z
+Version : v0.0.0-20201126162022-7de9c90e9dd1
+Time    : 2020-11-26T16:20:22Z
 Licence : BSD-3-Clause
 
-Contents of probable licence file $GOMODCACHE/golang.org/x/term@v0.0.0-20210927222741-03fcf44c2211/LICENSE:
+Contents of probable licence file $GOMODCACHE/golang.org/x/term@v0.0.0-20201126162022-7de9c90e9dd1/LICENSE:
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -6312,11 +6287,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : google.golang.org/genproto
-Version : v0.0.0-20211112145013-271947fe86fd
-Time    : 2021-11-12T14:50:13Z
+Version : v0.0.0-20211207154714-918901c715cf
+Time    : 2021-12-07T15:47:14Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/google.golang.org/genproto@v0.0.0-20211112145013-271947fe86fd/LICENSE:
+Contents of probable licence file $GOMODCACHE/google.golang.org/genproto@v0.0.0-20211207154714-918901c715cf/LICENSE:
 
 
                                  Apache License
@@ -7354,11 +7329,11 @@ Contents of probable licence file $GOMODCACHE/github.com/!masterminds/goutils@v1
 
 --------------------------------------------------------------------------------
 Module  : github.com/Microsoft/go-winio
-Version : v0.5.0
-Time    : 2021-04-22T22:01:04Z
+Version : v0.5.1
+Time    : 2021-10-13T11:01:28Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/!microsoft/go-winio@v0.5.0/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/!microsoft/go-winio@v0.5.1/LICENSE:
 
 The MIT License (MIT)
 
@@ -8268,11 +8243,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 Module  : github.com/cenkalti/backoff/v4
-Version : v4.1.1
+Version : v4.1.2
 Time    : 2021-05-31T01:50:55Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/cenkalti/backoff/v4@v4.1.1/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/cenkalti/backoff/v4@v4.1.2/LICENSE:
 
 The MIT License (MIT)
 
@@ -8975,12 +8950,37 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 --------------------------------------------------------------------------------
+Module  : github.com/davecgh/go-spew
+Version : v1.1.1
+Time    : 2018-02-21T23:26:28Z
+Licence : ISC
+
+Contents of probable licence file $GOMODCACHE/github.com/davecgh/go-spew@v1.1.1/LICENSE:
+
+ISC License
+
+Copyright (c) 2012-2016 Dave Collins <dave@davec.name>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+--------------------------------------------------------------------------------
 Module  : github.com/docker/cli
-Version : v20.10.8+incompatible
-Time    : 2021-07-29T13:55:47Z
+Version : v20.10.11+incompatible
+Time    : 2021-11-17T23:49:46Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/docker/cli@v20.10.8+incompatible/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/docker/cli@v20.10.11+incompatible/LICENSE:
 
 
                                  Apache License
@@ -18656,11 +18656,11 @@ Contents of probable licence file $GOMODCACHE/github.com/opencontainers/image-sp
 
 --------------------------------------------------------------------------------
 Module  : github.com/opencontainers/runc
-Version : v1.0.2
-Time    : 2021-08-20T07:24:11Z
+Version : v1.0.3
+Time    : 2021-12-03T08:17:37Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/opencontainers/runc@v1.0.2/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/opencontainers/runc@v1.0.3/LICENSE:
 
 
                                  Apache License
