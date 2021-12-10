@@ -1,18 +1,23 @@
+## 0.2.4
+
+## Not released yet
+
 ## 0.2.3
 
-### Not released yet
+### 2021-12-10
 
 FEATURES:
 
 * container/seal: introduce a naming convention for identity and container keys. [#89](https://github.com/elastic/harp/pull/89)
-* cmd/transform (https://github.com/elastic/harp/pull/90)
+* cmd/transform [#90](https://github.com/elastic/harp/pull/90)
   * `encrypt` / `decrypt` apply symmetric encryption transformer
   * `encode` / `decode` apply encoding/decoding to given input
   * `sign` / `verify` apply signature algorithm or verify a signature from the given input
-* cmd/keygen: JWK Key pair generation (https://github.com/elastic/harp/pull/90)
+* cmd/keygen: JWK Key pair generation [#90](https://github.com/elastic/harp/pull/90)
 
 CHANGES:
 
+* cso/v1: Meta ring only require one path component. [#90](https://github.com/elastic/harp/pull/90)
 * container/seal: Modern FIPS compatible container sealing process (ECDH+AES256-CTR+HMAC-SHA384 / ECDSA P-384 / HMAC-SHA512). [#89](https://github.com/elastic/harp/pull/89)
 * crypto/paseto: move PASETO v4 primitives to `sdk/security/paseto/v4`. [#87](https://github.com/elastic/harp/pull/87)
 * sdk/deps [#91](https://github.com/elastic/harp/pull/91)
