@@ -30,7 +30,7 @@ func Format() error {
 	color.Cyan("## Format everything")
 
 	for pth := range CollectedGoFiles {
-		args := []string{"-s", "-w"}
+		args := []string{"-w"}
 		args = append(args, pth)
 
 		if err := sh.RunV("gofumpt", args...); err != nil {

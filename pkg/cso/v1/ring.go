@@ -37,7 +37,7 @@ var (
 		name:   "Meta",
 		prefix: ringMeta,
 		pathBuilderFunc: func(ring Ring, values ...string) (string, error) {
-			return csoPath("meta/%s/%s", 2, values...)
+			return csoPath("meta/%s", 1, values...)
 		},
 	}
 	// RingInfra represents R1 secrets

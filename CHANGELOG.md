@@ -29,7 +29,7 @@ CHANGES:
 
 DIST:
 
-* go: Build with Golang 1.17.4.
+* go: Build with Golang 1.17.5.
 * nix/shell: Expose `shell.nix` to get a consistent development environment. [#87](https://github.com/elastic/harp/pull/87)
 
 ## 0.2.2

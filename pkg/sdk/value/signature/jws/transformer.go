@@ -28,8 +28,7 @@ import (
 )
 
 type jwsTransformer struct {
-	key  jose.SigningKey
-	opts *jose.SignerOptions
+	key jose.SigningKey
 }
 
 // -----------------------------------------------------------------------------
@@ -39,8 +38,15 @@ func (d *jwsTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 		return nil, fmt.Errorf("jws: signer key must not be nil")
 	}
 
+	opts := &jose.SignerOptions{}
+
+	// If not deterministic add nonce in the protected header
+	if !signature.IsDeterministic(ctx) {
+		opts.NonceSource = &nonceSource{}
+	}
+
 	// Initialize a signer
-	signer, err := jose.NewSigner(d.key, d.opts)
+	signer, err := jose.NewSigner(d.key, opts)
 	if err != nil {
 		return nil, fmt.Errorf("jws: unable to initialize a signer: %w", err)
 	}
@@ -51,17 +57,9 @@ func (d *jwsTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 		return nil, fmt.Errorf("jws: unable to sign the content: %w", err)
 	}
 
-	var (
-		out              string
-		errSerialization error
-	)
+	// Serialize content
+	out, errSerialization := sig.CompactSerialize()
 
-	if signature.IsDetached(ctx) {
-		out, errSerialization = sig.DetachedCompactSerialize()
-	} else {
-		// Serialize content
-		out, errSerialization = sig.CompactSerialize()
-	}
 	if errSerialization != nil {
 		return nil, fmt.Errorf("jws: unable to serialize final payload: %w", errSerialization)
 	}
@@ -80,7 +78,7 @@ func (d *jwsTransformer) From(ctx context.Context, input []byte) ([]byte, error)
 	// Verify signature
 	payload, err := sig.Verify(d.key.Key)
 	if err != nil {
-		return nil, fmt.Errorf("jws: unable to valid signature: %w", err)
+		return nil, fmt.Errorf("jws: unable to validate signature: %w", err)
 	}
 
 	// No error

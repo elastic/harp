@@ -66,9 +66,7 @@ var transformEncodeCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to drain input reader", zap.Error(err))
 			}
 
-			var (
-				out string
-			)
+			var out string
 
 			// Apply transformation
 			switch params.encoding {

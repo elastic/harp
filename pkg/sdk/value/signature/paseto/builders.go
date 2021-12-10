@@ -20,7 +20,6 @@ package paseto
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -31,26 +30,14 @@ import (
 )
 
 func init() {
-	signature.Register("paseto", FromKey)
+	signature.Register("paseto", Transformer)
 }
 
-// FromKey returns an encryption transformer instance according to the given key format.
-func FromKey(key string) (value.Transformer, error) {
+// Transformer returns a PASETO signature value transformer instance.
+func Transformer(key string) (value.Transformer, error) {
 	// Remove the prefix
 	key = strings.TrimPrefix(key, "paseto:")
 
-	// Split components
-	parts := strings.SplitN(key, ":", 2)
-	if len(parts) != 2 {
-		return nil, errors.New("paseto: invalid key format")
-	}
-
-	// Delegate to builder
-	return Transformer(parts[0], parts[1])
-}
-
-// Transformer returns a JWS signature value transformer instance.
-func Transformer(algorithm, key string) (value.Transformer, error) {
 	// Decode key
 	keyRaw, err := base64.RawURLEncoding.DecodeString(key)
 	if err != nil {
@@ -63,19 +50,8 @@ func Transformer(algorithm, key string) (value.Transformer, error) {
 		return nil, fmt.Errorf("unable to decode the transformer key: %w", errJSON)
 	}
 
-	// Select appropriate strategy
-	switch algorithm {
-	case "v3":
-		return &pasetoTransformer{
-			key: jwk.Key,
-		}, err
-	case "v4":
-		return &pasetoTransformer{
-			key: jwk.Key,
-		}, err
-	default:
-	}
-
-	// Unsupported encryption scheme.
-	return nil, fmt.Errorf("unsupported jws algorithm '%s'", algorithm)
+	// Delegate to instance
+	return &pasetoTransformer{
+		key: jwk.Key,
+	}, err
 }

@@ -33,15 +33,6 @@ func Import() error {
 		args := []string{"-w", "-local", "github.com/elastic/harp"}
 		args = append(args, pth)
 
-		if err := sh.RunV("gofumports", args...); err != nil {
-			return err
-		}
-	}
-
-	for pth := range CollectedGoFiles {
-		args := []string{"-w", "-local", "github.com/elastic/harp"}
-		args = append(args, pth)
-
 		if err := sh.RunV("gci", args...); err != nil {
 			return err
 		}

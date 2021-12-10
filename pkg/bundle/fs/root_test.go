@@ -29,7 +29,6 @@ import (
 
 func TestFromBundle(t *testing.T) {
 	type args struct {
-		paths []string
 		b     *bundlev1.Bundle
 	}
 	tests := []struct {

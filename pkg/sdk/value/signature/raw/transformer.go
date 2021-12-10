@@ -70,10 +70,9 @@ func (d *rawTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 
 		// Input is already a hash?
 		if signature.IsInputPreHashed(ctx) {
-			if len(input) == h.Size() {
-				digest = input
-			} else {
-				return nil, fmt.Errorf("invalid pre-hash length, expected %d bytes", h.Size())
+			digest = input
+			if len(digest) != h.Size() {
+				return nil, fmt.Errorf("raw: invalid pre-hash length, expected %d bytes, got %d", h.Size(), len(input))
 			}
 		} else {
 			// Hash the decoded content
@@ -101,13 +100,32 @@ func (d *rawTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 			return nil, fmt.Errorf("raw: unable to sign the content: %w", errSig)
 		}
 
-		// Pack the signature
-		sig = append(r.Bytes(), s.Bytes()...)
+		// Calculate optimized buffer size
+		curveBits := sk.Curve.Params().BitSize
+		keyBytes := curveBits / 8
+		if curveBits%8 > 0 {
+			keyBytes++
+		}
+
+		// We serialize the outputs (r and s) into big-endian byte arrays and pad
+		// them with zeros on the left to make sure the sizes work out. Both arrays
+		// must be keyBytes long, and the output must be 2*keyBytes long.
+		rBytes := r.Bytes()
+		rBytesPadded := make([]byte, keyBytes)
+		copy(rBytesPadded[keyBytes-len(rBytes):], rBytes)
+
+		sBytes := s.Bytes()
+		sBytesPadded := make([]byte, keyBytes)
+		copy(sBytesPadded[keyBytes-len(sBytes):], sBytes)
+
+		// Assemble the signature
+		sig = rBytesPadded
+		sig = append(sig, sBytesPadded...)
 	default:
 		return nil, errors.New("raw: key is not supported")
 	}
 	if err != nil {
-		return nil, fmt.Errorf("raw: unable so sign input: %w", err)
+		return nil, fmt.Errorf("raw: unable to sign input: %w", err)
 	}
 
 	// Detached signature requested?
@@ -129,9 +147,14 @@ func (d *rawTransformer) From(ctx context.Context, input []byte) ([]byte, error)
 
 	case *ecdsa.PublicKey:
 		// Extract signature
-		sigLen, err := d.signatureSizeFromCurve(sk)
+		pkLen, err := d.privateKeySizeFromCurve(sk.Curve)
 		if err != nil {
-			return nil, fmt.Errorf("raw: unable to retrieve signature length: %w", err)
+			return nil, fmt.Errorf("raw: unable to retrieve private key length: %w", err)
+		}
+
+		// Check minimal input length
+		if len(input) < 2*pkLen {
+			return nil, errors.New("raw: too short signature")
 		}
 
 		// Get hash function for curve
@@ -147,35 +170,37 @@ func (d *rawTransformer) From(ctx context.Context, input []byte) ([]byte, error)
 
 		// Input is already a hash?
 		if signature.IsInputPreHashed(ctx) {
-			if len(input) == h.Size() {
-				digest = input
-			} else {
-				return nil, fmt.Errorf("invalid pre-hash length, expected %d bytes", h.Size())
+			digest = input[2*pkLen:]
+			if len(digest) != h.Size() {
+				return nil, fmt.Errorf("invalid pre-hash length, expected %d bytes, got %d bytes", h.Size(), len(digest))
 			}
 		} else {
 			// Hash the decoded content
-			h.Write(input)
+			h.Write(input[2*pkLen:])
 
 			// Set hash value
 			digest = h.Sum(nil)
 		}
 
+		// Extract sig
+		sig := input[:2*pkLen]
+
 		// Unpack signature
 		var (
-			r = new(big.Int).SetBytes(input[sigLen/2:])
-			s = new(big.Int).SetBytes(input[:sigLen/2])
+			r = new(big.Int).SetBytes(sig[:pkLen])
+			s = new(big.Int).SetBytes(sig[pkLen:])
 		)
 
 		// Validate signature
 		if ecdsa.Verify(sk, digest, r, s) {
-			return input[sigLen:], nil
+			return input[2*pkLen:], nil
 		}
 	default:
 		return nil, errors.New("raw: key is not supported")
 	}
 
 	// Default to error
-	return nil, errors.New("raw: unable to valid input signature")
+	return nil, errors.New("raw: unable to validate input signature")
 }
 
 // -----------------------------------------------------------------------------
@@ -195,14 +220,14 @@ func (d *rawTransformer) hashFromCurve(curve elliptic.Curve) (func() hash.Hash, 
 	return nil, errors.New("current curve is not supported")
 }
 
-func (d *rawTransformer) signatureSizeFromCurve(curve elliptic.Curve) (int, error) {
+func (d *rawTransformer) privateKeySizeFromCurve(curve elliptic.Curve) (int, error) {
 	switch curve {
 	case elliptic.P256():
-		return 64, nil
+		return 32, nil
 	case elliptic.P384():
-		return 96, nil
+		return 48, nil
 	case elliptic.P521():
-		return 132, nil
+		return 66, nil
 	default:
 	}
 

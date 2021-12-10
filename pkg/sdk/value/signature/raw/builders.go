@@ -30,20 +30,14 @@ import (
 )
 
 func init() {
-	signature.Register("raw", FromKey)
-}
-
-// FromKey returns an encryption transformer instance according to the given key format.
-func FromKey(key string) (value.Transformer, error) {
-	// Remove the prefix
-	key = strings.TrimPrefix(key, "raw:")
-
-	// Delegate to builder
-	return Transformer(key)
+	signature.Register("raw", Transformer)
 }
 
 // Transformer returns a JWS signature value transformer instance.
 func Transformer(key string) (value.Transformer, error) {
+	// Remove the prefix
+	key = strings.TrimPrefix(key, "raw:")
+
 	// Decode key
 	keyRaw, err := base64.RawURLEncoding.DecodeString(key)
 	if err != nil {

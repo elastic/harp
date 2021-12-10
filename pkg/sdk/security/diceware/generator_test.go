@@ -75,7 +75,7 @@ func TestDiceware(t *testing.T) {
 				return
 			}
 			gotWordCount := len(strings.Split(got, "-"))
-			if (tt.wantCount > 0) && tt.wantCount != tt.wantCount {
+			if (tt.wantCount > 0) && tt.wantCount != gotWordCount {
 				t.Errorf("Diceware() expected word count = %v, got %v", tt.wantCount, gotWordCount)
 				return
 			}
