@@ -38,7 +38,6 @@ import (
 	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
 	_ "gotest.tools/gotestsum"
 	_ "mvdan.cc/gofumpt"
-	_ "mvdan.cc/gofumpt/gofumports"
 )
 
 // If you want to use tools, please run the following command:
@@ -58,4 +57,3 @@ import (
 //go:generate go build -v -o=./bin/protoc-gen-go google.golang.org/protobuf/cmd/protoc-gen-go
 //go:generate go build -v -o=./bin/gotestsum gotest.tools/gotestsum
 //go:generate go build -v -o=./bin/gofumpt mvdan.cc/gofumpt
-//go:generate go build -v -o=./bin/gofumports mvdan.cc/gofumpt/gofumports

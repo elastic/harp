@@ -15,20 +15,31 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//go:build !fips
-
-package main
+package signature
 
 import (
+	"fmt"
 
-	// Register encryption transformers
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/paseto"
-	_ "github.com/elastic/harp/pkg/sdk/value/encryption/secretbox"
-	_ "github.com/elastic/harp/pkg/sdk/value/signature/jws"
-	_ "github.com/elastic/harp/pkg/sdk/value/signature/paseto"
-	_ "github.com/elastic/harp/pkg/sdk/value/signature/raw"
-	_ "github.com/elastic/harp/pkg/vault"
+	"github.com/elastic/harp/pkg/sdk/value"
 )
+
+// TransformerFactoryFunc is used for transformer building for signature.
+type TransformerFactoryFunc func(string) (value.Transformer, error)
+
+var registry map[string]TransformerFactoryFunc
+
+// Register a transformer with the given prefix.
+func Register(prefix string, factory TransformerFactoryFunc) {
+	// Lazy initialization
+	if registry == nil {
+		registry = map[string]TransformerFactoryFunc{}
+	}
+
+	// Check if not already registered
+	if _, ok := registry[prefix]; ok {
+		panic(fmt.Errorf("signature transformer already registered fro '%s' prefix", prefix))
+	}
+
+	// Register the transformer
+	registry[prefix] = factory
+}

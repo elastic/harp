@@ -25,31 +25,34 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/sdk/value/encryption"
+	"github.com/elastic/harp/pkg/sdk/value/signature"
 )
 
 // -----------------------------------------------------------------------------
 
-var transformEncryptionCmd = func() *cobra.Command {
-	var (
-		inputPath  string
-		outputPath string
-		keyRaw     string
-		revert     bool
-	)
+type transformSignParams struct {
+	inputPath   string
+	outputPath  string
+	keyRaw      string
+	preHashed   bool
+	detached    bool
+	determistic bool
+}
+
+var transformSignCmd = func() *cobra.Command {
+	params := &transformSignParams{}
 
 	cmd := &cobra.Command{
-		Use:        "encryption",
-		Short:      "Encryption value transformer",
-		Aliases:    []string{"enc"},
-		Deprecated: "Use encrypt/decrypt commands.",
+		Use:     "sign",
+		Short:   "Sign the given value with a transformer",
+		Aliases: []string{"s"},
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
-			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-encryption", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-sign", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
 			// Resolve tranformer
-			t, err := encryption.FromKey(keyRaw)
+			t, err := signature.FromKey(params.keyRaw)
 			if err != nil {
 				log.For(ctx).Fatal("unable to initialize a transformer form key", zap.Error(err))
 			}
@@ -58,13 +61,13 @@ var transformEncryptionCmd = func() *cobra.Command {
 			}
 
 			// Read input
-			reader, err := cmdutil.Reader(inputPath)
+			reader, err := cmdutil.Reader(params.inputPath)
 			if err != nil {
 				log.For(ctx).Fatal("unable to initialize input reader", zap.Error(err))
 			}
 
 			// Read input
-			writer, err := cmdutil.Writer(inputPath)
+			writer, err := cmdutil.Writer(params.outputPath)
 			if err != nil {
 				log.For(ctx).Fatal("unable to initialize output writer", zap.Error(err))
 			}
@@ -75,21 +78,18 @@ var transformEncryptionCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to drain input reader", zap.Error(err))
 			}
 
-			var out []byte
-			if !revert {
-				// Apply transformation
-				out, err = t.To(ctx, content)
-				if err != nil {
-					log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
-				}
-			} else {
-				// Apply transformation
-				out, err = t.From(ctx, content)
-				if err != nil {
-					log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
-				}
+			// Transformation flag
+			ctx = signature.WithDetachedSignature(ctx, params.detached)
+			ctx = signature.WithDetermisticSignature(ctx, params.determistic)
+			ctx = signature.WithInputPreHashed(ctx, params.preHashed)
+
+			// Apply transformation
+			out, err := t.To(ctx, content)
+			if err != nil {
+				log.For(ctx).Fatal("unable to apply transformer", zap.Error(err))
 			}
 
+			// Dump as output
 			if _, err = writer.Write(out); err != nil {
 				log.For(ctx).Fatal("unable to write result to writer", zap.Error(err))
 			}
@@ -97,12 +97,14 @@ var transformEncryptionCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&keyRaw, "key", "", "Transformer key")
+	cmd.Flags().StringVar(&params.keyRaw, "key", "", "Transformer key")
 	log.CheckErr("unable to mark 'key' flag as required.", cmd.MarkFlagRequired("key"))
 
-	cmd.Flags().StringVar(&inputPath, "in", "-", "Input path ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&outputPath, "out", "-", "Output path ('-' for stdin or filename)")
-	cmd.Flags().BoolVar(&revert, "revert", false, "Decrypt the input (default encrypt)")
+	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Input path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdin or filename)")
+	cmd.Flags().BoolVar(&params.detached, "detached", false, "Returns the signature only")
+	cmd.Flags().BoolVar(&params.preHashed, "pre-hashed", false, "The input is already pre-hashed")
+	cmd.Flags().BoolVar(&params.determistic, "deterministic", false, "Use deterministic signature algorithm variant (if key permits)")
 
 	return cmd
 }

@@ -36,6 +36,7 @@ var keygenCmd = func() *cobra.Command {
 	cmd.AddCommand(keygenFernetCmd())
 	cmd.AddCommand(keygenAESCmd())
 	cmd.AddCommand(keygenMasterKeyCmd())
+	cmd.AddCommand(keygenKeypairCmd())
 
 	if !fips.Enabled() {
 		cmd.AddCommand(keygenSecretBoxCmd())

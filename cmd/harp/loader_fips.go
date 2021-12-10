@@ -24,5 +24,8 @@ import (
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
+	_ "github.com/elastic/harp/pkg/sdk/value/signature/jws"
+	_ "github.com/elastic/harp/pkg/sdk/value/signature/paseto"
+	_ "github.com/elastic/harp/pkg/sdk/value/signature/raw"
 	_ "github.com/elastic/harp/pkg/vault"
 )

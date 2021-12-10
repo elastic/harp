@@ -15,50 +15,63 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package crypto
+package raw
 
 import (
+	"encoding/base64"
+	"fmt"
 	"testing"
+
+	"github.com/elastic/harp/pkg/sdk/value"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestKeypair(t *testing.T) {
-	type testCase struct {
-		name    string
-		args    string
-		wantErr bool
+func TestTransformer(t *testing.T) {
+	type args struct {
+		key string
 	}
-	tests := []testCase{
+	tests := []struct {
+		name    string
+		args    args
+		want    value.Transformer
+		wantErr bool
+	}{
 		{
 			name:    "nil",
-			args:    "",
 			wantErr: true,
 		},
 		{
-			name:    "invalid",
-			args:    "azer",
+			name: "invalid base64",
+			args: args{
+				key: "raw:123456789%",
+			},
 			wantErr: true,
 		},
-	}
-	expectedKeyTypes := []string{"rsa", "rsa:normal", "rsa:2048", "rsa:strong", "rsa:4096", "ec", "ec:normal", "ec:p256", "ec:high", "ec:p384", "ec:strong", "ec:p521", "ssh", "ed25519", "naclbox"}
-	for _, kt := range expectedKeyTypes {
-		tests = append(tests, testCase{
-			name:    kt,
-			args:    kt,
+		// ---------------------------------------------------------------------
+		{
+			name: "valid - v3",
+			args: args{
+				key: fmt.Sprintf("raw:%s", base64.RawURLEncoding.EncodeToString(p384PrivateJWK)),
+			},
 			wantErr: false,
-		})
+		},
+		{
+			name: "valid - v4",
+			args: args{
+				key: fmt.Sprintf("raw:%s", base64.RawURLEncoding.EncodeToString(ed25519PrivateJWK)),
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Keypair(tt.args)
+			got, err := Transformer(tt.args.key)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Keypair() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Transformer() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if tt.wantErr {
-				return
-			}
-			if got == nil {
-				t.Errorf("Keypair() = %v", got)
+			if !tt.wantErr {
+				assert.NotNil(t, got)
 			}
 		})
 	}
