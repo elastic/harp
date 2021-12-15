@@ -19,6 +19,8 @@
   - [Clone repository](#clone-repository)
   - [Manual dev environment](#manual-dev-environment)
     - [Check your go version](#check-your-go-version)
+      - [Go 1.17/1.16](#go-117116)
+      - [Go 1.18 (beta)](#go-118-beta)
     - [Install mage](#install-mage)
       - [From source](#from-source)
     - [Daily](#daily)
@@ -204,6 +206,8 @@ $ export HARP_REPOSITORY=$(pwd)/harp
 
 > Only last 2 minor versions of a major are supported.
 
+#### Go 1.17/1.16
+
 `Harp` is compiled with :
 
 ```sh
@@ -212,6 +216,11 @@ go version go1.17.5 linux/amd64
 ```
 
 > Simple go version manager - <https://github.com/stefanmaric/g>
+
+#### Go 1.18 (beta)
+
+Go 1.18 compilation is enabled for testing purpose and `golangci-lint` looks to
+hang, so it has been disabled for the moment.
 
 ### Install mage
 
@@ -256,6 +265,9 @@ $ nix-shell
 ```sh
 # Go to tools submodule
 cd $HARP_REPOSITORY/tools
+# Resolve dependencies
+go mod tidy
+go mod vendor
 # Pull tools sources, compile them and install executable in tools/bin
 mage
 ```
