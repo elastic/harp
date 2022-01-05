@@ -15,32 +15,46 @@
 // specific language governing permissions and limitations
 // under the License.
 
+//go:build go1.18
+// +build go1.18
+
 package loader_test
 
 import (
 	"bytes"
-
-	"github.com/awnumar/memguard"
+	"io"
+	"os"
+	"testing"
 
 	"github.com/elastic/harp/pkg/bundle"
 )
 
-func Fuzz(data []byte) int {
-	// Read from randomized data
-	b, err := bundle.Load(bytes.NewBuffer(data))
+func loadFromFile(t testing.TB, filename string) []byte {
+	t.Helper()
+
+	// Load sample bundle
+	completeBundle, err := os.Open(filename)
 	if err != nil {
-		if b != nil {
-			memguard.SafePanic("bundle != nil on error")
-		}
-		return 0
+		t.Fatalf("unable to load bundle content '%v': %v", filename, err)
 	}
 
-	// Dump bundle
-	var w bytes.Buffer
-	err = bundle.Dump(&w, b)
+	// Load all content
+	content, err := io.ReadAll(completeBundle)
 	if err != nil {
-		memguard.SafePanic(err)
+		t.Fatalf("unable to load all bundle content '%v': %v", filename, err)
 	}
 
-	return 1
+	return content
 }
+
+func FuzzBundleLoader(f *testing.F) {
+
+	f.Add(loadFromFile(f, "../../../fixtures/bundles/complete.bundle"))
+	f.Add(loadFromFile(f, "../../../fixtures/bundles/empty.bundle"))
+
+	f.Fuzz(func(t *testing.T, in []byte) {
+		// Read from randomized data
+		bundle.FromContainerReader(bytes.NewBuffer(in))
+	})
+}
+

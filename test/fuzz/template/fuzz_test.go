@@ -15,26 +15,45 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package template_test
+//go:build go1.18
+// +build go1.18
+
+package loader_test
 
 import (
 	"bytes"
-
-	"github.com/awnumar/memguard"
+	"io"
+	"os"
+	"testing"
 
 	"github.com/elastic/harp/pkg/bundle/template"
 )
 
-// Fuzz is a fuzz target for tmplate deserialization.
-func Fuzz(data []byte) int {
-	// Read from randomized data
-	t, err := template.YAML(bytes.NewBuffer(data))
+func loadFromFile(t testing.TB, filename string) []byte {
+	t.Helper()
+
+	// Load sample
+	f, err := os.Open(filename)
 	if err != nil {
-		if t != nil {
-			memguard.SafePanic("t != nil on error")
-		}
-		return 0
+		t.Fatalf("unable to load content '%v': %v", filename, err)
 	}
 
-	return 1
+	// Load all content
+	content, err := io.ReadAll(f)
+	if err != nil {
+		t.Fatalf("unable to load all content '%v': %v", filename, err)
+	}
+
+	return content
+}
+
+func FuzzBundleLoader(f *testing.F) {
+
+	f.Add(loadFromFile(f, "../../fixtures/template/valid/blank.yaml"))
+	f.Add(loadFromFile(f, "../../../samples/customer-bundle/spec.yaml"))
+
+	f.Fuzz(func(t *testing.T, in []byte) {
+		// Read from randomized data
+		template.YAML(bytes.NewBuffer(in))
+	})
 }
