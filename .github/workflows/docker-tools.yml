@@ -111,8 +111,14 @@ jobs:
       -
         name: Sign image with a key
         run: |
-          echo -n "${{ secrets.COSIGN_PASSWORD }}" | \
-          cosign sign --key <(echo -n "${{ secrets.COSIGN_KEY }}") ${TAGS}
+          echo -n "${COSIGN_PASSWORD}" | \
+          cosign sign --key <(echo -n "${COSIGN_KEY}") \
+            -a "repo=${{ github.repository }}" \
+            -a "workflow=${{ github.workflow }}" \
+            -a "ref=${{ github.sha }}" \
+            ${TAGS}
         env:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
 
