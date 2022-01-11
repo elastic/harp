@@ -38,9 +38,13 @@ ARG BUILD_DATE
 ARG VERSION
 ARG VCS_REF
 
+# Builder arguments
+ARG GOLANG_IMAGE=golang
+ARG GOLANG_VERSION=1.17
+
 ## -------------------------------------------------------------------------------------------------
 
-FROM golang:1.17
+FROM ${GOLANG_IMAGE}:${GOLANG_VERSION}
 
 # hadolint ignore=DL3008
 RUN set -eux; \
@@ -119,14 +123,38 @@ func Tools() error {
 		return err
 	}
 
+	// Check if we want to generate dockerfile output
+	if os.Getenv("DOCKERFILE_ONLY") != "" {
+		fmt.Fprintln(os.Stdout, buf.String())
+		return nil
+	}
+
+	// Retrieve golang attributes
+	golangImage := "golang"
+	if os.Getenv("GOLANG_IMAGE") != "" {
+		golangImage = os.Getenv("GOLANG_IMAGE")
+	}
+	golangVersion := "1.17"
+	if os.Getenv("GOLANG_VERSION") != "" {
+		golangVersion = os.Getenv("GOLANG_VERSION")
+	}
+
+	// Docker image name
+	dockerImageName := "elastic/harp-tools"
+	if os.Getenv("DOCKER_IMAGE_NAME") != "" {
+		dockerImageName = os.Getenv("DOCKER_IMAGE_NAME")
+	}
+
 	// Prepare command
 	//nolint:gosec // expected behavior
 	c := exec.Command("docker", "build",
-		"-t", "elastic/harp-tools",
+		"-t", dockerImageName,
 		"-f", "-",
 		"--build-arg", fmt.Sprintf("BUILD_DATE=%s", time.Now().Format(time.RFC3339)),
 		"--build-arg", fmt.Sprintf("VERSION=%s", git.Tag),
 		"--build-arg", fmt.Sprintf("VCS_REF=%s", git.Revision),
+		"--build-arg", fmt.Sprintf("GOLANG_IMAGE=%s", golangImage),
+		"--build-arg", fmt.Sprintf("GOLANG_VERSION=%s", golangVersion),
 		".",
 	)
 

@@ -135,6 +135,12 @@ func Release(cmd *artifact.Command) func() error {
 			return fmt.Errorf("invalid semver syntax for release: %w", err)
 		}
 
+		// Check if we want to generate dockerfile output
+		if os.Getenv("DOCKERFILE_ONLY") != "" {
+			fmt.Fprintln(os.Stdout, buf.String())
+			return nil
+		}
+
 		// Prepare command
 		//nolint:gosec // expected behavior
 		c := exec.Command("docker", "build",

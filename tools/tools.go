@@ -25,15 +25,11 @@ package tools
 // tool dependencies
 import (
 	_ "github.com/daixiang0/gci"
-	_ "github.com/dvyukov/go-fuzz/go-fuzz"
-	_ "github.com/dvyukov/go-fuzz/go-fuzz-build"
 	_ "github.com/elastic/go-licenser"
 	_ "github.com/frapposelli/wwhrd"
 	_ "github.com/golang/mock/mockgen"
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 	_ "github.com/google/wire/cmd/wire"
-	_ "github.com/izumin5210/gex/cmd/gex"
-	_ "go.elastic.co/go-licence-detector"
 	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
 	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
 	_ "gotest.tools/gotestsum"
@@ -44,15 +40,11 @@ import (
 //  go generate ./tools.go
 //
 //go:generate go build -v -o=./bin/gci github.com/daixiang0/gci
-//go:generate go build -v -o=./bin/go-fuzz github.com/dvyukov/go-fuzz/go-fuzz
-//go:generate go build -v -o=./bin/go-fuzz-build github.com/dvyukov/go-fuzz/go-fuzz-build
 //go:generate go build -v -o=./bin/go-licenser github.com/elastic/go-licenser
 //go:generate go build -v -o=./bin/wwhrd github.com/frapposelli/wwhrd
 //go:generate go build -v -o=./bin/mockgen github.com/golang/mock/mockgen
 //go:generate go build -v -o=./bin/golangci-lint github.com/golangci/golangci-lint/cmd/golangci-lint
 //go:generate go build -v -o=./bin/wire github.com/google/wire/cmd/wire
-//go:generate go build -v -o=./bin/gex github.com/izumin5210/gex/cmd/gex
-//go:generate go build -v -o=./bin/go-licence-detector go.elastic.co/go-licence-detector
 //go:generate go build -v -o=./bin/protoc-gen-go-grpc google.golang.org/grpc/cmd/protoc-gen-go-grpc
 //go:generate go build -v -o=./bin/protoc-gen-go google.golang.org/protobuf/cmd/protoc-gen-go
 //go:generate go build -v -o=./bin/gotestsum gotest.tools/gotestsum
