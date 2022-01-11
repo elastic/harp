@@ -32,77 +32,77 @@ tasks:
 
   release-darwin-amd64:
     cmds:
-      - "tar cfJ dist/{{.ARTIFACT}}-darwin-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-darwin-amd64"
+      - "tar czf dist/{{.ARTIFACT}}-darwin-amd64-$RELEASE.tar.gz -C bin {{.ARTIFACT}}-darwin-amd64"
     sources:
       - bin/{{.ARTIFACT}}-darwin-amd64
     generates:
-      - dist/{{.ARTIFACT}}-darwin-amd64-$RELEASE.tar.xz
+      - dist/{{.ARTIFACT}}-darwin-amd64-$RELEASE.tar.gz
     preconditions:
       - test -f bin/{{.ARTIFACT}}-darwin-amd64
     method: checksum
 
   release-darwin-arm64:
     cmds:
-      - "tar cfJ dist/{{.ARTIFACT}}-darwin-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-darwin-arm64"
+      - "tar czf dist/{{.ARTIFACT}}-darwin-arm64-$RELEASE.tar.gz -C bin {{.ARTIFACT}}-darwin-arm64"
     sources:
       - bin/{{.ARTIFACT}}-darwin-arm64
     generates:
-      - dist/{{.ARTIFACT}}-darwin-arm64-$RELEASE.tar.xz
+      - dist/{{.ARTIFACT}}-darwin-arm64-$RELEASE.tar.gz
     preconditions:
       - test -f bin/{{.ARTIFACT}}-darwin-amd64
     method: checksum
 
   release-linux-amd64:
     cmds:
-      - "tar cfJ dist/{{.ARTIFACT}}-linux-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-amd64"
+      - "tar czf dist/{{.ARTIFACT}}-linux-amd64-$RELEASE.tar.gz -C bin {{.ARTIFACT}}-linux-amd64"
     sources:
       - bin/{{.ARTIFACT}}-linux-amd64
     generates:
-      - dist/{{.ARTIFACT}}-linux-amd64-$RELEASE.tar.xz
+      - dist/{{.ARTIFACT}}-linux-amd64-$RELEASE.tar.gz
     preconditions:
       - test -f bin/{{.ARTIFACT}}-linux-amd64
     method: checksum
 
   release-linux-arm64:
     cmds:
-      - "tar cfJ dist/{{.ARTIFACT}}-linux-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm64"
+      - "tar czf dist/{{.ARTIFACT}}-linux-arm64-$RELEASE.tar.gz -C bin {{.ARTIFACT}}-linux-arm64"
     sources:
       - bin/{{.ARTIFACT}}-linux-arm64
     generates:
-      - dist/{{.ARTIFACT}}-linux-arm64-$RELEASE.tar.xz
+      - dist/{{.ARTIFACT}}-linux-arm64-$RELEASE.tar.gz
     preconditions:
       - test -f bin/{{.ARTIFACT}}-linux-arm64
     method: checksum
 
   release-linux-arm7:
     cmds:
-      - "tar cfJ dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-linux-arm7"
+      - "tar czf dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.gz -C bin {{.ARTIFACT}}-linux-arm7"
     sources:
       - bin/{{.ARTIFACT}}-linux-arm7
     generates:
-      - dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.xz
+      - dist/{{.ARTIFACT}}-linux-arm7-$RELEASE.tar.gz
     preconditions:
       - test -f bin/{{.ARTIFACT}}-linux-arm7
     method: checksum
 
   release-windows-amd64:
     cmds:
-      - "tar cfJ dist/{{.ARTIFACT}}-windows-amd64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-windows-amd64.exe"
+      - "tar czf dist/{{.ARTIFACT}}-windows-amd64-$RELEASE.tar.gz -C bin {{.ARTIFACT}}-windows-amd64.exe"
     sources:
       - bin/{{.ARTIFACT}}-windows-amd64.exe
     generates:
-      - dist/{{.ARTIFACT}}-windows-amd64-$RELEASE.tar.xz
+      - dist/{{.ARTIFACT}}-windows-amd64-$RELEASE.tar.gz
     preconditions:
       - test -f bin/{{.ARTIFACT}}-windows-amd64.exe
     method: checksum
 
   release-windows-arm64:
     cmds:
-      - "tar cfJ dist/{{.ARTIFACT}}-windows-arm64-$RELEASE.tar.xz -C bin {{.ARTIFACT}}-windows-arm64.exe"
+      - "tar czf dist/{{.ARTIFACT}}-windows-arm64-$RELEASE.tar.gz -C bin {{.ARTIFACT}}-windows-arm64.exe"
     sources:
       - bin/{{.ARTIFACT}}-windows-arm64.exe
     generates:
-      - dist/{{.ARTIFACT}}-windows-arm64-$RELEASE.tar.xz
+      - dist/{{.ARTIFACT}}-windows-arm64-$RELEASE.tar.gz
     preconditions:
       - test -f bin/{{.ARTIFACT}}-windows-arm64.exe
     method: checksum
@@ -111,7 +111,7 @@ tasks:
     deps:
       - release-all
     cmds:
-      - cd dist && sha512sum {{.ARTIFACT}}-*.tar.xz > {{.ARTIFACT}}-checksum.txt
+      - cd dist && sha512sum {{.ARTIFACT}}-*.tar.gz > {{.ARTIFACT}}-checksum.txt
       - cd dist && gpg --detach-sign --armor {{.ARTIFACT}}-checksum.txt
       - cat dist/{{.ARTIFACT}}-checksum.txt
     generates:

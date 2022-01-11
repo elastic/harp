@@ -35,10 +35,6 @@ func Build() {
 
 type Go mg.Namespace
 
-var deps = []string{
-	"github.com/izumin5210/gex/cmd/gex",
-}
-
 // Vendor create tools vendors
 func (Go) Vendor() error {
 	color.Blue("## Vendoring dependencies")

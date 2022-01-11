@@ -48,7 +48,6 @@ func loadFromFile(t testing.TB, filename string) []byte {
 }
 
 func FuzzBundleLoader(f *testing.F) {
-
 	f.Add(loadFromFile(f, "../../../fixtures/bundles/complete.bundle"))
 	f.Add(loadFromFile(f, "../../../fixtures/bundles/empty.bundle"))
 
@@ -57,4 +56,3 @@ func FuzzBundleLoader(f *testing.F) {
 		bundle.FromContainerReader(bytes.NewBuffer(in))
 	})
 }
-
