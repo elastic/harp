@@ -31,7 +31,7 @@ jobs:
             tools-image: harp-tools
           # fips
           - golang-image: "goboring/golang"
-            golang-version: "go1.16.7b7"
+            golang-version: "1.16.7b7"
             tools-image: harp-tools-fips
     steps:
       -
@@ -91,6 +91,8 @@ jobs:
         with:
           context: .
           file: Dockerfile.tools
+          pull: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
