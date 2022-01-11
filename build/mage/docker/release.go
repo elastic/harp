@@ -179,7 +179,7 @@ func Release(cmd *artifact.Command) func() error {
 
 // -----------------------------------------------------------------------------
 
-func merge(t string, cmd *artifact.Command) (*bytes.Buffer, error) {
+func merge(t string, m interface{}) (*bytes.Buffer, error) {
 	// Compile template
 	dockerFileTmpl, err := template.New("Dockerfile").Parse(t)
 	if err != nil {
@@ -188,7 +188,7 @@ func merge(t string, cmd *artifact.Command) (*bytes.Buffer, error) {
 
 	// Merge data
 	var buf bytes.Buffer
-	if errTmpl := dockerFileTmpl.Execute(&buf, cmd); errTmpl != nil {
+	if errTmpl := dockerFileTmpl.Execute(&buf, m); errTmpl != nil {
 		return nil, errTmpl
 	}
 

@@ -34,13 +34,13 @@ var dockerToolTemplate = strings.TrimSpace(`
 # syntax=docker/dockerfile:experimental
 
 # Arguments
-ARG BUILD_DATE
-ARG VERSION
-ARG VCS_REF
+ARG BUILD_DATE={{.BuildDate}}
+ARG VERSION={{.Version}}
+ARG VCS_REF={{.VcsRef}}
 
-# Builder arguments
-ARG GOLANG_IMAGE=golang
-ARG GOLANG_VERSION=1.17
+# Builder argumentsgolang
+ARG GOLANG_IMAGE={{.GolangImage}}
+ARG GOLANG_VERSION={{.GolangVersion}}
 
 ## -------------------------------------------------------------------------------------------------
 
@@ -118,17 +118,6 @@ ENV PATH=$GOPATH/src/workspace/tools/bin:$PATH
 func Tools() error {
 	mg.Deps(git.CollectInfo)
 
-	buf, err := merge(dockerToolTemplate, nil)
-	if err != nil {
-		return err
-	}
-
-	// Check if we want to generate dockerfile output
-	if os.Getenv("DOCKERFILE_ONLY") != "" {
-		fmt.Fprintln(os.Stdout, buf.String())
-		return nil
-	}
-
 	// Retrieve golang attributes
 	golangImage := "golang"
 	if os.Getenv("GOLANG_IMAGE") != "" {
@@ -137,6 +126,22 @@ func Tools() error {
 	golangVersion := "1.17"
 	if os.Getenv("GOLANG_VERSION") != "" {
 		golangVersion = os.Getenv("GOLANG_VERSION")
+	}
+
+	buf, err := merge(dockerToolTemplate, map[string]string{
+		"BuildDate":     time.Now().Format(time.RFC3339),
+		"Version":       git.Tag,
+		"VcsRef":        git.Revision,
+		"GolangImage":   golangImage,
+		"GolangVersion": golangVersion,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Check if we want to generate dockerfile output
+	if os.Getenv("DOCKERFILE_ONLY") != "" {
+		return os.WriteFile("Dockerfile.tools", buf.Bytes(), 0)
 	}
 
 	// Docker image name
@@ -150,11 +155,6 @@ func Tools() error {
 	c := exec.Command("docker", "build",
 		"-t", dockerImageName,
 		"-f", "-",
-		"--build-arg", fmt.Sprintf("BUILD_DATE=%s", time.Now().Format(time.RFC3339)),
-		"--build-arg", fmt.Sprintf("VERSION=%s", git.Tag),
-		"--build-arg", fmt.Sprintf("VCS_REF=%s", git.Revision),
-		"--build-arg", fmt.Sprintf("GOLANG_IMAGE=%s", golangImage),
-		"--build-arg", fmt.Sprintf("GOLANG_VERSION=%s", golangVersion),
 		".",
 	)
 

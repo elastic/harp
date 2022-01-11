@@ -58,3 +58,5 @@ Temporary Items
 # Release directory used by mage release target (it could be out of source)
 dist
 .task
+
+Dockerfile.*

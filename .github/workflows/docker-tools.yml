@@ -1,4 +1,8 @@
 name: Build and push docker tools
+
+env:
+  REGISTRY: ghcr.io
+
 on:
   push:
     tags:
@@ -9,9 +13,14 @@ on:
   pull_request:
   release:
     types: [published]
+
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
     strategy:
       fail-fast: false
       matrix:
@@ -19,11 +28,11 @@ jobs:
           # normal
           - golang-image: "golang"
             golang-version: "1.17"
-            tools-image: elastic/harp-tools
+            tools-image: harp-tools
           # fips
           - golang-image: "goboring/golang"
             golang-version: "go1.16.7b7"
-            tools-image: elastic/harp-tools-fips
+            tools-image: harp-tools-fips
     steps:
       -
         name: Check out the repo
@@ -49,16 +58,39 @@ jobs:
             ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}-${{ matrix.golang-version }}
             ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}
             ${{ runner.os }}-buildx-dev
-      - name: Set Dockerfile settings
+      -
+        name: Set Dockerfile settings
         run: |
           echo Building $DOCKER_IMAGE_NAME with $GOLANG_IMAGE:$GOLANG_VERSION
         env:
+          DOCKERFILE_ONLY: 1
           GOLANG_IMAGE: ${{ matrix.golang-image }}
           GOLANG_VERSION: ${{ matrix.golang-version }}
           DOCKER_IMAGE_NAME: ${{ matrix.tools-image }}
       -
-        name: Build Tools Dockerfile
+        name: Generate Dockerfile
         uses: magefile/mage-action@v1
         with:
           version: latest
           args: docker:tools
+      -
+        name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Build Docker image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.tools
+          tags: |
+            ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          build-args: |
+            GOLANG_IMAGE=${{ matrix.golang-image }}
+            GOLANG_VERSION=${{ matrix.golang-version }}
