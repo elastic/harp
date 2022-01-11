@@ -50,10 +50,12 @@ jobs:
             ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}
             ${{ runner.os }}-buildx-dev
       - name: Set Dockerfile settings
+        run: |
+          echo Building $DOCKER_IMAGE_NAME with $GOLANG_IMAGE:$GOLANG_VERSION
         env:
-          GOLANG_IMAGE: $matrix.golang-image
-          GOLANG_VERSION: $matrix.golang-version
-          DOCKER_IMAGE_NAME: $matrix.tools-image
+          GOLANG_IMAGE: ${{ matrix.golang-image }}
+          GOLANG_VERSION: ${{ matrix.golang-version }}
+          DOCKER_IMAGE_NAME: ${{ matrix.tools-image }}
       -
         name: Build Tools Dockerfile
         uses: magefile/mage-action@v1
