@@ -46,6 +46,15 @@ ARG GOLANG_VERSION={{.GolangVersion}}
 
 FROM ${GOLANG_IMAGE}:${GOLANG_VERSION}
 
+# Arguments
+ARG BUILD_DATE={{.BuildDate}}
+ARG VERSION={{.Version}}
+ARG VCS_REF={{.VcsRef}}
+
+# Builder argumentsgolang
+ARG GOLANG_IMAGE={{.GolangImage}}
+ARG GOLANG_VERSION={{.GolangVersion}}
+
 LABEL \
     org.opencontainers.image.created=$BUILD_DATE \
 	org.opencontainers.image.title="Harp SDK Environment" \
