@@ -1,0 +1,62 @@
+name: Build and push docker tools
+on:
+  push:
+    tags:
+      - v*
+      - cmd/*
+    branches:
+      - main
+  pull_request:
+  release:
+    types: [published]
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # normal
+          - golang-image: "golang"
+            golang-version: "1.17"
+            tools-image: elastic/harp-tools
+          # fips
+          - golang-image: "goboring/golang"
+            golang-version: "go1.16.7b7"
+            tools-image: elastic/harp-tools-fips
+    steps:
+      -
+        name: Check out the repo
+        uses: actions/checkout@v2
+      -
+        name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      -
+        name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      -
+        name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}-${{ matrix.golang-version }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}-${{ matrix.golang-version }}
+            ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}
+            ${{ runner.os }}-buildx-dev
+      - name: Set Dockerfile settings
+        env:
+          GOLANG_IMAGE: $matrix.golang-image
+          GOLANG_VERSION: $matrix.golang-version
+          DOCKER_IMAGE_NAME: $matrix.tools-image
+      -
+        name: Build Tools Dockerfile
+        uses: magefile/mage-action@v1
+        with:
+          version: latest
+          args: docker:tools
