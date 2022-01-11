@@ -141,7 +141,7 @@ func Tools() error {
 
 	// Check if we want to generate dockerfile output
 	if os.Getenv("DOCKERFILE_ONLY") != "" {
-		return os.WriteFile("Dockerfile.tools", buf.Bytes(), 0)
+		return os.WriteFile("Dockerfile.tools", buf.Bytes(), 600)
 	}
 
 	// Docker image name
