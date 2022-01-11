@@ -27,6 +27,8 @@
   - [With nix-shell](#with-nix-shell)
   - [Bootstrap tools](#bootstrap-tools)
   - [Docker](#docker)
+    - [For Tools](#for-tools)
+    - [For CLI](#for-cli)
 - [Plugins](#plugins)
 - [Community](#community)
 
@@ -274,7 +276,7 @@ mage
 
 ## Docker
 
-For Tools
+### For Tools
 
 You have to build this image once before executing artifact pipelines.
 
@@ -282,7 +284,30 @@ You have to build this image once before executing artifact pipelines.
 mage docker:tools
 ```
 
-For CLI
+Or you can download `harp-tools` from GitHub registry
+
+```sh
+# Standard usecase
+$ docker pull ghcr.io/elastic/harp/harp-tools:latest
+# FIPS compliant go toolchain
+$ docker pull ghcr.io/elastic/harp/harp-tools-fips:latest
+```
+
+Check image integrity with `cosign` and the public key `build/artifact/cosign.pub`
+
+```sh
+cosign verify --key build/artifact/cosign.pub ghcr.io/elastic/harp/harp-tools:latest
+
+Verification for ghcr.io/elastic/harp/harp-tools:latest --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - The signatures were verified against the specified public key
+  - Any certificates were verified against the Fulcio roots.
+
+[{"critical":{"identity":{"docker-reference":"ghcr.io/elastic/harp/harp-tools"},"image":{"docker-manifest-digest":"sha256:1be31528e7b00c9e836479aadfdf49319f3b4d7916e705c43ffd0b14965763a8"},"type":"cosign container image signature"},"optional":{"ref":"40714fef947d018e6053991f5ddb54283f466b04","repo":"elastic/harp","workflow":"Build and push docker tools"}}]
+```
+
+### For CLI
 
 ```sh
 # or docker image [distroless:static, rootless, noshell]
