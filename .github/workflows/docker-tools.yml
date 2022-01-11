@@ -5,12 +5,11 @@ env:
 
 on:
   push:
-    tags:
-      - v*
-      - cmd/*
     branches:
       - main
-  pull_request:
+    paths:
+      - 'build/**'
+      - 'tools/**'
   release:
     types: [published]
 

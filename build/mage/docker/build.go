@@ -35,11 +35,16 @@ var dockerTemplate = strings.TrimSpace(`
 # syntax=docker/dockerfile:experimental
 
 # Arguments
-ARG BUILD_DATE
-ARG VERSION
-ARG VCS_REF
+ARG BUILD_DATE={{.BuildDate}}
+ARG VERSION={{.Version}}
+ARG VCS_REF={{.VcsRef}}
 
-FROM elastic/harp-tools as compiler
+# Builder arguments
+ARG TOOLS_IMAGE={{.ToolImageName}}
+ARG GOLANG_IMAGE={{.GolangImage}}
+ARG GOLANG_VERSION={{.GolangVersion}}
+
+FROM $TOOLS_IMAGE as compiler
 
 # Back to project root
 WORKDIR $GOPATH/src/workspace
@@ -52,9 +57,9 @@ RUN go mod download
 # Copy project go module
 COPY --chown=golang:golang . .
 
-{{ if .HasModule }}
+{{ if .Cmd.HasModule }}
 # Go to cmd
-WORKDIR $GOPATH/src/workspace/{{ .Module }}
+WORKDIR $GOPATH/src/workspace/{{ .Cmd.Module }}
 {{ else }}
 # Stay at root path
 WORKDIR $GOPATH/src/workspace
@@ -83,26 +88,26 @@ RUN set -eux; \
 FROM gcr.io/distroless/static:latest
 
 # Arguments
-ARG BUILD_DATE
-ARG VERSION
-ARG VCS_REF
+ARG BUILD_DATE={{.BuildDate}}
+ARG VERSION={{.Version}}
+ARG VCS_REF={{.VcsRef}}
 
 # Metadata
 LABEL \
     org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.name="{{.Name}}" \
-    org.label-schema.description="{{.Description}}" \
-    org.label-schema.url="https://{{.Package}}" \
-    org.label-schema.vcs-url="https://{{.Package}}.git" \
+    org.label-schema.name="{{.Cmd.Name}}" \
+    org.label-schema.description="{{.Cmd.Description}}" \
+    org.label-schema.url="https://{{.Cmd.Package}}" \
+    org.label-schema.vcs-url="https://{{.Cmd.Package}}.git" \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vendor="Elastic" \
     org.label-schema.version=$VERSION \
     org.label-schema.schema-version="1.0"
 
-{{ if .HasModule }}
-COPY --from=compiler /go/src/workspace/{{.Module}}/bin/{{.Kebab}}-linux-amd64 /usr/bin/{{.Kebab}}
+{{ if .Cmd.HasModule }}
+COPY --from=compiler /go/src/workspace/{{.Cmd.Module}}/bin/{{.Cmd.Kebab}}-linux-amd64 /usr/bin/{{.Cmd.Kebab}}
 {{ else }}
-COPY --from=compiler /go/src/workspace/bin/{{.Kebab}}-linux-amd64 /usr/bin/{{.Kebab}}
+COPY --from=compiler /go/src/workspace/bin/{{.Cmd.Kebab}}-linux-amd64 /usr/bin/{{.Cmd.Kebab}}
 {{ end }}
 
 COPY --from=compiler /tmp/group /tmp/passwd /etc/
@@ -111,7 +116,7 @@ COPY --from=compiler --chown=65534:65534 /tmp/.config /
 USER nobody:nobody
 WORKDIR /
 
-ENTRYPOINT [ "/usr/bin/{{.Kebab}}" ]
+ENTRYPOINT [ "/usr/bin/{{.Cmd.Kebab}}" ]
 CMD ["--help"]
 `)
 
@@ -120,15 +125,38 @@ func Build(cmd *artifact.Command) func() error {
 	return func() error {
 		mg.Deps(git.CollectInfo)
 
-		buf, err := merge(dockerTemplate, cmd)
+		// Retrieve golang attributes
+		golangImage := golangImage
+		if os.Getenv("GOLANG_IMAGE") != "" {
+			golangImage = os.Getenv("GOLANG_IMAGE")
+		}
+		golangVersion := golangVersion
+		if os.Getenv("GOLANG_VERSION") != "" {
+			golangVersion = os.Getenv("GOLANG_VERSION")
+		}
+
+		// Docker image name
+		toolImageName := toolImage
+		if os.Getenv("TOOL_IMAGE_NAME") != "" {
+			toolImageName = os.Getenv("TOOL_IMAGE_NAME")
+		}
+
+		buf, err := merge(dockerTemplate, map[string]interface{}{
+			"ToolImageName": toolImageName,
+			"BuildDate":     time.Now().Format(time.RFC3339),
+			"Version":       git.Tag,
+			"VcsRef":        git.Revision,
+			"GolangImage":   golangImage,
+			"GolangVersion": golangVersion,
+			"Cmd":           cmd,
+		})
 		if err != nil {
 			return err
 		}
 
 		// Check if we want to generate dockerfile output
 		if os.Getenv("DOCKERFILE_ONLY") != "" {
-			fmt.Fprintln(os.Stdout, buf.String())
-			return nil
+			return os.WriteFile(fmt.Sprintf("Dockerfile.%s", cmd.Kebab()), buf.Bytes(), 0o600)
 		}
 
 		// Prepare command

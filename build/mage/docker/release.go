@@ -38,12 +38,17 @@ var dockerReleaseTemplate = strings.TrimSpace(`
 # syntax=docker/dockerfile:experimental
 
 # Arguments
-ARG BUILD_DATE
-ARG VERSION
-ARG VCS_REF
+ARG BUILD_DATE={{.BuildDate}}
+ARG VERSION={{.Version}}
+ARG VCS_REF={{.VcsRef}}
+
+# Builder arguments
+ARG TOOLS_IMAGE={{.ToolImageName}}
+ARG GOLANG_IMAGE={{.GolangImage}}
+ARG GOLANG_VERSION={{.GolangVersion}}
 ARG RELEASE
 
-FROM elastic/harp-tools as compiler
+FROM $TOOLS_IMAGE as compiler
 
 ARG RELEASE
 
@@ -57,9 +62,9 @@ RUN go mod download
 # Copy project go module
 COPY --chown=golang:golang . .
 
-{{ if .HasModule }}
+{{ if .Cmd.HasModule }}
 # Go to cmd
-WORKDIR $GOPATH/src/workspace/{{ .Module }}
+WORKDIR $GOPATH/src/workspace/{{ .Cmd.Module }}
 {{ else }}
 # Stay at root path
 WORKDIR $GOPATH/src/workspace
@@ -84,8 +89,8 @@ FROM alpine:latest AS compressor
 
 RUN apk add --no-cache upx
 WORKDIR /app
-{{ if .HasModule }}
-COPY --from=compiler /go/src/workspace/{{.Module}}/bin/* /app/
+{{ if .Cmd.HasModule }}
+COPY --from=compiler /go/src/workspace/{{.Cmd.Module}}/bin/* /app/
 {{ else }}
 COPY --from=compiler /go/src/workspace/bin/* /app/
 {{ end }}
@@ -97,17 +102,18 @@ RUN upx --overlay=strip -9 * || true
 FROM alpine:latest
 
 # Arguments
-ARG BUILD_DATE
-ARG VCS_REF
+ARG BUILD_DATE={{.BuildDate}}
+ARG VERSION={{.Version}}
+ARG VCS_REF={{.VcsRef}}
 ARG RELEASE
 
 # Metadata
 LABEL \
     org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.name="{{.Name}}" \
-    org.label-schema.description="{{.Description}}" \
-    org.label-schema.url="https://{{.Package}}" \
-    org.label-schema.vcs-url="https://{{.Package}}.git" \
+    org.label-schema.description="{{.Cmd.Description}}" \
+    org.label-schema.url="https://{{.Cmd.Package}}" \
+    org.label-schema.vcs-url="https://{{.Cmd.Package}}.git" \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vendor="Elastic" \
     org.label-schema.version=$RELEASE \
@@ -123,7 +129,31 @@ func Release(cmd *artifact.Command) func() error {
 	return func() error {
 		mg.Deps(git.CollectInfo)
 
-		buf, err := merge(dockerReleaseTemplate, cmd)
+		// Retrieve golang attributes
+		golangImage := golangImage
+		if os.Getenv("GOLANG_IMAGE") != "" {
+			golangImage = os.Getenv("GOLANG_IMAGE")
+		}
+		golangVersion := golangVersion
+		if os.Getenv("GOLANG_VERSION") != "" {
+			golangVersion = os.Getenv("GOLANG_VERSION")
+		}
+
+		// Docker image name
+		toolImageName := toolImage
+		if os.Getenv("TOOL_IMAGE_NAME") != "" {
+			toolImageName = os.Getenv("TOOL_IMAGE_NAME")
+		}
+
+		buf, err := merge(dockerReleaseTemplate, map[string]interface{}{
+			"ToolImageName": toolImageName,
+			"BuildDate":     time.Now().Format(time.RFC3339),
+			"Version":       git.Tag,
+			"VcsRef":        git.Revision,
+			"GolangImage":   golangImage,
+			"GolangVersion": golangVersion,
+			"Cmd":           cmd,
+		})
 		if err != nil {
 			return err
 		}
@@ -137,8 +167,7 @@ func Release(cmd *artifact.Command) func() error {
 
 		// Check if we want to generate dockerfile output
 		if os.Getenv("DOCKERFILE_ONLY") != "" {
-			fmt.Fprintln(os.Stdout, buf.String())
-			return nil
+			return os.WriteFile("Dockerfile.release", buf.Bytes(), 0o600)
 		}
 
 		// Prepare command
@@ -149,8 +178,6 @@ func Release(cmd *artifact.Command) func() error {
 			"--build-arg", fmt.Sprintf("BUILD_DATE=%s", time.Now().Format(time.RFC3339)),
 			"--build-arg", fmt.Sprintf("VERSION=%s", git.Tag),
 			"--build-arg", fmt.Sprintf("VCS_REF=%s", git.Revision),
-			"--build-arg", fmt.Sprintf("RELEASE=%s", relVer.String()),
-			"--cache-from", "elastic/harp-tools",
 			".",
 		)
 

@@ -15,7 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//+build mage
+//go:build mage
+// +build mage
 
 package main
 
@@ -97,13 +98,6 @@ var (
 		Package:     "github.com/elastic/harp",
 		Name:        "Harp",
 		Description: "Secret management toolchain",
-	}
-
-	harpServer = &artifact.Command{
-		Package:     "github.com/elastic/harp",
-		Module:      "cmd/harp-server",
-		Name:        "Harp Server",
-		Description: "Harp Create Server",
 	}
 )
 
@@ -264,11 +258,6 @@ func (Docker) Harp() error {
 	return docker.Build(harpCli)()
 }
 
-// Harp build harp-server docker image
-func (Docker) HarpServer() error {
-	return docker.Build(harpServer)()
-}
-
 // -----------------------------------------------------------------------------
 
 type Releaser mg.Namespace
@@ -276,9 +265,4 @@ type Releaser mg.Namespace
 // Harp releases harp artifacts using docker pipeline.
 func (Releaser) Harp() error {
 	return docker.Release(harpCli)()
-}
-
-// HarpServer releases harp-server artifacts using docker pipeline.
-func (Releaser) HarpServer() error {
-	return docker.Release(harpServer)()
 }

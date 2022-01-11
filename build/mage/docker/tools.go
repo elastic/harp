@@ -119,11 +119,11 @@ func Tools() error {
 	mg.Deps(git.CollectInfo)
 
 	// Retrieve golang attributes
-	golangImage := "golang"
+	golangImage := golangImage
 	if os.Getenv("GOLANG_IMAGE") != "" {
 		golangImage = os.Getenv("GOLANG_IMAGE")
 	}
-	golangVersion := "1.17"
+	golangVersion := golangVersion
 	if os.Getenv("GOLANG_VERSION") != "" {
 		golangVersion = os.Getenv("GOLANG_VERSION")
 	}
@@ -141,17 +141,16 @@ func Tools() error {
 
 	// Check if we want to generate dockerfile output
 	if os.Getenv("DOCKERFILE_ONLY") != "" {
-		return os.WriteFile("Dockerfile.tools", buf.Bytes(), 0644)
+		return os.WriteFile("Dockerfile.tools", buf.Bytes(), 0o600)
 	}
 
 	// Docker image name
-	dockerImageName := "elastic/harp-tools"
+	dockerImageName := toolImage
 	if os.Getenv("DOCKER_IMAGE_NAME") != "" {
 		dockerImageName = os.Getenv("DOCKER_IMAGE_NAME")
 	}
 
 	// Prepare command
-	//nolint:gosec // expected behavior
 	c := exec.Command("docker", "build",
 		"-t", dockerImageName,
 		"-f", "-",
