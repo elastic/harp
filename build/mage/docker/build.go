@@ -94,15 +94,15 @@ ARG VCS_REF={{.VcsRef}}
 
 # Metadata
 LABEL \
-    org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.name="{{.Cmd.Name}}" \
-    org.label-schema.description="{{.Cmd.Description}}" \
-    org.label-schema.url="https://{{.Cmd.Package}}" \
-    org.label-schema.vcs-url="https://{{.Cmd.Package}}.git" \
-    org.label-schema.vcs-ref=$VCS_REF \
-    org.label-schema.vendor="Elastic" \
-    org.label-schema.version=$VERSION \
-    org.label-schema.schema-version="1.0"
+	org.opencontainers.image.created=$BUILD_DATE \
+    org.opencontainers.image.title="{{.Name}}" \
+    org.opencontainers.image.description="{{.Cmd.Description}}" \
+    org.opencontainers.image.url="https://{{.Cmd.Package}}" \
+    org.opencontainers.image.source="https://{{.Cmd.Package}}.git" \
+    org.opencontainers.image.revision=$VCS_REF \
+    org.opencontainers.image.vendor="Elastic" \
+    org.opencontainers.image.version=$RELEASE \
+	org.opencontainers.image.licences="ASL2"
 
 {{ if .Cmd.HasModule }}
 COPY --from=compiler /go/src/workspace/{{.Cmd.Module}}/bin/{{.Cmd.Kebab}}-linux-amd64 /usr/bin/{{.Cmd.Kebab}}

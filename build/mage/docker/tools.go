@@ -46,6 +46,17 @@ ARG GOLANG_VERSION={{.GolangVersion}}
 
 FROM ${GOLANG_IMAGE}:${GOLANG_VERSION}
 
+LABEL \
+    org.opencontainers.image.created=$BUILD_DATE \
+	org.opencontainers.image.title="Harp SDK Environment" \
+	org.opencontainers.image.description="Harp SDK Tools used to build harp and all related tools" \
+	org.opencontainers.image.url="https://github.com/elastic/harp" \
+	org.opencontainers.image.source="https://github.com/elastic/harp.git" \
+	org.opencontainers.image.revision=$VCS_REF \
+	org.opencontainers.image.vendor="Elastic" \
+	org.opencontainers.image.version=$VERSION \
+	org.opencontainers.image.licences="ASL2"
+
 # hadolint ignore=DL3008
 RUN set -eux; \
     apt-get update -y && \
