@@ -99,3 +99,21 @@ jobs:
           build-args: |
             GOLANG_IMAGE=${{ matrix.golang-image }}
             GOLANG_VERSION=${{ matrix.golang-version }}
+      -
+        id: docker_meta
+        uses: docker/metadata-action@v3.6.0
+        with:
+          images: ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
+          tags: type=sha,format=long
+      -
+        uses: sigstore/cosign-installer@main
+      -
+        name: Sign image with a key
+        run: |
+          echo ${COSIGN_KEY} > /tmp/my_cosign.key && \
+          cosign sign --key /tmp/my_cosign.key ${TAGS}
+        env:
+          TAGS: ${{ steps.docker_meta.outputs.tags }}
+          COSIGN_KEY: ${{secrets.COSIGN_KEY}}
+          COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
+
