@@ -10,6 +10,7 @@ on:
     paths:
       - 'build/**'
       - 'tools/**'
+      - '.github/workflows/docker-tools.yml'
   release:
     types: [published]
 
