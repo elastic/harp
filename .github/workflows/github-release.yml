@@ -16,32 +16,40 @@ jobs:
     steps:
       -
         name: Extract artifacts from the docker image
-        id: extract
+        id: extract-std
         uses: shrink/actions-docker-extract@v1
         with:
           image: ghcr.io/elastic/harp/harp-artifacts:v${{ github.event.inputs.release }}
           path: '/app/.'
       -
         name: Extract FIPS artifacts from the docker image
-        id: extract
+        id: extract-fips
         uses: shrink/actions-docker-extract@v1
         with:
           image: ghcr.io/elastic/harp/harp-artifacts-fips:v${{ github.event.inputs.release }}
           path: '/app/.'
       -
+        name: Assemble a package
+        run:
+          mkdir .dist
+          cd .dist
+          cp ${{ steps.extract-std.outputs.destination }}/* .
+          cp ${{ steps.extract-fips.outputs.destination }}/* .
+          find . -maxdepth 1 -mindepth 1 -type f -exec tar czvf {}.tar.gz {} --remove-files \;
+      -
         name: Create checksum
         id: create-checksum
         run: |
-          cd ${{ steps.extract.outputs.destination }}
-          sha512sum * > harp-checksum.txt
+          cd .dist
+          sha512sum * > checksum.txt
       -
         name: Sign the checksum
         run: |
-          cd ${{ steps.extract.outputs.destination }}
+          cd .dist
           echo -n "${COSIGN_PASSWORD}" | \
             cosign sign-blob --key <(echo -n "${COSIGN_KEY}") \
-              --output-signature=harp-checksum.txt.sig \
-              harp-checksum.txt
+              --output-signature=checksum.txt.sig \
+              checksum.txt
         env:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
@@ -49,6 +57,6 @@ jobs:
         name: Upload to release
         uses: AButler/upload-release-assets@v2.0
         with:
-          files: '${{ steps.extract.outputs.destination }}/*'
+          files: '.dist/*'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: cmd/harp/v${{ github.event.inputs.release }}
