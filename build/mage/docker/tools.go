@@ -38,13 +38,13 @@ ARG BUILD_DATE={{.BuildDate}}
 ARG VERSION={{.Version}}
 ARG VCS_REF={{.VcsRef}}
 
-# Builder argumentsgolang
-ARG GOLANG_IMAGE={{.GolangImage}}
+# Builder arguments
+ARG GOLANG_BASE_IMAGE={{.GolangImage}}
 ARG GOLANG_VERSION={{.GolangVersion}}
 
 ## -------------------------------------------------------------------------------------------------
 
-FROM ${GOLANG_IMAGE}:${GOLANG_VERSION}
+FROM ${GOLANG_BASE_IMAGE}
 
 # Arguments
 ARG BUILD_DATE={{.BuildDate}}
@@ -57,14 +57,21 @@ ARG GOLANG_VERSION={{.GolangVersion}}
 
 LABEL \
     org.opencontainers.image.created=$BUILD_DATE \
-	org.opencontainers.image.title="Harp SDK Environment" \
-	org.opencontainers.image.description="Harp SDK Tools used to build harp and all related tools" \
-	org.opencontainers.image.url="https://github.com/elastic/harp" \
-	org.opencontainers.image.source="https://github.com/elastic/harp.git" \
-	org.opencontainers.image.revision=$VCS_REF \
-	org.opencontainers.image.vendor="Elastic" \
-	org.opencontainers.image.version=$VERSION \
-	org.opencontainers.image.licences="ASL2"
+    org.opencontainers.image.title="Harp SDK Environment (Go {{.GolangVersion}})" \
+    org.opencontainers.image.description="Harp SDK Tools used to build harp and all related tools" \
+    org.opencontainers.image.url="https://github.com/elastic/harp" \
+    org.opencontainers.image.source="https://github.com/elastic/harp.git" \
+    org.opencontainers.image.revision=$VCS_REF \
+    org.opencontainers.image.vendor="Elastic" \
+    org.opencontainers.image.version=$VERSION \
+    org.opencontainers.image.licences="ASL2"
+
+{{ if .OverrideGoBoringVersion }}
+# Override goboring version
+RUN wget https://storage.googleapis.com/go-boringcrypto/go{{ .GoBoringVersion }}.linux-amd64.tar.gz \
+    && rm -rf /usr/local/go && tar -C /usr/local -xzf go{{ .GoBoringVersion }}.linux-amd64.tar.gz \
+    rm go{{ .GoBoringVersion }}.linux-amd64.tar.gz
+{{ end }}
 
 # hadolint ignore=DL3008
 RUN set -eux; \
@@ -105,11 +112,11 @@ ENV USER golang
 
 # Clean go mod cache
 RUN set -eux; \
-	go clean -modcache
+    go clean -modcache
 
 # Checkout mage
 RUN set -eux; \
-	git clone https://github.com/magefile/mage .mage
+    git clone https://github.com/magefile/mage .mage
 
 # Go to tools
 WORKDIR $GOPATH/src/workspace/.mage
@@ -128,7 +135,7 @@ WORKDIR $GOPATH/src/workspace/tools
 
 # Install tools
 RUN set -eux; \
-	mage
+    mage
 
 # Set path for tools usages
 ENV PATH=$GOPATH/src/workspace/tools/bin:$PATH
@@ -139,21 +146,29 @@ func Tools() error {
 	mg.Deps(git.CollectInfo)
 
 	// Retrieve golang attributes
-	golangImage := golangImage
-	if os.Getenv("GOLANG_IMAGE") != "" {
-		golangImage = os.Getenv("GOLANG_IMAGE")
+	golangBaseImage := golangImage
+	if os.Getenv("GOLANG_BASE_IMAGE") != "" {
+		golangBaseImage = os.Getenv("GOLANG_BASE_IMAGE")
 	}
 	golangVersion := golangVersion
 	if os.Getenv("GOLANG_VERSION") != "" {
 		golangVersion = os.Getenv("GOLANG_VERSION")
 	}
+	goBoringVersion := goBoringVersion
+	overrideGoBoringVersion := false
+	if os.Getenv("GOBORING_VERSION") != "" {
+		goBoringVersion = os.Getenv("GOBORING_VERSION")
+		overrideGoBoringVersion = true
+	}
 
-	buf, err := merge(dockerToolTemplate, map[string]string{
-		"BuildDate":     time.Now().Format(time.RFC3339),
-		"Version":       git.Tag,
-		"VcsRef":        git.Revision,
-		"GolangImage":   golangImage,
-		"GolangVersion": golangVersion,
+	buf, err := merge(dockerToolTemplate, map[string]interface{}{
+		"BuildDate":               time.Now().Format(time.RFC3339),
+		"Version":                 git.Tag,
+		"VcsRef":                  git.Revision,
+		"GolangImage":             golangBaseImage,
+		"GolangVersion":           golangVersion,
+		"OverrideGoBoringVersion": overrideGoBoringVersion,
+		"GoBoringVersion":         goBoringVersion,
 	})
 	if err != nil {
 		return err

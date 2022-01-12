@@ -41,8 +41,6 @@ ARG VCS_REF={{.VcsRef}}
 
 # Builder arguments
 ARG TOOLS_IMAGE={{.ToolImageName}}
-ARG GOLANG_IMAGE={{.GolangImage}}
-ARG GOLANG_VERSION={{.GolangVersion}}
 
 FROM $TOOLS_IMAGE as compiler
 
@@ -125,16 +123,6 @@ func Build(cmd *artifact.Command) func() error {
 	return func() error {
 		mg.Deps(git.CollectInfo)
 
-		// Retrieve golang attributes
-		golangImage := golangImage
-		if os.Getenv("GOLANG_IMAGE") != "" {
-			golangImage = os.Getenv("GOLANG_IMAGE")
-		}
-		golangVersion := golangVersion
-		if os.Getenv("GOLANG_VERSION") != "" {
-			golangVersion = os.Getenv("GOLANG_VERSION")
-		}
-
 		// Docker image name
 		toolImageName := toolImage
 		if os.Getenv("TOOL_IMAGE_NAME") != "" {
@@ -146,8 +134,6 @@ func Build(cmd *artifact.Command) func() error {
 			"BuildDate":     time.Now().Format(time.RFC3339),
 			"Version":       git.Tag,
 			"VcsRef":        git.Revision,
-			"GolangImage":   golangImage,
-			"GolangVersion": golangVersion,
 			"Cmd":           cmd,
 		})
 		if err != nil {
