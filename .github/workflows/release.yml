@@ -23,13 +23,11 @@ jobs:
             golang-version: "1.17"
             tools-image: ghcr.io/elastic/harp/harp-tools:latest
             harp-image: harp-artifacts
-            fips-mode: 0
           # fips
           - golang-image: "goboring/golang"
             golang-version: "1.16.7b7"
             tools-image: ghcr.io/elastic/harp/harp-tools-fips:latest
             harp-image: harp-artifacts-fips
-            fips-mode: 1
     steps:
       -
         name: Check out the repo
@@ -61,14 +59,12 @@ jobs:
           echo "GOLANG_VERSION=$GOLANG_VERSION" >> $GITHUB_ENV
           echo "TOOL_IMAGE_NAME=$TOOL_IMAGE_NAME" >> $GITHUB_ENV
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
-          echo "HARP_BUILD_FIPS_MODE=$FIPS_MODE" >> $GITHUB_ENV
         env:
           DOCKERFILE_ONLY: 1
           GOLANG_IMAGE: ${{ matrix.golang-image }}
           GOLANG_VERSION: ${{ matrix.golang-version }}
           TOOL_IMAGE_NAME: ${{ matrix.tools-image }}
           RELEASE: ${{ github.event.inputs.release }}
-          FIPS_MODE: ${{ matrix.fips-mode }}
       -
         name: Generate Dockerfile
         uses: magefile/mage-action@v1
@@ -135,6 +131,7 @@ jobs:
           mkdir .dist
       -
         name: Extract artifacts from the docker image
+        id: extract
         uses: shrink/actions-docker-extract@v1
         with:
           image: ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}

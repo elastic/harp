@@ -21,11 +21,13 @@ jobs:
             golang-version: "1.17.5"
             goboring-version: ""
             tools-image: harp-tools
+            fips-mode: 0
           # fips
           - golang-image: "goboring/golang:1.16.7b7"
             golang-version: "1.17.5"
             goboring-version: "1.17.5b7"
             tools-image: harp-tools-fips
+            fips-mode: 1
     steps:
       -
         name: Check out the repo
@@ -57,6 +59,7 @@ jobs:
           echo "GOLANG_IMAGE=$GOLANG_IMAGE" >> $GITHUB_ENV
           echo "GOLANG_VERSION=$GOLANG_VERSION" >> $GITHUB_ENV
           echo "GOBORING_VERSION=$GOBORING_VERSION" >> $GITHUB_ENV
+          echo "FIPS_MODE=$FIPS_MODE" >> $GITHUB_ENV
           echo "DOCKER_IMAGE_NAME=$DOCKER_IMAGE_NAME" >> $GITHUB_ENV
         env:
           DOCKERFILE_ONLY: 1
@@ -64,6 +67,7 @@ jobs:
           GOLANG_VERSION: ${{ matrix.golang-version }}
           GOBORING_VERSION: ${{ matrix.goboring-version }}
           DOCKER_IMAGE_NAME: ${{ matrix.tools-image }}
+          FIPS_MODE: ${{ matrix.fips-mode}}
       -
         name: Generate Dockerfile
         uses: magefile/mage-action@v1
