@@ -112,13 +112,16 @@ jobs:
       -
         uses: sigstore/cosign-installer@main
       -
-        name: Sign image with a key
+        name: Sign image and add attestations
         run: |
           echo -n "${COSIGN_PASSWORD}" | \
           cosign sign --key <(echo -n "${COSIGN_KEY}") \
             -a "repo=${{ github.repository }}" \
             -a "workflow=${{ github.workflow }}" \
             -a "ref=${{ github.sha }}" \
+            ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
+          echo -n "${COSIGN_PASSWORD}" | \
+          cosign attest --type spdx --predicate ./sbom.spdx --key <(echo -n "${COSIGN_KEY}") \
             ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
           cosign attach sbom --sbom sbom.spdx ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
         env:

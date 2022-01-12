@@ -89,6 +89,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.release
+          pull: false
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}
@@ -99,6 +100,33 @@ jobs:
             GOLANG_IMAGE=${{ matrix.golang-image }}
             GOLANG_VERSION=${{ matrix.golang-version }}
             RELEASE=${{ github.event.inputs.release }}
+      -
+        name: Create SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ github.token }}
+          artifact-name: sbom.spdx
+          format: spdx
+      -
+        uses: sigstore/cosign-installer@main
+      -
+        name: Sign image and add attestations
+        run: |
+          echo -n "${COSIGN_PASSWORD}" | \
+          cosign sign --key <(echo -n "${COSIGN_KEY}") \
+            -a "repo=${{ github.repository }}" \
+            -a "workflow=${{ github.workflow }}" \
+            -a "ref=${{ github.sha }}" \
+            ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}
+          echo -n "${COSIGN_PASSWORD}" | \
+          cosign attest --type spdx --predicate ./sbom.spdx --key <(echo -n "${COSIGN_KEY}") \
+            ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}
+          cosign attach sbom --sbom sbom.spdx ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       -
         name: Move cache
         run: |
