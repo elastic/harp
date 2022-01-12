@@ -100,13 +100,13 @@ RUN upx --overlay=strip -9 * || true
 ## -------------------------------------------------------------------------------------------------
 
 # hadolint ignore=DL3007
-FROM alpine:latest
+FROM scratch
 
 # Arguments
 ARG BUILD_DATE={{.BuildDate}}
 ARG VERSION={{.Version}}
 ARG VCS_REF={{.VcsRef}}
-ARG RELEASE
+ARG RELEASE={{.Release}}
 
 # Metadata
 LABEL \
@@ -122,7 +122,7 @@ LABEL \
 
 WORKDIR /app
 
-COPY --from=compressor /app/* /app/
+COPY --from=compressor /app/* /
 `)
 
 // Release uses docker pipeline to generate all artifacts.
