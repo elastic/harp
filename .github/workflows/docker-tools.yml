@@ -101,6 +101,15 @@ jobs:
             GOLANG_IMAGE=${{ matrix.golang-image }}
             GOLANG_VERSION=${{ matrix.golang-version }}
       -
+        name: Create SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ github.token }}
+          artifact-name: sbom.spdx
+          format: spdx
+      -
         uses: sigstore/cosign-installer@main
       -
         name: Sign image with a key
@@ -111,7 +120,7 @@ jobs:
             -a "workflow=${{ github.workflow }}" \
             -a "ref=${{ github.sha }}" \
             ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
+          cosign attach sbom --sbom sbom.spdx ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
         env:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-
