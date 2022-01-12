@@ -123,7 +123,6 @@ jobs:
           echo -n "${COSIGN_PASSWORD}" | \
           cosign attest --type spdx --predicate sbom.spdx --key <(echo -n "${COSIGN_KEY}") \
             ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
-          cosign attach sbom --sbom sbom.spdx ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
         env:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
