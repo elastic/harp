@@ -70,7 +70,7 @@ LABEL \
 # Override goboring version
 RUN wget https://storage.googleapis.com/go-boringcrypto/go{{ .GoBoringVersion }}.linux-amd64.tar.gz \
     && rm -rf /usr/local/go && tar -C /usr/local -xzf go{{ .GoBoringVersion }}.linux-amd64.tar.gz \
-    rm go{{ .GoBoringVersion }}.linux-amd64.tar.gz
+    && rm go{{ .GoBoringVersion }}.linux-amd64.tar.gz
 {{ end }}
 
 # hadolint ignore=DL3008
