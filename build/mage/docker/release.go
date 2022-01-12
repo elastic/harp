@@ -156,6 +156,7 @@ func Release(cmd *artifact.Command) func() error {
 		}
 
 		buf, err := merge(dockerReleaseTemplate, map[string]interface{}{
+			"Name":          "Harp CLI Artifacts",
 			"ToolImageName": toolImageName,
 			"BuildDate":     time.Now().Format(time.RFC3339),
 			"Version":       git.Tag,
