@@ -81,7 +81,7 @@ jobs:
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/elastic/harp/${{ matrix.harp-image }}:$RELEASE
+            ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}
             ghcr.io/elastic/harp/${{ matrix.harp-image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
