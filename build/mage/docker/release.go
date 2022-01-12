@@ -46,11 +46,11 @@ ARG VCS_REF={{.VcsRef}}
 ARG TOOLS_IMAGE={{.ToolImageName}}
 ARG GOLANG_IMAGE={{.GolangImage}}
 ARG GOLANG_VERSION={{.GolangVersion}}
-ARG RELEASE
+ARG RELEASE={{.Release}}
 
 FROM $TOOLS_IMAGE as compiler
 
-ARG RELEASE
+ARG RELEASE={{.Release}}
 
 # Back to project root
 WORKDIR $GOPATH/src/workspace
@@ -77,6 +77,9 @@ RUN set -eux; \
 # Update vendor
 RUN set -eux; \
 	go mod vendor
+
+# Set the target release version
+ENV RELEASE=$RELEASE
 
 # Build final target
 RUN set -eux; \
@@ -145,6 +148,13 @@ func Release(cmd *artifact.Command) func() error {
 			toolImageName = os.Getenv("TOOL_IMAGE_NAME")
 		}
 
+		// Extract release
+		release := os.Getenv("RELEASE")
+		relVer, err := semver.Parse(release)
+		if err != nil {
+			return fmt.Errorf("invalid semver syntax for release: %w", err)
+		}
+
 		buf, err := merge(dockerReleaseTemplate, map[string]interface{}{
 			"ToolImageName": toolImageName,
 			"BuildDate":     time.Now().Format(time.RFC3339),
@@ -153,16 +163,10 @@ func Release(cmd *artifact.Command) func() error {
 			"GolangImage":   golangImage,
 			"GolangVersion": golangVersion,
 			"Cmd":           cmd,
+			"Release":       release,
 		})
 		if err != nil {
 			return err
-		}
-
-		// Extract release
-		release := os.Getenv("RELEASE")
-		relVer, err := semver.Parse(release)
-		if err != nil {
-			return fmt.Errorf("invalid semver syntax for release: %w", err)
 		}
 
 		// Check if we want to generate dockerfile output
@@ -171,13 +175,9 @@ func Release(cmd *artifact.Command) func() error {
 		}
 
 		// Prepare command
-		//nolint:gosec // expected behavior
 		c := exec.Command("docker", "build",
 			"-t", fmt.Sprintf("elastic/%s:artifacts-%s", cmd.Kebab(), relVer.String()),
 			"-f", "-",
-			"--build-arg", fmt.Sprintf("BUILD_DATE=%s", time.Now().Format(time.RFC3339)),
-			"--build-arg", fmt.Sprintf("VERSION=%s", git.Tag),
-			"--build-arg", fmt.Sprintf("VCS_REF=%s", git.Revision),
 			".",
 		)
 
