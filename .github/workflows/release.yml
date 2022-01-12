@@ -125,6 +125,11 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       -
         name: Prepare distribution
         run: |
@@ -134,7 +139,14 @@ jobs:
         id: extract
         uses: shrink/actions-docker-extract@v1
         with:
-          image: ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}
+          image: ghcr.io/elastic/harp/harp-artifacts:v${{ github.event.inputs.release }}
+          path: '/app/.'
+      -
+        name: Extract FIPS artifacts from the docker image
+        id: extract
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ghcr.io/elastic/harp/harp-artifacts-fips:v${{ github.event.inputs.release }}
           path: '/app/.'
       -
         name: Create checksum
@@ -148,7 +160,7 @@ jobs:
           cd ${{ steps.extract.outputs.destination }}
           echo -n "${COSIGN_PASSWORD}" | \
             cosign sign-blob --key <(echo -n "${COSIGN_KEY}") \
-              --output=harp-checksum.txt.sig \
+              --output-signature=harp-checksum.txt.sig \
               harp-checksum.txt
         env:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}

@@ -1,0 +1,54 @@
+name: Build GitHub release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release version'
+        required: true
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+      contents: write
+    steps:
+      -
+        name: Extract artifacts from the docker image
+        id: extract
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ghcr.io/elastic/harp/harp-artifacts:v${{ github.event.inputs.release }}
+          path: '/app/.'
+      -
+        name: Extract FIPS artifacts from the docker image
+        id: extract
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ghcr.io/elastic/harp/harp-artifacts-fips:v${{ github.event.inputs.release }}
+          path: '/app/.'
+      -
+        name: Create checksum
+        id: create-checksum
+        run: |
+          cd ${{ steps.extract.outputs.destination }}
+          sha512sum * > harp-checksum.txt
+      -
+        name: Sign the checksum
+        run: |
+          cd ${{ steps.extract.outputs.destination }}
+          echo -n "${COSIGN_PASSWORD}" | \
+            cosign sign-blob --key <(echo -n "${COSIGN_KEY}") \
+              --output-signature=harp-checksum.txt.sig \
+              harp-checksum.txt
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      -
+        name: Upload to release
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: '${{ steps.extract.outputs.destination }}/*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: cmd/harp/v${{ github.event.inputs.release }}
