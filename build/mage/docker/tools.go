@@ -51,9 +51,11 @@ ARG BUILD_DATE={{.BuildDate}}
 ARG VERSION={{.Version}}
 ARG VCS_REF={{.VcsRef}}
 
-# Builder argumentsgolang
+# Builder arguments
 ARG GOLANG_IMAGE={{.GolangImage}}
 ARG GOLANG_VERSION={{.GolangVersion}}
+ARG FIPS_MODE={{.FIPSMode}}
+ENV HARP_BUILD_FIPS_MODE=$FIPS_MODE
 
 LABEL \
     org.opencontainers.image.created=$BUILD_DATE \
@@ -160,6 +162,10 @@ func Tools() error {
 		goBoringVersion = os.Getenv("GOBORING_VERSION")
 		overrideGoBoringVersion = true
 	}
+	fipsMode := "0"
+	if os.Getenv("FIPS_MODE") == "1" {
+		fipsMode = os.Getenv("FIPS_MODE")
+	}
 
 	buf, err := merge(dockerToolTemplate, map[string]interface{}{
 		"BuildDate":               time.Now().Format(time.RFC3339),
@@ -169,6 +175,7 @@ func Tools() error {
 		"GolangVersion":           golangVersion,
 		"OverrideGoBoringVersion": overrideGoBoringVersion,
 		"GoBoringVersion":         goBoringVersion,
+		"FIPSMode":                fipsMode,
 	})
 	if err != nil {
 		return err
