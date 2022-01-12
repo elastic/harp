@@ -129,3 +129,43 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      -
+        name: Prepare distribution
+        run: |
+          mkdir .dist
+      -
+        name: Extract artifacts from the docker image
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ghcr.io/elastic/harp/${{ matrix.harp-image }}:v${{ github.event.inputs.release }}
+          path: '/app/.'
+      -
+        name: Create archives
+        id: create-archives
+        run: |
+          cd ${{ steps.extract.outputs.destination }}
+          find . -maxdepth 1 -mindepth 1 -type f -exec tar czvf --remove-files {}.tar.gz {} \;
+      -
+        name: Create checksum
+        id: create-checksum
+        run: |
+          cd ${{ steps.extract.outputs.destination }}
+          sha512sum *.tar.gz > harp-checksum.txt
+      -
+        name: Sign the checksum
+        run: |
+          cd ${{ steps.extract.outputs.destination }}
+          echo -n "${COSIGN_PASSWORD}" | \
+            cosign sign-blob --key <(echo -n "${COSIGN_KEY}") \
+              --output=harp-checksum.txt.sig \
+              harp-checksum.txt
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      -
+        name: Upload Dist
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{ steps.extract.outputs.destination }}
+          name: harp-v${{ github.event.inputs.release }}
+

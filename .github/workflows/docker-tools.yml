@@ -49,8 +49,6 @@ jobs:
           key: ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}-${{ matrix.golang-version }}
           restore-keys: |
             ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}-${{ matrix.golang-version }}
-            ${{ runner.os }}-buildx-dev-${{ matrix.golang-image }}
-            ${{ runner.os }}-buildx-dev
       -
         name: Set Dockerfile settings
         run: |
