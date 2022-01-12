@@ -32,9 +32,9 @@ jobs:
         name: Assemble a package
         run: |
           mkdir .dist
+          cp ${{ steps.extract-std.outputs.destination }}/* .dist/
+          cp ${{ steps.extract-fips.outputs.destination }}/* .dist/
           cd .dist
-          cp ${{ steps.extract-std.outputs.destination }}/* .
-          cp ${{ steps.extract-fips.outputs.destination }}/* .
           find . -maxdepth 1 -mindepth 1 -type f -exec tar czvf {}.tar.gz {} --remove-files \;
       -
         name: Create checksum
