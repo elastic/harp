@@ -43,6 +43,8 @@ jobs:
           cd .dist
           sha512sum * > checksum.txt
       -
+        uses: sigstore/cosign-installer@main
+      -
         name: Sign the checksum
         run: |
           cd .dist
