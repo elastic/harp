@@ -100,7 +100,7 @@ RUN upx --overlay=strip -9 * || true
 ## -------------------------------------------------------------------------------------------------
 
 # hadolint ignore=DL3007
-FROM scratch
+FROM alpine:latest
 
 # Arguments
 ARG BUILD_DATE={{.BuildDate}}
