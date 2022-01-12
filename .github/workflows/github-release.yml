@@ -20,14 +20,14 @@ jobs:
         uses: shrink/actions-docker-extract@v1
         with:
           image: ghcr.io/elastic/harp/harp-artifacts:v${{ github.event.inputs.release }}
-          path: '/.'
+          path: '/app/.'
       -
         name: Extract FIPS artifacts from the docker image
         id: extract-fips
         uses: shrink/actions-docker-extract@v1
         with:
           image: ghcr.io/elastic/harp/harp-artifacts-fips:v${{ github.event.inputs.release }}
-          path: '/.'
+          path: '/app/.'
       -
         name: Assemble a package
         run: |

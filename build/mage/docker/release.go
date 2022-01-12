@@ -122,7 +122,7 @@ LABEL \
 
 WORKDIR /app
 
-COPY --from=compressor /app/* /
+COPY --from=compressor /app/* /app/
 `)
 
 // Release uses docker pipeline to generate all artifacts.
