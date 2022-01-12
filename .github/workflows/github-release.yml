@@ -30,7 +30,7 @@ jobs:
           path: '/app/.'
       -
         name: Assemble a package
-        run:
+        run: |
           mkdir .dist
           cd .dist
           cp ${{ steps.extract-std.outputs.destination }}/* .
