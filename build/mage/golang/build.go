@@ -145,8 +145,6 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 			strCompilationFlags = strings.Join(compilationFlags, ",")
 		}
 
-		fmt.Fprintf(os.Stdout, " > Building %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
-
 		// Inject version information
 		varsSetByLinker := map[string]string{
 			"github.com/elastic/harp/build/version.Name":      name,
@@ -187,6 +185,16 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 			filename = fmt.Sprintf("%s.exe", filename)
 		}
 
+		fmt.Fprintf(os.Stdout, " > Generating SBOM %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
+
+		// Generate SBOM
+		if err := sh.RunWith(env, "cyclonedx-gomod", "app", "-json", "-output", fmt.Sprintf("%s.sbom.json", filename), "-files", "-licenses", "-main", fmt.Sprintf("cmd/%s", defaultOpts.binaryName), "-packages"); err != nil {
+			return fmt.Errorf("unable to generate SBOM for artifact: %w", err)
+		}
+
+		fmt.Fprintf(os.Stdout, " > Building %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
+
+		// Compile
 		return sh.RunWith(env, "go", "build", buildMode, buildTags, "-trimpath", "-mod=readonly", "-ldflags", ldflagsValue, "-o", filename, packageName)
 	}
 }
