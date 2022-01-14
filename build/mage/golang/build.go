@@ -18,6 +18,7 @@
 package golang
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -177,6 +178,13 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 		}
 		if defaultOpts.goArm != "" {
 			env["GOARM"] = defaultOpts.goArm
+		}
+
+		// Create output directory
+		if errMkDir := os.Mkdir("bin", 0o744); errMkDir != nil {
+			if !errors.Is(errMkDir, os.ErrExist) {
+				return fmt.Errorf("unable to create output directory: %w", errMkDir)
+			}
 		}
 
 		// Generate output filename
