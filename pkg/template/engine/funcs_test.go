@@ -106,6 +106,10 @@ func TestFuncs(t *testing.T) {
 		tpl:    `{{ unquote . }}`,
 		expect: `{"channel":"buu","name":"john", "msg":"doe"}`,
 		vars:   `"{\"channel\":\"buu\",\"name\":\"john\", \"msg\":\"doe\"}"`,
+	}, {
+		tpl:    `{{ parseJwt . }}`,
+		expect: `{[{ <nil> HS256  [] map[typ:JWT]}] map[iat:1.516239022e+09 name:John Doe sub:1234567890]}`,
+		vars:   `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`,
 	}}
 
 	for _, tt := range tests {

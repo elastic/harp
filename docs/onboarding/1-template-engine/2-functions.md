@@ -487,6 +487,35 @@ Decrypt input encoded as JWE.
 {{ decryptJwe $passphrase $encrypted }}
 ```
 
+#### parseJwt
+
+Extract claims _WITHOUT_ signature validation.
+
+```ruby
+{{ $token = "..." }}
+# Parse the JWT
+{{ $t := parseJwt $token }}
+# Access token claims
+{{ $t.Claims | toJson }}
+# Access token headers
+{{ $t.Headers | toJson }}
+```
+
+#### verifyJwt
+
+Extract claims _WITH_ signature validation.
+
+```ruby
+{{ $token = "..." }}
+{{ $key = "..." }}
+# Parse the JWT
+{{ $t := verifyJwt $token $key.Public }}
+# Access token claims
+{{ $t.Claims | toJson }}
+# Access token headers
+{{ $t.Headers | toJson }}
+```
+
 #### toSSH
 
 Encode the given key for OpenSSH usages.

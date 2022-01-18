@@ -19,6 +19,7 @@ package engine
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"net/url"
 	"strconv"
@@ -74,6 +75,11 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 		"encryptJwe": crypto.EncryptJWE,
 		"decryptJwe": crypto.DecryptJWE,
 		"toJws":      crypto.ToJWS,
+		"parseJwt":   crypto.ParseJWT,
+		"verifyJwt":  crypto.VerifyJWT,
+		// Hex
+		"hexenc": hex.EncodeToString,
+		"hexdec": hex.DecodeString,
 		// Bech32
 		"bech32enc": bech32.Encode,
 		"bech32dec": crypto.Bech32Decode,

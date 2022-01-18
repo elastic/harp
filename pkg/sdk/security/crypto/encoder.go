@@ -36,6 +36,7 @@ import (
 	_ "golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/ssh"
 	jose "gopkg.in/square/go-jose.v2"
+	"gopkg.in/square/go-jose.v2/jwt"
 
 	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
@@ -344,6 +345,51 @@ func ToJWS(payload, privkey interface{}) (string, error) {
 
 	// No error
 	return serialize, nil
+}
+
+// ParseJWT unpack a JWT without signature verification.
+func ParseJWT(token string) (interface{}, error) {
+	// Parse token
+	t, err := jwt.ParseSigned(token)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse input token: %w", err)
+	}
+
+	// Extract claims without verification
+	var claims map[string]interface{}
+	if err := t.UnsafeClaimsWithoutVerification(&claims); err != nil {
+		return nil, fmt.Errorf("unable to extract claims from token: %w", err)
+	}
+
+	return struct {
+		Headers []jose.Header
+		Claims  map[string]interface{}
+	}{
+		Headers: t.Headers,
+		Claims:  claims,
+	}, nil
+}
+
+func VerifyJWT(token string, key interface{}) (interface{}, error) {
+	// Parse token
+	t, err := jwt.ParseSigned(token)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse input token: %w", err)
+	}
+
+	// Extract claims without verification
+	var claims map[string]interface{}
+	if err := t.Claims(key, &claims); err != nil {
+		return nil, fmt.Errorf("unable to extract claims from token: %w", err)
+	}
+
+	return struct {
+		Headers []jose.Header
+		Claims  map[string]interface{}
+	}{
+		Headers: t.Headers,
+		Claims:  claims,
+	}, nil
 }
 
 // Bech32Decode decodes given bech32 encoded string.
