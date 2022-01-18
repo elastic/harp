@@ -2,6 +2,9 @@ module github.com/elastic/harp/tools
 
 go 1.17
 
+// Repository renamed
+replace github.com/denis-tingajkin/go-header => github.com/denis-tingaikin/go-header v0.4.2
+
 require (
 	github.com/CycloneDX/cyclonedx-gomod v1.1.0
 	github.com/daixiang0/gci v0.2.9
