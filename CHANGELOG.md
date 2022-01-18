@@ -8,6 +8,11 @@ FEATURES:
   * `parseJwt` to parse JWT without signature validation
   * `verifyJwt` to parse a JWT with signature validation
 
+DIST:
+
+* sdk/tools:
+  * Replace `go-header` dependency by `github.com/denis-tingaikin/go-header` to prevent a possible identity spoofing. [#96](https://github.com/elastic/harp/pull/96)
+
 ## 0.2.4
 
 ### 2022-01-14
