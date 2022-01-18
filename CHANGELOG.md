@@ -1,6 +1,21 @@
-## 0.2.4
+## 0.2.5
 
 ## Not released yet
+
+FEATURES:
+
+* template/engine [#95](https://github.com/elastic/harp/pull/95)
+  * `parseJwt` to parse JWT without signature validation
+  * `verifyJwt` to parse a JWT with signature validation
+
+## 0.2.4
+
+### 2022-01-14
+
+DIST:
+
+* Github actions release automation
+* go: Build with Golang 1.17.6.
 
 ## 0.2.3
 
