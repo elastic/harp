@@ -18,6 +18,7 @@
 package engine
 
 import (
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -28,6 +29,7 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/alessio/shellescape"
+	"go.step.sm/crypto/pemutil"
 
 	"github.com/elastic/harp/pkg/sdk/security/crypto"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
@@ -63,8 +65,6 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 		// Crypto
 		"toJwk":      crypto.ToJWK,
 		"fromJwk":    crypto.FromJWK,
-		"toPem":      crypto.ToPEM,
-		"encryptPem": crypto.EncryptPEM,
 		"toSSH":      crypto.ToSSH,
 		"cryptoKey":  crypto.Key,
 		"cryptoPair": crypto.Keypair,
@@ -110,6 +110,19 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 			return out, nil
 		},
 		"unquote": strconv.Unquote,
+		// PEM
+		"toPem":      crypto.ToPEM,
+		"encryptPem": crypto.EncryptPEM,
+		"parsePemCertificate": func(pemData string) (*x509.Certificate, error) {
+			return pemutil.ParseCertificate([]byte(pemData))
+		},
+		"parsePemCertificateBundle": func(pemData string) ([]*x509.Certificate, error) {
+			return pemutil.ParseCertificateBundle([]byte(pemData))
+		},
+		"parsePemCertificateRequest": func(pemData string) (*x509.CertificateRequest, error) {
+			return pemutil.ParseCertificateRequest([]byte(pemData))
+		},
+		"toTLSA": crypto.ToTLSA,
 	}
 
 	for k, v := range extra {
