@@ -23,8 +23,12 @@ import (
 	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/sha512"
 	"crypto/x509"
+	"encoding/asn1"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -406,4 +410,41 @@ func Bech32Decode(in string) (interface{}, error) {
 		Hrp:  hrp,
 		Data: data,
 	}, nil
+}
+
+// ToTLSA encodes the given certificate using TLSA encoding strategy.
+// selector 0 - Raw / 1 - Public Key
+// mtype 0 - Raw / 1 - SHA256 / 2 - SHA512
+func ToTLSA(selector, mtype uint8, cert *x509.Certificate) (string, error) {
+	var (
+		preimage asn1.RawContent
+		output   []byte
+		tmp256   [32]byte
+		tmp512   [64]byte
+	)
+
+	switch selector {
+	case 0:
+		preimage = cert.Raw
+	case 1:
+		preimage = cert.RawSubjectPublicKeyInfo
+	default:
+		return "", fmt.Errorf("unknown TLSA selector: %d", selector)
+	}
+
+	switch mtype {
+	case 0:
+		output = preimage
+	case 1:
+		tmp256 = sha256.Sum256(preimage)
+		output = tmp256[:]
+	case 2:
+		tmp512 = sha512.Sum512(preimage)
+		output = tmp512[:]
+	default:
+		return "", fmt.Errorf("unknown TLSA matching type: %d", mtype)
+	}
+
+	// No error
+	return hex.EncodeToString(output), nil
 }
