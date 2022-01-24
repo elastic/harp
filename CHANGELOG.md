@@ -7,6 +7,11 @@ FEATURES:
 * template/engine [#95](https://github.com/elastic/harp/pull/95)
   * `parseJwt` to parse JWT without signature validation
   * `verifyJwt` to parse a JWT with signature validation
+* template/engine [#97](https://github.com/elastic/harp/pull/97)
+  * `parsePemCertificate` to decode a PEM content as a certificate
+  * `parsePemCertificateBundle` to decode a PEM content as a collection of certificates
+  * `parsePemCertificateRequest`to decode a PEM content as a certificate request
+  * `toTLSA` to generate a TLSA-DANE fingerprint from a given certificate
 
 DIST:
 
