@@ -1,0 +1,9 @@
+{{ $cert := parsePemCertificate (.Values.cert) -}}
+;subject = {{ $cert.Subject.ToRDNSequence }}
+;issuer = {{ $cert.Issuer.ToRDNSequence }}
+;notBefore = {{ $cert.NotBefore }}
+;notAfter = {{ $cert.NotAfter }}
+;
+_dane.example.com. IN TLSA 2 1 1 {{ toTLSA 1 1 $cert | upper }}
+_25._tcp.smtp.example.com. IN CNAME _dane.example.com.
+_587._tcp.smtp.example.com. IN CNAME _dane.example.com.

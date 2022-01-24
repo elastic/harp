@@ -1,7 +1,46 @@
 # Functions
 
-You can find all implemented functions in the external library import nammed
+You can find all implemented functions in the external library import named
 [`sprig`](http://masterminds.github.io/sprig/).
+
+- [Functions](#functions)
+  - [Builtin](#builtin)
+    - [Encoders](#encoders)
+      - [b64urlenc / b64urldec](#b64urlenc--b64urldec)
+      - [bech32enc / bech32dec](#bech32enc--bech32dec)
+      - [shellescape](#shellescape)
+      - [urlPathEscape / urlPathUnescape](#urlpathescape--urlpathunescape)
+      - [urlQueryEscape / urlQueryUnescape](#urlqueryescape--urlqueryunescape)
+      - [jsonEscape / jsonUnescape](#jsonescape--jsonunescape)
+    - [Secret loader](#secret-loader)
+      - [secret](#secret)
+    - [Password](#password)
+      - [customPassword](#custompassword)
+      - [paranoidPassword](#paranoidpassword)
+      - [noSymbolPassword](#nosymbolpassword)
+      - [strongPassword](#strongpassword)
+    - [Passphrase](#passphrase)
+      - [customDiceware](#customdiceware)
+      - [basicDiceware](#basicdiceware)
+      - [strongDiceware](#strongdiceware)
+      - [paranoidDiceware](#paranoiddiceware)
+    - [Crypto](#crypto)
+      - [cryptoKey](#cryptokey)
+      - [cryptoPair](#cryptopair)
+      - [toJwk](#tojwk)
+      - [fromJwk](#fromjwk)
+      - [toPem](#topem)
+      - [encryptPem](#encryptpem)
+      - [encryptJwe](#encryptjwe)
+      - [decryptJwe](#decryptjwe)
+      - [parseJwt](#parsejwt)
+      - [verifyJwt](#verifyjwt)
+      - [toSSH](#tossh)
+      - [toJws](#tojws)
+      - [parsePemCertificate](#parsepemcertificate)
+      - [parsePemCertificateBundle](#parsepemcertificatebundle)
+      - [parsePemCertificateRequest](#parsepemcertificaterequest)
+      - [toTLSA](#totlsa)
 
 ## Builtin
 
@@ -555,6 +594,51 @@ Create a JWT.
 {{ $key := cryptoPair "ec" }}
 {{ $claims := fromJson "{\"sub\":\"test\"}" }}
 {{ toJws $claims $key.Private }}
+```
+
+#### parsePemCertificate
+
+Read a PEM encoded string and decode as `*x509.Certificate` - https://pkg.go.dev/crypto/x509#Certificate.
+
+```ruby
+{{ $cert := parsePemCertificate .Values.cert }}
+{{ $cert.Issuer.ToRDNSequence }}
+{{ $cert.NotBefore }}
+```
+
+#### parsePemCertificateBundle
+
+Read all PEM encoded string and decode as a collection of `*x509.Certificate` - https://pkg.go.dev/crypto/x509#Certificate.
+
+```ruby
+{{ $certs := parsePemCertificateBundle .Values.certs }}
+{{ range $i, $cert := $certs }}
+{{ $cert.Issuer.ToRDNSequence }}
+{{ $cert.NotBefore }}
+{{ end }}
+```
+
+#### parsePemCertificateRequest
+
+Read a PEM encoded string and decode as a collection of `*x509.CertificateRequest` - https://pkg.go.dev/crypto/x509#CertificateRequest.
+
+```ruby
+{{ $csr := parsePemCertificateRequest .Values.csr }}
+{{ $csr.PublicKey | toJwk }}
+```
+
+#### toTLSA
+
+> toTLSA(selector uint8, mtype uint8, cert *x509.Certificate) (string, error)
+
+* `selector` => 0 - Raw / 1 - Public key only
+* `mtype`=> 0 - Raw / 1 - SHA256 / 2 - SHA512
+
+Encode the given `*x509.Certificate` for [DANE-TLSA](https://datatracker.ietf.org/doc/html/rfc6698) validation.
+
+```ruby
+{{ $cert := parsePemCertificate .Values.cert }}
+_dane.example.com. IN TLSA 2 1 1 {{ toTLSA 1 1 $cert | upper }}
 ```
 
 ---
