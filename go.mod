@@ -34,6 +34,7 @@ require (
 	github.com/golang/snappy v0.0.4
 	github.com/google/cel-go v0.9.0
 	github.com/google/go-cmp v0.5.6
+	github.com/google/go-github/v42 v42.0.0
 	github.com/google/gofuzz v1.2.0
 	github.com/google/gops v0.3.22
 	github.com/gosimple/slug v1.11.2
@@ -66,6 +67,7 @@ require (
 	go.step.sm/crypto v0.13.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
+	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210915083310-ed5796bab164
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
@@ -103,6 +105,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
@@ -159,6 +162,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

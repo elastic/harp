@@ -10,7 +10,7 @@ harp transform sign [flags]
 
 ```
       --detached        Returns the signature only
-      --deterministic   Use determisitic signature algorithm variant (if available)
+      --deterministic   Use deterministic signature algorithm variant (if key permits)
   -h, --help            help for sign
       --in string       Input path ('-' for stdin or filename) (default "-")
       --key string      Transformer key
