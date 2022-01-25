@@ -4,6 +4,10 @@
 
 FEATURES:
 
+* api/proto:
+  * `BundlePatch` : `PatchOperation` object supports `replaceKeys` used to replace a key in the secret data
+* cmd/to:
+  * `github-actions`secret exporter has been implemented to export all the filtered secret of a bundle as GitHub Repository Secrets.
 * template/engine [#95](https://github.com/elastic/harp/pull/95)
   * `parseJwt` to parse JWT without signature validation
   * `verifyJwt` to parse a JWT with signature validation
