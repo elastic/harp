@@ -1,0 +1,16 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "gha-secret-remapping"
+  description: "Prepare secrets to be pushed to GHA"
+spec:
+  rules:
+  - selector:
+      matchPath:
+        strict: product/harp/v1.0.0/artifacts/attestations/cosign/private_key
+    package:
+      data:
+        kv:
+          replaceKeys:
+            "key": "COSIGN_PRIVATE_KEY"
+            "password": "COSIGN_PRIVATE_KEY_PASSWORD"

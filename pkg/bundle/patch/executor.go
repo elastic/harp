@@ -302,8 +302,39 @@ func applySecretKVPatch(kv []*bundlev1.KV, op *bundlev1.PatchOperation, values m
 		}
 	}
 
+	// Replace secrets
+	if op.ReplaceKeys != nil {
+		inMap, err := precompileMap(op.ReplaceKeys, values)
+		if err != nil {
+			return nil, fmt.Errorf("unable to compile replaceKeys map templates: %w", err)
+		}
+
+		// Replace keys
+		out = replaceSecret(kv, inMap)
+	}
+
 	// No error
 	return out, nil
+}
+
+func replaceSecret(input []*bundlev1.KV, replaceMap map[string]string) []*bundlev1.KV {
+	for i, s := range input {
+		// Ignore nil
+		if s == nil {
+			continue
+		}
+
+		// Check if the key should be replaced
+		if newKey, ok := replaceMap[s.Key]; ok {
+			s.Key = newKey
+		}
+
+		// Update the reference
+		input[i] = s
+	}
+
+	//
+	return input
 }
 
 func removeSecret(input []*bundlev1.KV, removeList []string) []*bundlev1.KV {
@@ -440,10 +471,22 @@ func applyMapOperations(input map[string]string, op *bundlev1.PatchOperation, va
 	if op.Update != nil {
 		inMap, err := precompileMap(op.Update, values)
 		if err != nil {
-			return fmt.Errorf("unable to compile add map templates: %w", err)
+			return fmt.Errorf("unable to compile update map templates: %w", err)
 		}
 		if err := mergo.Merge(&input, inMap, mergo.WithOverride); err != nil {
 			return fmt.Errorf("unable to add attributes to object: %w", err)
+		}
+	}
+	if op.ReplaceKeys != nil {
+		inMap, err := precompileMap(op.ReplaceKeys, values)
+		if err != nil {
+			return fmt.Errorf("unable to compile replaceKeys map templates: %w", err)
+		}
+		for oldKey, newKey := range inMap {
+			if v, ok := input[oldKey]; ok {
+				input[newKey] = v
+				delete(input, oldKey)
+			}
 		}
 	}
 

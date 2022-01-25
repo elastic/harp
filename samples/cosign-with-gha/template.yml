@@ -1,0 +1,3 @@
+product/harp/v1.0.0/artifacts/attestations/cosign/private_key/key: {{ .Files.Get "cosign.key" | toYaml }}
+product/harp/v1.0.0/artifacts/attestations/cosign/private_key/password: {{ .Files.Get "password" | toYaml }}
+product/harp/v1.0.0/artifacts/attestations/cosign/public_key/key: {{ .Files.Get "cosign.pub" | toYaml }}

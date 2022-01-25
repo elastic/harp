@@ -36,6 +36,7 @@ var toCmd = func() *cobra.Command {
 	cmd.AddCommand(toEtcd3Cmd())
 	cmd.AddCommand(toConsulCmd())
 	cmd.AddCommand(toZookeeperCmd())
+	cmd.AddCommand(toGithubActionCmd())
 
 	return cmd
 }
