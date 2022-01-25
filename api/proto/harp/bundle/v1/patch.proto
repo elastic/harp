@@ -128,4 +128,7 @@ message PatchOperation {
   // Update case-sensitive existing key from related data map.
   // Key and Value can be templatized.
   map<string,string> update = 3;
+  // Replace case-sensitive existing key using the associated value.
+  // Value can be templatized.
+  map<string,string> replaceKeys = 4;
 }
