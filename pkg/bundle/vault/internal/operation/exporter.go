@@ -35,6 +35,7 @@ import (
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/secret"
 	"github.com/elastic/harp/pkg/sdk/log"
+	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/vault/kv"
 	vaultPath "github.com/elastic/harp/pkg/vault/path"
 )
@@ -192,11 +193,16 @@ func (op *exporter) Run(ctx context.Context) error {
 							pack.Secrets.Version = uint32(version)
 						}
 					case "custom_metadata":
+						// Check nil
+						if types.IsNil(v) {
+							continue
+						}
+
 						// Copy as metadata
 						customMap, ok := v.(map[string]interface{})
 						if ok {
-							for k, v := range customMap {
-								metadata[k] = v.(string)
+							for metaKey, metaValue := range customMap {
+								metadata[metaKey] = metaValue.(string)
 							}
 						} else {
 							log.For(gReaderCtx).Warn("unable to unpack secret custom metadata, invalid type.", zap.Any("value", v))
