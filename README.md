@@ -6,7 +6,6 @@
 
 - [Harp](#harp)
   - [TL;DR.](#tldr)
-  - [Visual overview](#visual-overview)
   - [Why harp?](#why-harp)
   - [Use cases](#use-cases)
   - [How does it work?](#how-does-it-work)
@@ -40,27 +39,26 @@ and confidentiality in the Hellenistic religion. - [Wikipedia](https://en.wikipe
 
 ## TL;DR.
 
-Harp is a tool set to handle secret data in a `reproducible` way by providing a
-way to describe how your value is technically managed and `consistently`
-associated to a `predictable` secret path with additional metadata (ownership,
-rotation period, leak severity, etc.).
+Harp is a tool set to operate secret management by contract. The objective is
+to reduce the value centric management by handling secret data in a
+`reproducible` way by providing a technical stack to describe how your value is
+managed by contracts and pipelines. Furthermore, we know that `naming thing is hard`,
+as a consequence a secret could be `consistently` associated to a `predictable`
+secret identifier used as a key to refer to the secret value. Finally, the secret
+can hold additional metadata (ownership, rotation period, leak severity, etc.)
+which can be consumed during the pipeline executions.
 
-These values (path ⇒ value) form a `Bundle` stored in an immutable file named a
-`Container`. This `Container` acts as a pivot format to allow Harp commands to
-communicate and create data management pipelines.
+These key/value associations (path ⇒ value) form a `Bundle` stored in an
+immutable file named a `Container`. This `Container` acts as a pivot format to
+allow Harp commands to communicate and create data management pipelines.
 
 In addition to that, it provides a `template engine` used to generate various
-confidence values (password, passphrase, crypto keys, etc.) but also as a secret
-consumer, it merges value placeholders from a file content to render a final
-configuration file.
+confidence values (password, passphrase, crypto keys, etc.) and allow more
+sophisticated rendering operations (configuration files, etc.).
 
 Finally, it provides a `SDK` to allow developers to integrate `Harp` features
 in their products, and/or extend the Harp pipeline features by creating new
 [plugins](#plugins).
-
-## Visual overview
-
-![Harp flow](docs/harp/img/HARP_FLOW.png)
 
 ## Why harp?
 
