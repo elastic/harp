@@ -6,6 +6,7 @@
 
 - [Harp](#harp)
   - [TL;DR.](#tldr)
+  - [Visual overview](#visual-overview)
   - [Why harp?](#why-harp)
   - [Use cases](#use-cases)
   - [How does it work?](#how-does-it-work)
@@ -56,6 +57,10 @@ configuration file.
 Finally, it provides a `SDK` to allow developers to integrate `Harp` features
 in their products, and/or extend the Harp pipeline features by creating new
 [plugins](#plugins).
+
+## Visual overview
+
+![Harp flow](docs/harp/img/HARP_FLOW.png)
 
 ## Why harp?
 
