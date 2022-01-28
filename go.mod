@@ -18,7 +18,6 @@ require (
 	github.com/alessio/shellescape v1.4.1
 	github.com/awnumar/memguard v0.22.2
 	github.com/basgys/goxml2json v1.1.0
-	github.com/blang/semver/v4 v4.0.0
 	github.com/cloudflare/tableflip v1.2.2
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
@@ -60,7 +59,6 @@ require (
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
-	github.com/ugorji/go/codec v1.2.6
 	github.com/zclconf/go-cty v1.10.0
 	gitlab.com/NebulousLabs/merkletree v0.0.0-20200118113624-07fbf710afc4
 	go.etcd.io/etcd/client/v3 v3.5.1

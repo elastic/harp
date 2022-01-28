@@ -57,7 +57,7 @@ func runCSOParse(cmd *cobra.Command, args []string) {
 	defer cancel()
 
 	// Validate and pack secret path first
-	s, err := csov1.Pack(csoParsePath, nil)
+	s, err := csov1.Pack(csoParsePath)
 	if err != nil {
 		log.For(ctx).Fatal("unable to validate given path as a compliant CSO path", zap.Error(err), zap.String("path", csoParsePath))
 	}

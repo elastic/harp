@@ -21,19 +21,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ugorji/go/codec"
-
 	csov1 "github.com/elastic/harp/api/gen/go/cso/v1"
 )
-
-var msgPackHandler = func() codec.Handle { h := &codec.MsgpackHandle{}; h.WriteExt = true; return h }
 
 type ringPacker func([]string) *csov1.Secret
 
 var packMap = map[string]ringPacker{ringMeta: packMeta, ringInfra: packInfra, ringPlatform: packPlatform, ringProduct: packProduct, ringApp: packApplication, ringArtifact: packArtifact}
 
-// Pack a secret path and value to a protobuf object.
-func Pack(secretPath string, value interface{}) (*csov1.Secret, error) {
+// Pack a secret path to a protobuf object.
+func Pack(secretPath string) (*csov1.Secret, error) {
 	// Validate secret path first
 	if err := Validate(secretPath); err != nil {
 		return nil, fmt.Errorf("unable to pack cso secret: %w", err)
@@ -53,18 +49,6 @@ func Pack(secretPath string, value interface{}) (*csov1.Secret, error) {
 
 	// Call ring packer
 	res := rp(parts)
-
-	// Pack the value
-	var payload []byte
-	if err := codec.NewEncoderBytes(&payload, msgPackHandler()).Encode(value); err != nil {
-		return nil, fmt.Errorf("unable to pack secret value: %w", err)
-	}
-
-	// Add the msgpack encoded value to the protobuf
-	res.Value = &csov1.Value{
-		Type: fmt.Sprintf("%T", value),
-		Body: payload,
-	}
 
 	// No error
 	return res, nil
