@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	semver "github.com/blang/semver/v4"
+	semver "github.com/Masterminds/semver/v3"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 
@@ -425,7 +425,7 @@ func validateSemVer(version string) error {
 	version = strings.TrimPrefix(strings.TrimSpace(strings.ToLower(version)), "v")
 
 	// check version as a semver compliant version
-	_, err := semver.Make(version)
+	_, err := semver.NewVersion(version)
 	if err != nil {
 		return fmt.Errorf("version '%s' has not a valid semver syntax: %w", version, err)
 	}

@@ -25,7 +25,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/blang/semver/v4"
+	semver "github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	exec "golang.org/x/sys/execabs"
@@ -138,7 +138,7 @@ func Release(cmd *artifact.Command) func() error {
 
 		// Extract release
 		release := os.Getenv("RELEASE")
-		relVer, err := semver.Parse(release)
+		relVer, err := semver.StrictNewVersion(release)
 		if err != nil {
 			return fmt.Errorf("invalid semver syntax for release: %w", err)
 		}

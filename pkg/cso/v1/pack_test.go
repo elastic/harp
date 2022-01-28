@@ -188,7 +188,7 @@ func TestCso_Pack(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			got, err := Pack(tC.path, tC.value)
+			got, err := Pack(tC.path)
 			if (err != nil) != tC.wantErr {
 				t.Errorf("error: got %v, but not error expected", err)
 			}

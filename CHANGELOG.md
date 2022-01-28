@@ -1,13 +1,17 @@
-## 0.2.5
+## 0.2.6
 
 ## Not released yet
+
+## 0.2.5
+
+## 2022-01-28
 
 FEATURES:
 
 * api/proto:
   * `BundlePatch` : `PatchOperation` object supports `replaceKeys` used to replace a key in the secret data
 * cmd/to:
-  * `github-actions`secret exporter has been implemented to export all the filtered secret of a bundle as GitHub Repository Secrets.
+  * `github-actions` secret exporter has been implemented to export all the filtered secret of a bundle as GitHub Repository Secrets.
 * template/engine [#95](https://github.com/elastic/harp/pull/95)
   * `parseJwt` to parse JWT without signature validation
   * `verifyJwt` to parse a JWT with signature validation
@@ -17,10 +21,28 @@ FEATURES:
   * `parsePemCertificateRequest`to decode a PEM content as a certificate request
   * `toTLSA` to generate a TLSA-DANE fingerprint from a given certificate
 
-DIST:
+CHANGES:
+
+* sdk/dep: [#100](https://github.com/elastic/harp/pull/100)
+  * github.com/fernet/fernet-go v0.0.0-20211208181803-9f70042a33ee
+  * github.com/gosimple/slug v1.12.0
+  * github.com/hashicorp/consul/api v1.12.0
+  * github.com/hashicorp/vault/api v1.30.1
+  * github.com/magefile/mage v1.12.1
+  * github.com/spf13/afero v1.8.0
+  * github.com/spf13/cobra v1.3.0
+  * github.com/spf13/viper v1.10.1
+  * go.step.sm/crypto v0.15.0
+  * go.uber.org/zap v1.20.0
+  * golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
+  * golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
+  * golang.org/x/sys v0.0.0-20211210111614-af8b64212486
+  * google.golang.org/genproto v0.0.0-20220126215142-9970aeb2e350
+  * google.golang.org/grpc v1.44.0
 
 * sdk/tools:
   * Replace `go-header` dependency by `github.com/denis-tingaikin/go-header` to prevent a possible identity spoofing. [#96](https://github.com/elastic/harp/pull/96)
+  * github.com/golangci/golangci-lint v1.44.0
 
 ## 0.2.4
 
