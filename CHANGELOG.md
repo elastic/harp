@@ -44,6 +44,10 @@ CHANGES:
   * Replace `go-header` dependency by `github.com/denis-tingaikin/go-header` to prevent a possible identity spoofing. [#96](https://github.com/elastic/harp/pull/96)
   * github.com/golangci/golangci-lint v1.44.0
 
+DIST:
+
+* go-boring: Build with Golang 1.17.6.
+
 ## 0.2.4
 
 ### 2022-01-14
