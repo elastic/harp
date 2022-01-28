@@ -1,4 +1,4 @@
-Copyright 2019-2021 Elasticsearch BV
+Copyright 2019-2022 Elasticsearch BV
 
 This product includes software developed by The Apache Software
 Foundation (http://www.apache.org/).
@@ -653,11 +653,11 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 Module  : github.com/fernet/fernet-go
-Version : v0.0.0-20191111064656-eff2850e6001
-Time    : 2019-11-11T06:46:56Z
+Version : v0.0.0-20211208181803-9f70042a33ee
+Time    : 2021-12-08T18:18:03Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/fernet/fernet-go@v0.0.0-20191111064656-eff2850e6001/License:
+Contents of probable licence file $GOMODCACHE/github.com/fernet/fernet-go@v0.0.0-20211208181803-9f70042a33ee/License:
 
 Copyright © 2013 Keith Rarick
 
@@ -1521,6 +1521,43 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 --------------------------------------------------------------------------------
+Module  : github.com/google/go-github/v42
+Version : v42.0.0
+Time    : 2022-01-13T03:34:58Z
+Licence : BSD-3-Clause
+
+Contents of probable licence file $GOMODCACHE/github.com/google/go-github/v42@v42.0.0/LICENSE:
+
+Copyright (c) 2013 The go-github AUTHORS. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+--------------------------------------------------------------------------------
 Module  : github.com/google/gofuzz
 Version : v1.2.0
 Time    : 2020-08-04T22:43:24Z
@@ -1771,11 +1808,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : github.com/gosimple/slug
-Version : v1.11.2
-Time    : 2021-11-08T20:10:10Z
+Version : v1.12.0
+Time    : 2021-12-13T17:27:11Z
 Licence : MPL-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/gosimple/slug@v1.11.2/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/gosimple/slug@v1.12.0/LICENSE:
 
 Mozilla Public License Version 2.0
 ==================================
@@ -2154,11 +2191,11 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 --------------------------------------------------------------------------------
 Module  : github.com/hashicorp/consul/api
-Version : v1.11.0
-Time    : 2021-09-27T16:21:34Z
+Version : v1.12.0
+Time    : 2021-12-14T17:37:25Z
 Licence : MPL-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/hashicorp/consul/api@v1.11.0/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/hashicorp/consul/api@v1.12.0/LICENSE:
 
 Mozilla Public License, version 2.0
 
@@ -3618,11 +3655,11 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 --------------------------------------------------------------------------------
 Module  : github.com/hashicorp/vault/api
-Version : v1.3.0
-Time    : 2021-10-28T14:11:48Z
+Version : v1.3.1
+Time    : 2021-12-22T17:33:12Z
 Licence : MPL-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/hashicorp/vault/api@v1.3.0/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/hashicorp/vault/api@v1.3.1/LICENSE:
 
 Mozilla Public License, version 2.0
 
@@ -4084,11 +4121,11 @@ limitations under the License.
 
 --------------------------------------------------------------------------------
 Module  : github.com/magefile/mage
-Version : v1.11.0
-Time    : 2020-12-29T05:11:47Z
+Version : v1.12.1
+Time    : 2021-12-15T21:00:02Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/magefile/mage@v1.11.0/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/magefile/mage@v1.12.1/LICENSE:
 
                                  Apache License
                            Version 2.0, January 2004
@@ -5163,11 +5200,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 Module  : github.com/spf13/afero
-Version : v1.6.0
-Time    : 2021-03-20T14:22:17Z
+Version : v1.8.0
+Time    : 2022-01-05T09:12:15Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/spf13/afero@v1.6.0/LICENSE.txt:
+Contents of probable licence file $GOMODCACHE/github.com/spf13/afero@v1.8.0/LICENSE.txt:
 
                                 Apache License
                            Version 2.0, January 2004
@@ -5347,11 +5384,11 @@ Contents of probable licence file $GOMODCACHE/github.com/spf13/afero@v1.6.0/LICE
 
 --------------------------------------------------------------------------------
 Module  : github.com/spf13/cobra
-Version : v1.2.1
-Time    : 2021-07-02T15:25:47Z
+Version : v1.3.0
+Time    : 2021-12-14T18:22:51Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/spf13/cobra@v1.2.1/LICENSE.txt:
+Contents of probable licence file $GOMODCACHE/github.com/spf13/cobra@v1.3.0/LICENSE.txt:
 
                                 Apache License
                            Version 2.0, January 2004
@@ -5531,11 +5568,11 @@ Contents of probable licence file $GOMODCACHE/github.com/spf13/cobra@v1.2.1/LICE
 
 --------------------------------------------------------------------------------
 Module  : github.com/spf13/viper
-Version : v1.9.0
-Time    : 2021-09-19T21:25:03Z
+Version : v1.10.1
+Time    : 2021-12-15T13:10:06Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/spf13/viper@v1.9.0/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/spf13/viper@v1.10.1/LICENSE:
 
 The MIT License (MIT)
 
@@ -5899,11 +5936,11 @@ Contents of probable licence file $GOMODCACHE/go.etcd.io/etcd/client/v3@v3.5.1/L
 
 --------------------------------------------------------------------------------
 Module  : go.step.sm/crypto
-Version : v0.13.0
-Time    : 2021-10-27T18:20:27Z
+Version : v0.15.0
+Time    : 2022-01-27T21:07:30Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/go.step.sm/crypto@v0.13.0/LICENSE:
+Contents of probable licence file $GOMODCACHE/go.step.sm/crypto@v0.15.0/LICENSE:
 
                                  Apache License
                            Version 2.0, January 2004
@@ -6110,11 +6147,11 @@ Contents of probable licence file $GOMODCACHE/go.step.sm/crypto@v0.13.0/LICENSE:
 
 --------------------------------------------------------------------------------
 Module  : go.uber.org/zap
-Version : v1.19.1
-Time    : 2021-09-08T21:32:28Z
+Version : v1.20.0
+Time    : 2022-01-04T19:15:23Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/go.uber.org/zap@v1.19.1/LICENSE.txt:
+Contents of probable licence file $GOMODCACHE/go.uber.org/zap@v1.20.0/LICENSE.txt:
 
 Copyright (c) 2016-2017 Uber Technologies, Inc.
 
@@ -6139,11 +6176,48 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 Module  : golang.org/x/crypto
-Version : v0.0.0-20211117183948-ae814b36b871
-Time    : 2021-11-17T18:39:48Z
+Version : v0.0.0-20211215153901-e495a2d5b3d3
+Time    : 2021-12-15T15:39:01Z
 Licence : BSD-3-Clause
 
-Contents of probable licence file $GOMODCACHE/golang.org/x/crypto@v0.0.0-20211117183948-ae814b36b871/LICENSE:
+Contents of probable licence file $GOMODCACHE/golang.org/x/crypto@v0.0.0-20211215153901-e495a2d5b3d3/LICENSE:
+
+Copyright (c) 2009 The Go Authors. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+--------------------------------------------------------------------------------
+Module  : golang.org/x/oauth2
+Version : v0.0.0-20211104180415-d3ed0bb246c8
+Time    : 2021-11-04T18:04:15Z
+Licence : BSD-3-Clause
+
+Contents of probable licence file $GOMODCACHE/golang.org/x/oauth2@v0.0.0-20211104180415-d3ed0bb246c8/LICENSE:
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -6213,11 +6287,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : golang.org/x/sys
-Version : v0.0.0-20210915083310-ed5796bab164
-Time    : 2021-09-15T08:33:10Z
+Version : v0.0.0-20211210111614-af8b64212486
+Time    : 2021-12-10T11:16:14Z
 Licence : BSD-3-Clause
 
-Contents of probable licence file $GOMODCACHE/golang.org/x/sys@v0.0.0-20210915083310-ed5796bab164/LICENSE:
+Contents of probable licence file $GOMODCACHE/golang.org/x/sys@v0.0.0-20211210111614-af8b64212486/LICENSE:
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -6287,11 +6361,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : google.golang.org/genproto
-Version : v0.0.0-20211207154714-918901c715cf
-Time    : 2021-12-07T15:47:14Z
+Version : v0.0.0-20220126215142-9970aeb2e350
+Time    : 2022-01-26T21:51:42Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/google.golang.org/genproto@v0.0.0-20211207154714-918901c715cf/LICENSE:
+Contents of probable licence file $GOMODCACHE/google.golang.org/genproto@v0.0.0-20220126215142-9970aeb2e350/LICENSE:
 
 
                                  Apache License
@@ -6499,11 +6573,11 @@ Contents of probable licence file $GOMODCACHE/google.golang.org/genproto@v0.0.0-
 
 --------------------------------------------------------------------------------
 Module  : google.golang.org/grpc
-Version : v1.42.0
-Time    : 2021-11-02T18:24:25Z
+Version : v1.44.0
+Time    : 2022-01-25T23:00:39Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/google.golang.org/grpc@v1.42.0/LICENSE:
+Contents of probable licence file $GOMODCACHE/google.golang.org/grpc@v1.44.0/LICENSE:
 
 
                                  Apache License
@@ -8065,11 +8139,11 @@ written authorization of the copyright holder.
 
 --------------------------------------------------------------------------------
 Module  : github.com/armon/go-metrics
-Version : v0.3.9
-Time    : 2021-06-14T19:23:00Z
+Version : v0.3.10
+Time    : 2021-10-19T19:44:31Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/armon/go-metrics@v0.3.9/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/armon/go-metrics@v0.3.10/LICENSE:
 
 The MIT License (MIT)
 
@@ -9098,11 +9172,11 @@ third-party archives.
 
 --------------------------------------------------------------------------------
 Module  : github.com/cpuguy83/go-md2man/v2
-Version : v2.0.0
-Time    : 2019-03-14T23:30:15Z
+Version : v2.0.1
+Time    : 2021-07-16T23:20:56Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/cpuguy83/go-md2man/v2@v2.0.0/LICENSE.md:
+Contents of probable licence file $GOMODCACHE/github.com/cpuguy83/go-md2man/v2@v2.0.1/LICENSE.md:
 
 The MIT License (MIT)
 
@@ -10347,6 +10421,43 @@ Contents of probable licence file $GOMODCACHE/github.com/google/btree@v1.0.0/LIC
 
 
 --------------------------------------------------------------------------------
+Module  : github.com/google/go-querystring
+Version : v1.1.0
+Time    : 2021-03-10T22:41:24Z
+Licence : BSD-3-Clause
+
+Contents of probable licence file $GOMODCACHE/github.com/google/go-querystring@v1.1.0/LICENSE:
+
+Copyright (c) 2013 Google. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+--------------------------------------------------------------------------------
 Module  : github.com/google/shlex
 Version : v0.0.0-20191202100458-e7afc7fbc510
 Time    : 2019-12-02T10:04:58Z
@@ -11538,11 +11649,11 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 --------------------------------------------------------------------------------
 Module  : github.com/hashicorp/go-hclog
-Version : v0.16.2
-Time    : 2021-07-07T17:59:29Z
+Version : v1.0.0
+Time    : 2021-09-14T16:21:13Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/hashicorp/go-hclog@v0.16.2/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/hashicorp/go-hclog@v1.0.0/LICENSE:
 
 MIT License
 
@@ -16060,11 +16171,11 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 --------------------------------------------------------------------------------
 Module  : github.com/hashicorp/memberlist
-Version : v0.2.2
-Time    : 2020-05-04T16:03:38Z
+Version : v0.3.0
+Time    : 2021-11-12T22:15:55Z
 Licence : MPL-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/hashicorp/memberlist@v0.2.2/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/hashicorp/memberlist@v0.3.0/LICENSE:
 
 Mozilla Public License, version 2.0
 
@@ -16424,11 +16535,11 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 --------------------------------------------------------------------------------
 Module  : github.com/hashicorp/serf
-Version : v0.9.5
-Time    : 2020-10-07T16:07:27Z
+Version : v0.9.6
+Time    : 2021-11-12T22:27:52Z
 Licence : MPL-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/hashicorp/serf@v0.9.5/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/hashicorp/serf@v0.9.6/LICENSE:
 
 Mozilla Public License, version 2.0
 
@@ -18152,11 +18263,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : github.com/mattn/go-colorable
-Version : v0.1.9
-Time    : 2021-09-20T16:49:15Z
+Version : v0.1.12
+Time    : 2021-11-23T14:52:42Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/mattn/go-colorable@v0.1.9/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/mattn/go-colorable@v0.1.12/LICENSE:
 
 The MIT License (MIT)
 
@@ -18202,8 +18313,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 --------------------------------------------------------------------------------
 Module  : github.com/miekg/dns
-Version : v1.1.26
-Time    : 2019-12-20T14:31:18Z
+Version : v1.1.41
+Time    : 2021-03-19T06:46:51Z
 Licence : BSD-3-Clause
 
 Contents of provided licence file:
@@ -18366,11 +18477,11 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 Module  : github.com/mitchellh/mapstructure
-Version : v1.4.2
-Time    : 2021-09-14T17:25:19Z
+Version : v1.4.3
+Time    : 2021-12-01T18:06:12Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/github.com/mitchellh/mapstructure@v1.4.2/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/mitchellh/mapstructure@v1.4.3/LICENSE:
 
 The MIT License (MIT)
 
@@ -18867,11 +18978,11 @@ Contents of probable licence file $GOMODCACHE/github.com/opencontainers/image-sp
 
 --------------------------------------------------------------------------------
 Module  : github.com/opencontainers/runc
-Version : v1.0.3
-Time    : 2021-12-03T08:17:37Z
+Version : v1.1.0
+Time    : 2022-01-17T08:16:31Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/github.com/opencontainers/runc@v1.0.3/LICENSE:
+Contents of probable licence file $GOMODCACHE/github.com/opencontainers/runc@v1.1.0/LICENSE:
 
 
                                  Apache License
@@ -19158,11 +19269,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : github.com/russross/blackfriday/v2
-Version : v2.0.1
-Time    : 2018-09-20T17:16:15Z
+Version : v2.1.0
+Time    : 2020-10-27T03:47:54Z
 Licence : BSD-2-Clause
 
-Contents of probable licence file $GOMODCACHE/github.com/russross/blackfriday/v2@v2.0.1/LICENSE.txt:
+Contents of probable licence file $GOMODCACHE/github.com/russross/blackfriday/v2@v2.1.0/LICENSE.txt:
 
 Blackfriday is distributed under the Simplified BSD License:
 
@@ -19343,37 +19454,6 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-
-
---------------------------------------------------------------------------------
-Module  : github.com/shurcooL/sanitized_anchor_name
-Version : v1.0.0
-Time    : 2018-12-26T21:49:07Z
-Licence : MIT
-
-Contents of probable licence file $GOMODCACHE/github.com/shurcoo!l/sanitized_anchor_name@v1.0.0/LICENSE:
-
-MIT License
-
-Copyright (c) 2015 Dmitri Shuralyov
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 
 
 --------------------------------------------------------------------------------
@@ -20203,11 +20283,11 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 Module  : go.uber.org/goleak
-Version : v1.1.11-0.20210813005559-691160354723
-Time    : 2021-08-13T00:55:59Z
+Version : v1.1.11
+Time    : 2021-09-08T23:26:58Z
 Licence : MIT
 
-Contents of probable licence file $GOMODCACHE/go.uber.org/goleak@v1.1.11-0.20210813005559-691160354723/LICENSE:
+Contents of probable licence file $GOMODCACHE/go.uber.org/goleak@v1.1.11/LICENSE:
 
 The MIT License (MIT)
 
@@ -20263,11 +20343,11 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 Module  : golang.org/x/net
-Version : v0.0.0-20211112202133-69e39bad7dc2
-Time    : 2021-11-12T20:21:33Z
+Version : v0.0.0-20211216030914-fe4d6282115f
+Time    : 2021-12-16T03:09:14Z
 Licence : BSD-3-Clause
 
-Contents of probable licence file $GOMODCACHE/golang.org/x/net@v0.0.0-20211112202133-69e39bad7dc2/LICENSE:
+Contents of probable licence file $GOMODCACHE/golang.org/x/net@v0.0.0-20211216030914-fe4d6282115f/LICENSE:
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -20410,6 +20490,218 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 --------------------------------------------------------------------------------
+Module  : google.golang.org/appengine
+Version : v1.6.7
+Time    : 2020-10-13T00:46:28Z
+Licence : Apache-2.0
+
+Contents of probable licence file $GOMODCACHE/google.golang.org/appengine@v1.6.7/LICENSE:
+
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+
+--------------------------------------------------------------------------------
 Module  : gopkg.in/check.v1
 Version : v1.0.0-20200227125254-8fa46927fb4f
 Time    : 2020-02-27T12:52:54Z
@@ -20446,11 +20738,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 Module  : gopkg.in/ini.v1
-Version : v1.63.2
-Time    : 2021-09-16T05:34:39Z
+Version : v1.66.2
+Time    : 2021-12-02T14:07:20Z
 Licence : Apache-2.0
 
-Contents of probable licence file $GOMODCACHE/gopkg.in/ini.v1@v1.63.2/LICENSE:
+Contents of probable licence file $GOMODCACHE/gopkg.in/ini.v1@v1.66.2/LICENSE:
 
 Apache License
 Version 2.0, January 2004
