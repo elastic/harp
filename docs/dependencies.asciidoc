@@ -20,7 +20,6 @@ This page lists the third-party dependencies used to build {n}.
 | link:https://github.com/alessio/shellescape[$$github.com/alessio/shellescape$$] | v1.4.1 | MIT
 | link:https://github.com/awnumar/memguard[$$github.com/awnumar/memguard$$] | v0.22.2 | Apache-2.0
 | link:https://github.com/basgys/goxml2json[$$github.com/basgys/goxml2json$$] | v1.1.0 | MIT
-| link:https://github.com/blang/semver[$$github.com/blang/semver/v4$$] | v4.0.0 | MIT
 | link:https://github.com/cloudflare/tableflip[$$github.com/cloudflare/tableflip$$] | v1.2.2 | BSD-3-Clause
 | link:https://github.com/common-nighthawk/go-figure[$$github.com/common-nighthawk/go-figure$$] | v0.0.0-20210622060536-734e95fb86be | MIT
 | link:https://github.com/dchest/uniuri[$$github.com/dchest/uniuri$$] | v0.0.0-20200228104902-7aecb25e1fe5 | CC0-1.0
@@ -62,7 +61,6 @@ This page lists the third-party dependencies used to build {n}.
 | link:https://github.com/spf13/cobra[$$github.com/spf13/cobra$$] | v1.3.0 | Apache-2.0
 | link:https://github.com/spf13/viper[$$github.com/spf13/viper$$] | v1.10.1 | MIT
 | link:https://github.com/stretchr/testify[$$github.com/stretchr/testify$$] | v1.7.0 | MIT
-| link:https://github.com/ugorji/go[$$github.com/ugorji/go/codec$$] | v1.2.6 | MIT
 | link:https://github.com/zclconf/go-cty[$$github.com/zclconf/go-cty$$] | v1.10.0 | MIT
 | link:https://gitlab.com/NebulousLabs/merkletree[$$gitlab.com/NebulousLabs/merkletree$$] | v0.0.0-20200118113624-07fbf710afc4 | MIT
 | link:https://go.etcd.io/etcd/client/v3[$$go.etcd.io/etcd/client/v3$$] | v3.5.1 | Apache-2.0
@@ -184,7 +182,6 @@ This page lists the third-party dependencies used to build {n}.
 | link:https://github.com/stoewer/go-strcase[$$github.com/stoewer/go-strcase$$] | v1.2.0 | MIT
 | link:https://github.com/stretchr/objx[$$github.com/stretchr/objx$$] | v0.1.1 | MIT
 | link:https://github.com/subosito/gotenv[$$github.com/subosito/gotenv$$] | v1.2.0 | MIT
-| link:https://github.com/ugorji/go[$$github.com/ugorji/go$$] | v1.2.6 | MIT
 | link:https://github.com/xeipuuv/gojsonpointer[$$github.com/xeipuuv/gojsonpointer$$] | v0.0.0-20180127040702-4e3ac2762d5f | Apache-2.0
 | link:https://github.com/xeipuuv/gojsonreference[$$github.com/xeipuuv/gojsonreference$$] | v0.0.0-20180127040603-bd5ef7bd5415 | Apache-2.0
 | link:https://github.com/xeipuuv/gojsonschema[$$github.com/xeipuuv/gojsonschema$$] | v1.2.0 | Apache-2.0
