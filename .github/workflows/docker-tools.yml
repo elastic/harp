@@ -24,8 +24,8 @@ jobs:
             fips-mode: 0
           # fips
           - golang-image: "goboring/golang:1.16.7b7"
-            golang-version: "1.17.5"
-            goboring-version: "1.17.5b7"
+            golang-version: "1.17.6"
+            goboring-version: "1.17.6b7"
             tools-image: harp-tools-fips
             fips-mode: 1
     steps:
