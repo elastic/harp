@@ -1,5 +1,15 @@
 # BundleTemplate
 
+- [BundleTemplate](#bundletemplate)
+  - [Specifications](#specifications)
+    - [CSO Secret Path Naming Convention](#cso-secret-path-naming-convention)
+    - [YAML](#yaml)
+      - [Infrastructure secrets](#infrastructure-secrets)
+      - [Platform secrets](#platform-secrets)
+      - [Product secrets](#product-secrets)
+      - [Application secrets](#application-secrets)
+  - [Usage](#usage)
+
 A `BundleTemplate` allows developers to describe their own secret requirements by
 designing secret values with `harp` template engine attached to a CSO
 compliant secret path.
@@ -312,7 +322,7 @@ This will generate 2 secrets like the following ones :
 * `product` path component is extracted from `selector.product`
 * `version` path component is extracted from `selector.version`
 
-## Usages
+## Usage
 
 A `BundleTemplate` uses the `harp` template engine to render a `Bundle`
 object stored in a secret container.

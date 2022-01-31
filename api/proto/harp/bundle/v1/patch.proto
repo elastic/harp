@@ -131,4 +131,6 @@ message PatchOperation {
   // Replace case-sensitive existing key using the associated value.
   // Value can be templatized.
   map<string,string> replaceKeys = 4;
+  // Remove all keys matching these given regexp.
+  repeated string removeKeys = 5;
 }

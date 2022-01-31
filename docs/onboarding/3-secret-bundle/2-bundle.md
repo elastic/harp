@@ -1,5 +1,16 @@
 # Bundle
 
+- [Bundle](#bundle)
+  - [Specification](#specification)
+    - [File](#file)
+    - [Package](#package)
+    - [Secret Chain](#secret-chain)
+    - [Key/Value item](#keyvalue-item)
+  - [Usage](#usage)
+    - [Minimal Bundle](#minimal-bundle)
+    - [Generated Bundle](#generated-bundle)
+    - [Bundle content](#bundle-content)
+
 ## Specification
 
 This [specification](https://github.com/elastic/harp/blob/main/api/proto/harp/bundle/v1/bundle.proto) declares internal secret storage object structure.
@@ -124,7 +135,7 @@ message KV {
 }
 ```
 
-## Usages
+## Usage
 
 The `Bundle` struct can be observed by using the following command :
 
