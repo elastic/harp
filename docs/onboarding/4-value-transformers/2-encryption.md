@@ -26,6 +26,8 @@
 
 ### Raw output
 
+The follow transformers return a RAW byte stream which need to be encoded.
+
 #### Authenticated Encryption (AE)
 
 ##### SecretBox
@@ -126,6 +128,9 @@ nH8U37FO0KdCKGRyzFz6TJZm9V4juTF7bOdcIu33j++qgK26On2HNkc3g+w=
 
 ### Encoded output
 
+The following transformers return encoded output according to the selected
+transformer specification.
+
 #### Fernet
 
 Fernet is basically AES128 in CBC mode with a SHA256 HMAC message authentication
@@ -191,6 +196,36 @@ v4.local.RwujcJdC3XhWRaYHItFev5NlaC5u99iQR9njJILs2g6lcZKNecHRCvqMG81LQWbaVtfwI_q
 
 ### AGE
 
+*Encrypt*
+
+Key format : `age-recipients:<recipient-0>(:<recipient-n>)+`
+
+```sh
+$ echo -n "test" \
+    | harp transform encrypt --key age-recipients:age1ce20pmz8z0ue97v7rz838v6pcpvzqan30lr40tjlzy40ez8eldrqf2zuxe
+-----BEGIN AGE ENCRYPTED FILE-----
+YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBpOWlwTm5JVTA5UEtFdHRI
+ZU9oYzlyT0VrUEY4UGxtelM2ZjJBQUpmK2dJCnVBUWV2elVDM0RleTJZMTMrV0Fs
+WmFMdVdCQmFDWG1uOHZ6blJEVWdaVDgKLS0tIDkyeTlnU0lHZWJJazQ5S1BYTU83
+Q2lReW5sRm1mUUtVa3VuZCtlLzVZZXMKcl09YVsNLaCYMva21IHYtm0IvyItoyXS
+UFJ6Cim7GbaB5Avu
+-----END AGE ENCRYPTED FILE-----
+```
+
+*Decrypt*
+
+Key format : `age-identity:<identity-secret-key>`
+
+```sh
+$ harp transform decrypt \
+    --key age-identity:AGE-SECRET-KEY-1W8E69DQEVASNK68FX7C6QLD99KTG96RHWW0EZ3RD0L29AHV4S84QHUAP4C \
+    --in encrypted.file
+```
+
 ## Envelope encryption
 
+TODO
+
 ## Deterministic encryption
+
+TODO

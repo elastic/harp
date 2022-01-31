@@ -1,10 +1,14 @@
 ## 0.2.6
 
-## Not released yet
+### Not released yet
+
+FEATURES:
+
+* sdk/value: support `age` encryption as value transformer. [#102](https://github.com/elastic/harp/pull/102)
 
 ## 0.2.5
 
-## 2022-01-28
+### 2022-01-28
 
 FEATURES:
 
