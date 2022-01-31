@@ -9,6 +9,9 @@
   - [End-to-end encryption](#end-to-end-encryption)
     - [Publish a content](#publish-a-content-1)
     - [Receive the secret](#receive-the-secret)
+  - [Ephemeral bundles](#ephemeral-bundles)
+    - [Create and publish a bundle](#create-and-publish-a-bundle)
+    - [Retrieve the bundle](#retrieve-the-bundle)
 
 ## Why
 
@@ -111,4 +114,40 @@ You need to decrypt the content using your private key :
 $ harp share get --token s.zCvElYThNiZ1JVLd6TzzziRx \
     | age -d -i $PRIVATE_KEY_FILE
 Z8f:D|SV?4C1wdPNqQc_aGZhUF6FFeFEM5rPxW]0AGX(N*1ns/>OxKy22Z"XFFY5%
+```
+
+## Ephemeral bundles
+
+### Create and publish a bundle
+
+In this example, we are building a `Bundle` from a `BundleTemplate`, but you
+can use any Bundle builder you have (Vault, etc.).
+
+```sh
+$ harp from template \
+    --in customer-bundle/spec.yaml \
+    --values customer-bundle/values.yaml \
+    --set quality=production \
+    | harp share put --ttl=180s
+Token : s.753Hq2TNazjxfuVSennB063t (Expires in 180 seconds)
+```
+
+### Retrieve the bundle
+
+```sh
+$ harp share get --token=s.753Hq2TNazjxfuVSennB063t \
+  | harp bundle dump --path-only
+app/production/customer1/ece/v1.0.0/adminconsole/authentication/otp/okta_api_key
+app/production/customer1/ece/v1.0.0/adminconsole/database/usage_credentials
+app/production/customer1/ece/v1.0.0/adminconsole/http/session
+app/production/customer1/ece/v1.0.0/adminconsole/mailing/sender/mailgun_api_key
+app/production/customer1/ece/v1.0.0/adminconsole/privacy/anonymizer
+app/production/customer1/ece/v1.0.0/userconsole/database/usage_credentials
+app/production/customer1/ece/v1.0.0/userconsole/http/certificate
+app/production/customer1/ece/v1.0.0/userconsole/http/session
+infra/aws/essp-customer1/us-east-1/rds/adminconsole/accounts/root_credentials
+platform/production/customer1/us-east-1/billing/recurly/vendor_api_key
+platform/production/customer1/us-east-1/postgresql/admiconsole/admin_credentials
+platform/production/customer1/us-east-1/zookeeper/accounts/admin_credentials
+product/ece/v1.0.0/artifact/signature/key
 ```
