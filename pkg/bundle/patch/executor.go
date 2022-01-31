@@ -263,6 +263,7 @@ func applySecretPatch(secrets *bundlev1.SecretChain, op *bundlev1.PatchSecret, v
 	return nil
 }
 
+//nolint:gocyclo // to refactor
 func applySecretKVPatch(kv []*bundlev1.KV, op *bundlev1.PatchOperation, values map[string]interface{}) ([]*bundlev1.KV, error) {
 	// Check parameters
 	if kv == nil {
@@ -273,6 +274,29 @@ func applySecretKVPatch(kv []*bundlev1.KV, op *bundlev1.PatchOperation, values m
 	}
 
 	var out []*bundlev1.KV
+
+	// Remove all keys
+	if len(op.RemoveKeys) > 0 {
+		for _, rx := range op.RemoveKeys {
+			re, err := regexp.Compile(rx)
+			if err != nil {
+				return nil, fmt.Errorf("unable to compile regexp for key deletion '%s': %w", rx, err)
+			}
+
+			// Add to remove if match one expression
+			for _, k := range kv {
+				if k == nil {
+					continue
+				}
+				if re.MatchString(k.Key) {
+					if op.Remove == nil {
+						op.Remove = make([]string, 0)
+					}
+					op.Remove = append(op.Remove, k.Key)
+				}
+			}
+		}
+	}
 
 	// Remove secret
 	if len(op.Remove) > 0 {
@@ -444,6 +468,7 @@ func updateSecret(input []*bundlev1.KV, newSecrets map[string]string) ([]*bundle
 	return out, nil
 }
 
+//nolint:gocyclo // to refactor
 func applyMapOperations(input map[string]string, op *bundlev1.PatchOperation, values map[string]interface{}) error {
 	// Check parameters
 	if input == nil {
@@ -454,6 +479,25 @@ func applyMapOperations(input map[string]string, op *bundlev1.PatchOperation, va
 	}
 
 	// Process all operations
+	// Remove all keys
+	if len(op.RemoveKeys) > 0 {
+		for _, rx := range op.RemoveKeys {
+			re, err := regexp.Compile(rx)
+			if err != nil {
+				return fmt.Errorf("unable to compile regexp for key deletion '%s': %w", rx, err)
+			}
+
+			// Add to remove if match one expression
+			for k := range input {
+				if re.MatchString(k) {
+					if op.Remove == nil {
+						op.Remove = make([]string, 0)
+					}
+					op.Remove = append(op.Remove, k)
+				}
+			}
+		}
+	}
 	if len(op.Remove) > 0 {
 		for _, toRemove := range op.Remove {
 			delete(input, toRemove)
