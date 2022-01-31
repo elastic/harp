@@ -30,6 +30,7 @@ import (
 
 	// Register encryption transformers
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/age"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/paseto"
@@ -138,6 +139,20 @@ func TestFromKey(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		/*{
+			name: "age-recipients",
+			args: args{
+				keyValue: "age-recipients:age1ce20pmz8z0ue97v7rz838v6pcpvzqan30lr40tjlzy40ez8eldrqf2zuxe",
+			},
+			wantErr: false,
+		},
+		{
+			name: "age-identity",
+			args: args{
+				keyValue: "age-identity:AGE-SECRET-KEY-1W8E69DQEVASNK68FX7C6QLD99KTG96RHWW0EZ3RD0L29AHV4S84QHUAP4C",
+			},
+			wantErr: false,
+		},*/
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
