@@ -11,6 +11,13 @@
         - [AES-PMAC-SIV](#aes-pmac-siv)
         - [Chacha20-Poly1305](#chacha20-poly1305)
         - [XChacha20-Poly1305](#xchacha20-poly1305)
+    - [Deterministic Authenticated Encryption (DAE)](#deterministic-authenticated-encryption-dae)
+      - [How to use DAE?](#how-to-use-dae)
+      - [DAE-AES-GCM](#dae-aes-gcm)
+      - [DAE-AES-SIV](#dae-aes-siv)
+      - [DAE-AES-PMAC-SIV](#dae-aes-pmac-siv)
+      - [DAE-Chacha20-Poly1305](#dae-chacha20-poly1305)
+      - [DAE-XChacha20-Poly1305](#dae-xchacha20-poly1305)
     - [Encoded output](#encoded-output)
       - [Fernet](#fernet)
       - [JWE](#jwe)
@@ -20,7 +27,6 @@
   - [Asymmetric encryption](#asymmetric-encryption)
     - [AGE](#age)
   - [Envelope encryption](#envelope-encryption)
-  - [Deterministic encryption](#deterministic-encryption)
 
 ## Symmetric encryption
 
@@ -41,7 +47,7 @@ Secretbox is a cipher suite based on :
 $ harp keygen secretbox
 secretbox:FSyb2IPGl2AymGBgLVWCFfuDjbf2iQIuYTl513T1sow=
 $ echo -n "test" \
-    | harp transform encrypt --key paseto:HTh5iRgEEVDwpcyJEQ6pYx7S5YCGHGB729emBy2e-K4=
+    | harp transform encrypt --key paseto:HTh5iRgEEVDwpcyJEQ6pYx7S5YCGHGB729emBy2e-K4= \
     | base64
 UAnsgOOawkV7uUyxBFeqauCgqf0ZbP6t8cFA/V49Xe8yTk7hRGG+Mb6bfWU=
 ```
@@ -60,7 +66,7 @@ AES-GCM is specified in NIST Special Publication 800-38D [SP800-38D].
 $ harp keygen aes-gcm
 aes-gcm:yOF_27OF4aokpB_6WUCBrg==
 $ echo -n "test" \
-    | harp transform encrypt --key aes-gcm:yOF_27OF4aokpB_6WUCBrg==
+    | harp transform encrypt --key aes-gcm:yOF_27OF4aokpB_6WUCBrg== \
     | base64
 kCi/ReYbE1yFdS1UPsH771ToiznJjIvNfIyTnCaErNg=
 ```
@@ -75,7 +81,7 @@ with the AES-CMAC (NIST SP 800-38B) function for integrity.
 $ harp keygen aes-siv
 aes-siv:glmpGwiMb3bop4XwZeYvfGPZSn_87uAnC75vp73tJFAvfP6mdLX5dgTYj0cgua_tUZ7itQ-MFwNF-ZCGzr0Fxw==
 $ echo -n "test" \
-    | harp transform encrypt --key aes-siv:glmpGwiMb3bop4XwZeYvfGPZSn_87uAnC75vp73tJFAvfP6mdLX5dgTYj0cgua_tUZ7itQ-MFwNF-ZCGzr0Fxw==
+    | harp transform encrypt --key aes-siv:glmpGwiMb3bop4XwZeYvfGPZSn_87uAnC75vp73tJFAvfP6mdLX5dgTYj0cgua_tUZ7itQ-MFwNF-ZCGzr0Fxw== \
     | base64
 1gcAdkk+fSLOwOu7JvbT2/NDddmwT0m/kWU+JTCxDOkWAM/P
 ```
@@ -92,7 +98,7 @@ Intel/AMD CPUs but also certain IoT devices.
 $ harp keygen aes-pmac-siv
 aes-pmac-siv:5W5c43ZFVX37Y4p7tlksEyyuw6R_VpF68QoczfNUnpameV_63Kif0byRd-KFA-svBW5eXy2D_9h_S02xdWKEKA==
 $ echo -n "test" \
-    | harp transform encrypt --key aes-pmac-siv:5W5c43ZFVX37Y4p7tlksEyyuw6R_VpF68QoczfNUnpameV_63Kif0byRd-KFA-svBW5eXy2D_9h_S02xdWKEKA==
+    | harp transform encrypt --key aes-pmac-siv:5W5c43ZFVX37Y4p7tlksEyyuw6R_VpF68QoczfNUnpameV_63Kif0byRd-KFA-svBW5eXy2D_9h_S02xdWKEKA== \
     | base64
 2H2NOHnKrg04xNBLy4nEViKhwZZIRZ9+OgRvywmmbYSVlLCh
 ```
@@ -107,7 +113,7 @@ on the ChaCha20 stream cipher and Poly1305 universal hash function.
 $ harp keygen chacha
 chacha:dNph0d9Pj2_IMiRgBQrzExBH7899OKdyH3_T88WE1Zk=
 $ echo -n "test" \
-    | harp transform encrypt --key chacha:dNph0d9Pj2_IMiRgBQrzExBH7899OKdyH3_T88WE1Zk=
+    | harp transform encrypt --key chacha:dNph0d9Pj2_IMiRgBQrzExBH7899OKdyH3_T88WE1Zk= \
     | base64
 alhOtiM1GiyPqWb4thy5COzytwP0oT3b+LGiW7KZUnE=
 ```
@@ -121,9 +127,111 @@ Arciszewski that is hardened against nonce misuse.
 $ harp keygen xchacha
 xchacha:8ZgF0VI0lfHx8GwzDxp6fUqA1zAocPWDXRKLRMmgXUQ=
 $ echo -n "test" \
-    | harp transform encrypt --key xchacha:8ZgF0VI0lfHx8GwzDxp6fUqA1zAocPWDXRKLRMmgXUQ=
+    | harp transform encrypt --key xchacha:8ZgF0VI0lfHx8GwzDxp6fUqA1zAocPWDXRKLRMmgXUQ= \
     | base64
 nH8U37FO0KdCKGRyzFz6TJZm9V4juTF7bOdcIu33j++qgK26On2HNkc3g+w=
+```
+
+### Deterministic Authenticated Encryption (DAE)
+
+> A deterministic encryption scheme (as opposed to a probabilistic encryption
+> scheme) is a cryptosystem which always produces the same ciphertext for a
+> given plaintext and key, even over separate executions of the encryption
+> algorithm.
+>
+> Wikidpedia - https://en.wikipedia.org/wiki/Deterministic_encryption
+
+Deterministic AEAD has the following properties:
+
+* Secrecy: Nobody will be able to get any information about the encrypted
+  plaintext, except the length and the equality of repeated plaintexts.
+* Authenticity: Without the key it is impossible to change the plaintext
+  underlying the ciphertext undetected.
+* Symmetric: Encrypting the message and decrypting the ciphertext is done with
+  the same key.
+* Deterministic: A deterministic AEAD protects data almost as well as a normal
+  AEAD. However, if you send the same message twice, an attacker can notice
+  that the two messages are equal. If this is not desired, see AEAD.
+
+`Harp` uses a pseudo-random-function (PRF) to derive the IV from the content.
+This kind of encryption offers less guarantee that a probabilistic encryption
+where the output is considered as random, and reveal same clear-text message
+usages.
+In order to achieve something which could be called `searchable-encryption`
+where the algorithm is used as a reversible hash function, DAE could be used.
+
+```go
+NonceSize := 32
+
+// No salt
+salt := nil
+// No additional data (yet)
+info := nil
+// Derived key length
+dkLen := len(k)+NonceSize
+
+// Stretch given key to get the required buffer size.
+deriveBuf := hkdf(SHA256, key, salt, info, dkLen)
+
+// Encryption key is equal to the given input key length
+encryptionKey := derivedBuf[:len(key)]
+// HMAC Key is always 32bytes
+hmacKey := derivedBuf[len(key):]
+
+// Compute nonce/iv based on the content to get deterministic IV
+iv := HMACSHA256(message, hmacKey)
+// Seal message with AEAD
+sealed := AEAD(encryptionKey, iv, message)
+```
+
+#### How to use DAE?
+
+In order to use DAE, you have to prefix `dae-` on supported AEAD encryption
+algorithms.
+
+#### DAE-AES-GCM
+
+```sh
+$ echo -n "test" \
+    | harp transform encrypt --key dae-aes-gcm:yOF_27OF4aokpB_6WUCBrg== \
+    | base64
+SqLUCn86xNbqVcFMlSXnMRYn9qznXSsAD8B/qW7I/GU=
+```
+
+#### DAE-AES-SIV
+
+```sh
+$ echo -n "test" \
+    | harp transform encrypt --key dae-aes-siv:glmpGwiMb3bop4XwZeYvfGPZSn_87uAnC75vp73tJFAvfP6mdLX5dgTYj0cgua_tUZ7itQ-MFwNF-ZCGzr0Fxw== \
+    | base64
+iAlNertgxaIwj8IOxlfRhyZKQknxPTopEPHBZ6jCsrJ54fzuaIIWq2vxLlaxzy9howI12A==
+```
+
+#### DAE-AES-PMAC-SIV
+
+```sh
+$ echo -n "test" \
+    | harp transform encrypt --key aes-pmac-siv:5W5c43ZFVX37Y4p7tlksEyyuw6R_VpF68QoczfNUnpameV_63Kif0byRd-KFA-svBW5eXy2D_9h_S02xdWKEKA== \
+    | base64
+WNzc6rSYNu1IMlS9xvcfTlSsGmxZJI79+YnrGFADSfF0TLFcKfWsc8pAZHtsLuYiy/g/ug==
+```
+
+#### DAE-Chacha20-Poly1305
+
+```sh
+$ echo -n "test" \
+    | harp transform encrypt --key dae-chacha:dNph0d9Pj2_IMiRgBQrzExBH7899OKdyH3_T88WE1Zk= \
+    | base64
+jb00tt+iUluLQEfxzz/+zcNvu7NeNyIcEehhY4zvy4o=
+```
+
+#### DAE-XChacha20-Poly1305
+
+```sh
+$ echo -n "test" \
+    | harp transform encrypt --key dae-xchacha:8ZgF0VI0lfHx8GwzDxp6fUqA1zAocPWDXRKLRMmgXUQ= \
+    | base64
+m33d+reu9JgGuL6rlQDxoamN+nq/eDsPp8Ee4BOtXq1Leq6UvDI9pahYgjE=
 ```
 
 ### Encoded output
@@ -223,9 +331,5 @@ $ harp transform decrypt \
 ```
 
 ## Envelope encryption
-
-TODO
-
-## Deterministic encryption
 
 TODO
