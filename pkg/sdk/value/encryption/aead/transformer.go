@@ -28,9 +28,9 @@ type aeadTransformer struct {
 	aead cipher.AEAD
 }
 
-func (t *aeadTransformer) To(_ context.Context, input []byte) ([]byte, error) {
+func (t *aeadTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 	// Encrypt
-	out, err := encrypt(input, t.aead)
+	out, err := encrypt(ctx, input, t.aead)
 	if err != nil {
 		return nil, err
 	}
@@ -39,9 +39,9 @@ func (t *aeadTransformer) To(_ context.Context, input []byte) ([]byte, error) {
 	return out, nil
 }
 
-func (t *aeadTransformer) From(_ context.Context, input []byte) ([]byte, error) {
+func (t *aeadTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
 	// Decrypt
-	out, err := decrypt(input, t.aead)
+	out, err := decrypt(ctx, input, t.aead)
 	if err != nil {
 		return nil, err
 	}

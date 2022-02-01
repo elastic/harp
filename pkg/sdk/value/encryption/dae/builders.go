@@ -21,7 +21,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -57,13 +56,10 @@ func AESGCM(key string) (value.Transformer, error) {
 	// Remove the prefix
 	key = strings.TrimPrefix(key, "dae-aes-gcm:")
 
-	// Decode key
-	k, err := base64.URLEncoding.DecodeString(key)
+	k, salt, err := decodeKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("aes: unable to decode key: %w", err)
+		return nil, fmt.Errorf("aes: unable to decode transformer key: %w", err)
 	}
-
-	// Check key length
 	switch len(k) {
 	case 16, 24, 32:
 	default:
@@ -71,7 +67,7 @@ func AESGCM(key string) (value.Transformer, error) {
 	}
 
 	// Derive keys from input key
-	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	dk, err := deriveKey(k, salt, nil, len(k)+32)
 	if err != nil {
 		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
 	}
@@ -101,16 +97,16 @@ func AESSIV(key string) (value.Transformer, error) {
 	key = strings.TrimPrefix(key, "dae-aes-siv:")
 
 	// Decode key
-	k, err := base64.URLEncoding.DecodeString(key)
+	k, salt, err := decodeKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("aes: unable to decode key: %w", err)
+		return nil, fmt.Errorf("aes: unable to decode transformer key: %w", err)
 	}
 	if l := len(k); l != 64 {
 		return nil, fmt.Errorf("aes: invalid secret key length (%d)", l)
 	}
 
 	// Derive keys from input key
-	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	dk, err := deriveKey(k, salt, nil, len(k)+32)
 	if err != nil {
 		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
 	}
@@ -134,16 +130,16 @@ func AESPMACSIV(key string) (value.Transformer, error) {
 	key = strings.TrimPrefix(key, "dae-aes-pmac-siv:")
 
 	// Decode key
-	k, err := base64.URLEncoding.DecodeString(key)
+	k, salt, err := decodeKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("aes: unable to decode key: %w", err)
+		return nil, fmt.Errorf("aes: unable to decode transformer key: %w", err)
 	}
 	if l := len(k); l != 64 {
 		return nil, fmt.Errorf("aes: invalid secret key length (%d)", l)
 	}
 
 	// Derive keys from input key
-	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	dk, err := deriveKey(k, salt, nil, len(k)+32)
 	if err != nil {
 		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
 	}
@@ -167,18 +163,18 @@ func Chacha20Poly1305(key string) (value.Transformer, error) {
 	key = strings.TrimPrefix(key, "dae-chacha:")
 
 	// Decode key
-	k, err := base64.URLEncoding.DecodeString(key)
+	k, salt, err := decodeKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("chacha: unable to decode key: %w", err)
+		return nil, fmt.Errorf("chacha: unable to decode transformer key: %w", err)
 	}
 	if l := len(k); l != 32 {
 		return nil, fmt.Errorf("chacha: invalid secret key length (%d)", l)
 	}
 
 	// Derive keys from input key
-	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	dk, err := deriveKey(k, salt, nil, len(k)+32)
 	if err != nil {
-		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
+		return nil, fmt.Errorf("chacha: unable te derive required keys: %w", err)
 	}
 
 	// Create Chacha20-Poly1305 aead cipher
@@ -200,18 +196,18 @@ func XChacha20Poly1305(key string) (value.Transformer, error) {
 	key = strings.TrimPrefix(key, "dae-xchacha:")
 
 	// Decode key
-	k, err := base64.URLEncoding.DecodeString(key)
+	k, salt, err := decodeKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("xchacha: unable to decode key: %w", err)
+		return nil, fmt.Errorf("xchacha: unable to decode transformer key: %w", err)
 	}
 	if l := len(k); l != 32 {
 		return nil, fmt.Errorf("xchacha: invalid secret key length (%d)", l)
 	}
 
 	// Derive keys from input key
-	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	dk, err := deriveKey(k, salt, nil, len(k)+32)
 	if err != nil {
-		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
+		return nil, fmt.Errorf("xchacha: unable te derive required keys: %w", err)
 	}
 
 	// Create Chacha20-Poly1305 aead cipher

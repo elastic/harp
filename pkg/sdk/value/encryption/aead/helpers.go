@@ -18,18 +18,21 @@
 package aead
 
 import (
+	"context"
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
 	"fmt"
 	"io"
+
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
 
 const (
 	keyLength = 32
 )
 
-func encrypt(plaintext []byte, ciph cipher.AEAD) ([]byte, error) {
+func encrypt(ctx context.Context, plaintext []byte, ciph cipher.AEAD) ([]byte, error) {
 	if len(plaintext) > 64*1024*1024 {
 		return nil, errors.New("value too large")
 	}
@@ -38,12 +41,15 @@ func encrypt(plaintext []byte, ciph cipher.AEAD) ([]byte, error) {
 		return nil, fmt.Errorf("unable to generate nonce: %w", err)
 	}
 
-	cipherText := ciph.Seal(nil, nonce, plaintext, nil)
+	// Retrieve additional data from context
+	aad, _ := encryption.AdditionalData(ctx)
+
+	cipherText := ciph.Seal(nil, nonce, plaintext, aad)
 
 	return append(nonce, cipherText...), nil
 }
 
-func decrypt(ciphertext []byte, ciph cipher.AEAD) ([]byte, error) {
+func decrypt(ctx context.Context, ciphertext []byte, ciph cipher.AEAD) ([]byte, error) {
 	if len(ciphertext) < ciph.NonceSize() {
 		return nil, errors.New("ciphered text too short")
 	}
@@ -51,7 +57,10 @@ func decrypt(ciphertext []byte, ciph cipher.AEAD) ([]byte, error) {
 	nonce := ciphertext[:ciph.NonceSize()]
 	text := ciphertext[ciph.NonceSize():]
 
-	clearText, err := ciph.Open(nil, nonce, text, nil)
+	// Retrieve additional data from context
+	aad, _ := encryption.AdditionalData(ctx)
+
+	clearText, err := ciph.Open(nil, nonce, text, aad)
 	if err != nil {
 		return nil, errors.New("failed to decrypt given message")
 	}

@@ -22,6 +22,8 @@ import (
 	"crypto/cipher"
 	"errors"
 	"fmt"
+
+	"github.com/elastic/harp/pkg/sdk/value/encryption"
 )
 
 // -----------------------------------------------------------------------------
@@ -31,7 +33,7 @@ type daeTransformer struct {
 	nonceDeriverFunc NonceDeriverFunc
 }
 
-func (t *daeTransformer) To(_ context.Context, input []byte) ([]byte, error) {
+func (t *daeTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 	// Check input size
 	if len(input) > 64*1024*1024 {
 		return nil, errors.New("value too large")
@@ -46,14 +48,17 @@ func (t *daeTransformer) To(_ context.Context, input []byte) ([]byte, error) {
 		return nil, errors.New("dae: derived nonce is too short")
 	}
 
+	// Retrieve additional data from context
+	aad, _ := encryption.AdditionalData(ctx)
+
 	// Seal the cleartext with deterministic nonce
-	cipherText := t.aead.Seal(nil, nonce, input, nil)
+	cipherText := t.aead.Seal(nil, nonce, input, aad)
 
 	// Return encrypted value
 	return append(nonce, cipherText...), nil
 }
 
-func (t *daeTransformer) From(_ context.Context, input []byte) ([]byte, error) {
+func (t *daeTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
 	// Check input size
 	if len(input) < t.aead.NonceSize() {
 		return nil, errors.New("dae: ciphered text too short")
@@ -61,8 +66,9 @@ func (t *daeTransformer) From(_ context.Context, input []byte) ([]byte, error) {
 
 	nonce := input[:t.aead.NonceSize()]
 	text := input[t.aead.NonceSize():]
+	aad, _ := encryption.AdditionalData(ctx)
 
-	clearText, err := t.aead.Open(nil, nonce, text, nil)
+	clearText, err := t.aead.Open(nil, nonce, text, aad)
 	if err != nil {
 		return nil, errors.New("failed to decrypt given message")
 	}

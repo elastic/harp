@@ -18,6 +18,7 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -32,9 +33,10 @@ import (
 
 var transformDecryptCmd = func() *cobra.Command {
 	var (
-		inputPath  string
-		outputPath string
-		keyRaw     string
+		inputPath      string
+		outputPath     string
+		keyRaw         string
+		additionalData string
 	)
 
 	cmd := &cobra.Command{
@@ -73,6 +75,17 @@ var transformDecryptCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to drain input reader", zap.Error(err))
 			}
 
+			// Decode AAD if any
+			if additionalData != "" {
+				aad, errDecode := base64.StdEncoding.DecodeString(additionalData)
+				if errDecode != nil {
+					log.For(ctx).Fatal("unable to decode additional data", zap.Error(errDecode))
+				}
+
+				// Set additional data
+				ctx = encryption.WithAdditionalData(ctx, aad)
+			}
+
 			// Apply transformation
 			out, err := t.From(ctx, content)
 			if err != nil {
@@ -91,6 +104,7 @@ var transformDecryptCmd = func() *cobra.Command {
 
 	cmd.Flags().StringVar(&inputPath, "in", "-", "Input path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&outputPath, "out", "-", "Output path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&additionalData, "aad", "", "Standard BASE64 encoded additional data for AEAD encryption")
 
 	return cmd
 }

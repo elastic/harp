@@ -22,13 +22,47 @@ import (
 	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"hash"
 	"io"
+	"strings"
 
 	"golang.org/x/crypto/hkdf"
 )
+
+// decode the input key
+// <key>(:<salt>)?
+func decodeKey(key string) (k, salt []byte, err error) {
+	// Check arguments
+	if key == "" {
+		return nil, nil, errors.New("input key must not be blank")
+	}
+
+	// Try to split input key
+	parts := strings.Split(key, ":")
+	if len(parts) > 2 {
+		return nil, nil, errors.New("unable to decode input key")
+	}
+
+	// Decode key
+	k, err = base64.URLEncoding.DecodeString(parts[0])
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to decode key: %w", err)
+	}
+
+	// Are we using salt?
+	if len(parts) > 1 {
+		// Decode salt
+		salt, err = base64.URLEncoding.DecodeString(parts[1])
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to decode salt: %w", err)
+		}
+	}
+
+	return k, salt, err
+}
 
 //nolint:unparam // to refactor
 func deriveKey(secret, salt, info []byte, dkLen int) ([]byte, error) {

@@ -163,9 +163,9 @@ where the algorithm is used as a reversible hash function, DAE could be used.
 ```go
 NonceSize := 32
 
-// No salt
-salt := nil
-// No additional data (yet)
+// Salt can be provided during the transformer creation, default to nil
+salt := givenSalt | nil
+// No additional data
 info := nil
 // Derived key length
 dkLen := len(k)+NonceSize
@@ -188,6 +188,17 @@ sealed := AEAD(encryptionKey, iv, message)
 
 In order to use DAE, you have to prefix `dae-` on supported AEAD encryption
 algorithms.
+
+```txt
+dae-<aead>:<key>
+```
+
+You can provide an optional `salt` to diverge from standard encryption when
+using the same key.
+
+```txt
+dae-<aead>:<key>:BASE64URL(<salt>)
+```
 
 ##### DAE-AES-GCM
 
