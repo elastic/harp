@@ -11,13 +11,13 @@
         - [AES-PMAC-SIV](#aes-pmac-siv)
         - [Chacha20-Poly1305](#chacha20-poly1305)
         - [XChacha20-Poly1305](#xchacha20-poly1305)
-    - [Deterministic Authenticated Encryption (DAE)](#deterministic-authenticated-encryption-dae)
-      - [How to use DAE?](#how-to-use-dae)
-      - [DAE-AES-GCM](#dae-aes-gcm)
-      - [DAE-AES-SIV](#dae-aes-siv)
-      - [DAE-AES-PMAC-SIV](#dae-aes-pmac-siv)
-      - [DAE-Chacha20-Poly1305](#dae-chacha20-poly1305)
-      - [DAE-XChacha20-Poly1305](#dae-xchacha20-poly1305)
+      - [Deterministic Authenticated Encryption (DAE)](#deterministic-authenticated-encryption-dae)
+        - [How to use DAE?](#how-to-use-dae)
+        - [DAE-AES-GCM](#dae-aes-gcm)
+        - [DAE-AES-SIV](#dae-aes-siv)
+        - [DAE-AES-PMAC-SIV](#dae-aes-pmac-siv)
+        - [DAE-Chacha20-Poly1305](#dae-chacha20-poly1305)
+        - [DAE-XChacha20-Poly1305](#dae-xchacha20-poly1305)
     - [Encoded output](#encoded-output)
       - [Fernet](#fernet)
       - [JWE](#jwe)
@@ -132,7 +132,7 @@ $ echo -n "test" \
 nH8U37FO0KdCKGRyzFz6TJZm9V4juTF7bOdcIu33j++qgK26On2HNkc3g+w=
 ```
 
-### Deterministic Authenticated Encryption (DAE)
+#### Deterministic Authenticated Encryption (DAE)
 
 > A deterministic encryption scheme (as opposed to a probabilistic encryption
 > scheme) is a cryptosystem which always produces the same ciphertext for a
@@ -184,12 +184,12 @@ iv := HMACSHA256(message, hmacKey)
 sealed := AEAD(encryptionKey, iv, message)
 ```
 
-#### How to use DAE?
+##### How to use DAE?
 
 In order to use DAE, you have to prefix `dae-` on supported AEAD encryption
 algorithms.
 
-#### DAE-AES-GCM
+##### DAE-AES-GCM
 
 ```sh
 $ echo -n "test" \
@@ -198,7 +198,7 @@ $ echo -n "test" \
 SqLUCn86xNbqVcFMlSXnMRYn9qznXSsAD8B/qW7I/GU=
 ```
 
-#### DAE-AES-SIV
+##### DAE-AES-SIV
 
 ```sh
 $ echo -n "test" \
@@ -207,7 +207,7 @@ $ echo -n "test" \
 iAlNertgxaIwj8IOxlfRhyZKQknxPTopEPHBZ6jCsrJ54fzuaIIWq2vxLlaxzy9howI12A==
 ```
 
-#### DAE-AES-PMAC-SIV
+##### DAE-AES-PMAC-SIV
 
 ```sh
 $ echo -n "test" \
@@ -216,7 +216,7 @@ $ echo -n "test" \
 WNzc6rSYNu1IMlS9xvcfTlSsGmxZJI79+YnrGFADSfF0TLFcKfWsc8pAZHtsLuYiy/g/ug==
 ```
 
-#### DAE-Chacha20-Poly1305
+##### DAE-Chacha20-Poly1305
 
 ```sh
 $ echo -n "test" \
@@ -225,7 +225,7 @@ $ echo -n "test" \
 jb00tt+iUluLQEfxzz/+zcNvu7NeNyIcEehhY4zvy4o=
 ```
 
-#### DAE-XChacha20-Poly1305
+##### DAE-XChacha20-Poly1305
 
 ```sh
 $ echo -n "test" \
