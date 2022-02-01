@@ -6,6 +6,13 @@ Export all secrets to Github Actions as repository secrets.
 harp to github-actions [flags]
 ```
 
+### Examples
+
+```
+$ export GITHUB_TOKEN=ghp_###############
+$ harp to gha --in secret.container --owner elastic --owner harp --secret-filter "COSIGN_*"
+```
+
 ### Options
 
 ```

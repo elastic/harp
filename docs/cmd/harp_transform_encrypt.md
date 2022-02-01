@@ -9,6 +9,7 @@ harp transform encrypt [flags]
 ### Options
 
 ```
+      --aad string   Standard BASE64 encoded additional data for AEAD encryption
   -h, --help         help for encrypt
       --in string    Input path ('-' for stdin or filename) (default "-")
       --key string   Transformer key
