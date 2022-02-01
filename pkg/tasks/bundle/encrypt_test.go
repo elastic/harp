@@ -171,7 +171,7 @@ func TestEncryptTask_Run(t *testing.T) {
 				TransformerMap:    tt.fields.TransformerMap,
 				SkipUnresolved:    tt.fields.SkipUnresolved,
 			}
-			if err := tr.Run(tt.args.ctx); (err != nil) != tt.wantErr {
+			if err := tr.Run(context.Background()); (err != nil) != tt.wantErr {
 				t.Errorf("EncryptTask.Run() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

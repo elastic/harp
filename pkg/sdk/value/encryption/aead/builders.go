@@ -59,7 +59,7 @@ func AESGCM(key string) (value.Transformer, error) {
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
-		return nil, fmt.Errorf("aes: unable to decode key: %w", err)
+		return nil, fmt.Errorf("aes: unable to decode transformer key: %w", err)
 	}
 
 	// Check key length
@@ -95,7 +95,7 @@ func AESSIV(key string) (value.Transformer, error) {
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
-		return nil, fmt.Errorf("aes: unable to decode key: %w", err)
+		return nil, fmt.Errorf("aes: unable to decode transformer key: %w", err)
 	}
 	if l := len(k); l != 64 {
 		return nil, fmt.Errorf("aes: invalid secret key length (%d)", l)
@@ -121,7 +121,7 @@ func AESPMACSIV(key string) (value.Transformer, error) {
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
-		return nil, fmt.Errorf("aes: unable to decode key: %w", err)
+		return nil, fmt.Errorf("aes: unable to decode transformer key: %w", err)
 	}
 	if l := len(k); l != 64 {
 		return nil, fmt.Errorf("aes: invalid secret key length (%d)", l)
@@ -147,7 +147,7 @@ func Chacha20Poly1305(key string) (value.Transformer, error) {
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
-		return nil, fmt.Errorf("chacha: unable to decode key: %w", err)
+		return nil, fmt.Errorf("chacha: unable to decode transformer key: %w", err)
 	}
 	if l := len(k); l != keyLength {
 		return nil, fmt.Errorf("chacha: invalid secret key length (%d)", l)
@@ -173,7 +173,7 @@ func XChacha20Poly1305(key string) (value.Transformer, error) {
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
-		return nil, fmt.Errorf("xchacha: unable to decode key: %w", err)
+		return nil, fmt.Errorf("xchacha: unable to decode transformer key: %w", err)
 	}
 	if l := len(k); l != keyLength {
 		return nil, fmt.Errorf("xchacha: invalid secret key length (%d)", l)

@@ -160,7 +160,7 @@ func TestDecryptTask_Run(t *testing.T) {
 				OutputWriter:    tt.fields.OutputWriter,
 				Transformers:    tt.fields.Transformers,
 			}
-			if err := tr.Run(tt.args.ctx); (err != nil) != tt.wantErr {
+			if err := tr.Run(context.Background()); (err != nil) != tt.wantErr {
 				t.Errorf("DecryptTask.Run() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

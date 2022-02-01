@@ -13,7 +13,7 @@ Extensible secret management tool
 
 * [harp bug](harp_bug.md)	 - start a bug report
 * [harp bundle](harp_bundle.md)	 - Bundle commands
-* [harp completion](harp_completion.md)	 - generate the autocompletion script for the specified shell
+* [harp completion](harp_completion.md)	 - Generate the autocompletion script for the specified shell
 * [harp config](harp_config.md)	 - Manage Service Configuration
 * [harp container](harp_container.md)	 - Secret container commands
 * [harp cso](harp_cso.md)	 - CSO commands

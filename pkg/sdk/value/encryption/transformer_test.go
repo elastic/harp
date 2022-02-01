@@ -92,6 +92,13 @@ func TestFromKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "dae-aes-gcm",
+			args: args{
+				keyValue: "dae-aes-gcm:zQyPnNa-jlQsLW3Ypd87cX88ROMkdgnqv0a3y8LiISg=:jc32fV49Vi94NUYPnYR6ShInCD5rAiuMkkK2zb-Up4k=",
+			},
+			wantErr: false,
+		},
+		{
 			name: "secretbox",
 			args: args{
 				keyValue: "secretbox:gCUODuqhcktiM1USKOfkwVlKhoUyHxXZm6d64nztCp0=",
@@ -113,6 +120,13 @@ func TestFromKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "dae-chacha with salt",
+			args: args{
+				keyValue: "dae-chacha:gCUODuqhcktiM1USKOfkwVlKhoUyHxXZm6d64nztCp0=:jc32fV49Vi94NUYPnYR6ShInCD5rAiuMkkK2zb-Up4k=",
+			},
+			wantErr: false,
+		},
+		{
 			name: "xchacha",
 			args: args{
 				keyValue: "xchacha:VhfCXaD_QwwwoPCjLJx6vgnaSo0sMPjdCmT0RUUQjBQ=",
@@ -123,6 +137,13 @@ func TestFromKey(t *testing.T) {
 			name: "dae-xchacha",
 			args: args{
 				keyValue: "dae-xchacha:VhfCXaD_QwwwoPCjLJx6vgnaSo0sMPjdCmT0RUUQjBQ=",
+			},
+			wantErr: false,
+		},
+		{
+			name: "dae-xchacha with salt",
+			args: args{
+				keyValue: "dae-xchacha:VhfCXaD_QwwwoPCjLJx6vgnaSo0sMPjdCmT0RUUQjBQ=:jc32fV49Vi94NUYPnYR6ShInCD5rAiuMkkK2zb-Up4k=",
 			},
 			wantErr: false,
 		},
@@ -148,6 +169,13 @@ func TestFromKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "dae-aes-siv with salt",
+			args: args{
+				keyValue: "dae-aes-siv:2XEKpPbE8T0ghLj8Wr9v6stV0YrUCNSoSbtc69Kh-n7-pVaKmWZ8LSvaJOK9BJHqDWE8vyNSzyNpcTYv3-J9lw==:jc32fV49Vi94NUYPnYR6ShInCD5rAiuMkkK2zb-Up4k=",
+			},
+			wantErr: false,
+		},
+		{
 			name: "aes-pmac-siv",
 			args: args{
 				keyValue: "aes-pmac-siv:Brfled4G7okhpCb6T2HMWKgDo1vyqrEdWWVIXfcFUysHaOacXkER5z9GHRuz89scK2TSE962nAFUcScAkihP9w==",
@@ -158,6 +186,13 @@ func TestFromKey(t *testing.T) {
 			name: "dae-aes-pmac-siv",
 			args: args{
 				keyValue: "dae-aes-pmac-siv:Brfled4G7okhpCb6T2HMWKgDo1vyqrEdWWVIXfcFUysHaOacXkER5z9GHRuz89scK2TSE962nAFUcScAkihP9w==",
+			},
+			wantErr: false,
+		},
+		{
+			name: "dae-aes-pmac-siv with salt",
+			args: args{
+				keyValue: "dae-aes-pmac-siv:Brfled4G7okhpCb6T2HMWKgDo1vyqrEdWWVIXfcFUysHaOacXkER5z9GHRuz89scK2TSE962nAFUcScAkihP9w==:jc32fV49Vi94NUYPnYR6ShInCD5rAiuMkkK2zb-Up4k=",
 			},
 			wantErr: false,
 		},
