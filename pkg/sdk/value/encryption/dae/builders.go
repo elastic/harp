@@ -15,11 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package aead
+package dae
 
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"strings"
@@ -33,11 +34,11 @@ import (
 )
 
 var (
-	aesgcmPrefix     = "aes-gcm"
-	aespmacsivPrefix = "aes-pmac-siv"
-	aessivPrefix     = "aes-siv"
-	chachaPrefix     = "chacha"
-	xchachaPrefix    = "xchacha"
+	aesgcmPrefix     = "dae-aes-gcm"
+	aespmacsivPrefix = "dae-aes-pmac-siv"
+	aessivPrefix     = "dae-aes-siv"
+	chachaPrefix     = "dae-chacha"
+	xchachaPrefix    = "dae-xchacha"
 )
 
 func init() {
@@ -54,7 +55,7 @@ func init() {
 // AESGCM returns an AES-GCM value transformer instance.
 func AESGCM(key string) (value.Transformer, error) {
 	// Remove the prefix
-	key = strings.TrimPrefix(key, "aes-gcm:")
+	key = strings.TrimPrefix(key, "dae-aes-gcm:")
 
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
@@ -69,8 +70,14 @@ func AESGCM(key string) (value.Transformer, error) {
 		return nil, fmt.Errorf("aes: invalid key length, use 16 bytes (AES128) or 24 bytes (AES192) or 32 bytes (AES256)")
 	}
 
+	// Derive keys from input key
+	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	if err != nil {
+		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
+	}
+
 	// Create AES block cipher
-	block, err := aes.NewCipher(k)
+	block, err := aes.NewCipher(dk[:len(k)])
 	if err != nil {
 		return nil, fmt.Errorf("aes: unable to initialize block cipher: %w", err)
 	}
@@ -82,15 +89,16 @@ func AESGCM(key string) (value.Transformer, error) {
 	}
 
 	// Return transformer
-	return &aeadTransformer{
-		aead: aead,
+	return &daeTransformer{
+		aead:             aead,
+		nonceDeriverFunc: HMAC(sha256.New, dk[len(k):]),
 	}, nil
 }
 
 // AESSIV returns an AES-SIV/AES-CMAC-SIV value transformer instance.
 func AESSIV(key string) (value.Transformer, error) {
 	// Remove the prefix
-	key = strings.TrimPrefix(key, "aes-siv:")
+	key = strings.TrimPrefix(key, "dae-aes-siv:")
 
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
@@ -101,22 +109,29 @@ func AESSIV(key string) (value.Transformer, error) {
 		return nil, fmt.Errorf("aes: invalid secret key length (%d)", l)
 	}
 
+	// Derive keys from input key
+	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	if err != nil {
+		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
+	}
+
 	// Initialize AEAD
-	aead, err := miscreant.NewAEAD("AES-SIV", k, 16)
+	aead, err := miscreant.NewAEAD("AES-SIV", dk[:len(k)], 32)
 	if err != nil {
 		return nil, fmt.Errorf("aes: unable to initialize aes-pmac-siv: %w", err)
 	}
 
 	// Return transformer
-	return &aeadTransformer{
-		aead: aead,
+	return &daeTransformer{
+		aead:             aead,
+		nonceDeriverFunc: HMAC(sha256.New, dk[len(k):]),
 	}, nil
 }
 
 // AESPMACSIV returns an AES-PMAC-SIV value transformer instance.
 func AESPMACSIV(key string) (value.Transformer, error) {
 	// Remove the prefix
-	key = strings.TrimPrefix(key, "aes-pmac-siv:")
+	key = strings.TrimPrefix(key, "dae-aes-pmac-siv:")
 
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
@@ -127,66 +142,87 @@ func AESPMACSIV(key string) (value.Transformer, error) {
 		return nil, fmt.Errorf("aes: invalid secret key length (%d)", l)
 	}
 
+	// Derive keys from input key
+	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	if err != nil {
+		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
+	}
+
 	// Initialize AEAD
-	aead, err := miscreant.NewAEAD("AES-PMAC-SIV", k, 16)
+	aead, err := miscreant.NewAEAD("AES-PMAC-SIV", dk[:len(k)], 32)
 	if err != nil {
 		return nil, fmt.Errorf("aes: unable to initialize aes-pmac-siv: %w", err)
 	}
 
 	// Return transformer
-	return &aeadTransformer{
-		aead: aead,
+	return &daeTransformer{
+		aead:             aead,
+		nonceDeriverFunc: HMAC(sha256.New, dk[len(k):]),
 	}, nil
 }
 
 // Chacha20Poly1305 returns an ChaCha20Poly1305 value transformer instance.
 func Chacha20Poly1305(key string) (value.Transformer, error) {
 	// Remove the prefix
-	key = strings.TrimPrefix(key, "chacha:")
+	key = strings.TrimPrefix(key, "dae-chacha:")
 
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
 		return nil, fmt.Errorf("chacha: unable to decode key: %w", err)
 	}
-	if l := len(k); l != keyLength {
+	if l := len(k); l != 32 {
 		return nil, fmt.Errorf("chacha: invalid secret key length (%d)", l)
 	}
 
+	// Derive keys from input key
+	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	if err != nil {
+		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
+	}
+
 	// Create Chacha20-Poly1305 aead cipher
-	aead, err := chacha20poly1305.New(k)
+	aead, err := chacha20poly1305.New(dk[:len(k)])
 	if err != nil {
 		return nil, fmt.Errorf("chacha: unable to initialize chacha cipher: %w", err)
 	}
 
 	// Return transformer
-	return &aeadTransformer{
-		aead: aead,
+	return &daeTransformer{
+		aead:             aead,
+		nonceDeriverFunc: HMAC(sha256.New, dk[len(k):]),
 	}, nil
 }
 
 // XChacha20Poly1305 returns an XChaCha20Poly1305 value transformer instance.
 func XChacha20Poly1305(key string) (value.Transformer, error) {
 	// Remove the prefix
-	key = strings.TrimPrefix(key, "xchacha:")
+	key = strings.TrimPrefix(key, "dae-xchacha:")
 
 	// Decode key
 	k, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {
 		return nil, fmt.Errorf("xchacha: unable to decode key: %w", err)
 	}
-	if l := len(k); l != keyLength {
+	if l := len(k); l != 32 {
 		return nil, fmt.Errorf("xchacha: invalid secret key length (%d)", l)
 	}
 
+	// Derive keys from input key
+	dk, err := deriveKey(k, nil, nil, len(k)+32)
+	if err != nil {
+		return nil, fmt.Errorf("aes: unable te derive required keys: %w", err)
+	}
+
 	// Create Chacha20-Poly1305 aead cipher
-	aead, err := chacha20poly1305.NewX(k)
+	aead, err := chacha20poly1305.NewX(dk[:len(k)])
 	if err != nil {
 		return nil, fmt.Errorf("xchacha: unable to initialize chacha cipher: %w", err)
 	}
 
 	// Return transformer
-	return &aeadTransformer{
-		aead: aead,
+	return &daeTransformer{
+		aead:             aead,
+		nonceDeriverFunc: HMAC(sha256.New, dk[len(k):]),
 	}, nil
 }

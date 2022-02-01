@@ -22,6 +22,7 @@ package main
 import (
 	// Register encryption transformers
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/dae"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	_ "github.com/elastic/harp/pkg/sdk/value/signature/jws"

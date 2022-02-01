@@ -31,6 +31,7 @@ import (
 	// Register encryption transformers
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/age"
+	_ "github.com/elastic/harp/pkg/sdk/value/encryption/dae"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/fernet"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/paseto"
@@ -84,6 +85,13 @@ func TestFromKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "dae-aes-gcm",
+			args: args{
+				keyValue: "dae-aes-gcm:zQyPnNa-jlQsLW3Ypd87cX88ROMkdgnqv0a3y8LiISg=",
+			},
+			wantErr: false,
+		},
+		{
 			name: "secretbox",
 			args: args{
 				keyValue: "secretbox:gCUODuqhcktiM1USKOfkwVlKhoUyHxXZm6d64nztCp0=",
@@ -98,9 +106,23 @@ func TestFromKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "dae-chacha",
+			args: args{
+				keyValue: "dae-chacha:gCUODuqhcktiM1USKOfkwVlKhoUyHxXZm6d64nztCp0=",
+			},
+			wantErr: false,
+		},
+		{
 			name: "xchacha",
 			args: args{
 				keyValue: "xchacha:VhfCXaD_QwwwoPCjLJx6vgnaSo0sMPjdCmT0RUUQjBQ=",
+			},
+			wantErr: false,
+		},
+		{
+			name: "dae-xchacha",
+			args: args{
+				keyValue: "dae-xchacha:VhfCXaD_QwwwoPCjLJx6vgnaSo0sMPjdCmT0RUUQjBQ=",
 			},
 			wantErr: false,
 		},
@@ -119,9 +141,23 @@ func TestFromKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "dae-aes-siv",
+			args: args{
+				keyValue: "dae-aes-siv:2XEKpPbE8T0ghLj8Wr9v6stV0YrUCNSoSbtc69Kh-n7-pVaKmWZ8LSvaJOK9BJHqDWE8vyNSzyNpcTYv3-J9lw==",
+			},
+			wantErr: false,
+		},
+		{
 			name: "aes-pmac-siv",
 			args: args{
 				keyValue: "aes-pmac-siv:Brfled4G7okhpCb6T2HMWKgDo1vyqrEdWWVIXfcFUysHaOacXkER5z9GHRuz89scK2TSE962nAFUcScAkihP9w==",
+			},
+			wantErr: false,
+		},
+		{
+			name: "dae-aes-pmac-siv",
+			args: args{
+				keyValue: "dae-aes-pmac-siv:Brfled4G7okhpCb6T2HMWKgDo1vyqrEdWWVIXfcFUysHaOacXkER5z9GHRuz89scK2TSE962nAFUcScAkihP9w==",
 			},
 			wantErr: false,
 		},
