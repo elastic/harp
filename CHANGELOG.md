@@ -5,6 +5,7 @@
 FEATURES:
 
 * sdk/value: support `age` encryption as value transformer. [#102](https://github.com/elastic/harp/pull/102)
+* sdk/value: support deterministic authenticated encryption value transformers. [#103](https://github.com/elastic/harp/pull/103)
 
 ## 0.2.5
 
