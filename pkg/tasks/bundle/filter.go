@@ -21,9 +21,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 
 	"github.com/jmespath/go-jmespath"
+	"github.com/open-policy-agent/opa/rego"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
@@ -40,6 +42,7 @@ type FilterTask struct {
 	KeepPaths       []string
 	ExcludePaths    []string
 	JMESPath        string
+	RegoPolicy      string
 }
 
 // Run the task.
@@ -82,6 +85,13 @@ func (t *FilterTask) Run(ctx context.Context) error {
 
 	if t.JMESPath != "" {
 		b.Packages, errFilter = t.jmespathFilter(b.Packages, t.JMESPath, t.ReverseLogic)
+		if errFilter != nil {
+			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
+		}
+	}
+
+	if t.RegoPolicy != "" {
+		b.Packages, errFilter = t.regoFilter(ctx, b.Packages, t.RegoPolicy, t.ReverseLogic)
 		if errFilter != nil {
 			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
 		}
@@ -192,4 +202,69 @@ func (t *FilterTask) jmespathFilter(in []*bundlev1.Package, filter string, rever
 
 	// No error
 	return pkgs, nil
+}
+
+func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, policyFile string, reverseLogic bool) ([]*bundlev1.Package, error) {
+	// Check Arguments
+	if len(in) == 0 {
+		return in, nil
+	}
+	if policyFile == "" {
+		return in, nil
+	}
+
+	// Read policy file
+	policy, err := os.ReadFile(policyFile)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read the filter policy file: %w", err)
+	}
+
+	// Prepare query filter
+	query, err := rego.New(
+		rego.Query("data.harp.ignore"),
+		rego.Module("harp.rego", string(policy)),
+	).PrepareForEval(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepare for eval: %w", err)
+	}
+
+	pkgs := []*bundlev1.Package{}
+
+	// Apply package filtering
+	for _, p := range in {
+		// Evaluate filter compliance
+		ignored, err := t.regoEvaluate(ctx, query, p)
+		if err != nil {
+			return nil, err
+		}
+
+		// Add to filtered result
+		if ignored && !reverseLogic || !ignored && reverseLogic {
+			pkgs = append(pkgs, p)
+		}
+	}
+
+	// No error
+	return pkgs, nil
+}
+
+func (t *FilterTask) regoEvaluate(ctx context.Context, query rego.PreparedEvalQuery, input interface{}) (bool, error) {
+	// Evaluate the package with the policy
+	results, err := query.Eval(ctx, rego.EvalInput(input))
+	if err != nil {
+		return false, fmt.Errorf("unable to evaluate the policy: %w", err)
+	} else if len(results) == 0 {
+		// Handle undefined result.
+		return false, nil
+	}
+
+	// Extract decision
+	ignore, ok := results[0].Expressions[0].Value.(bool)
+	if !ok {
+		// Handle unexpected result type.
+		return false, errors.New("the policy must return boolean")
+	}
+
+	// No error
+	return ignore, nil
 }
