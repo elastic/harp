@@ -24,6 +24,9 @@ jobs:
   snyk:
     name: Snyk scanner
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
     steps:
       - uses: actions/checkout@v2
       - name: Run Snyk to check for vulnerabilities
