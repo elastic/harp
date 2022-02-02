@@ -221,7 +221,7 @@ func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, pol
 
 	// Prepare query filter
 	query, err := rego.New(
-		rego.Query("data.harp.ignore"),
+		rego.Query("data.harp.keep"),
 		rego.Module("harp.rego", string(policy)),
 	).PrepareForEval(ctx)
 	if err != nil {
@@ -233,13 +233,13 @@ func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, pol
 	// Apply package filtering
 	for _, p := range in {
 		// Evaluate filter compliance
-		ignored, err := t.regoEvaluate(ctx, query, p)
+		matched, err := t.regoEvaluate(ctx, query, p)
 		if err != nil {
 			return nil, err
 		}
 
 		// Add to filtered result
-		if ignored && !reverseLogic || !ignored && reverseLogic {
+		if matched && !reverseLogic || !matched && reverseLogic {
 			pkgs = append(pkgs, p)
 		}
 	}
@@ -259,12 +259,12 @@ func (t *FilterTask) regoEvaluate(ctx context.Context, query rego.PreparedEvalQu
 	}
 
 	// Extract decision
-	ignore, ok := results[0].Expressions[0].Value.(bool)
+	keep, ok := results[0].Expressions[0].Value.(bool)
 	if !ok {
 		// Handle unexpected result type.
 		return false, errors.New("the policy must return boolean")
 	}
 
 	// No error
-	return ignore, nil
+	return keep, nil
 }
