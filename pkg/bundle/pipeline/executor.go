@@ -22,44 +22,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gosimple/slug"
-
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/elastic/harp/build/version"
 	"github.com/elastic/harp/pkg/bundle"
-	"github.com/elastic/harp/pkg/sdk/log"
 )
 
 // Run a processor.
-func Run(ctx context.Context, name string, opts ...Option) error {
+func Run(ctx context.Context, opts ...Option) error {
 	// Initialize a running context to attach all goroutines
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// Initialize logger
-	log.Setup(ctx,
-		&log.Options{
-			Debug:    true,
-			AppName:  slug.Make(name),
-			AppID:    version.ID(),
-			Version:  version.Version,
-			Revision: version.Commit,
-		},
-	)
-
-	// Read bundle from Stdin
-	b, err := bundle.FromContainerReader(os.Stdin)
-	if err != nil {
-		return fmt.Errorf("unable to read bundle from stdin: %w", err)
-	}
-
-	const (
+	var (
 		defaultDisableOutput = false
+		defaultReader        = os.Stdin
+		defaultWriter        = os.Stdout
 	)
 
 	v := &bundleVisitor{
 		ctx: ctx,
 		opts: &Options{
+			input:         defaultReader,
+			output:        defaultWriter,
 			disableOutput: defaultDisableOutput,
 		},
 		position: &defaultContext{},
@@ -68,6 +51,12 @@ func Run(ctx context.Context, name string, opts ...Option) error {
 	// Loop through each option
 	for _, opt := range opts {
 		opt(v.opts)
+	}
+
+	// Read bundle from Stdin
+	b, err := bundle.FromContainerReader(v.opts.input)
+	if err != nil {
+		return fmt.Errorf("unable to read bundle from stdin: %w", err)
 	}
 
 	// Apply remapping strategy
@@ -80,13 +69,38 @@ func Run(ctx context.Context, name string, opts ...Option) error {
 
 	if !v.opts.disableOutput {
 		// Write output bundle
-		if err := bundle.ToContainerWriter(os.Stdout, b); err != nil {
-			return fmt.Errorf("unable to dump remapped bundle content: %w", err)
+		if err := bundle.ToContainerWriter(v.opts.output, b); err != nil {
+			return fmt.Errorf("unable to dump processed bundle content: %w", err)
 		}
 	}
 
 	// No error
 	return nil
+}
+
+// Apply a pipeline process to the given bundle
+func Apply(ctx context.Context, input *bundlev1.Bundle, opts ...Option) (*bundlev1.Bundle, error) {
+	v := &bundleVisitor{
+		ctx:      ctx,
+		opts:     &Options{},
+		position: &defaultContext{},
+	}
+
+	// Loop through each option
+	for _, opt := range opts {
+		opt(v.opts)
+	}
+
+	// Apply remapping strategy
+	v.VisitForFile(input)
+
+	// Check error
+	if err := v.Error(); err != nil {
+		return nil, fmt.Errorf("error during bundle processing: %w", err)
+	}
+
+	// No error
+	return input, nil
 }
 
 // -----------------------------------------------------------------------------

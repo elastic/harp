@@ -17,8 +17,12 @@
 
 package pipeline
 
+import "io"
+
 // Options defines default options.
 type Options struct {
+	input         io.Reader
+	output        io.Writer
 	disableOutput bool
 	fpf           FileProcessorFunc
 	ppf           PackageProcessorFunc
@@ -28,6 +32,20 @@ type Options struct {
 
 // Option represents option function
 type Option func(*Options)
+
+// InputReader defines the input reader used to retrieve the bundle content.
+func InputReader(value io.Reader) Option {
+	return func(opts *Options) {
+		opts.input = value
+	}
+}
+
+// OutputWriter defines where the bundle will be written after process execution.
+func OutputWriter(value io.Writer) Option {
+	return func(opts *Options) {
+		opts.output = value
+	}
+}
 
 // OutputDisabled assign the value to disableOutput option.
 func OutputDisabled() Option {
