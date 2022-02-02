@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+      security-events: write
       contents: read
 
     strategy:
@@ -97,6 +98,19 @@ jobs:
           build-args: |
             GOLANG_IMAGE=${{ matrix.golang-image }}
             GOLANG_VERSION=${{ matrix.golang-version }}
+      -
+        name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest'
+          format: 'template'
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results.sarif'
+      -
+        name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: 'trivy-results.sarif'
       -
         name: Create SBOM
         uses: anchore/sbom-action@v0
