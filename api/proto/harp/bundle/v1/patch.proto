@@ -71,6 +71,10 @@ message PatchSelector {
   PatchSelectorMatchPath matchPath = 1;
   // Match a package using a JMESPath query.
   string jmesPath = 2;
+  // Match a package using a Rego policy.
+  string rego = 3;
+  // Match a package by secret.
+  PatchSelectorMatchSecret matchSecret = 4;
 }
 
 // PatchSelectorMatchPath represents package path matching strategies.
@@ -79,6 +83,16 @@ message PatchSelectorMatchPath {
   // Value can be templatized.
   string strict = 1;
   // Regex path matching.
+  // Value can be templatized.
+  string regex = 2;
+}
+
+// PatchSelectorMatchPath represents package path matching strategies.
+message PatchSelectorMatchSecret {
+  // Strict case-sensitive secret matching.
+  // Value can be templatized.
+  string strict = 1;
+  // Regex secret matching.
   // Value can be templatized.
   string regex = 2;
 }

@@ -18,6 +18,7 @@
 package patch
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -87,6 +88,7 @@ func executeRule(patchName string, r *bundlev1.PatchRule, p *bundlev1.Package, v
 	return packageUnchanged, nil
 }
 
+//nolint:gocyclo // to refactor
 func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (selector.Specification, error) {
 	// Check parameters
 	if s == nil {
@@ -137,6 +139,46 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 
 		// Return specification
 		return selector.MatchJMESPath(exp), nil
+	}
+
+	// Has matchSecret selector
+	if s.MatchSecret != nil {
+		if s.MatchSecret.Strict != "" {
+			// Evaluation with template engine first
+			value, err := engine.Render(s.MatchSecret.Strict, map[string]interface{}{
+				"Values": values,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("unable to evaluate template before matchSecret build: %w", err)
+			}
+
+			// Return specification
+			return selector.MatchSecretStrict(value), nil
+		}
+		if s.MatchSecret.Regex != "" {
+			// Evaluation with template engine first
+			value, err := engine.Render(s.MatchSecret.Regex, map[string]interface{}{
+				"Values": values,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("unable to evaluate template before matchSecret build: %w", err)
+			}
+
+			// Compile regexp
+			re, err := regexp.Compile(value)
+			if err != nil {
+				return nil, fmt.Errorf("unable to compile matchSecret regexp `%s`: %w", s.MatchPath.Regex, err)
+			}
+
+			// Return specification
+			return selector.MatchSecretRegex(re), nil
+		}
+	}
+
+	// Has rego policy
+	if s.Rego != "" {
+		// Return specification
+		return selector.MatchRego(context.Background(), s.Rego)
 	}
 
 	// Fallback to default as error

@@ -364,6 +364,76 @@ func TestApply(t *testing.T) {
 			},
 		},
 		{
+			name: "remove package with rego",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/rego-remove-packages.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "application/to-be-removed",
+							Labels: map[string]string{
+								"to-remove": "true",
+							},
+						},
+						{
+							Name: "secrets/application/component-2.yaml",
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Name: "secrets/application/component-2.yaml",
+					},
+				},
+			},
+		},
+		{
+			name: "remove secrets with secret matcher",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-secrets.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "application/to-be-removed",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{
+										Key: "USER",
+									},
+								},
+							},
+						},
+						{
+							Name: "secrets/application/component-2.yaml",
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Name: "application/to-be-removed",
+						Annotations: map[string]string{
+							"secret-remover": "true",
+							"patched":        "true",
+						},
+						Secrets: &bundlev1.SecretChain{
+							Data: []*bundlev1.KV{},
+						},
+					},
+					{
+						Name: "secrets/application/component-2.yaml",
+					},
+				},
+			},
+		},
+		{
 			name: "add package",
 			args: args{
 				spec: mustLoadPatch("../../../test/fixtures/patch/valid/add-package.yaml"),

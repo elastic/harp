@@ -1,0 +1,17 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "rego-package-remover"
+  owner: security@elastic.co
+  description: "Remove a targeted package with Rego"
+spec:
+  rules:
+    - selector:
+        rego: |-
+          package harp
+          default matched = false
+          matched { input.labels["to-remove"] }
+
+      package:
+        # Flag to be removed
+        remove: true

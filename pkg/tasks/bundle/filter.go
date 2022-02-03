@@ -25,7 +25,6 @@ import (
 	"regexp"
 
 	"github.com/jmespath/go-jmespath"
-	"github.com/open-policy-agent/opa/rego"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
@@ -219,26 +218,17 @@ func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, pol
 		return nil, fmt.Errorf("unable to read the filter policy file: %w", err)
 	}
 
-	// Prepare query filter
-	query, err := rego.New(
-		rego.Query("data.harp.keep"),
-		rego.Module("harp.rego", string(policy)),
-	).PrepareForEval(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("unable to prepare for eval: %w", err)
-	}
-
 	pkgs := []*bundlev1.Package{}
+
+	// Initialize selector builder
+	s, err := selector.MatchRego(ctx, string(policy))
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize rego selector: %w", err)
+	}
 
 	// Apply package filtering
 	for _, p := range in {
-		// Evaluate filter compliance
-		matched, err := t.regoEvaluate(ctx, query, p)
-		if err != nil {
-			return nil, err
-		}
-
-		// Add to filtered result
+		matched := s.IsSatisfiedBy(p)
 		if matched && !reverseLogic || !matched && reverseLogic {
 			pkgs = append(pkgs, p)
 		}
@@ -246,25 +236,4 @@ func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, pol
 
 	// No error
 	return pkgs, nil
-}
-
-func (t *FilterTask) regoEvaluate(ctx context.Context, query rego.PreparedEvalQuery, input interface{}) (bool, error) {
-	// Evaluate the package with the policy
-	results, err := query.Eval(ctx, rego.EvalInput(input))
-	if err != nil {
-		return false, fmt.Errorf("unable to evaluate the policy: %w", err)
-	} else if len(results) == 0 {
-		// Handle undefined result.
-		return false, nil
-	}
-
-	// Extract decision
-	keep, ok := results[0].Expressions[0].Value.(bool)
-	if !ok {
-		// Handle unexpected result type.
-		return false, errors.New("the policy must return boolean")
-	}
-
-	// No error
-	return keep, nil
 }
