@@ -31,6 +31,7 @@ import (
 
 // MatchJMESPath returns a JMESPatch package matcher specification.
 func MatchRego(ctx context.Context, policy string) (Specification, error) {
+
 	// Prepare query filter
 	query, err := rego.New(
 		rego.Query("data.harp.matched"),

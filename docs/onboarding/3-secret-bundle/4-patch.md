@@ -219,14 +219,68 @@ selector:
 selector:
   rego: |-
     package harp
-    default keep = false
-    keep {
+    default matched = false
+    matched {
         input.annotations["infosec.elastic.co/v1/SecretPolicy#severity"] == "moderate"
         input.secrets.data[_].key == "cookieEncryptionKey"
     }
 ```
 
+Sample use case
+
+```yaml
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "package-secret-rotation-flagger"
+  owner: security@elastic.co
+  description: "Flag deprecated packages"
+spec:
+  rules:
+    - selector:
+        # https://play.openpolicyagent.org/p/lXEVMXpmvi
+        rego: |-
+            package harp
+
+            # Default decision
+            default matched = false
+
+            # Constants
+            annotationGenerationDate = "secrets.elastic.co/generationDate"
+            annotationRotationPeriod = "secrets.elastic.co/rotationPeriod"
+
+            # ----------------------------------------------------------------
+
+            matched {
+                has_rotation_annotations
+                must_rotate
+            }
+
+            # Helpers --------------------------------------------------------
+
+            # Check annotations presence
+            has_rotation_annotations {
+                input.annotations[annotationGenerationDate]
+                input.annotations[annotationRotationPeriod]
+            }
+
+            # Determine if the secret must be rotated
+            must_rotate {
+                genDate := time.parse_rfc3339_ns(input.annotations[annotationGenerationDate])
+                rotationPeriod := to_number(input.annotations[annotationRotationPeriod])
+                time.add_date(genDate, 0, 0, rotationPeriod) < time.now_ns()
+            }
+
+      package:
+        labels:
+            add:
+                deprecated: true
+
+```
+
 #### Match by secret key
+
+Strict matcher
 
 ```yaml
 selector:
@@ -234,10 +288,33 @@ selector:
     strict: USER
 ```
 
+Regex matcher
+
 ```yaml
 selector:
   matchSecret:
     regex: "*_KEY"
+```
+
+Complete sample
+
+```yaml
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "secret-remover"
+  owner: security@elastic.co
+  description: "Remove a targeted secrets"
+spec:
+  rules:
+    - selector:
+        matchSecret:
+          strict: USER
+      package:
+        data:
+          kv:
+            remove:
+              - USER
 ```
 
 #### PatchSelectorMatchPath

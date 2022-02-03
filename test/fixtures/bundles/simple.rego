@@ -1,8 +1,8 @@
 package harp
 
-default keep = false
+default matched = false
 
-keep {
+matched {
     input.annotations["infosec.elastic.co/v1/SecretPolicy#severity"] == "moderate"
     input.secrets.data[_].key == "cookieEncryptionKey"
 }
