@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 
 	"github.com/jmespath/go-jmespath"
@@ -40,6 +41,7 @@ type FilterTask struct {
 	KeepPaths       []string
 	ExcludePaths    []string
 	JMESPath        string
+	RegoPolicy      string
 }
 
 // Run the task.
@@ -82,6 +84,13 @@ func (t *FilterTask) Run(ctx context.Context) error {
 
 	if t.JMESPath != "" {
 		b.Packages, errFilter = t.jmespathFilter(b.Packages, t.JMESPath, t.ReverseLogic)
+		if errFilter != nil {
+			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
+		}
+	}
+
+	if t.RegoPolicy != "" {
+		b.Packages, errFilter = t.regoFilter(ctx, b.Packages, t.RegoPolicy, t.ReverseLogic)
 		if errFilter != nil {
 			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
 		}
@@ -181,6 +190,41 @@ func (t *FilterTask) jmespathFilter(in []*bundlev1.Package, filter string, rever
 
 	// Initialize selector
 	s := selector.MatchJMESPath(exp)
+
+	// Apply package filtering
+	for _, p := range in {
+		matched := s.IsSatisfiedBy(p)
+		if matched && !reverseLogic || !matched && reverseLogic {
+			pkgs = append(pkgs, p)
+		}
+	}
+
+	// No error
+	return pkgs, nil
+}
+
+func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, policyFile string, reverseLogic bool) ([]*bundlev1.Package, error) {
+	// Check Arguments
+	if len(in) == 0 {
+		return in, nil
+	}
+	if policyFile == "" {
+		return in, nil
+	}
+
+	// Read policy file
+	policy, err := os.ReadFile(policyFile)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read the filter policy file: %w", err)
+	}
+
+	pkgs := []*bundlev1.Package{}
+
+	// Initialize selector builder
+	s, err := selector.MatchRego(ctx, string(policy))
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize rego selector: %w", err)
+	}
 
 	// Apply package filtering
 	for _, p := range in {

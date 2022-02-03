@@ -20,6 +20,8 @@ bundle source without altering the source bundle.
       - [Match by strict path](#match-by-strict-path)
       - [Match by regex path](#match-by-regex-path)
       - [Match by JMES filter](#match-by-jmes-filter)
+      - [Match by Rego policy](#match-by-rego-policy)
+      - [Match by secret key](#match-by-secret-key)
       - [PatchSelectorMatchPath](#patchselectormatchpath)
     - [PatchPackage](#patchpackage)
       - [PatchPackagePath](#patchpackagepath)
@@ -181,6 +183,10 @@ message PatchSelector {
   PatchSelectorMatchPath matchPath = 1;
   // Match a package using a JMESPath query.
   string jmesPath = 2;
+  // Match a package using a Rego policy.
+  string rego = 3;
+  // Match a package by secret.
+  PatchSelectorMatchSecret matchSecret = 4;
 }
 ```
 
@@ -205,6 +211,33 @@ selector:
 ```yaml
 selector:
   jmesPath: labels.database == "postgres"
+```
+
+#### Match by Rego policy
+
+```yaml
+selector:
+  rego: |-
+    package harp
+    default keep = false
+    keep {
+        input.annotations["infosec.elastic.co/v1/SecretPolicy#severity"] == "moderate"
+        input.secrets.data[_].key == "cookieEncryptionKey"
+    }
+```
+
+#### Match by secret key
+
+```yaml
+selector:
+  matchSecret:
+    strict: USER
+```
+
+```yaml
+selector:
+  matchSecret:
+    regex: "*_KEY"
 ```
 
 #### PatchSelectorMatchPath

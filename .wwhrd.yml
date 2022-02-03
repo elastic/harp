@@ -55,3 +55,5 @@ exceptions:
   - github.com/hashicorp/consul/api
   # BSD-2.0 - https://github.com/Nvveen/Gotty/blob/master/LICENSE
   - github.com/Nvveen/Gotty
+  # BSD-2.0 - https://github.com/rcrowley/go-metrics/blob/master/LICENSE
+  - github.com/rcrowley/go-metrics

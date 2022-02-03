@@ -33,6 +33,7 @@ type bundleFilterParams struct {
 	excludePaths []string
 	keepPaths    []string
 	jmesPath     string
+	regoPolicy   string
 	reverseLogic bool
 }
 
@@ -55,6 +56,7 @@ var bundleFilterCmd = func() *cobra.Command {
 				ExcludePaths:    params.excludePaths,
 				KeepPaths:       params.keepPaths,
 				JMESPath:        params.jmesPath,
+				RegoPolicy:      params.regoPolicy,
 				ReverseLogic:    params.reverseLogic,
 			}
 
@@ -71,6 +73,7 @@ var bundleFilterCmd = func() *cobra.Command {
 	cmd.Flags().StringArrayVar(&params.excludePaths, "exclude", []string{}, "Exclude path")
 	cmd.Flags().StringArrayVar(&params.keepPaths, "keep", []string{}, "Keep path")
 	cmd.Flags().StringVar(&params.jmesPath, "query", "", "JMESPath query used as package filter")
+	cmd.Flags().StringVar(&params.regoPolicy, "policy", "", "OPA Rego policy file as package filter")
 	cmd.Flags().BoolVar(&params.reverseLogic, "not", false, "Reverse filter logic expression")
 
 	return cmd
