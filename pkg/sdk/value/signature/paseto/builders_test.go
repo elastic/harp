@@ -22,8 +22,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/elastic/harp/pkg/sdk/value"
 )
 
 var p384PrivateJWK = []byte(`{

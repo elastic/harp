@@ -20,8 +20,9 @@ package flatmap
 import (
 	"testing"
 
-	"github.com/elastic/harp/pkg/bundle"
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/elastic/harp/pkg/bundle"
 )
 
 func TestExpand(t *testing.T) {

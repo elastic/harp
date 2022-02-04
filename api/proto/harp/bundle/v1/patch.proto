@@ -53,16 +53,24 @@ message PatchMeta {
 
 // PatchSpec repesetns bundle patch specification holder.
 message PatchSpec {
+  PatchExecutor executor = 1;
   // Patch selector rules. Applied in the declaration order.
-  repeated PatchRule rules = 1;
+  repeated PatchRule rules = 2;
+}
+
+message PatchExecutor {
+  // Enable/Disable annotations after patch application.
+  bool disableAnnotations = 1;
 }
 
 // PatchRule represents an operation to apply to a given bundle.
 message PatchRule {
+  // Rule identifier.
+  string id = 1;
   // Used to determine is patch strategy is applicable to the package.
-  PatchSelector selector = 1;
+  PatchSelector selector = 2;
   // Package patch operations.
-  PatchPackage package = 2;
+  PatchPackage package = 3;
 }
 
 // PatchSelector represents selecting strategies used to match a bundle resource.

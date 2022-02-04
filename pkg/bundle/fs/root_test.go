@@ -23,8 +23,9 @@ import (
 	"io/fs"
 	"testing"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	fuzz "github.com/google/gofuzz"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
 func TestFromBundle(t *testing.T) {

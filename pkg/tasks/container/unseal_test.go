@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/awnumar/memguard"
+
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/tasks"
 )

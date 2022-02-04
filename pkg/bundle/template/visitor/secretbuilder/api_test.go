@@ -20,9 +20,10 @@ package secretbuilder
 import (
 	"testing"
 
+	fuzz "github.com/google/gofuzz"
+
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/template/engine"
-	fuzz "github.com/google/gofuzz"
 )
 
 func TestVisit_Fuzz(t *testing.T) {

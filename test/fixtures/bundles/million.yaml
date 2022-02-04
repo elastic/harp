@@ -1,0 +1,12 @@
+app:
+  prod:
+[[ range $i := until (int .Values.count) ]]
+    customer-[[ printf "%09d" $i ]]:
+      harp:
+        v1.0.0:
+          registry:
+            bundles:
+              encryption:
+                KEY: |-
+                    [[ $i ]]
+[[ end ]]

@@ -1,0 +1,79 @@
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "package-secret-rotation-flagger"
+  owner: security@elastic.co
+  description: "Flag deprecated packages"
+spec:
+  executor:
+    # Disable patch annotations
+    disableAnnotations: true
+  rules:
+    # --------------------------------------------------------------------------
+    # Secret classification
+    #
+    # This rule will flag all packages with `deprecated`:`true` as a label if
+    # the genration date is older than the grace period defined by generation
+    # date + rotation period annotations.
+    - id: package-classifier
+      selector:
+        # https://play.openpolicyagent.org/p/lXEVMXpmvi
+        rego: |-
+            package harp
+
+            # Default decision
+            default matched = false
+
+            # Constants
+            annotationGenerationDate = "infosec.elastic.co/v1/SecretPolicy#generationDate"
+            annotationRotationPeriod = "infosec.elastic.co/v1/SecretPolicy#rotationPeriod"
+
+            # ----------------------------------------------------------------
+
+            matched {
+                has_rotation_annotations
+                must_rotate
+            }
+
+            # Helpers --------------------------------------------------------
+
+            # Check annotations presence
+            has_rotation_annotations {
+                input.annotations[annotationGenerationDate]
+                input.annotations[annotationRotationPeriod]
+            }
+
+            # Determine if the secret must be rotated
+            must_rotate {
+                genDate := time.parse_rfc3339_ns(input.annotations[annotationGenerationDate])
+                rotationPeriod := to_number(input.annotations[annotationRotationPeriod])
+                time.add_date(genDate, 0, 0, rotationPeriod) > time.now_ns()
+            }
+
+      package:
+        labels:
+          add:
+            # Flag the package as deprecated
+            deprecated: "true"
+
+    # --------------------------------------------------------------------------
+    # Secret rotation matchers
+
+    - selector:
+        # Use bundle filter --query to debug this query
+        jmesPath: |-
+            labels.deprecated == 'true'
+                && name == 'product/ece/v1.0.0/artifact/signature/key'
+      package:
+        annotations:
+          update:
+            "infosec.elastic.co/v1/SecretPolicy#generationDate": "{{ now | isodate }}"
+        labels:
+          remove:
+            - deprecated
+        data:
+          template: |-
+            {
+                "privateKey": "{{ $sigKey := cryptoPair "rsa" }}{{ $sigKey.Private | toJwk | b64enc }}",
+                "publicKey": "{{ $sigKey.Public | toJwk | b64enc }}"
+            }
