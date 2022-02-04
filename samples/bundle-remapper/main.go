@@ -22,11 +22,11 @@ import (
 	"fmt"
 	"strings"
 
+	"go.uber.org/zap"
+
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/pipeline"
 	"github.com/elastic/harp/pkg/sdk/log"
-
-	"go.uber.org/zap"
 )
 
 func main() {

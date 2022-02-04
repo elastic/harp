@@ -23,9 +23,10 @@ import (
 	"os"
 	"testing"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
 func TestFromDump(t *testing.T) {

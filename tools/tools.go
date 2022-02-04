@@ -26,7 +26,6 @@ package tools
 import (
 	_ "github.com/CycloneDX/cyclonedx-gomod"
 	_ "github.com/daixiang0/gci"
-	_ "github.com/elastic/go-licenser"
 	_ "github.com/frapposelli/wwhrd"
 	_ "github.com/golang/mock/mockgen"
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
@@ -35,6 +34,8 @@ import (
 	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
 	_ "gotest.tools/gotestsum"
 	_ "mvdan.cc/gofumpt"
+
+	_ "github.com/elastic/go-licenser"
 )
 
 // If you want to use tools, please run the following command:

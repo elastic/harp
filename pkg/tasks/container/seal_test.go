@@ -23,9 +23,10 @@ import (
 	"io"
 	"testing"
 
+	fuzz "github.com/google/gofuzz"
+
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/tasks"
-	fuzz "github.com/google/gofuzz"
 )
 
 func TestSealTask_Run_V1(t *testing.T) {

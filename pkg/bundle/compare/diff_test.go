@@ -20,10 +20,11 @@ package compare
 import (
 	"testing"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/elastic/harp/pkg/bundle/secret"
 	"github.com/google/go-cmp/cmp"
 	fuzz "github.com/google/gofuzz"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	"github.com/elastic/harp/pkg/bundle/secret"
 )
 
 func MustPack(value interface{}) []byte {

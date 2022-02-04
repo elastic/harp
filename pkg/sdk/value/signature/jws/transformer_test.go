@@ -23,9 +23,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/elastic/harp/pkg/sdk/value/signature"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/square/go-jose.v2"
+
+	"github.com/elastic/harp/pkg/sdk/value/signature"
 )
 
 // -----------------------------------------------------------------------------

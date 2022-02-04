@@ -21,8 +21,9 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/elastic/harp/pkg/container/identity/key"
 )
 
 var (

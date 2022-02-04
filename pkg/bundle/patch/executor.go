@@ -27,7 +27,6 @@ import (
 	"github.com/jmespath/go-jmespath"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/bundle/secret"
 	"github.com/elastic/harp/pkg/bundle/selector"
 	"github.com/elastic/harp/pkg/template/engine"
@@ -43,11 +42,8 @@ const (
 
 // -----------------------------------------------------------------------------
 
-func executeRule(patchName string, r *bundlev1.PatchRule, p *bundlev1.Package, values map[string]interface{}) (ruleAction, error) {
+func executeRule(r *bundlev1.PatchRule, p *bundlev1.Package, values map[string]interface{}) (ruleAction, error) {
 	// Check parameters
-	if patchName == "" {
-		return packageUnchanged, fmt.Errorf("cannot process with blank patch name")
-	}
 	if r == nil {
 		return packageUnchanged, fmt.Errorf("cannot process nil rule")
 	}
@@ -75,10 +71,6 @@ func executeRule(patchName string, r *bundlev1.PatchRule, p *bundlev1.Package, v
 		if err := applyPackagePatch(p, r.Package, values); err != nil {
 			return packageUnchanged, fmt.Errorf("unable to apply patch to package `%s`: %w", p.Name, err)
 		}
-
-		// Add annotations to mark package as patched.
-		bundle.Annotate(p, "patched", "true")
-		bundle.Annotate(p, patchName, "true")
 
 		// No error
 		return packageUpdated, nil

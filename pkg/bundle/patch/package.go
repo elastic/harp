@@ -20,11 +20,13 @@ package patch
 import (
 	"encoding/base64"
 	"fmt"
+	"sort"
 
 	"golang.org/x/crypto/blake2b"
 	"google.golang.org/protobuf/proto"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	"github.com/elastic/harp/pkg/bundle"
 )
 
 // Validate bundle patch.
@@ -75,7 +77,7 @@ func Checksum(spec *bundlev1.Patch) (string, error) {
 }
 
 // Apply given patch to the given bundle.
-//nolint:interfacer // Explicit type restriction
+//nolint:interfacer,gocyclo // Explicit type restriction
 func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}) (*bundlev1.Bundle, error) {
 	// Validate spec
 	if err := Validate(spec); err != nil {
@@ -95,9 +97,9 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 	if !ok {
 		return nil, fmt.Errorf("the cloned bundle does not have the expected type: %T", bCopy)
 	}
-
-	// Initialize empty package list
-	packageList := make([]*bundlev1.Package, 0)
+	if bCopy.Packages == nil {
+		bCopy.Packages = []*bundlev1.Package{}
+	}
 
 	// Process all creation rule first
 	for i, r := range spec.Spec.Rules {
@@ -111,7 +113,7 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 			Name: r.Selector.MatchPath.Strict,
 		}
 
-		_, err := executeRule(spec.Meta.Name, r, p, values)
+		_, err := executeRule(r, p, values)
 		if err != nil {
 			return nil, fmt.Errorf("unable to execute rule index %d: %w", i, err)
 		}
@@ -120,29 +122,35 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 		bCopy.Packages = append(bCopy.Packages, p)
 	}
 
-	// Process all rules
-	for _, p := range bCopy.Packages {
-		lastAction := packageUnchanged
-
-		for i, r := range spec.Spec.Rules {
-			action, err := executeRule(spec.Meta.Name, r, p, values)
+	for ri, r := range spec.Spec.Rules {
+		// Process all packages
+		for i, p := range bCopy.Packages {
+			action, err := executeRule(r, p, values)
 			if err != nil {
-				return nil, fmt.Errorf("unable to execute rule index %d: %w", i, err)
+				return nil, fmt.Errorf("unable to execute rule index %d: %w", ri, err)
 			}
-			if action == packagedRemoved {
-				lastAction = action
-				break
-			}
-		}
 
-		if lastAction != packagedRemoved {
-			// Assign package map
-			packageList = append(packageList, p)
+			switch action {
+			case packagedRemoved:
+				bCopy.Packages = append(bCopy.Packages[:i], bCopy.Packages[i+1:]...)
+			case packageUpdated:
+				if WithAnnotations(spec) {
+					// Add annotations to mark package as patched.
+					bundle.Annotate(p, "patched", "true")
+					bundle.Annotate(p, spec.Meta.Name, "true")
+				}
+				bCopy.Packages[i] = p
+			case packageUnchanged:
+				// No changes
+			default:
+			}
 		}
 	}
 
-	// Reassign packages
-	bCopy.Packages = packageList
+	// Sort packages
+	sort.SliceStable(bCopy.Packages, func(i, j int) bool {
+		return bCopy.Packages[i].Name < bCopy.Packages[j].Name
+	})
 
 	// No error
 	return bCopy, nil

@@ -29,7 +29,7 @@ import (
 
 const (
 	// MaxReaderLimitSize is the upper limit for reader capability.
-	MaxReaderLimitSize = 25 * 1024 * 1024
+	MaxReaderLimitSize = 250 * 1024 * 1024
 	// ReaderTimeout is a time limit during the reader is waiting for data.
 	ReaderTimeout = 1 * time.Minute
 )

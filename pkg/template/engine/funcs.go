@@ -26,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/alessio/shellescape"
@@ -39,6 +40,7 @@ import (
 )
 
 // FuncMap returns a mapping of all of the functions that Temmplate has.
+//nolint:funlen // To refactor
 func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 	f := sprig.TxtFuncMap()
 
@@ -123,6 +125,24 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 			return pemutil.ParseCertificateRequest([]byte(pemData))
 		},
 		"toTLSA": crypto.ToTLSA,
+		"isodate": func(date interface{}) string {
+			var t time.Time
+			switch date := date.(type) {
+			default:
+				t = time.Now()
+			case time.Time:
+				t = date
+			case *time.Time:
+				t = *date
+			case int64:
+				t = time.Unix(date, 0)
+			case int:
+				t = time.Unix(int64(date), 0)
+			case int32:
+				t = time.Unix(int64(date), 0)
+			}
+			return t.UTC().Format(time.RFC3339)
+		},
 	}
 
 	for k, v := range extra {

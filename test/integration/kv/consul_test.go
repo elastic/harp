@@ -23,10 +23,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/elastic/harp/pkg/kv/consul"
-	"github.com/elastic/harp/test/integration/resource"
 	"github.com/hashicorp/consul/api"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/elastic/harp/pkg/kv/consul"
+	"github.com/elastic/harp/test/integration/resource"
 )
 
 // -----------------------------------------------------------------------------

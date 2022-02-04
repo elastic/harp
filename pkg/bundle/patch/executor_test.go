@@ -20,8 +20,9 @@ package patch
 import (
 	"testing"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	fuzz "github.com/google/gofuzz"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
 func Test_executeRule_Fuzz(t *testing.T) {
@@ -64,7 +65,7 @@ func Test_executeRule_Fuzz(t *testing.T) {
 		f.Fuzz(&spec.Spec.Rules[0])
 
 		// Execute
-		executeRule(patchName, spec.Spec.Rules[0], &p, values)
+		executeRule(spec.Spec.Rules[0], &p, values)
 	}
 }
 

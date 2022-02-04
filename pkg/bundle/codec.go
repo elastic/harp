@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
@@ -74,6 +75,11 @@ func Dump(w io.Writer, b *bundlev1.Bundle) error {
 	if b == nil {
 		return fmt.Errorf("unable to process nil bundle")
 	}
+
+	// Sort packages
+	sort.SliceStable(b.Packages, func(i, j int) bool {
+		return b.Packages[i].Name < b.Packages[j].Name
+	})
 
 	// Compute merkle tree
 	tree, _, err := Tree(b)

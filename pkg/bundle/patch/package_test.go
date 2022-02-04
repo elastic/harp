@@ -22,10 +22,11 @@ import (
 	"reflect"
 	"testing"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
 var (
@@ -192,6 +193,7 @@ func TestApply_Fuzz(t *testing.T) {
 				Name: "test-patch",
 			},
 			Spec: &bundlev1.PatchSpec{
+				Executor: &bundlev1.PatchExecutor{},
 				Rules: []*bundlev1.PatchRule{
 					{
 						Package:  &bundlev1.PatchPackage{},
@@ -450,9 +452,6 @@ func TestApply(t *testing.T) {
 			want: &bundlev1.Bundle{
 				Packages: []*bundlev1.Package{
 					{
-						Name: "secrets/application/component-2.yaml",
-					},
-					{
 						Name: "application/created-package",
 						Annotations: map[string]string{
 							"package-creator":                       "true",
@@ -471,6 +470,9 @@ func TestApply(t *testing.T) {
 								},
 							},
 						},
+					},
+					{
+						Name: "secrets/application/component-2.yaml",
 					},
 				},
 			},

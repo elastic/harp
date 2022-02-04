@@ -26,12 +26,12 @@ import (
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
-	"github.com/elastic/harp/pkg/sdk/value/identity"
-	"github.com/elastic/harp/pkg/sdk/value/mock"
-	"github.com/elastic/harp/pkg/tasks"
 
 	// Imported for tests
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/jwe"
+	"github.com/elastic/harp/pkg/sdk/value/identity"
+	"github.com/elastic/harp/pkg/sdk/value/mock"
+	"github.com/elastic/harp/pkg/tasks"
 )
 
 func TestRecoverTask_Run(t *testing.T) {

@@ -15,39 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//go:build integration
+package patch
 
-package kv
+import bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 
-import (
-	"context"
-	"testing"
-	"time"
-
-	"github.com/go-zookeeper/zk"
-	"github.com/stretchr/testify/assert"
-
-	"github.com/elastic/harp/pkg/kv/zookeeper"
-	"github.com/elastic/harp/test/integration/resource"
-)
-
-// -----------------------------------------------------------------------------
-
-func TestWithZookeeper(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Create zk instance
-	kvURI := resource.Zookeeper(ctx, t)
-
-	// Create zk client
-	conn, _, err := zk.Connect([]string{kvURI}, 10*time.Second)
-	assert.NoError(t, err)
-	assert.NotNil(t, conn)
-
-	// Initialize KV Store
-	s := zookeeper.Store(conn)
-
-	// Run test suite
-	t.Run("store", testSuite(ctx, s))
+// WithAnnotations returns the given patch spec patch annotations state.
+func WithAnnotations(p *bundlev1.Patch) bool {
+	switch {
+	case p == nil, p.Spec == nil, p.Spec.Executor == nil:
+		return true
+	default:
+		return !p.Spec.Executor.DisableAnnotations
+	}
 }
