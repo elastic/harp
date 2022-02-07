@@ -29,7 +29,7 @@ import (
 	"github.com/elastic/harp/pkg/sdk/log"
 )
 
-// MatchJMESPath returns a JMESPatch package matcher specification.
+// MatchRego returns a Rego package matcher specification.
 func MatchRego(ctx context.Context, policy string) (Specification, error) {
 	// Prepare query filter
 	query, err := rego.New(
