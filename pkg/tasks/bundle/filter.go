@@ -46,6 +46,7 @@ type FilterTask struct {
 }
 
 // Run the task.
+//nolint:gocyclo // to refactor
 func (t *FilterTask) Run(ctx context.Context) error {
 	// Check arguments
 	if types.IsNil(t.ContainerReader) {
@@ -98,7 +99,7 @@ func (t *FilterTask) Run(ctx context.Context) error {
 	}
 
 	if len(t.CELExpressions) > 0 {
-		b.Packages, errFilter = t.celFilter(ctx, b.Packages, t.CELExpressions, t.ReverseLogic)
+		b.Packages, errFilter = t.celFilter(b.Packages, t.CELExpressions, t.ReverseLogic)
 		if errFilter != nil {
 			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
 		}
@@ -246,7 +247,7 @@ func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, pol
 	return pkgs, nil
 }
 
-func (t *FilterTask) celFilter(ctx context.Context, in []*bundlev1.Package, celExpressions []string, reverseLogic bool) ([]*bundlev1.Package, error) {
+func (t *FilterTask) celFilter(in []*bundlev1.Package, celExpressions []string, reverseLogic bool) ([]*bundlev1.Package, error) {
 	// Check Arguments
 	if len(in) == 0 {
 		return in, nil
