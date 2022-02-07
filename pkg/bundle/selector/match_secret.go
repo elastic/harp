@@ -22,19 +22,27 @@ import (
 	"strings"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	"github.com/gobwas/glob"
 )
 
-// MatchSecretStrict returns a secret matcher specification with strict profile.
+// MatchSecretStrict returns a secret key matcher specification with strict profile.
 func MatchSecretStrict(value string) Specification {
 	return &matchSecret{
 		strict: value,
 	}
 }
 
-// MatchSecretRegex returns a secret matcher specification with regexp.
+// MatchSecretRegex returns a secret key matcher specification with regexp.
 func MatchSecretRegex(regex *regexp.Regexp) Specification {
 	return &matchSecret{
 		regex: regex,
+	}
+}
+
+// MatchSecretGlob returns a secret key matcher specification with glob query.
+func MatchSecretGlob(pattern string) Specification {
+	return &matchPath{
+		g: glob.MustCompile(pattern),
 	}
 }
 
@@ -42,6 +50,7 @@ func MatchSecretRegex(regex *regexp.Regexp) Specification {
 type matchSecret struct {
 	strict string
 	regex  *regexp.Regexp
+	g      glob.Glob
 }
 
 // IsSatisfiedBy returns specification satisfaction status
@@ -56,14 +65,13 @@ func (s *matchSecret) IsSatisfiedBy(object interface{}) bool {
 		}
 
 		for _, kv := range p.Secrets.Data {
-			// Strict mode
-			if s.strict != "" {
-				match = strings.Compare(kv.Key, s.strict) == 0
-			}
-
-			// Regex mode
-			if s.regex != nil {
-				match = s.regex.MatchString(kv.Key)
+			switch {
+			case s.strict != "":
+				return strings.Compare(kv.Key, s.strict) == 0
+			case s.regex != nil:
+				return s.regex.MatchString(kv.Key)
+			case s.g != nil:
+				return s.g.Match(kv.Key)
 			}
 		}
 	}

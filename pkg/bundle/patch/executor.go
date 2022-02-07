@@ -20,6 +20,7 @@ package patch
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -80,7 +81,7 @@ func executeRule(r *bundlev1.PatchRule, p *bundlev1.Package, values map[string]i
 	return packageUnchanged, nil
 }
 
-//nolint:gocyclo // to refactor
+//nolint:gocyclo,funlen // to refactor
 func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (selector.Specification, error) {
 	// Check parameters
 	if s == nil {
@@ -89,7 +90,8 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 
 	// Has matchPath selector
 	if s.MatchPath != nil {
-		if s.MatchPath.Strict != "" {
+		switch {
+		case s.MatchPath.Strict != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchPath.Strict, map[string]interface{}{
 				"Values": values,
@@ -100,8 +102,18 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 
 			// Return specification
 			return selector.MatchPathStrict(value), nil
-		}
-		if s.MatchPath.Regex != "" {
+		case s.MatchPath.Glob != "":
+			// Evaluation with template engine first
+			value, err := engine.Render(s.MatchPath.Glob, map[string]interface{}{
+				"Values": values,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("unable to evaluate template before matchPath build: %w", err)
+			}
+
+			// Return specification
+			return selector.MatchPathGlob(value)
+		case s.MatchPath.Regex != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchPath.Regex, map[string]interface{}{
 				"Values": values,
@@ -110,14 +122,10 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 				return nil, fmt.Errorf("unable to evaluate template before matchPath build: %w", err)
 			}
 
-			// Compile regexp
-			re, err := regexp.Compile(value)
-			if err != nil {
-				return nil, fmt.Errorf("unable to compile macthPath regexp `%s`: %w", s.MatchPath.Regex, err)
-			}
-
 			// Return specification
-			return selector.MatchPathRegex(re), nil
+			return selector.MatchPathRegex(value)
+		default:
+			return nil, errors.New("no strict, glob or regexp defined for path matcher")
 		}
 	}
 
@@ -135,7 +143,8 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 
 	// Has matchSecret selector
 	if s.MatchSecret != nil {
-		if s.MatchSecret.Strict != "" {
+		switch {
+		case s.MatchSecret.Strict != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchSecret.Strict, map[string]interface{}{
 				"Values": values,
@@ -146,8 +155,18 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 
 			// Return specification
 			return selector.MatchSecretStrict(value), nil
-		}
-		if s.MatchSecret.Regex != "" {
+		case s.MatchSecret.Glob != "":
+			// Evaluation with template engine first
+			value, err := engine.Render(s.MatchSecret.Glob, map[string]interface{}{
+				"Values": values,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("unable to evaluate template before matchSecret build: %w", err)
+			}
+
+			// Return specification
+			return selector.MatchSecretGlob(value), nil
+		case s.MatchSecret.Regex != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchSecret.Regex, map[string]interface{}{
 				"Values": values,
@@ -164,6 +183,8 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 
 			// Return specification
 			return selector.MatchSecretRegex(re), nil
+		default:
+			return nil, errors.New("no strict, glob or regexp defined for secret matcher")
 		}
 	}
 

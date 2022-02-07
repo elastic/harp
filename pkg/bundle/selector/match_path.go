@@ -18,8 +18,11 @@
 package selector
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/gobwas/glob"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
@@ -32,30 +35,51 @@ func MatchPathStrict(value string) Specification {
 }
 
 // MatchPathRegex returns a path matcher specification with regexp.
-func MatchPathRegex(regex *regexp.Regexp) Specification {
-	return &matchPath{
-		regex: regex,
+func MatchPathRegex(pattern string) (Specification, error) {
+	// Compile and check filter
+	m, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("unable to compile regex filter: %w", err)
 	}
+
+	// No error
+	return &matchPath{
+		regex: m,
+	}, nil
+}
+
+// MatchPathGlob returns a path matcher specification with glob query.
+func MatchPathGlob(pattern string) (Specification, error) {
+	// Compile and check filter
+	m, err := glob.Compile(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("unable to compile glob filter: %w", err)
+	}
+
+	// No error
+	return &matchPath{
+		g: m,
+	}, nil
 }
 
 // MatchPath checks if secret path match the given string
 type matchPath struct {
 	strict string
 	regex  *regexp.Regexp
+	g      glob.Glob
 }
 
 // IsSatisfiedBy returns specification satisfaction status
 func (s *matchPath) IsSatisfiedBy(object interface{}) bool {
 	// If object is a package
 	if p, ok := object.(*bundlev1.Package); ok {
-		// Strict mode
-		if s.strict != "" {
+		switch {
+		case s.strict != "":
 			return strings.Compare(p.Name, s.strict) == 0
-		}
-
-		// Regex mode
-		if s.regex != nil {
+		case s.regex != nil:
 			return s.regex.MatchString(p.Name)
+		case s.g != nil:
+			return s.g.Match(p.Name)
 		}
 	}
 

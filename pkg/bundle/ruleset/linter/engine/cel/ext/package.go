@@ -46,8 +46,26 @@ func (packageLib) CompileOptions() []cel.EnvOption {
 	return []cel.EnvOption{
 		cel.Declarations(
 			decls.NewVar("p", harpPackageObjectType),
+			decls.NewFunction("match_label",
+				decls.NewInstanceOverload("package_match_label_string",
+					[]*exprpb.Type{harpPackageObjectType, decls.String},
+					decls.Bool,
+				),
+			),
+			decls.NewFunction("match_annotation",
+				decls.NewInstanceOverload("package_match_annotation_string",
+					[]*exprpb.Type{harpPackageObjectType, decls.String},
+					decls.Bool,
+				),
+			),
 			decls.NewFunction("match_path",
 				decls.NewInstanceOverload("package_match_path_string",
+					[]*exprpb.Type{harpPackageObjectType, decls.String},
+					decls.Bool,
+				),
+			),
+			decls.NewFunction("match_secret",
+				decls.NewInstanceOverload("package_match_secret_string",
 					[]*exprpb.Type{harpPackageObjectType, decls.String},
 					decls.Bool,
 				),
@@ -92,8 +110,20 @@ func (packageLib) ProgramOptions() []cel.ProgramOption {
 	return []cel.ProgramOption{
 		cel.Functions(
 			&functions.Overload{
+				Operator: "package_match_label_string",
+				Binary:   celPackageMatchLabel,
+			},
+			&functions.Overload{
+				Operator: "package_match_annotation_string",
+				Binary:   celPackageMatchAnnotation,
+			},
+			&functions.Overload{
 				Operator: "package_match_path_string",
 				Binary:   celPackageMatchPath,
+			},
+			&functions.Overload{
+				Operator: "package_match_secret_string",
+				Binary:   celPackageMatchSecret,
 			},
 			&functions.Overload{
 				Operator: "package_has_secret_string",
@@ -117,6 +147,60 @@ func (packageLib) ProgramOptions() []cel.ProgramOption {
 
 // -----------------------------------------------------------------------------
 
+func celPackageMatchLabel(lhs, rhs ref.Val) ref.Val {
+	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	patternTyped, ok := rhs.(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	pattern, ok := patternTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	m := glob.MustCompile(pattern)
+	for k := range p.Labels {
+		if m.Match(k) {
+			return types.Bool(true)
+		}
+	}
+
+	return types.Bool(false)
+}
+
+func celPackageMatchAnnotation(lhs, rhs ref.Val) ref.Val {
+	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	patternTyped, ok := rhs.(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	pattern, ok := patternTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	m := glob.MustCompile(pattern)
+	for k := range p.Annotations {
+		if m.Match(k) {
+			return types.Bool(true)
+		}
+	}
+
+	return types.Bool(false)
+}
+
 func celPackageMatchPath(lhs, rhs ref.Val) ref.Val {
 	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
 	p, ok := x.(*bundlev1.Package)
@@ -135,6 +219,40 @@ func celPackageMatchPath(lhs, rhs ref.Val) ref.Val {
 	}
 
 	return types.Bool(glob.MustCompile(path).Match(p.Name))
+}
+
+func celPackageMatchSecret(lhs, rhs ref.Val) ref.Val {
+	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	secretTyped, ok := rhs.(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	secretName, ok := secretTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	// No secret data
+	if p.Secrets == nil || p.Secrets.Data == nil || len(p.Secrets.Data) == 0 {
+		return types.Bool(false)
+	}
+
+	m := glob.MustCompile(secretName)
+
+	// Look for secret name
+	for _, s := range p.Secrets.Data {
+		if m.Match(s.Key) {
+			return types.Bool(true)
+		}
+	}
+
+	return types.Bool(false)
 }
 
 func celPackageHasSecret(lhs, rhs ref.Val) ref.Val {

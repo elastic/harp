@@ -21,6 +21,7 @@ bundle source without altering the source bundle.
       - [Match by regex path](#match-by-regex-path)
       - [Match by JMES filter](#match-by-jmes-filter)
       - [Match by Rego policy](#match-by-rego-policy)
+      - [Match by CEL expression](#match-by-cel-expression)
       - [Match by secret key](#match-by-secret-key)
       - [PatchSelectorMatchPath](#patchselectormatchpath)
     - [PatchPackage](#patchpackage)
@@ -187,6 +188,8 @@ message PatchSelector {
   string rego = 3;
   // Match a package by secret.
   PatchSelectorMatchSecret matchSecret = 4;
+  // Match a package using CEL expressions.
+  repeated string cel = 5;
 }
 ```
 
@@ -278,6 +281,43 @@ spec:
 
 ```
 
+#### Match by CEL expression
+
+```yaml
+selector:
+  cel:
+    - "p.is_cso_compliant()"
+```
+
+Sample use case
+
+```yaml
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "cso-compliance-flagger"
+  owner: security@elastic.co
+  description: "Flag non CSO complaint packages"
+spec:
+  rules:
+    - selector:
+        cel:
+          # No CSO compliant path as package name
+          - "!p.is_cso_compliant()"
+      package:
+        labels:
+          add:
+            cso-compliant: false
+    - selector:
+        cel:
+          # CSO compliant path as package name
+          - "p.is_cso_compliant()"
+      package:
+        labels:
+          add:
+            cso-compliant: true
+```
+
 #### Match by secret key
 
 Strict matcher
@@ -323,6 +363,7 @@ spec:
 
 * `strict` is used to filter package path when strictly equal to the given value
 * `regex` is used to match the package path with the given regular expression
+* `glob` is used to match the package path with the given glob expression
 
 ```cpp
 // PatchSelectorMatchPath represents package path matching strategies.
@@ -333,6 +374,9 @@ message PatchSelectorMatchPath {
   // Regex path matching.
   // Value can be templatized.
   string regex = 2;
+  // Glob path matching. - https://github.com/gobwas/glob
+  // Value can be templatized.
+  string glob = 3;
 }
 ```
 
