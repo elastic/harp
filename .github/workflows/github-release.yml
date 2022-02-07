@@ -56,6 +56,15 @@ jobs:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       -
+        name: Generate provenance for Release
+        uses: philips-labs/slsa-provenance-action@v0.6.0
+        with:
+          command: generate
+          subcommand: files
+          arguments: --artifact-path .dist --output-path '.dist/provenance.json' --tag-name ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      -
         name: Upload to release
         uses: AButler/upload-release-assets@v2.0
         with:

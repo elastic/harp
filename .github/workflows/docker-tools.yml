@@ -123,6 +123,10 @@ jobs:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       -
+        name: Verify the signature
+        run: |
+          cosign verify --key build/artifact/cosign.pub ghcr.io/elastic/harp/${{ matrix.tools-image }}:latest
+      -
         name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
