@@ -41,7 +41,7 @@ jobs:
         id: create-checksum
         run: |
           cd .dist
-          sha512sum * > checksum.txt
+          sha256sum * > checksum.txt
       -
         uses: sigstore/cosign-installer@main
       -
@@ -61,7 +61,7 @@ jobs:
         with:
           command: generate
           subcommand: files
-          arguments: --artifact-path .dist --output-path '.dist/provenance.json' --tag-name ${{ github.ref_name }}
+          arguments: --artifact-path .dist --output-path '.dist/provenance.json' --tag-name cmd/harp/v${{ github.event.inputs.release }}
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
