@@ -42,6 +42,7 @@ type FilterTask struct {
 	ExcludePaths    []string
 	JMESPath        string
 	RegoPolicy      string
+	CELExpressions  []string
 }
 
 // Run the task.
@@ -91,6 +92,13 @@ func (t *FilterTask) Run(ctx context.Context) error {
 
 	if t.RegoPolicy != "" {
 		b.Packages, errFilter = t.regoFilter(ctx, b.Packages, t.RegoPolicy, t.ReverseLogic)
+		if errFilter != nil {
+			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
+		}
+	}
+
+	if len(t.CELExpressions) > 0 {
+		b.Packages, errFilter = t.celFilter(ctx, b.Packages, t.CELExpressions, t.ReverseLogic)
 		if errFilter != nil {
 			return fmt.Errorf("unable to filter bundle packages: %w", errFilter)
 		}
@@ -224,6 +232,35 @@ func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, pol
 	s, err := selector.MatchRego(ctx, string(policy))
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize rego selector: %w", err)
+	}
+
+	// Apply package filtering
+	for _, p := range in {
+		matched := s.IsSatisfiedBy(p)
+		if matched && !reverseLogic || !matched && reverseLogic {
+			pkgs = append(pkgs, p)
+		}
+	}
+
+	// No error
+	return pkgs, nil
+}
+
+func (t *FilterTask) celFilter(ctx context.Context, in []*bundlev1.Package, celExpressions []string, reverseLogic bool) ([]*bundlev1.Package, error) {
+	// Check Arguments
+	if len(in) == 0 {
+		return in, nil
+	}
+	if len(celExpressions) == 0 {
+		return in, nil
+	}
+
+	pkgs := []*bundlev1.Package{}
+
+	// Initialize selector builder
+	s, err := selector.MatchCEL(celExpressions)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize CEL selector: %w", err)
 	}
 
 	// Apply package filtering

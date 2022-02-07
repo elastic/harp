@@ -83,6 +83,8 @@ message PatchSelector {
   string rego = 3;
   // Match a package by secret.
   PatchSelectorMatchSecret matchSecret = 4;
+  // Match a package using CEL expressions.
+  repeated string cel = 5;
 }
 
 // PatchSelectorMatchPath represents package path matching strategies.

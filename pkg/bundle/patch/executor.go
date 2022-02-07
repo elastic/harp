@@ -173,6 +173,12 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 		return selector.MatchRego(context.Background(), s.Rego)
 	}
 
+	// Has CEL expressions
+	if len(s.Cel) > 0 {
+		// Return specification
+		return selector.MatchCEL(s.Cel)
+	}
+
 	// Fallback to default as error
 	return nil, fmt.Errorf("no supported selector specified")
 }
