@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/gobwas/glob"
 	fuzz "github.com/google/gofuzz"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
@@ -30,6 +31,7 @@ func Test_matchSecret_IsSatisfiedBy(t *testing.T) {
 	type fields struct {
 		strict string
 		regex  *regexp.Regexp
+		g      glob.Glob
 	}
 	type args struct {
 		object interface{}
@@ -141,12 +143,51 @@ func Test_matchSecret_IsSatisfiedBy(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			name: "supported type: glob mode not match",
+			fields: fields{
+				g: glob.MustCompile("bar*"),
+			},
+			args: args{
+				object: &bundlev1.Package{
+					Name: "foo",
+					Secrets: &bundlev1.SecretChain{
+						Data: []*bundlev1.KV{
+							{
+								Key: "foo",
+							},
+						},
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "supported type: glob mode with match",
+			fields: fields{
+				g: glob.MustCompile("foo*"),
+			},
+			args: args{
+				object: &bundlev1.Package{
+					Name: "foo",
+					Secrets: &bundlev1.SecretChain{
+						Data: []*bundlev1.KV{
+							{
+								Key: "foo",
+							},
+						},
+					},
+				},
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &matchSecret{
 				strict: tt.fields.strict,
 				regex:  tt.fields.regex,
+				g:      tt.fields.g,
 			}
 			if got := s.IsSatisfiedBy(tt.args.object); got != tt.want {
 				t.Errorf("matchSecret.IsSatisfiedBy() = %v, want %v", got, tt.want)

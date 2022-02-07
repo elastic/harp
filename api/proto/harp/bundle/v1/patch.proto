@@ -95,6 +95,9 @@ message PatchSelectorMatchPath {
   // Regex path matching.
   // Value can be templatized.
   string regex = 2;
+  // Glob path matching. - https://github.com/gobwas/glob
+  // Value can be templatized.
+  string glob = 3;
 }
 
 // PatchSelectorMatchPath represents package path matching strategies.
@@ -105,6 +108,9 @@ message PatchSelectorMatchSecret {
   // Regex secret matching.
   // Value can be templatized.
   string regex = 2;
+  // Glob path matching. - https://github.com/gobwas/glob
+  // Value can be templatized.
+  string glob = 3;
 }
 
 // PatchPackagePath represents package path operations.

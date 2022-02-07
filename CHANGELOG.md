@@ -4,11 +4,27 @@
 
 FEATURES:
 
+* template/engine:
+  * `isodate` time formatter to RFC3389 date format.
+* bundle/pipeline:
+  * Support custom input reader and output writer. [#105](https://github.com/elastic/harp/pull/105)
+* bundle/selector:
+  * support `glob` for package path and secret key matcher. [#110](https://github.com/elastic/harp/pull/110)
+  * support `rego` policy for `bunde filter` command and `BundlePatch` selector. [#106](https://github.com/elastic/harp/pull/106)
+  * support `cel` expressions used in `BundleRuleSet` for package matchers in `bundle filter` command and `BundlePatch` selector. [#109](https://github.com/elastic/harp/pull/109)
 * sdk/value:
   * support `age` encryption as value transformer. [#102](https://github.com/elastic/harp/pull/102)
   * support deterministic authenticated encryption value transformers. [#103](https://github.com/elastic/harp/pull/103)
   * support additional data for AEAD/DAE transformers. [#104](https://github.com/elastic/harp/pull/104)
   * DAE transformers can be initialized using an optional salt to derive different keys from the transformer key. [#104](https://github.com/elastic/harp/pull/104)
+
+DIST
+
+* go: Build with Golang 1.17.6.
+* build/ci
+  * Add SLSA Level 1 - Provenance generation step for binaries.
+  * Add Snyk as code / dependencies scanner via SARIF.
+  * Add Trivy dependencies scanner via SARIF.
 
 ## 0.2.5
 
