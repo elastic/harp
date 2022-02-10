@@ -21,8 +21,9 @@ import (
 	"regexp"
 	"strings"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/gobwas/glob"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
 // MatchSecretStrict returns a secret key matcher specification with strict profile.

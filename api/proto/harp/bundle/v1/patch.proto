@@ -81,10 +81,12 @@ message PatchSelector {
   string jmesPath = 2;
   // Match a package using a Rego policy.
   string rego = 3;
+  // Match a package using a REgo policy stored in an external file.
+  string regoFile = 4;
   // Match a package by secret.
-  PatchSelectorMatchSecret matchSecret = 4;
+  PatchSelectorMatchSecret matchSecret = 5;
   // Match a package using CEL expressions.
-  repeated string cel = 5;
+  repeated string cel = 6;
 }
 
 // PatchSelectorMatchPath represents package path matching strategies.

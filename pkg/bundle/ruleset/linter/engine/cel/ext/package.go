@@ -51,10 +51,18 @@ func (packageLib) CompileOptions() []cel.EnvOption {
 					[]*exprpb.Type{harpPackageObjectType, decls.String},
 					decls.Bool,
 				),
+				decls.NewInstanceOverload("package_match_label_string_string",
+					[]*exprpb.Type{harpPackageObjectType, decls.String, decls.String},
+					decls.Bool,
+				),
 			),
 			decls.NewFunction("match_annotation",
 				decls.NewInstanceOverload("package_match_annotation_string",
 					[]*exprpb.Type{harpPackageObjectType, decls.String},
+					decls.Bool,
+				),
+				decls.NewInstanceOverload("package_match_annotation_string_string",
+					[]*exprpb.Type{harpPackageObjectType, decls.String, decls.String},
 					decls.Bool,
 				),
 			),
@@ -114,8 +122,16 @@ func (packageLib) ProgramOptions() []cel.ProgramOption {
 				Binary:   celPackageMatchLabel,
 			},
 			&functions.Overload{
+				Operator: "package_match_label_string_string",
+				Function: celPackageMatchLabelValue,
+			},
+			&functions.Overload{
 				Operator: "package_match_annotation_string",
 				Binary:   celPackageMatchAnnotation,
+			},
+			&functions.Overload{
+				Operator: "package_match_annotation_string_string",
+				Function: celPackageMatchAnnotationValue,
 			},
 			&functions.Overload{
 				Operator: "package_match_path_string",
@@ -174,6 +190,50 @@ func celPackageMatchLabel(lhs, rhs ref.Val) ref.Val {
 	return types.Bool(false)
 }
 
+func celPackageMatchLabelValue(values ...ref.Val) ref.Val {
+	if len(values) != 3 {
+		return types.Bool(false)
+	}
+
+	lhs := values[0]
+	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	keyPatternTyped, ok := values[1].(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	keyPattern, ok := keyPatternTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	valuePatternTyped, ok := values[2].(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	valuePattern, ok := valuePatternTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	km := glob.MustCompile(keyPattern)
+	vm := glob.MustCompile(valuePattern)
+
+	for k, v := range p.Labels {
+		if km.Match(k) && vm.Match(v) {
+			return types.Bool(true)
+		}
+	}
+
+	return types.Bool(false)
+}
+
 func celPackageMatchAnnotation(lhs, rhs ref.Val) ref.Val {
 	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
 	p, ok := x.(*bundlev1.Package)
@@ -194,6 +254,50 @@ func celPackageMatchAnnotation(lhs, rhs ref.Val) ref.Val {
 	m := glob.MustCompile(pattern)
 	for k := range p.Annotations {
 		if m.Match(k) {
+			return types.Bool(true)
+		}
+	}
+
+	return types.Bool(false)
+}
+
+func celPackageMatchAnnotationValue(values ...ref.Val) ref.Val {
+	if len(values) != 3 {
+		return types.Bool(false)
+	}
+
+	lhs := values[0]
+	x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
+	p, ok := x.(*bundlev1.Package)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	keyPatternTyped, ok := values[1].(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	keyPattern, ok := keyPatternTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	valuePatternTyped, ok := values[2].(types.String)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	valuePattern, ok := valuePatternTyped.Value().(string)
+	if !ok {
+		return types.Bool(false)
+	}
+
+	km := glob.MustCompile(keyPattern)
+	vm := glob.MustCompile(valuePattern)
+
+	for k, v := range p.Annotations {
+		if km.Match(k) && vm.Match(v) {
 			return types.Bool(true)
 		}
 	}

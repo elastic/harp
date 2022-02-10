@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 
 	"github.com/imdario/mergo"
@@ -186,6 +187,17 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 		default:
 			return nil, errors.New("no strict, glob or regexp defined for secret matcher")
 		}
+	}
+
+	if s.RegoFile != "" {
+		// Read policy file
+		policyFile, err := os.ReadFile(s.RegoFile)
+		if err != nil {
+			return nil, fmt.Errorf("unable to open rego policy file: %w", err)
+		}
+
+		// Build the specification
+		return selector.MatchRego(context.Background(), string(policyFile))
 	}
 
 	// Has rego policy

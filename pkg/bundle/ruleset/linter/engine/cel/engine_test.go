@@ -47,6 +47,10 @@ func TestNew(t *testing.T) {
 			name: "funcs",
 			args: args{
 				expressions: []string{
+					`p.match_label("test")`,
+					`p.match_label("test", "true")`,
+					`p.match_annotation("namespace/v1/test")`,
+					`p.match_annotation("namespace/v1/test", "testing")`,
 					`p.match_path("app/production/test")`,
 					`p.has_secret("test") && p.secret("test").is_base64()`,
 					`p.has_all_secrets(["test","test2"])`,
