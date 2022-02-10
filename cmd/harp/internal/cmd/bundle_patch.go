@@ -28,17 +28,20 @@ import (
 )
 
 // -----------------------------------------------------------------------------
+type bundlePatchParams struct {
+	inputPath       string
+	outputPath      string
+	patchPath       string
+	valueFiles      []string
+	values          []string
+	stringValues    []string
+	fileValues      []string
+	stopAtRuleIndex int
+	stopAtRuleID    string
+}
 
 var bundlePatchCmd = func() *cobra.Command {
-	var (
-		inputPath    string
-		outputPath   string
-		patchPath    string
-		valueFiles   []string
-		values       []string
-		stringValues []string
-		fileValues   []string
-	)
+	params := &bundlePatchParams{}
 
 	cmd := &cobra.Command{
 		Use:   "patch",
@@ -50,10 +53,10 @@ var bundlePatchCmd = func() *cobra.Command {
 
 			// Load values
 			valueOpts := tplcmdutil.ValueOptions{
-				ValueFiles:   valueFiles,
-				Values:       values,
-				StringValues: stringValues,
-				FileValues:   fileValues,
+				ValueFiles:   params.valueFiles,
+				Values:       params.values,
+				StringValues: params.stringValues,
+				FileValues:   params.fileValues,
 			}
 			values, err := valueOpts.MergeValues()
 			if err != nil {
@@ -62,9 +65,9 @@ var bundlePatchCmd = func() *cobra.Command {
 
 			// Prepare task
 			t := &bundle.PatchTask{
-				ContainerReader: cmdutil.FileReader(inputPath),
-				PatchReader:     cmdutil.FileReader(patchPath),
-				OutputWriter:    cmdutil.FileWriter(outputPath),
+				ContainerReader: cmdutil.FileReader(params.inputPath),
+				PatchReader:     cmdutil.FileReader(params.patchPath),
+				OutputWriter:    cmdutil.FileWriter(params.outputPath),
 				Values:          values,
 			}
 
@@ -76,14 +79,16 @@ var bundlePatchCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&inputPath, "in", "-", "Container input ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&outputPath, "out", "", "Container output ('-' for stdout or a filename)")
-	cmd.Flags().StringVar(&patchPath, "spec", "", "Patch specification path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Container input ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.outputPath, "out", "", "Container output ('-' for stdout or a filename)")
+	cmd.Flags().StringVar(&params.patchPath, "spec", "", "Patch specification path ('-' for stdin or filename)")
 	log.CheckErr("unable to mark 'spec' flag as required.", cmd.MarkFlagRequired("spec"))
-	cmd.Flags().StringArrayVar(&valueFiles, "values", []string{}, "Specifies value files to load")
-	cmd.Flags().StringArrayVar(&values, "set", []string{}, "Specifies value (k=v)")
-	cmd.Flags().StringArrayVar(&stringValues, "set-string", []string{}, "Specifies value (k=string)")
-	cmd.Flags().StringArrayVar(&fileValues, "set-file", []string{}, "Specifies value (k=filepath)")
+	cmd.Flags().StringArrayVar(&params.valueFiles, "values", []string{}, "Specifies value files to load")
+	cmd.Flags().StringArrayVar(&params.values, "set", []string{}, "Specifies value (k=v)")
+	cmd.Flags().StringArrayVar(&params.stringValues, "set-string", []string{}, "Specifies value (k=string)")
+	cmd.Flags().StringArrayVar(&params.fileValues, "set-file", []string{}, "Specifies value (k=filepath)")
+	cmd.Flags().StringVar(&params.stopAtRuleID, "stop-at-rule-id", "", "Stop patch evaluation before the given rule ID")
+	cmd.Flags().IntVar(&params.stopAtRuleIndex, "stop-at-rule-index", -1, "Stop patch evaluation before the given rule index (0 for first rule)")
 
 	return cmd
 }

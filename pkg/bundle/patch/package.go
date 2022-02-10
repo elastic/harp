@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"sort"
+	"strings"
 
 	"golang.org/x/crypto/blake2b"
 	"google.golang.org/protobuf/proto"
@@ -77,8 +78,8 @@ func Checksum(spec *bundlev1.Patch) (string, error) {
 }
 
 // Apply given patch to the given bundle.
-//nolint:interfacer,gocyclo // Explicit type restriction
-func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}) (*bundlev1.Bundle, error) {
+//nolint:interfacer,gocyclo,funlen // Explicit type restriction
+func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}, o ...OptionFunc) (*bundlev1.Bundle, error) {
 	// Validate spec
 	if err := Validate(spec); err != nil {
 		return nil, fmt.Errorf("unable to validate spec: %w", err)
@@ -101,8 +102,33 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 		bCopy.Packages = []*bundlev1.Package{}
 	}
 
+	// Default evaluation options
+	dopts := &options{
+		stopAtRuleID:    "",
+		stopAtRuleIndex: -1,
+	}
+
+	// Apply functions
+	for _, opt := range o {
+		opt(dopts)
+	}
+
 	// Process all creation rule first
 	for i, r := range spec.Spec.Rules {
+		// Ignore nil rule
+		if r == nil {
+			continue
+		}
+
+		// Stop at index
+		if dopts.stopAtRuleIndex > 0 && i >= dopts.stopAtRuleIndex {
+			break
+		}
+		// Stop at rule id
+		if dopts.stopAtRuleID != "" && strings.EqualFold(r.Id, dopts.stopAtRuleID) {
+			break
+		}
+
 		// Ignore non creation rules and non strict matcher
 		if !r.Package.Create || r.Selector.MatchPath.Strict == "" {
 			continue
@@ -123,6 +149,20 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 	}
 
 	for ri, r := range spec.Spec.Rules {
+		// Ignore nil rule
+		if r == nil {
+			continue
+		}
+
+		// Stop at index
+		if dopts.stopAtRuleIndex > 0 && ri >= dopts.stopAtRuleIndex {
+			break
+		}
+		// Stop at rule id
+		if dopts.stopAtRuleID != "" && strings.EqualFold(r.Id, dopts.stopAtRuleID) {
+			break
+		}
+
 		// Process all packages
 		for i, p := range bCopy.Packages {
 			action, err := executeRule(r, p, values)

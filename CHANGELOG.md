@@ -4,6 +4,9 @@
 
 FEATURES:
 
+* bundle/patch:
+  * support `--stop-at-rule-index=<int>` and `--stop-at-rule-id=<string>` flags for `bundle patch` to stop patch
+    evaluation before requested rule identifier or index.
 * bundle/selector:
   * support `regoFile` to load a Rego filter policy from a file.
   * `cel` query language
