@@ -21,12 +21,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"sort"
+	"strings"
 
 	"golang.org/x/crypto/blake2b"
 	"google.golang.org/protobuf/proto"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
+	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 // Validate bundle patch.
@@ -77,8 +79,8 @@ func Checksum(spec *bundlev1.Patch) (string, error) {
 }
 
 // Apply given patch to the given bundle.
-//nolint:interfacer,gocyclo // Explicit type restriction
-func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}) (*bundlev1.Bundle, error) {
+//nolint:interfacer,gocyclo,funlen // Explicit type restriction
+func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}, o ...OptionFunc) (*bundlev1.Bundle, error) {
 	// Validate spec
 	if err := Validate(spec); err != nil {
 		return nil, fmt.Errorf("unable to validate spec: %w", err)
@@ -101,11 +103,35 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 		bCopy.Packages = []*bundlev1.Package{}
 	}
 
+	// Default evaluation options
+	dopts := &options{
+		stopAtRuleID:      "",
+		stopAtRuleIndex:   -1,
+		ignoreRuleIDs:     []string{},
+		ignoreRuleIndexes: []int{},
+	}
+
+	// Apply functions
+	for _, opt := range o {
+		opt(dopts)
+	}
+
 	// Process all creation rule first
 	for i, r := range spec.Spec.Rules {
+		// Ignore nil rule
+		if r == nil {
+			continue
+		}
+
 		// Ignore non creation rules and non strict matcher
 		if !r.Package.Create || r.Selector.MatchPath.Strict == "" {
 			continue
+		}
+		if shouldIgnoreThisRule(i, r.Id, dopts) {
+			continue
+		}
+		if shouldStopAtThisRule(i, r.Id, dopts) {
+			break
 		}
 
 		// Create a package
@@ -123,6 +149,17 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 	}
 
 	for ri, r := range spec.Spec.Rules {
+		// Ignore nil rule
+		if r == nil {
+			continue
+		}
+		if shouldIgnoreThisRule(ri, r.Id, dopts) {
+			continue
+		}
+		if shouldStopAtThisRule(ri, r.Id, dopts) {
+			break
+		}
+
 		// Process all packages
 		for i, p := range bCopy.Packages {
 			action, err := executeRule(r, p, values)
@@ -154,4 +191,35 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 
 	// No error
 	return bCopy, nil
+}
+
+func shouldStopAtThisRule(idx int, id string, opts *options) bool {
+	// Stop at index
+	if opts.stopAtRuleIndex > 0 && idx >= opts.stopAtRuleIndex {
+		return true
+	}
+	// Stop at rule id
+	if opts.stopAtRuleID != "" && strings.EqualFold(id, opts.stopAtRuleID) {
+		return true
+	}
+
+	return false
+}
+
+func shouldIgnoreThisRule(idx int, id string, opts *options) bool {
+	// Ignore using index
+	if len(opts.ignoreRuleIndexes) > 0 {
+		for _, v := range opts.ignoreRuleIndexes {
+			if v == idx {
+				return true
+			}
+		}
+	}
+
+	// Ignore using id
+	if len(opts.ignoreRuleIDs) > 0 {
+		return types.StringArray(opts.ignoreRuleIDs).Contains(id)
+	}
+
+	return false
 }

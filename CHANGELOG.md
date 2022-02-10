@@ -4,9 +4,13 @@
 
 FEATURES:
 
+* bundle/patch:
+  * support `--stop-at-rule-index=<int>` and `--stop-at-rule-id=<string>` flags for `bundle patch` to stop patch
+    evaluation before requested rule identifier or index. [#112](https://github.com/elastic/harp/pull/112)
+  * `--ignore-rule-id` and `--ignore-rule-index` flags to ignore matching rules during bundle patch evaluation. [#112](https://github.com/elastic/harp/pull/112)
 * bundle/selector:
-  * support `regoFile` to load a Rego filter policy from a file.
-  * `cel` query language
+  * support `regoFile` to load a Rego filter policy from a file. [#111](https://github.com/elastic/harp/pull/111)
+  * `cel` query language [#111](https://github.com/elastic/harp/pull/111)
     * `p.match_label(globstring, globstring)` can be used to match label key and value
     * `p.match_annotation(globstring, globstring)` can be used to match annotation key and value
 
