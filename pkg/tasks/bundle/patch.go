@@ -34,6 +34,7 @@ type PatchTask struct {
 	ContainerReader tasks.ReaderProvider
 	OutputWriter    tasks.WriterProvider
 	Values          map[string]interface{}
+	Options         []patch.OptionFunc
 }
 
 // Run the task.
@@ -74,7 +75,7 @@ func (t *PatchTask) Run(ctx context.Context) error {
 	}
 
 	// Apply the patch speicification to generate an output bundle
-	patchedBundle, err := patch.Apply(spec, b, t.Values)
+	patchedBundle, err := patch.Apply(spec, b, t.Values, t.Options...)
 	if err != nil {
 		return fmt.Errorf("unable to generate output bundle from patch: %w", err)
 	}

@@ -18,8 +18,10 @@
 package patch
 
 type options struct {
-	stopAtRuleID    string
-	stopAtRuleIndex int
+	stopAtRuleID      string
+	stopAtRuleIndex   int
+	ignoreRuleIDs     []string
+	ignoreRuleIndexes []int
 }
 
 type OptionFunc func(o *options)
@@ -37,5 +39,19 @@ func WithStopAtRuleID(value string) OptionFunc {
 func WithStopAtRuleIndex(value int) OptionFunc {
 	return func(o *options) {
 		o.stopAtRuleIndex = value
+	}
+}
+
+// WithIgnoreRuleIDs sets the rule identifiers to ignore.
+func WithIgnoreRuleIDs(values ...string) OptionFunc {
+	return func(o *options) {
+		o.ignoreRuleIDs = values
+	}
+}
+
+// WithIgnoreRuleIndexes sets the rule indexes to ignore.
+func WithIgnoreRuleIndexes(values ...int) OptionFunc {
+	return func(o *options) {
+		o.ignoreRuleIndexes = values
 	}
 }

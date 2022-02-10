@@ -28,6 +28,7 @@ import (
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
+	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 // Validate bundle patch.
@@ -104,8 +105,10 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 
 	// Default evaluation options
 	dopts := &options{
-		stopAtRuleID:    "",
-		stopAtRuleIndex: -1,
+		stopAtRuleID:      "",
+		stopAtRuleIndex:   -1,
+		ignoreRuleIDs:     []string{},
+		ignoreRuleIndexes: []int{},
 	}
 
 	// Apply functions
@@ -120,18 +123,15 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 			continue
 		}
 
-		// Stop at index
-		if dopts.stopAtRuleIndex > 0 && i >= dopts.stopAtRuleIndex {
-			break
-		}
-		// Stop at rule id
-		if dopts.stopAtRuleID != "" && strings.EqualFold(r.Id, dopts.stopAtRuleID) {
-			break
-		}
-
 		// Ignore non creation rules and non strict matcher
 		if !r.Package.Create || r.Selector.MatchPath.Strict == "" {
 			continue
+		}
+		if shouldIgnoreThisRule(i, r.Id, dopts) {
+			continue
+		}
+		if shouldStopAtThisRule(i, r.Id, dopts) {
+			break
 		}
 
 		// Create a package
@@ -153,13 +153,10 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 		if r == nil {
 			continue
 		}
-
-		// Stop at index
-		if dopts.stopAtRuleIndex > 0 && ri >= dopts.stopAtRuleIndex {
-			break
+		if shouldIgnoreThisRule(ri, r.Id, dopts) {
+			continue
 		}
-		// Stop at rule id
-		if dopts.stopAtRuleID != "" && strings.EqualFold(r.Id, dopts.stopAtRuleID) {
+		if shouldStopAtThisRule(ri, r.Id, dopts) {
 			break
 		}
 
@@ -194,4 +191,35 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 
 	// No error
 	return bCopy, nil
+}
+
+func shouldStopAtThisRule(idx int, id string, opts *options) bool {
+	// Stop at index
+	if opts.stopAtRuleIndex > 0 && idx >= opts.stopAtRuleIndex {
+		return true
+	}
+	// Stop at rule id
+	if opts.stopAtRuleID != "" && strings.EqualFold(id, opts.stopAtRuleID) {
+		return true
+	}
+
+	return false
+}
+
+func shouldIgnoreThisRule(idx int, id string, opts *options) bool {
+	// Ignore using index
+	if len(opts.ignoreRuleIndexes) > 0 {
+		for _, v := range opts.ignoreRuleIndexes {
+			if v == idx {
+				return true
+			}
+		}
+	}
+
+	// Ignore using id
+	if len(opts.ignoreRuleIDs) > 0 {
+		return types.StringArray(opts.ignoreRuleIDs).Contains(id)
+	}
+
+	return false
 }

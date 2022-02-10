@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
+	"github.com/elastic/harp/pkg/bundle/patch"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/tasks/bundle"
@@ -29,15 +30,17 @@ import (
 
 // -----------------------------------------------------------------------------
 type bundlePatchParams struct {
-	inputPath       string
-	outputPath      string
-	patchPath       string
-	valueFiles      []string
-	values          []string
-	stringValues    []string
-	fileValues      []string
-	stopAtRuleIndex int
-	stopAtRuleID    string
+	inputPath         string
+	outputPath        string
+	patchPath         string
+	valueFiles        []string
+	values            []string
+	stringValues      []string
+	fileValues        []string
+	stopAtRuleIndex   int
+	stopAtRuleID      string
+	ignoreRuleIDs     []string
+	ignoreRuleIndexes []int
 }
 
 var bundlePatchCmd = func() *cobra.Command {
@@ -63,12 +66,21 @@ var bundlePatchCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to process values", zap.Error(err))
 			}
 
+			// Prepare patch options.
+			opts := []patch.OptionFunc{
+				patch.WithStopAtRuleID(params.stopAtRuleID),
+				patch.WithStopAtRuleIndex(params.stopAtRuleIndex),
+				patch.WithIgnoreRuleIDs(params.ignoreRuleIDs...),
+				patch.WithIgnoreRuleIndexes(params.ignoreRuleIndexes...),
+			}
+
 			// Prepare task
 			t := &bundle.PatchTask{
 				ContainerReader: cmdutil.FileReader(params.inputPath),
 				PatchReader:     cmdutil.FileReader(params.patchPath),
 				OutputWriter:    cmdutil.FileWriter(params.outputPath),
 				Values:          values,
+				Options:         opts,
 			}
 
 			// Run the task
@@ -89,6 +101,8 @@ var bundlePatchCmd = func() *cobra.Command {
 	cmd.Flags().StringArrayVar(&params.fileValues, "set-file", []string{}, "Specifies value (k=filepath)")
 	cmd.Flags().StringVar(&params.stopAtRuleID, "stop-at-rule-id", "", "Stop patch evaluation before the given rule ID")
 	cmd.Flags().IntVar(&params.stopAtRuleIndex, "stop-at-rule-index", -1, "Stop patch evaluation before the given rule index (0 for first rule)")
+	cmd.Flags().StringArrayVar(&params.ignoreRuleIDs, "ignore-rule-id", []string{}, "List of Rule identifier to ignore during evaluation")
+	cmd.Flags().IntSliceVar(&params.ignoreRuleIndexes, "ignore-rule-index", []int{}, "List of Rule index to ignore during evaluation")
 
 	return cmd
 }
