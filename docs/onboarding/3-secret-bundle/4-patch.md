@@ -21,6 +21,7 @@ bundle source without altering the source bundle.
       - [Match by regex path](#match-by-regex-path)
       - [Match by JMES filter](#match-by-jmes-filter)
       - [Match by Rego policy](#match-by-rego-policy)
+      - [Match by Rego policy file](#match-by-rego-policy-file)
       - [Match by CEL expression](#match-by-cel-expression)
       - [Match by secret key](#match-by-secret-key)
       - [PatchSelectorMatchPath](#patchselectormatchpath)
@@ -47,6 +48,7 @@ bundle source without altering the source bundle.
 * `remove` is used to remove a key from the map
 * `update` is used to update a value from an existing `key` only
 * `replaceKeys` is used to rename a key to another key in the map.
+* `removeKeys` is used to remove all keys that match one of the given regex patterns.
 
 > All keys and values can contain template instructions.
 
@@ -186,10 +188,12 @@ message PatchSelector {
   string jmesPath = 2;
   // Match a package using a Rego policy.
   string rego = 3;
+  // Match a package using a REgo policy stored in an external file.
+  string regoFile = 4;
   // Match a package by secret.
-  PatchSelectorMatchSecret matchSecret = 4;
+  PatchSelectorMatchSecret matchSecret = 5;
   // Match a package using CEL expressions.
-  repeated string cel = 5;
+  repeated string cel = 6;
 }
 ```
 
@@ -279,6 +283,13 @@ spec:
             add:
                 deprecated: true
 
+```
+
+#### Match by Rego policy file
+
+```yaml
+selector:
+  regoFile: deprecation.rego
 ```
 
 #### Match by CEL expression

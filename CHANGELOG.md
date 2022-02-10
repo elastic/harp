@@ -2,6 +2,14 @@
 
 ### Not released yet
 
+FEATURES:
+
+* bundle/selector:
+  * support `regoFile` to load a Rego filter policy from a file.
+  * `cel` query language
+    * `p.match_label(globstring, globstring)` can be used to match label key and value
+    * `p.match_annotation(globstring, globstring)` can be used to match annotation key and value
+
 ## 0.2.6
 
 ### 2022-02-07

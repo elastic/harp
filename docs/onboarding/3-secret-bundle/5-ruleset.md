@@ -13,7 +13,9 @@
 
 * `p.match_path(globstring) bool` - Returns true if the package name match the given Glob pattern.
 * `p.match_label(globstring) bool` - Returns true if one of the package labels match the given Glob pattern.
+* `p.match_label(globstring, globstring) bool` - Returns true if one of the package labels and the associated value match the given Glob patterns.
 * `p.match_annotation(globstring) bool` - Returns true if one of the package annotations match the given Glob pattern.
+* `p.match_annotation(globstring, globstring) bool` - Returns true if one of the package annotations and the associated value match the given Glob patterns.
 * `p.match_secret(globstring) bool` - Returns true if the package has a secret with given pattern.
 * `p.has_secret(string) bool` - Returns true if the package has a secret with given key.
 * `p.has_all_secrets(...string) bool` - Returns true if the package has all secrets with given keys.
