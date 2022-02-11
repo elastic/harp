@@ -29,7 +29,7 @@ import (
 var goVersions = []string{
 	"~1.18",
 	"~1.17.7",
-	"~1.16.14",
+	"~1.17.6", // goboring
 }
 
 func init() {
