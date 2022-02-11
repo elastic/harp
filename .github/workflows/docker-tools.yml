@@ -19,7 +19,7 @@ jobs:
         include:
           # normal
           - golang-image: "golang:1.17"
-            golang-version: "1.17.6"
+            golang-version: "1.17.7"
             goboring-version: ""
             tools-image: harp-tools
             fips-mode: 0
