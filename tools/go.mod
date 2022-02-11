@@ -6,7 +6,7 @@ go 1.17
 replace github.com/denis-tingajkin/go-header => github.com/denis-tingaikin/go-header v0.4.2
 
 // Tag overwrite supposed
-replace github.com/mgechev/revive => github.com/Zenithar/revive v1.1.3
+replace github.com/mgechev/revive => github.com/Zenithar/revive v1.1.4
 
 require (
 	github.com/CycloneDX/cyclonedx-gomod v1.1.0
