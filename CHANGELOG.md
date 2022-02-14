@@ -4,6 +4,8 @@
 
 FEATURES:
 
+* bundle/from:
+  * read a `HCL` bundle descriptor to generate the binary bundle. [#114](https://github.com/elastic/harp/pull/114)
 * bundle/patch:
   * support `--stop-at-rule-index=<int>` and `--stop-at-rule-id=<string>` flags for `bundle patch` to stop patch
     evaluation before requested rule identifier or index. [#112](https://github.com/elastic/harp/pull/112)

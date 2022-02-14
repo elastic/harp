@@ -15,31 +15,44 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package hcl
 
 import (
-	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/sebdah/goldie"
+	"github.com/stretchr/testify/require"
 )
 
-// -----------------------------------------------------------------------------
+func init() {
+	goldie.FixtureDir = "testdata"
+	spew.Config.DisablePointerAddresses = true
+}
 
-var fromCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "from",
-		Short: "Secret container generation commands",
+func TestParseFile(t *testing.T) {
+	f, err := os.Open("testdata")
+	require.NoError(t, err)
+	defer f.Close()
+
+	fis, err := f.Readdir(-1)
+	require.NoError(t, err)
+	for _, fi := range fis {
+		if fi.IsDir() {
+			continue
+		}
+
+		if filepath.Ext(fi.Name()) == ".golden" {
+			continue
+		}
+
+		t.Run(fi.Name(), func(t *testing.T) {
+			cfg, err := ParseFile(filepath.Join("testdata", fi.Name()))
+			require.NoError(t, err)
+
+			goldie.Assert(t, fi.Name(), []byte(spew.Sdump(cfg)))
+		})
 	}
-
-	// Add subcommands
-	cmd.AddCommand(fromVaultCmd())
-	cmd.AddCommand(fromJSONCmd())
-	cmd.AddCommand(fromTemplateCmd())
-	cmd.AddCommand(fromDumpCmd())
-	cmd.AddCommand(fromOPLogCmd())
-	cmd.AddCommand(fromObjectCmd())
-	cmd.AddCommand(fromConsulCmd())
-	cmd.AddCommand(fromEtcd3Cmd())
-	cmd.AddCommand(fromZookeeperCmd())
-	cmd.AddCommand(fromHCLCmd())
-
-	return cmd
 }
