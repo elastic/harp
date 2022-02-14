@@ -15,7 +15,7 @@ package "platform/security/databases/postgresql" {
     }
 
     secrets = {
-        "USER" = "admin-{{ randAlpha 8 }}"
         "PASSWORD" = "{{ strongPassword | b64enc }}"
+        "USER" = "admin-{{ randAlpha 8 }}"
     }
 }

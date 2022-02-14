@@ -18,6 +18,7 @@
 package hcl
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
@@ -52,7 +53,15 @@ func TestParseFile(t *testing.T) {
 			cfg, err := ParseFile(filepath.Join("testdata", fi.Name()))
 			require.NoError(t, err)
 
-			goldie.Assert(t, fi.Name(), []byte(spew.Sdump(cfg)))
+			goldie.Assert(t, fi.Name(), normalizeNewlines([]byte(spew.Sdump(cfg))))
 		})
 	}
+}
+
+func normalizeNewlines(d []byte) []byte {
+	// replace CR LF \r\n (windows) with LF \n (unix)
+	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
+	// replace CF \r (mac) with LF \n (unix)
+	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
+	return d
 }
