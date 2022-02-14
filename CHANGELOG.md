@@ -19,6 +19,7 @@ FEATURES:
 DIST:
 
 * go: Build with Golang 1.17.7.
+* go-boring: Build with Golang 1.17.7b7.
 
 ## 0.2.6
 
