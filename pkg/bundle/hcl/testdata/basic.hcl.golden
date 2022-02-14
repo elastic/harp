@@ -1,0 +1,15 @@
+(*hcl.Config)({
+ Annotations: (map[string]string) <nil>,
+ Labels: (map[string]string) <nil>,
+ Packages: ([]hcl.Package) (len=1 cap=1) {
+  (hcl.Package) {
+   Path: (string) (len=24) "app/credentials/database",
+   Description: (string) "",
+   Annotations: (map[string]string) <nil>,
+   Labels: (map[string]string) <nil>,
+   Secrets: (map[string]string) (len=1) {
+    (string) (len=4) "USER": (string) (len=20) "{{ strongPassword }}"
+   }
+  }
+ }
+})

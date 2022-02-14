@@ -19,6 +19,7 @@ package bundle
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -27,6 +28,7 @@ import (
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/compare"
+	"github.com/elastic/harp/pkg/bundle/hcl"
 	"github.com/elastic/harp/pkg/bundle/secret"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
@@ -155,6 +157,53 @@ func FromMap(input map[string]KV) (*bundlev1.Bundle, error) {
 			packed, err := secret.Pack(v)
 			if err != nil {
 				return nil, fmt.Errorf("unable to pack secret value for `%s`: %w", fmt.Sprintf("%s.%s", packageName, k), err)
+			}
+
+			// Add to secret package
+			p.Secrets.Data = append(p.Secrets.Data, &bundlev1.KV{
+				Key:   k,
+				Type:  fmt.Sprintf("%T", v),
+				Value: packed,
+			})
+		}
+
+		// Add package to result
+		res.Packages = append(res.Packages, p)
+	}
+
+	// No error
+	return res, nil
+}
+
+// FromHCL convert HCL-DSL to a bundle.
+func FromHCL(input *hcl.Config) (*bundlev1.Bundle, error) {
+	// Check arguments
+	if input == nil {
+		return nil, errors.New("unable to process nil hcl object")
+	}
+
+	// Create an empty bundle.
+	res := &bundlev1.Bundle{
+		Labels:      input.Labels,
+		Annotations: input.Annotations,
+		Packages:    []*bundlev1.Package{},
+	}
+
+	for _, pkg := range input.Packages {
+		// Prepare a package
+		p := &bundlev1.Package{
+			Name:        pkg.Path,
+			Annotations: pkg.Annotations,
+			Labels:      pkg.Labels,
+			Secrets:     &bundlev1.SecretChain{},
+		}
+
+		// Prepare secret data
+		for k, v := range pkg.Secrets {
+			// Pack secret value
+			packed, err := secret.Pack(v)
+			if err != nil {
+				return nil, fmt.Errorf("unable to pack secret value for `%s`: %w", fmt.Sprintf("%s.%s", pkg.Path, k), err)
 			}
 
 			// Add to secret package

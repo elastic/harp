@@ -1,0 +1,21 @@
+(*hcl.Config)({
+ Annotations: (map[string]string) (len=1) {
+  (string) (len=31) "secrets.elastic.co/leakSeverity": (string) (len=8) "moderate"
+ },
+ Labels: (map[string]string) <nil>,
+ Packages: ([]hcl.Package) (len=1 cap=1) {
+  (hcl.Package) {
+   Path: (string) (len=38) "platform/security/databases/postgresql",
+   Description: (string) (len=46) "Administrative access for database management.",
+   Annotations: (map[string]string) (len=2) {
+    (string) (len=53) "infosec.elastic.co/v1/SecretManagement#generationDate": (string) (len=19) "{{ now | isodate }}",
+    (string) (len=53) "infosec.elastic.co/v1/SecretManagement#rotationPeriod": (string) (len=2) "90"
+   },
+   Labels: (map[string]string) <nil>,
+   Secrets: (map[string]string) (len=2) {
+    (string) (len=8) "PASSWORD": (string) (len=29) "{{ strongPassword | b64enc }}",
+    (string) (len=4) "USER": (string) (len=23) "admin-{{ randAlpha 8 }}"
+   }
+  }
+ }
+})

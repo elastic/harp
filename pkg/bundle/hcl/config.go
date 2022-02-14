@@ -15,31 +15,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package hcl
 
-import (
-	"github.com/spf13/cobra"
-)
+// Config is the configuration structure for bundle DSL.
+type Config struct {
+	Annotations map[string]string `hcl:"annotations,optional"`
+	Labels      map[string]string `hcl:"labels,optional"`
+	Packages    []Package         `hcl:"package,block"`
+}
 
-// -----------------------------------------------------------------------------
-
-var fromCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "from",
-		Short: "Secret container generation commands",
-	}
-
-	// Add subcommands
-	cmd.AddCommand(fromVaultCmd())
-	cmd.AddCommand(fromJSONCmd())
-	cmd.AddCommand(fromTemplateCmd())
-	cmd.AddCommand(fromDumpCmd())
-	cmd.AddCommand(fromOPLogCmd())
-	cmd.AddCommand(fromObjectCmd())
-	cmd.AddCommand(fromConsulCmd())
-	cmd.AddCommand(fromEtcd3Cmd())
-	cmd.AddCommand(fromZookeeperCmd())
-	cmd.AddCommand(fromHCLCmd())
-
-	return cmd
+type Package struct {
+	Path        string            `hcl:"path,label"`
+	Description string            `hcl:"description"`
+	Annotations map[string]string `hcl:"annotations,optional"`
+	Labels      map[string]string `hcl:"labels,optional"`
+	Secrets     map[string]string `hcl:"secrets"`
 }
