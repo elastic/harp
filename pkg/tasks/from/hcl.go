@@ -52,7 +52,7 @@ func (t *HCLTask) Run(ctx context.Context) error {
 	// Parse input as HCL configuration object.
 	cfg, err := hcl.Parse(reader, "input", "hcl")
 	if err != nil {
-		return fmt.Errorf("unabel to parse input HCL: %w", err)
+		return fmt.Errorf("unable to parse input HCL: %w", err)
 	}
 
 	// Build the container from hcl dsl
