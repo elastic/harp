@@ -2,6 +2,13 @@
 
 ### Not released yet
 
+FEATURES:
+
+* cli/transform:
+  * `compress`/`decompress` commands for various algorithms
+  * `hash` command for various hashing algorithms.
+  * `encode`/`decode` command for various encoding strategies
+
 ## 0.2.7
 
 ### 2022-02-14

@@ -25,49 +25,52 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/sdk/value/encoding"
+	"github.com/elastic/harp/pkg/sdk/value/compression"
 )
 
 // -----------------------------------------------------------------------------
 
-type transformDecodeParams struct {
+type transformCompressParams struct {
 	inputPath  string
 	outputPath string
-	encoding   string
+	algorithm  string
 }
 
-var transformDecodeCmd = func() *cobra.Command {
-	params := &transformDecodeParams{}
+var transformCompressCmd = func() *cobra.Command {
+	params := &transformCompressParams{}
 
 	longDesc := cmdutil.LongDesc(`
-	Decode the given input stream using the selected decoding strategy.
+	Compress the given input stream using the selected compression algorithm.
 
-	Supported codecs:
+	Supported compresssion:
 	  * identity - returns the unmodified input
-	  * hex/base16 - returns the hexadecimal encoded input
-	  * base32 - returns the Base32 encoded input
-	  * base32hex - returns the Base32 with extended alphabet encoded input
-	  * base64 - returns the Base64 encoded input
-	  * base64raw - returns the Base64 encoded input without "=" padding
-	  * base64url - returns the Base64 encoded input using URL safe characters
-	  * base64urlraw - returns the Base64 encoded input using URL safe characters without "=" padding
-	  * base85 - returns the Base85 encoded input`)
+	  * gzip
+	  * lzw/lzw-msb/lzw-lsb
+	  * lz4
+	  * s2/snappy
+	  * zlib
+	  * flate/deflate
+	  * lzma
+	  * zstd`)
 
 	examples := cmdutil.Examples(`
-		# Decode base64 from stdin
-		echo "dGVzdAo=" | harp transform decode --encoding base64
+		# Compress a file
+		harp transform compress --in README.md --out README.md.gz --algorithm gzip
 
-		# Decode base64url from a file
-		harp transform decode --in test.txt --encoding base64url`)
+		# Compress to STDOUT
+		harp transform compress --in README.md --algorithm gzip
+
+		# Compress from STDIN
+		harp transform compress --algorithm gzip`)
 
 	cmd := &cobra.Command{
-		Use:     "decode",
-		Short:   "Decode given input",
+		Use:     "compress",
+		Short:   "Compress given input",
 		Long:    longDesc,
 		Example: examples,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
-			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-decode", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-compress", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
 			// Read input
@@ -82,23 +85,28 @@ var transformDecodeCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("unable to initialize output writer", zap.Error(err))
 			}
 
-			// Read and decode
-			out, err := encoding.NewReader(reader, params.encoding)
+			// Prepare compressor
+			compressedWriter, err := compression.NewWriter(writer, params.algorithm)
 			if err != nil {
-				log.For(ctx).Fatal("unable to prepare input decoder", zap.Error(err))
+				log.SafeClose(compressedWriter, "unable to close the compression writer")
+				log.For(ctx).Fatal("unable to write encoded content", zap.Error(err))
 			}
 
 			// Process input as a stream.
-			if _, err := io.Copy(writer, out); err != nil {
+			if _, err := io.Copy(compressedWriter, reader); err != nil {
+				log.SafeClose(compressedWriter, "unable to close the compression writer")
 				log.For(ctx).Fatal("unable to process input", zap.Error(err))
 			}
+
+			// Close the writer
+			log.SafeClose(compressedWriter, "unable to close the compression writer")
 		},
 	}
 
 	// Parameters
 	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Input path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdout or filename)")
-	cmd.Flags().StringVar(&params.encoding, "encoding", "identity", "Encoding strategy")
+	cmd.Flags().StringVar(&params.algorithm, "algorithm", "gzip", "Compression algorithm")
 
 	return cmd
 }

@@ -9,11 +9,12 @@ harp transform decrypt [flags]
 ### Options
 
 ```
-      --aad string   Standard BASE64 encoded additional data for AEAD encryption
-  -h, --help         help for decrypt
-      --in string    Input path ('-' for stdin or filename) (default "-")
-      --key string   Transformer key
-      --out string   Output path ('-' for stdin or filename) (default "-")
+      --aad string            Additional data for AEAD encryption
+      --aad-encoding string   Additional data encoding (default "base64")
+  -h, --help                  help for decrypt
+      --in string             Input path ('-' for stdin or filename) (default "-")
+      --key string            Transformer key
+      --out string            Output path ('-' for stdout or filename) (default "-")
 ```
 
 ### SEE ALSO

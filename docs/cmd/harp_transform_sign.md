@@ -14,7 +14,7 @@ harp transform sign [flags]
   -h, --help            help for sign
       --in string       Input path ('-' for stdin or filename) (default "-")
       --key string      Transformer key
-      --out string      Output path ('-' for stdin or filename) (default "-")
+      --out string      Output path ('-' for stdout or filename) (default "-")
       --pre-hashed      The input is already pre-hashed
 ```
 

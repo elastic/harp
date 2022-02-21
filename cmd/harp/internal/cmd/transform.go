@@ -39,6 +39,10 @@ var transformCmd = func() *cobra.Command {
 	cmd.AddCommand(transformVerifyCmd())
 	cmd.AddCommand(transformDecodeCmd())
 	cmd.AddCommand(transformEncodeCmd())
+	cmd.AddCommand(transformHashCmd())
+	cmd.AddCommand(transformCompressCmd())
+	cmd.AddCommand(transformDecompressCmd())
+	cmd.AddCommand(transformMultihashCmd())
 
 	return cmd
 }
