@@ -101,7 +101,7 @@ var transformSignCmd = func() *cobra.Command {
 	log.CheckErr("unable to mark 'key' flag as required.", cmd.MarkFlagRequired("key"))
 
 	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Input path ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdout or filename)")
 	cmd.Flags().BoolVar(&params.detached, "detached", false, "Returns the signature only")
 	cmd.Flags().BoolVar(&params.preHashed, "pre-hashed", false, "The input is already pre-hashed")
 	cmd.Flags().BoolVar(&params.determistic, "deterministic", false, "Use deterministic signature algorithm variant (if key permits)")

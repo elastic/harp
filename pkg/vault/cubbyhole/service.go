@@ -35,7 +35,7 @@ type service struct {
 	mountPath string
 }
 
-// New instanciates a Vault cubbyhole backend service.
+// New instantiates a Vault cubbyhole backend service.
 func New(client *api.Client, mountPath string) (Service, error) {
 	// Apply default cubbyhole mountpath if not overrided.
 	if mountPath == "" {

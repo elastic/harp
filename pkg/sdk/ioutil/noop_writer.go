@@ -15,34 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package ioutil
 
-import (
-	"github.com/spf13/cobra"
-)
+import "io"
 
-// -----------------------------------------------------------------------------
-
-var transformCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "transform",
-		Short: "Transform input value using encryption transformers",
-	}
-
-	// Deprecated
-	cmd.AddCommand(transformEncryptionCmd())
-
-	// Add commands
-	cmd.AddCommand(transformEncryptCmd())
-	cmd.AddCommand(transformDecryptCmd())
-	cmd.AddCommand(transformSignCmd())
-	cmd.AddCommand(transformVerifyCmd())
-	cmd.AddCommand(transformDecodeCmd())
-	cmd.AddCommand(transformEncodeCmd())
-	cmd.AddCommand(transformHashCmd())
-	cmd.AddCommand(transformCompressCmd())
-	cmd.AddCommand(transformDecompressCmd())
-	cmd.AddCommand(transformMultihashCmd())
-
-	return cmd
+// NopCloser returns a WriteCloser with a no-op Close method wrapping
+// the provided Writer w.
+func NopCloserWriter(w io.Writer) io.WriteCloser {
+	return nopCloser{w}
 }
+
+type nopCloser struct {
+	io.Writer
+}
+
+func (nopCloser) Close() error { return nil }

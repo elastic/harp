@@ -74,7 +74,7 @@ and reproductible.
   * Generate
     * `BundleTemplate` for secret bootstrap
 
-* Builtin Ouput(s)
+* Builtin output(s)
   * `Harp Secret Container`
   * `Hashicorp Vault`
 

@@ -101,7 +101,7 @@ var transformEncryptionCmd = func() *cobra.Command {
 	log.CheckErr("unable to mark 'key' flag as required.", cmd.MarkFlagRequired("key"))
 
 	cmd.Flags().StringVar(&inputPath, "in", "-", "Input path ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&outputPath, "out", "-", "Output path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&outputPath, "out", "-", "Output path ('-' for stdout or filename)")
 	cmd.Flags().BoolVar(&revert, "revert", false, "Decrypt the input (default encrypt)")
 
 	return cmd

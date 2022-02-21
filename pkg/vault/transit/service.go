@@ -38,7 +38,7 @@ type service struct {
 	keyName   string
 }
 
-// New instanciates a Vault transit backend encryption service.
+// New instantiates a Vault transit backend encryption service.
 func New(client *api.Client, mountPath, keyName string) (Service, error) {
 	return &service{
 		logical:   client.Logical(),
