@@ -33,10 +33,6 @@ import (
 
 	// ensure crypto algorithms are initialized
 	_ "golang.org/x/crypto/blake2b"
-	//nolint:staticcheck // For legacy compatibility
-	_ "golang.org/x/crypto/md4"
-	//nolint:staticcheck // For legacy compatibility
-	_ "golang.org/x/crypto/ripemd160"
 	_ "golang.org/x/crypto/sha3"
 )
 
