@@ -86,9 +86,9 @@ var transformEncryptCmd = func() *cobra.Command {
 					log.For(ctx).Fatal("unable to decode additional data", zap.Error(errDecode))
 				}
 
-				aad, err := io.ReadAll(encoderReader)
-				if err != nil {
-					log.For(ctx).Fatal("unable to read additional data", zap.Error(err))
+				aad, errAADRead := io.ReadAll(encoderReader)
+				if errAADRead != nil {
+					log.For(ctx).Fatal("unable to read additional data", zap.Error(errAADRead))
 				}
 
 				// Set additional data

@@ -24,7 +24,7 @@ harp transform multihash [flags]
   # Compute sha256, sha512 only
   harp transform multihash --algorithm sha256 --algorithm sha512 --in livecd.iso
   
-  # Compute sha256, sha512 only with JSON ouput
+  # Compute sha256, sha512 only with JSON output
   harp transform multihash --json --algorithm sha256 --algorithm sha512 --in livecd.iso
 ```
 

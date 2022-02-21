@@ -6,7 +6,7 @@ Compress given input
 
 Compress the given input stream using the selected compression algorithm.
 
-Supported compresssion:
+Supported compression:
   * identity - returns the unmodified input
   * gzip
   * lzw/lzw-msb/lzw-lsb

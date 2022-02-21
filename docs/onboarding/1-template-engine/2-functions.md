@@ -186,7 +186,7 @@ NVQ3VjFsTlFKIzAtd25MMWtqYURWT1dJZzBkdERVLVdEOmxMY3NvJHRsWnZ8JVhRcDNZMU92OTJQSmB3
 {{ customPassword 128 16 16 false true }}
 ```
 
-Ouput :
+output :
 
 ```txt
 o)BDz#J|PDyI!+tBKmNSE1lMqh9gfSvVG%juxf9XonBl*N:sb#tgevct9.cDcdAhpt22/MpcbEtM@yM2ofkdhyXgz*0rJOSOkHA97&R78`F1LF4gpq8ZqFntgDSH*5zD

@@ -21,7 +21,6 @@ import (
 	"compress/lzw"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 
 	"github.com/klauspost/compress/flate"
@@ -48,7 +47,7 @@ func NewReader(r io.Reader, algorithm string) (io.ReadCloser, error) {
 	// Apply transformation
 	switch algorithm {
 	case "identity":
-		compressedReader = ioutil.NopCloser(r)
+		compressedReader = io.NopCloser(r)
 	case "gzip":
 		compressedReader, readerErr = gzip.NewReader(r)
 	case "lzw", "lzw-lsb":

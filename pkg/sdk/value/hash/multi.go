@@ -27,7 +27,7 @@ import (
 func NewMultiHash(r io.Reader, algorithms ...string) (map[string]string, error) {
 	hashers := map[string]hash.Hash{}
 
-	// Instanciate hashers
+	// Instantiate hashers
 	for _, algo := range algorithms {
 		// Create an hasher instance.
 		h, err := NewHasher(algo)

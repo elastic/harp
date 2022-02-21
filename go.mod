@@ -47,7 +47,6 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jmespath/go-jmespath v0.4.0
-	github.com/jzelinskie/whirlpool v0.0.0-20201016144138-0675e54bb004
 	github.com/klauspost/compress v1.13.5
 	github.com/magefile/mage v1.12.1
 	github.com/mcuadros/go-defaults v1.2.0

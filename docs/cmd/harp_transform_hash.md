@@ -4,7 +4,7 @@ Hash given input
 
 ### Synopsis
 
-Process the input to compute the hash according to selected hash algoritm.
+Process the input to compute the hash according to selected hash algorithm.
 
 The command input is limited to size lower than 250 MB.
 
