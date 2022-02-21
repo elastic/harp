@@ -4,10 +4,15 @@
 
 FEATURES:
 
+* sdk/value:
+  * `encoding` reader / writer factory. [#117](github.com/elastic/harp/pull/117)
+  * `compression` reader/writer factory. [#117](github.com/elastic/harp/pull/117)
+  * `hash` writer factory. [#117](github.com/elastic/harp/pull/117)
+
 * cli/transform:
-  * `compress`/`decompress` commands for various algorithms
-  * `hash` command for various hashing algorithms.
-  * `encode`/`decode` command for various encoding strategies
+  * `compress`/`decompress` commands for various algorithms [#117](github.com/elastic/harp/pull/117)
+  * `hash`/`multihash` command for various hashing algorithms. [#117](github.com/elastic/harp/pull/117)
+  * `encode`/`decode` command for various encoding strategies [#117](github.com/elastic/harp/pull/117)
 
 ## 0.2.7
 

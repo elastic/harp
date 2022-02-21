@@ -9,7 +9,7 @@ Process the input to compute the hash according to selected hash algoritm.
 The command input is limited to size lower than 250 MB.
 
 Supported Algorithms:
-  SHA-1,SHA-512/256,BLAKE2b-256,SHA3-224,MD5,SHA3-256,SHA3-512,SHA-512,BLAKE2b-512,RIPEMD-160,MD4,SHA-256,SHA-512/224,BLAKE2b-384,SHA3-384,SHA-224
+  blake2b-256, blake2b-384, blake2b-512, md4, md5, ripemd160, sha1, sha224, sha256, sha3-224, sha3-256, sha3-384, sha3-512, sha512, sha512/224, sha512/256
 
 ```
 harp transform hash [flags]
@@ -21,11 +21,11 @@ harp transform hash [flags]
   # Compute SHA256 from stdin
   echo -n 'test' | harp transform hash
   
-  # Compute CRC32 hash from a file
-  harp transform hash --algorithm CRC32
+  # Compute SHA512 hash from a file
+  harp transform hash --algorithm sha512
   
   # Compute Blake2b hash from a file with base64 encoded output
-  harp transform hash --algorithm BLAKE2b_512 --encoding base64
+  harp transform hash --algorithm blake2b-512 --encoding base64
   
   # Check the given input integrity (default sha256 / hex)
   harp transform hash --in livecd.iso --validate 4506369c20d2a95ebad9234b7f48e0eded4ec4ee1de0cb45a195b1e38fde27f7

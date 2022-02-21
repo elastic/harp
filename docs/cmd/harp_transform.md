@@ -18,6 +18,7 @@ Transform input value using encryption transformers
 * [harp transform encode](harp_transform_encode.md)	 - Encode given input
 * [harp transform encrypt](harp_transform_encrypt.md)	 - Encrypt the given value with a value transformer
 * [harp transform hash](harp_transform_hash.md)	 - Hash given input
+* [harp transform multihash](harp_transform_multihash.md)	 - Multiple hash  from given input
 * [harp transform sign](harp_transform_sign.md)	 - Sign the given value with a transformer
 * [harp transform verify](harp_transform_verify.md)	 - Verify and unpack the given value with a transformer
 
