@@ -83,13 +83,14 @@ jobs:
         run: |
           #!/bin/bash
           shopt -s expand_aliases
+          curl -sLO https://raw.githubusercontent.com/elastic/harp/cmd/harp/v{{ github.events.inputs.release }}/build/artifact/cosign.pub
           cd .dist
           FILES="*"
           for f in $FILES;
           do
             if [[ -f "$f.sig" ]];
             then
-              cosign verify-blob --key ../build/artifact/cosign.pub --signature "$f.sig" $f
+              cosign verify-blob --key ../cosign.pub --signature "$f.sig" $f
             fi
           done
       -
