@@ -29,15 +29,13 @@ jobs:
           image: ghcr.io/elastic/harp/harp-artifacts-fips:v${{ github.event.inputs.release }}
           path: '/app/.'
       -
+        uses: sigstore/cosign-installer@v2.0.1
+      -
         name: Assemble a package
         run: |
           mkdir .dist
           cp ${{ steps.extract-std.outputs.destination }}/* .dist/
           cp ${{ steps.extract-fips.outputs.destination }}/* .dist/
-          cd .dist
-          find . -maxdepth 1 -mindepth 1 -type f -exec tar czvf {}.tar.gz {} --remove-files \;
-      -
-        uses: sigstore/cosign-installer@v2.0.1
       -
         name: Generate provenance for Release
         uses: philips-labs/slsa-provenance-action@v0.7.2
@@ -54,6 +52,10 @@ jobs:
           FILES="harp-*"
           for f in $FILES;
           do
+            # Ignore json files
+            if [ $f == "*.json" ] ; then
+              continue;
+            fi
             sha256sum "$f" > "$f.sha256"
             cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
           done
