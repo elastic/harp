@@ -65,7 +65,7 @@ jobs:
             *.sbom.json)
                 gzip "$f"
                 ;;
-            (checksum.txt|provenance.json))
+            checksum.txt|provenance.json)
                 cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
             harp-*)
@@ -87,14 +87,9 @@ jobs:
           FILES="*"
           for f in $FILES;
           do
-            case $f in
-            (*.gz|*.sig|*.sha256))
-                continue
-                ;;
-            (harp-*|checksum.txt))
-                cosign verify-blob --key ../build/artifact/cosign.pub --signature "$f.sig" $f
-                ;;
-            esac
+            if [[ -f "$f.sig" ]];
+              cosign verify-blob --key ../build/artifact/cosign.pub --signature "$f.sig" $f
+            fi
           done
       -
         name: Upload to release
