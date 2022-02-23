@@ -37,6 +37,8 @@ jobs:
           cd .dist
           find . -maxdepth 1 -mindepth 1 -type f -exec tar czvf {}.tar.gz {} --remove-files \;
       -
+        uses: sigstore/cosign-installer@v2.0.1
+      -
         name: Generate provenance for Release
         uses: philips-labs/slsa-provenance-action@v0.7.2
         with:
@@ -46,15 +48,15 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
-        uses: sigstore/cosign-installer@v2.0.1
-      -
         name: Sign
         run: |
           cd .dist
-          for f in harp-*; do
-            sha256sum $f > $f.sha256;
-            cosign sign-blob --key <(echo -n "${COSIGN_KEY}") $f > $.sig;
-          end
+          FILES="harp-*"
+          for f in $FILES;
+          do
+            sha256sum "$f" > "$f.sha256"
+            cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
+          done
         env:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
