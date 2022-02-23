@@ -47,17 +47,23 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
         name: Sign
+        shell: bash
         run: |
+          #!/bin/bash
+          shopt -s expand_aliases
           cd .dist
           FILES="harp-*"
           for f in $FILES;
           do
-            # Ignore json files
-            if [ $f == "*.json" ] ; then
-              continue;
-            fi
-            sha256sum "$f" > "$f.sha256"
-            cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
+            case $f in
+            *.sbom.json)
+                gzip "$f"
+                ;;
+            *)
+                sha256sum "$f" > "$f.sha256"
+                cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
+                ;;
+            esac
           done
         env:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
