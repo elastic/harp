@@ -37,6 +37,12 @@ jobs:
           cp ${{ steps.extract-std.outputs.destination }}/* .dist/
           cp ${{ steps.extract-fips.outputs.destination }}/* .dist/
       -
+        name: Create checksum
+        id: create-checksum
+        run: |
+          cd .dist
+          sha256sum * > checksum.txt
+      -
         name: Generate provenance for Release
         uses: philips-labs/slsa-provenance-action@v0.7.2
         with:
@@ -58,6 +64,9 @@ jobs:
             case $f in
             *.sbom.json)
                 gzip "$f"
+                ;;
+            checksum.txt)
+                cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
             *)
                 sha256sum "$f" > "$f.sha256"
