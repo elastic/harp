@@ -46,7 +46,7 @@ func NewMultiHash(r io.Reader, algorithms ...string) (map[string]string, error) 
 	}
 
 	// Finalize
-	var res = make(map[string]string)
+	res := make(map[string]string)
 	for algo, v := range hashers {
 		res[algo] = hex.EncodeToString(v.Sum(nil))
 	}
@@ -58,7 +58,7 @@ func NewMultiHash(r io.Reader, algorithms ...string) (map[string]string, error) 
 // -----------------------------------------------------------------------------
 
 func hashToMultiWriter(hashers map[string]hash.Hash) io.Writer {
-	var w = make([]io.Writer, 0, len(hashers))
+	w := make([]io.Writer, 0, len(hashers))
 	for _, v := range hashers {
 		w = append(w, v)
 	}

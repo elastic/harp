@@ -39,9 +39,44 @@ type bundleDecryptParams struct {
 var bundleDecryptCmd = func() *cobra.Command {
 	params := &bundleDecryptParams{}
 
+	longDesc := cmdutil.LongDesc(`
+	Decrypt a bundle content.
+
+	For confidentiality purpose, bundle package value can be encrypted before
+	the container sealing. It offers confidentiality properties so that the
+	final consumer must know an additional decryption key to be allowed to
+	read the package value.
+
+	All package properties (name, labels, annotations) remain a clear-text
+	message. Only package values (secret K/V) is encrypted.
+
+	In order to decrypt the package value, harp uses the value encryption
+	transformers. The required key must be provided in a format understandable
+	by the encryption transformer factory.
+
+	This act as in-transit/in-use encryption.
+	`)
+
+	examples := cmdutil.Examples(`
+	# Decrypt a bundle from STDIN and produce output to STDOUT
+	harp bundle decrypt --key <transformer key>
+
+	# Decrypt a bundle from STDIN using multiple transformer keys
+	harp bundle decrypt --key <transformer key 1> --key <transformer key 2>
+
+	# Decrypt a bundle from STDIN and ignore secrets which could not be decrypted
+	# with given transformer key (partial decryption / authorization by key)
+	harp bundle decrypt --skip-not-decryptable --key <transformer-key>
+
+	# Decrypt a bundle from STDIN and produce output to a file
+	harp bundle decrypt --key <transformer key> --out decrypted.bundle
+	`)
+
 	cmd := &cobra.Command{
-		Use:   "decrypt",
-		Short: "Decrypt secret values",
+		Use:     "decrypt",
+		Short:   "Decrypt secret values",
+		Long:    longDesc,
+		Example: examples,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-bundle-decrypt", conf.Debug.Enable, conf.Instrumentation.Logs.Level)

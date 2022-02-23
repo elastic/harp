@@ -28,6 +28,7 @@ option objc_class_prefix = "SBX";
 option php_namespace = "harp\\Bundle\\V1";
 
 import "harp/bundle/v1/template.proto";
+import "google/protobuf/any.proto";
 import "google/protobuf/wrappers.proto";
 
 // Bundle is a concrete secret bundle.
@@ -48,6 +49,8 @@ message Bundle {
   google.protobuf.BytesValue values = 6;
   // Merkle Tree root
   bytes merkle_tree_root = 7;
+  // User data storage
+  map<string, google.protobuf.Any> user_data = 99;
 }
 
 // Package is a secret organizational unit.
@@ -64,6 +67,8 @@ message Package {
   SecretChain secrets = 4;
   // SecretChain versions
   map<fixed32, SecretChain> versions = 5;
+  // User data storage
+  map<string, google.protobuf.Any> user_data = 99;
 }
 
 // SecretChain describe a secret version chain.
@@ -84,6 +89,8 @@ message SecretChain {
   google.protobuf.UInt32Value next_version = 6;
   // Locked buffer when encryption is enabled
   google.protobuf.BytesValue locked = 7;
+  // User data storage
+  map<string, google.protobuf.Any> user_data = 99;
 }
 
 // KV contains the key, the value and the type of the value.
