@@ -58,18 +58,18 @@ jobs:
           #!/bin/bash
           shopt -s expand_aliases
           cd .dist
-          FILES="harp-*"
+          FILES="*"
           for f in $FILES;
           do
             case $f in
             *.sbom.json)
                 gzip "$f"
                 ;;
-            checksum.txt)
+            (checksum.txt|provenance.json))
                 cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
-            *)
-                sha256sum "$f" > "$f.sha256"
+            harp-*)
+                sha256sum "$f" | cut -d " " -f 1 > "$f.sha256"
                 cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
             esac
@@ -77,6 +77,25 @@ jobs:
         env:
           COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      -
+        name: Verify
+        shell: bash
+        run: |
+          #!/bin/bash
+          shopt -s expand_aliases
+          cd .dist
+          FILES="*"
+          for f in $FILES;
+          do
+            case $f in
+            (*.gz|*.sig|*.sha256))
+                continue
+                ;;
+            (harp-*|checksum.txt))
+                cosign verify-blob --key ../build/artifact/cosign.pub --signature "$f.sig" $f
+                ;;
+            esac
+          done
       -
         name: Upload to release
         uses: AButler/upload-release-assets@v2.0
