@@ -85,17 +85,15 @@ RUN set -eux; \
 
 ## -------------------------------------------------------------------------------------------------
 
-# Compress to binary file
-FROM alpine:latest AS compressor
+# Assemble all binary files
+FROM alpine:latest AS assembler
 
-RUN apk add --no-cache upx
 WORKDIR /app
 {{ if .Cmd.HasModule }}
 COPY --from=compiler /go/src/workspace/{{.Cmd.Module}}/bin/* /app/
 {{ else }}
 COPY --from=compiler /go/src/workspace/bin/* /app/
 {{ end }}
-RUN upx --overlay=strip -9 * || true
 
 ## -------------------------------------------------------------------------------------------------
 
@@ -122,7 +120,7 @@ LABEL \
 
 WORKDIR /app
 
-COPY --from=compressor /app/* /app/
+COPY --from=assembler /app/* /app/
 `)
 
 // Release uses docker pipeline to generate all artifacts.

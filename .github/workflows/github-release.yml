@@ -37,25 +37,6 @@ jobs:
           cd .dist
           find . -maxdepth 1 -mindepth 1 -type f -exec tar czvf {}.tar.gz {} --remove-files \;
       -
-        name: Create checksum
-        id: create-checksum
-        run: |
-          cd .dist
-          sha256sum * > checksum.txt
-      -
-        uses: sigstore/cosign-installer@main
-      -
-        name: Sign the checksum
-        run: |
-          cd .dist
-          echo -n "${COSIGN_PASSWORD}" | \
-            cosign sign-blob --key <(echo -n "${COSIGN_KEY}") \
-              --output-signature=checksum.txt.sig \
-              checksum.txt
-        env:
-          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-      -
         name: Generate provenance for Release
         uses: philips-labs/slsa-provenance-action@v0.6.0
         with:
@@ -64,6 +45,19 @@ jobs:
           arguments: --artifact-path .dist --output-path '.dist/provenance.json'
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      -
+        uses: sigstore/cosign-installer@v2.0.1
+      -
+        name: Sign
+        run: |
+          cd .dist
+          for f in harp-*; do
+            sha256sum $f > $f.sha256;
+            cosign sign-blob --key <(echo -n "${COSIGN_KEY}") $f > $.sig;
+          end
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       -
         name: Upload to release
         uses: AButler/upload-release-assets@v2.0
