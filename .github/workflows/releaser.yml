@@ -12,12 +12,11 @@ permissions:
   actions: write
 
 jobs:
-  linux-build:
-    runs-on: ubuntu-latest
+  release:
+    runs-on: macos-latest
     permissions:
-      packages: write
-      contents: read
-
+      packages: read
+      contents: write
     steps:
       -
         name: Cancel previous workflows
@@ -37,9 +36,6 @@ jobs:
           go-version: '1.17'
           check-latest: true
       -
-        name: Set up Cosign
-        uses: sigstore/cosign-installer@v2.0.1
-      -
         name: Cache Go modules
         uses: actions/cache@v1
         with:
@@ -48,6 +44,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       -
+        name: Download cyclonedx-gomod
+        uses: CycloneDX/gh-gomod-generate-sbom@v1
+        with:
+          version: v1.2.0
+      -
+        uses: sigstore/cosign-installer@v2
+      -
+        name: Import Code-Signing Certificates
+        uses: Apple-Actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+      -
+        name: Install gon via HomeBrew for code signing and app notarization
+        run: |
+          brew tap mitchellh/gon
+          brew install mitchellh/gon/gon
+      -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
@@ -55,3 +69,93 @@ jobs:
           args: release --rm-dist --skip-publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Prepare Github release packages
+        run: |
+          mkdir .dist
+          cp "./dist/harp-*" .dist/
+      -
+        name: Sign and notarize AMD64 cli
+        run: |
+          echo '{
+            "source": ["./dist/harp-darwin-amd64"]
+            "bundle_id":"co.elastic.harp",
+            "apple_id": {},
+            "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
+            "zip": {
+              "output_path": "./.dist/harp-darwin-amd64.zip"
+            }
+          }' | jq '' > gon.json
+          gon -log-level=debug -log-json ./gon.json
+          rm -f .dist/harp-darwin-amd64
+      - name: Sign and notarize ARM64 cli
+        run: |
+          echo '{
+            "source": ["./dist/harp-darwin-arm64"]
+            "bundle_id":"co.elastic.harp",
+            "apple_id": {},
+            "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
+            "zip": {
+              "output_path": "./.dist/harp-darwin-arm64.zip"
+            }
+          }' | jq '' > gon.json
+          gon -log-level=debug -log-json ./gon.json
+          rm -f .dist/harp-darwin-arm64
+      -
+        name: Generate provenance for Release
+        uses: philips-labs/slsa-provenance-action@v0.7.2
+        with:
+          command: generate
+          subcommand: files
+          arguments: --artifact-path .dist --output-path '.dist/provenance.json'
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      -
+        name: Sign
+        shell: bash
+        run: |
+          #!/bin/bash
+          shopt -s expand_aliases
+          cd .dist
+          FILES="*"
+          for f in $FILES;
+          do
+            case $f in
+            *.sbom.json)
+                continue
+                ;;
+            provenance.json)
+                cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
+                ;;
+            harp-*)
+                sha256sum "$f" | cut -d " " -f 1 > "$f.sha256"
+                cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
+                ;;
+            esac
+          done
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      -
+        name: Verify
+        shell: bash
+        run: |
+          #!/bin/bash
+          shopt -s expand_aliases
+          curl -sLO https://raw.githubusercontent.com/elastic/harp/cmd/harp/v${{ github.event.inputs.release }}/build/artifact/cosign.pub
+          cd .dist
+          FILES="*"
+          for f in $FILES;
+          do
+            if [[ -f "$f.sig" ]];
+            then
+              cosign verify-blob --key ../cosign.pub --signature "$f.sig" $f
+            fi
+          done
+      -
+        name: Upload to release
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: '.dist/*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: v${{ github.event.inputs.release }}

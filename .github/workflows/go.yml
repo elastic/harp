@@ -52,8 +52,8 @@ jobs:
           git --no-pager diff --quiet go.mod go.sum
 
   # Try compiple all binaries first
-  goreleaser-dryrun:
-    name: "GoReleaser (dry-run)"
+  compile-dryrun:
+    name: "Compile"
     runs-on: ubuntu-latest
     needs: [golangci-lint, go-mod]
     steps:
@@ -82,13 +82,9 @@ jobs:
         name: Fetch dependencies
         run: go mod download
       -
-        name: Run GoReleaser (Dry Run)
-        uses: goreleaser/goreleaser-action@v2
-        with:
-          version: latest
-          args: release --rm-dist --snapshot --skip-publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        name: Build Harp
+        run: |
+          go mod vendor && go build -mod=vendor -o bin/harp github.com/elastic/harp/cmd/harp
 
   # Run golangci-lint
   golangci-lint:
@@ -116,7 +112,7 @@ jobs:
 
   tests-on-linux:
     name: "Tests (linux)"
-    needs: [go-mod, goreleaser-dryrun, golangci-lint] # run after golangci-lint action to not produce duplicated errors
+    needs: [go-mod, compile-dryrun, golangci-lint] # run after golangci-lint action to not produce duplicated errors
     runs-on: ubuntu-latest
     steps:
       -
@@ -154,7 +150,7 @@ jobs:
 
   tests-on-windows:
     name: "Tests (windows)"
-    needs: [go-mod, goreleaser-dryrun, golangci-lint] # run after golangci-lint action to not produce duplicated errors
+    needs: [go-mod, compile-dryrun, golangci-lint] # run after golangci-lint action to not produce duplicated errors
     runs-on: windows-latest
     steps:
       -
@@ -192,7 +188,7 @@ jobs:
 
   tests-on-macos:
     name: "Tests (darwin)"
-    needs: [go-mod, goreleaser-dryrun, golangci-lint] # run after golangci-lint action to not produce duplicated errors
+    needs: [go-mod, compile-dryrun, golangci-lint] # run after golangci-lint action to not produce duplicated errors
     runs-on: macos-latest
     steps:
       -

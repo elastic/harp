@@ -5,8 +5,12 @@ before:
     - go mod tidy
     - go mod vendor
 
+gomod:
+  proxy: true
+
 builds:
-  - main: './cmd/harp'
+  - id: harp
+    main: './cmd/harp'
     env:
       - CGO_ENABLED=0
     mod_timestamp: '{{ .CommitTimestamp }}'
@@ -31,13 +35,24 @@ builds:
       - windows_amd64
       - windows_arm
       - windows_arm64
-    binary: '{{ .ProjectName }}'
+    binary: 'harp-{{replace .Target "_" "-"}}'
+    hooks:
+      post:
+        - cmd: cyclonedx-gomod app -main ./cmd/harp -licenses -packages -json -output "dist/harp-{{replace .Target "_" "-"}}.sbom.json"
+          env:
+            - GOARCH={{ .Arch }}
+            - GOOS={{ .Os }}
+    no_unique_dist_dir: true
 
 archives:
   - format: binary
+    name_template: '{{ .Binary }}'
+
+snapshot:
+  name_template: "{{.Tag}}-next"
 
 checksum:
-  disable: true
+  name_template: 'checksums.txt'
 
 release:
   disable: true
