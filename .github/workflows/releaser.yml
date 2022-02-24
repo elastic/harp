@@ -1,0 +1,57 @@
+name: Release with goreleaser
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release version'
+        required: true
+
+permissions:
+  # Required to stop running workflows
+  actions: write
+
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      -
+        name: Cancel previous workflows
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Unshallow
+        run: git fetch --prune --unshallow
+      -
+        name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.17'
+          check-latest: true
+      -
+        name: Set up Cosign
+        uses: sigstore/cosign-installer@v2.0.1
+      -
+        name: Cache Go modules
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      -
+        name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist --skip-publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
