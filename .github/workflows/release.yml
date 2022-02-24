@@ -109,7 +109,7 @@ jobs:
           artifact-name: sbom.spdx
           format: spdx
       -
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v2.0.1
       -
         name: Sign image and add attestations
         run: |

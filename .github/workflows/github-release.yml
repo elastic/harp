@@ -112,6 +112,8 @@ jobs:
           name: macos-binaries
           path: .dist/
       -
+        uses: sigstore/cosign-installer@v2.0.1
+      -
         name: Generate provenance for Release
         uses: philips-labs/slsa-provenance-action@v0.7.2
         with:

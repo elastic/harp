@@ -1,9 +1,6 @@
 name: Extra
 on:
   push:
-    tags:
-      - v*
-      - cmd/*
     branches:
       - main
   pull_request:
