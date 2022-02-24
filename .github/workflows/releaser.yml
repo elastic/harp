@@ -51,6 +51,7 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
+        name: Install Cosign
         uses: sigstore/cosign-installer@v2.0.1
       -
         name: Import Code-Signing Certificates
@@ -74,10 +75,12 @@ jobs:
       -
         name: Prepare Github release packages
         run: |
+          #!/bin/bash
+          shopt -s expand_aliases
           mkdir .dist
-          cp "./dist/harp-*" .dist/
+          cp dist/harp-* .dist/
       -
-        name: Sign and notarize AMD64 cli
+        name: Sign and notarize MacOS AMD64 cli
         run: |
           echo '{
             "source": ["./dist/harp-darwin-amd64"]
@@ -90,7 +93,7 @@ jobs:
           }' | jq '' > gon.json
           gon -log-level=debug -log-json ./gon.json
           rm -f .dist/harp-darwin-amd64
-      - name: Sign and notarize ARM64 cli
+      - name: Sign and notarize MacOS ARM64 cli
         run: |
           echo '{
             "source": ["./dist/harp-darwin-arm64"]
