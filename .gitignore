@@ -60,3 +60,5 @@ dist
 .task
 
 Dockerfile.*
+
+dist/
