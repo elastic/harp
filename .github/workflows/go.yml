@@ -55,7 +55,7 @@ jobs:
   goreleaser-dryrun:
     name: "GoReleaser (dry-run)"
     runs-on: ubuntu-latest
-    needs: golangci-lint
+    needs: [golangci-lint, go-mod]
     steps:
       -
         name: Cancel previous workflows
@@ -78,6 +78,9 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      -
+        name: Fetch dependencies
+        run: go mod download
       -
         name: Run GoReleaser (Dry Run)
         uses: goreleaser/goreleaser-action@v2

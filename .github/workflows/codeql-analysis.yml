@@ -23,10 +23,15 @@ jobs:
       # required for all workflows
       security-events: write
       # only required for workflows in private repositories
-      actions: read
+      actions: write
       contents: read
 
     steps:
+    -
+      name: Cancel previous workflows
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
