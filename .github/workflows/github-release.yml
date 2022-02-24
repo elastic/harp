@@ -63,6 +63,7 @@ jobs:
         shell: bash
         run: |
           cd .dist/
+          shopt -s extglob
           rm -f !(harp-darwin-*)
       -
         name: Import Code-Signing Certificates
