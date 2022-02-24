@@ -96,7 +96,8 @@ jobs:
           }' | jq '' > gon.amd64.json
           gon -log-level=debug -log-json ./gon.amd64.json
           rm -f .dist/harp-darwin-amd64
-      - name: Sign and notarize MacOS ARM64 cli
+      -
+        name: Sign and notarize MacOS ARM64 cli
         env:
           AC_USERNAME: "${{ secrets.AC_USERNAME }}"
           AC_PASSWORD: "${{ secrets.AC_PASSWORD }}"
@@ -112,15 +113,17 @@ jobs:
           }' | jq '' > gon.arm64.json
           gon -log-level=debug -log-json ./gon.arm64.json
           rm -f .dist/harp-darwin-arm64
-      -
-        name: Generate provenance for Release
-        uses: philips-labs/slsa-provenance-action@v0.7.2
-        with:
-          command: generate
-          subcommand: files
-          arguments: --artifact-path .dist --output-path '.dist/provenance.json'
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      # Disable provenance
+      #
+      #-
+      #  name: Generate provenance for Release
+      #  uses: philips-labs/slsa-provenance-action@v0.7.2
+      #  with:
+      #    command: generate
+      #    subcommand: files
+      #    arguments: --artifact-path .dist --output-path '.dist/provenance.json'
+      #  env:
+      #    GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
         name: Sign
         shell: bash
