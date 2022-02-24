@@ -48,6 +48,8 @@ jobs:
         uses: CycloneDX/gh-gomod-generate-sbom@v1.0.0
         with:
           version: v1.2.0
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
         uses: sigstore/cosign-installer@v2.0.1
       -
