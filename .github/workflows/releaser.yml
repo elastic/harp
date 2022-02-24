@@ -64,6 +64,7 @@ jobs:
         run: |
           brew tap mitchellh/gon
           brew install mitchellh/gon/gon
+          brew install coreutils
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
