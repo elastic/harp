@@ -83,28 +83,28 @@ jobs:
         name: Sign and notarize MacOS AMD64 cli
         run: |
           echo '{
-            "source": ["./dist/harp-darwin-amd64"]
+            "source": ["./dist/harp-darwin-amd64"],
             "bundle_id":"co.elastic.harp",
             "apple_id": {},
             "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
             "zip": {
               "output_path": "./.dist/harp-darwin-amd64.zip"
             }
-          }' | jq '' > gon.json
-          gon -log-level=debug -log-json ./gon.json
+          }' | jq '' > gon.amd64.json
+          gon -log-level=debug -log-json ./gon.amd64.json
           rm -f .dist/harp-darwin-amd64
       - name: Sign and notarize MacOS ARM64 cli
         run: |
           echo '{
-            "source": ["./dist/harp-darwin-arm64"]
+            "source": ["./dist/harp-darwin-arm64"],
             "bundle_id":"co.elastic.harp",
             "apple_id": {},
             "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
             "zip": {
               "output_path": "./.dist/harp-darwin-arm64.zip"
             }
-          }' | jq '' > gon.json
-          gon -log-level=debug -log-json ./gon.json
+          }' | jq '' > gon.arm64.json
+          gon -log-level=debug -log-json ./gon.arm64.json
           rm -f .dist/harp-darwin-arm64
       -
         name: Generate provenance for Release
