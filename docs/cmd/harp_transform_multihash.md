@@ -9,7 +9,7 @@ Process the input to compute the hashes according to selected hash algorithms.
 The command input is limited to size lower than 250 MB.
 
 Supported Algorithms:
-  blake2b-256, blake2b-384, blake2b-512, md5, sha1, sha224, sha256, sha3-224, sha3-256, sha3-384, sha3-512, sha512, sha512/224, sha512/256
+  blake2b-256, blake2b-384, blake2b-512, blake2s-256, md5, sha1, sha224, sha256, sha3-224, sha3-256, sha3-384, sha3-512, sha512, sha512/224, sha512/256
 
 ```
 harp transform multihash [flags]
