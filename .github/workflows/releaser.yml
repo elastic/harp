@@ -92,7 +92,7 @@ jobs:
             "apple_id": {},
             "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
             "zip": {
-              "output_path": "./.dist/harp-darwin-amd64.zip"
+              "output_path": "./dist/harp-darwin-amd64.zip"
             }
           }' | jq '' > gon.amd64.json
           gon -log-level=debug -log-json ./gon.amd64.json
@@ -109,11 +109,31 @@ jobs:
             "apple_id": {},
             "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
             "zip": {
-              "output_path": "./.dist/harp-darwin-arm64.zip"
+              "output_path": "./dist/harp-darwin-arm64.zip"
             }
           }' | jq '' > gon.arm64.json
           gon -log-level=debug -log-json ./gon.arm64.json
           rm -f .dist/harp-darwin-arm64
+      -
+        name: Prepare archives
+        run: |
+          #!/bin/bash
+          shopt -s expand_aliases
+          cd .dist/
+          unzip ../dist/harp-darwin-amd64.zip
+          unzip ../dist/harp-darwin-arm64.zip
+          FILES="*"
+          for f in $FILES;
+          do
+            case $f in
+            *.sbom.json)
+                continue
+                ;;
+            harp-*)
+                tar czvf $f.tar.gz $f $f.sbom.json --remove-files
+                ;;
+            esac
+          done
       # Disable provenance
       #
       #-
@@ -132,17 +152,15 @@ jobs:
           #!/bin/bash
           shopt -s expand_aliases
           cd .dist
+          sha256sum *.tar.gz > checksums.txt
           FILES="*"
           for f in $FILES;
           do
             case $f in
-            *.sbom.json)
-                continue
-                ;;
-            provenance.json)
+            provenance.json|checksums.txt)
                 cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
-            harp-*)
+            *.tar.gz)
                 sha256sum "$f" | cut -d " " -f 1 > "$f.sha256"
                 cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
