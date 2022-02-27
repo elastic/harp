@@ -130,7 +130,8 @@ jobs:
                 continue
                 ;;
             harp-*)
-                tar czvf $f.tar.gz $f $f.sbom.json --remove-files
+                tar czvf $f.tar.gz $f $f.sbom.json
+                rm -f $f $f.sbom.json
                 ;;
             esac
           done
