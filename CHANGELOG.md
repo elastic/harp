@@ -4,15 +4,51 @@
 
 FEATURES:
 
+* cli:
+  * `darwin-amd64` and `darwin-arm64` are code signed and notarized using an
+    Apple Developer ID certificate to allow harp execution on Silicon M1 based
+    computers. [#134](https://github.com/elastic/harp/pull/134)
+
+* cli/transform:
+  * `compress`/`decompress` commands for various algorithms. [#117](github.com/elastic/harp/pull/117)
+  * `hash`/`multihash` command for various hashing algorithms. [#117](github.com/elastic/harp/pull/117)
+  * `encode`/`decode` command for various encoding strategies [#117](github.com/elastic/harp/pull/117)
+
+* bundle/ruleset:
+  * enable `rego` language for RuleSet constraint engine. [#134](https://github.com/elastic/harp/pull/134)
+
+* sdk/api:
+  * support `user_data` for `Bundle`, `Package`, `SecretChain` to store custom
+    arbitrary data during pipeline execution. [#134](https://github.com/elastic/harp/pull/134)
+
 * sdk/value:
   * `encoding` reader / writer factory. [#117](github.com/elastic/harp/pull/117)
   * `compression` reader/writer factory. [#117](github.com/elastic/harp/pull/117)
   * `hash` writer factory. [#117](github.com/elastic/harp/pull/117)
 
-* cli/transform:
-  * `compress`/`decompress` commands for various algorithms [#117](github.com/elastic/harp/pull/117)
-  * `hash`/`multihash` command for various hashing algorithms. [#117](github.com/elastic/harp/pull/117)
-  * `encode`/`decode` command for various encoding strategies [#117](github.com/elastic/harp/pull/117)
+CHANGES:
+
+* go:
+  * FIPS artifact build process is disabled.
+
+* git:
+  * the tag `cmd/harp/vX.XX` will never be produced.
+
+* ci:
+  * `dependabot` setup to monitor and automate dependency updates.
+  * the release pipeline has been completely redesigned to use goreleaser.
+  * SLSA `provenance` is temporary disabled due to a lack of the multiplatform support
+    for the used action.
+
+DIST:
+
+* build/ci:
+  * SHA256 fingerprint is provided per artifact.
+  * SBOM is embedded in the artifact archive.
+
+* build/gha:
+  * [zntrio/harp-installer](https://github.com/zntrio/harp-installer) github action
+    could be used to set up harp during your github action pipelines.
 
 ## 0.2.7
 
