@@ -20,10 +20,12 @@ package linter
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	fuzz "github.com/google/gofuzz"
 )
 
 func TestValidate(t *testing.T) {
@@ -155,6 +157,10 @@ func TestChecksum(t *testing.T) {
 }
 
 func mustLoadRuleSet(filePath string) *bundlev1.RuleSet {
+	if err := os.Chdir(filepath.Dir(filePath)); err != nil {
+		panic(err)
+	}
+
 	f, err := os.Open(filePath)
 	if err != nil {
 		panic(err)
@@ -269,6 +275,106 @@ func TestEvaluate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "rego - valid bundle",
+			args: args{
+				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/rego.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "app/qa/security/harp/v1.0.0/server/database/credentials",
+							Annotations: map[string]string{
+								"infosec.elastic.co/v1/SecretPolicy#severity": "moderate",
+							},
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{
+										Key: "DB_HOST",
+									},
+									{
+										Key: "DB_NAME",
+									},
+									{
+										Key: "DB_USER",
+									},
+									{
+										Key: "DB_PASSWORD",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "rego - invalid bundle",
+			args: args{
+				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/rego.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "app/qa/security/harp/v1.0.0/server/database/credentials",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{},
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "regofile - valid bundle",
+			args: args{
+				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/rego-file.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "app/qa/security/harp/v1.0.0/server/database/credentials",
+							Annotations: map[string]string{
+								"infosec.elastic.co/v1/SecretPolicy#severity": "moderate",
+							},
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{
+										Key: "DB_HOST",
+									},
+									{
+										Key: "DB_NAME",
+									},
+									{
+										Key: "DB_USER",
+									},
+									{
+										Key: "DB_PASSWORD",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "regofile - invalid bundle",
+			args: args{
+				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/rego-file.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "app/qa/security/harp/v1.0.0/server/database/credentials",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{},
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -278,5 +384,44 @@ func TestEvaluate(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+func TestEvaluate_Fuzz(t *testing.T) {
+	// Making sure the descrption never panics
+	for i := 0; i < 500; i++ {
+		f := fuzz.New()
+
+		rs := bundlev1.RuleSet{
+			ApiVersion: "harp.elastic.co/v1",
+			Kind:       "RuleSet",
+			Meta:       &bundlev1.RuleSetMeta{},
+			Spec: &bundlev1.RuleSetSpec{
+				Rules: []*bundlev1.Rule{
+					{},
+				},
+			},
+		}
+		file := bundlev1.Bundle{
+			Packages: []*bundlev1.Package{
+				{
+					Name: "foo",
+					Secrets: &bundlev1.SecretChain{
+						Data: []*bundlev1.KV{
+							{
+								Key:   "k1",
+								Value: []byte("v1"),
+							},
+						},
+					},
+				},
+			},
+		}
+
+		f.Fuzz(&rs)
+		f.Fuzz(&file)
+
+		// Execute
+		Evaluate(context.Background(), &file, &rs)
 	}
 }

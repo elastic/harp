@@ -22,6 +22,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/gobwas/glob"
 	"golang.org/x/crypto/blake2b"
@@ -30,6 +32,7 @@ import (
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine"
 	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine/cel"
+	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine/rego"
 )
 
 // Validate bundle patch.
@@ -80,6 +83,7 @@ func Checksum(spec *bundlev1.RuleSet) (string, error) {
 }
 
 // Evaluate given bundl using the loaded ruleset.
+//nolint:gocyclo // to refactor
 func Evaluate(ctx context.Context, b *bundlev1.Bundle, spec *bundlev1.RuleSet) error {
 	// Validate spec
 	if err := Validate(spec); err != nil {
@@ -102,10 +106,32 @@ func Evaluate(ctx context.Context, b *bundlev1.Bundle, spec *bundlev1.RuleSet) e
 			return fmt.Errorf("unable to compile path matcher: %w", err)
 		}
 
-		// Compile constraints
-		vm, err := cel.New(r.Constraints)
-		if err != nil {
-			return fmt.Errorf("unable to prepare evaluation context: %w", err)
+		var (
+			vm    engine.PackageLinter
+			vmErr error
+		)
+
+		switch {
+		case len(r.Constraints) > 0:
+			// Compile constraints
+			vm, vmErr = cel.New(r.Constraints)
+		case r.RegoFile != "":
+			// Open policy file
+			f, err := os.Open(r.RegoFile)
+			if err != nil {
+				return fmt.Errorf("unable to open rego policy file: %w", err)
+			}
+
+			// Create a evaluation context
+			vm, vmErr = rego.New(ctx, f)
+		case r.Rego != "":
+			// Create a evaluation context
+			vm, vmErr = rego.New(ctx, strings.NewReader(r.Rego))
+		default:
+			return errors.New("one of 'constraints', 'rego' or 'rego_file' property must be defined")
+		}
+		if vmErr != nil {
+			return fmt.Errorf("unable to prepare evaluation context: %w", vmErr)
 		}
 
 		// A rule must match at least one time.

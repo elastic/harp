@@ -34,9 +34,7 @@ func NewReader(r io.Reader, encoding string) (io.Reader, error) {
 	// Normalize input
 	encoding = strings.TrimSpace(strings.ToLower(encoding))
 
-	var (
-		decoderReader io.Reader
-	)
+	var decoderReader io.Reader
 
 	// Apply transformation
 	switch encoding {

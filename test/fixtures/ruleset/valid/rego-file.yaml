@@ -1,0 +1,12 @@
+apiVersion: harp.elastic.co/v1
+kind: RuleSet
+meta:
+  name: harp-server
+  description: Package and secret constraints for harp-server
+  owner: security@elastic.co
+spec:
+  rules:
+    - name: HARP-SRV-0001
+      description: The target package must have all secrets declared
+      path: "app/qa/security/harp/v1.0.0/server/database/credentials"
+      regoFile: policy.rego

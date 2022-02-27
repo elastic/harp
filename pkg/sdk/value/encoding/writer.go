@@ -36,9 +36,7 @@ func NewWriter(w io.Writer, encoding string) (io.WriteCloser, error) {
 	// Normalize input
 	encoding = strings.TrimSpace(strings.ToLower(encoding))
 
-	var (
-		encoderWriter io.WriteCloser
-	)
+	var encoderWriter io.WriteCloser
 
 	// Apply transformation
 	switch encoding {

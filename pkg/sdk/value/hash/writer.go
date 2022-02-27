@@ -33,12 +33,11 @@ import (
 
 	// ensure crypto algorithms are initialized
 	_ "golang.org/x/crypto/blake2b"
+	_ "golang.org/x/crypto/blake2s"
 	_ "golang.org/x/crypto/sha3"
 )
 
-var (
-	name2Hash = map[string]crypto.Hash{}
-)
+var name2Hash = map[string]crypto.Hash{}
 
 // -----------------------------------------------------------------------------
 
