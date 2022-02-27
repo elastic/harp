@@ -1,4 +1,4 @@
-name: Release with goreleaser
+name: Release
 
 on:
   workflow_dispatch:
@@ -130,8 +130,9 @@ jobs:
                 continue
                 ;;
             harp-*)
-                tar czvf $f.tar.gz $f $f.sbom.json
-                rm -f $f $f.sbom.json
+                fn=$(basename -s ".exe" $f)
+                tar czf ${fn}.tar.gz $f ${fn}.sbom.json
+                rm -f $f ${fn}.sbom.json
                 ;;
             esac
           done
