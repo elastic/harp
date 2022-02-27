@@ -29,9 +29,13 @@ import (
 	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine"
 )
 
+const (
+	maxPolicySize = 5 * 1024 * 1025 // 5MB
+)
+
 func New(ctx context.Context, r io.Reader) (engine.PackageLinter, error) {
 	// Read all policy content
-	policy, err := io.ReadAll(r)
+	policy, err := io.ReadAll(io.LimitReader(r, maxPolicySize))
 	if err != nil {
 		return nil, fmt.Errorf("unable to read the policy content: %w", err)
 	}

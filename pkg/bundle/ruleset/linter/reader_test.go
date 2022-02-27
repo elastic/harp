@@ -49,6 +49,9 @@ func generateReaderTests(t *testing.T, rootPath, state string, wantErr bool) []r
 		if info.IsDir() {
 			return nil
 		}
+		if filepath.Ext(path) != "yaml" {
+			return nil
+		}
 
 		tests = append(tests, readerTestCase{
 			name:    fmt.Sprintf("%s-%s", state, filepath.Base(info.Name())),

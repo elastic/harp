@@ -35,9 +35,22 @@ type bundleLintParams struct {
 var bundleLintCmd = func() *cobra.Command {
 	params := &bundleLintParams{}
 
+	longDesc := cmdutil.LongDesc(`
+	Apply a RuleSet specification to the given bundle.
+
+	This command is used to check a Bundle structure (Package => Secrets).
+	A control gate could be implemented with this command to enforce a bundle
+	structure by decoupling the bundle content and the usage contract.`)
+
+	examples := cmdutil.Examples(`
+	# Lint a bundle from STDIN
+	harp bundle lint --spec cso.yaml`)
+
 	cmd := &cobra.Command{
-		Use:   "lint",
-		Short: "Lint the bundle using the given ruleset spec",
+		Use:     "lint",
+		Short:   "Lint the bundle using the given RuleSet spec",
+		Long:    longDesc,
+		Example: examples,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-bundle-lint", conf.Debug.Enable, conf.Instrumentation.Logs.Level)

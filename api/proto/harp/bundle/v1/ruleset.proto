@@ -65,6 +65,10 @@ message Rule {
   string description = 2;
   // REQUIRED. Rule path matcher filter.
   string path = 3;
-  // REAQUIRED. Constraint collection.
+  // OPTIONAL. CEL Constraint collection.
   repeated string constraints = 4;
+  // OPTIONAL. Rego policy.
+  string rego = 5;
+  // OPTIONAL. Rego policy file.
+  string rego_file = 6;
 }
