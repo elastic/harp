@@ -15,29 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package oci
+package schema
 
 import (
-	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
-	"github.com/elastic/harp/pkg/container/oci/schema"
+	"encoding/json"
 )
 
-const (
-	harpSealedContainerLayerMediaType = "application/vnd.elastic.harp.sealed-container.layer.v1"
-)
-
-type SealedContainer struct {
-	Name      string                 `json:"name"`
-	Container *containerv1.Container `json:"container"`
+// Config describes the getter/setter contract for configuration.
+type Config interface {
+	Containers() []string
+	SetContainers([]string)
+	Templates() []string
+	SetTemplates([]string)
 }
 
-type TemplateArchive struct {
-	Name    string `json:"name"`
-	Archive []byte `json:"archive"`
-}
-
-type Image struct {
-	Config           schema.Config
-	Containers       []*SealedContainer
-	TemplateArchives []*TemplateArchive
+// RenderConfig creates the JSON output.
+func RenderConfig(config Config) ([]byte, error) {
+	return json.Marshal(config)
 }

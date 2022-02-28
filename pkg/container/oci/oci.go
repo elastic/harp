@@ -27,12 +27,47 @@ import (
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/elastic/harp/pkg/container"
+	"github.com/elastic/harp/pkg/container/oci/schema"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 // StoreSetter is the interface used to mock the image store.
 type StoreSetter interface {
 	Set(ocispec.Descriptor, []byte)
+}
+
+// AddConfig register the OCI configuration layer to retrieve information about
+// the image.
+func AddConfig(store StoreSetter, image *Image) (*ocispec.Descriptor, error) {
+	// Check arguments
+	if types.IsNil(store) {
+		return nil, errors.New("unable to register sealed container with nil storage")
+	}
+	if image == nil {
+		return nil, errors.New("given image is nil")
+	}
+
+	// Render config as JSON.
+	configBytes, err := schema.RenderConfig(image.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	// Prepare layer
+	configDesc := ocispec.Descriptor{
+		MediaType: ocispec.MediaTypeImageConfig,
+		Digest:    digest.FromBytes(configBytes),
+		Size:      int64(len(configBytes)),
+		Annotations: map[string]string{
+			ocispec.AnnotationTitle: "_config.json",
+		},
+	}
+
+	// Assign to image store
+	store.Set(configDesc, configBytes)
+
+	// No error
+	return &configDesc, nil
 }
 
 // AddSealedContainer registers a new layer to the current store for the given selaed container.

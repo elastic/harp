@@ -58,9 +58,9 @@ func Push(ctx context.Context, repository string, i *Image) (*ocispec.Descriptor
 	// Add all containers
 	for _, c := range i.Containers {
 		// Create a layer for each sealed containers
-		sealedContainerLayer, err := AddSealedContainer(memoryStore, c)
-		if err != nil {
-			return nil, fmt.Errorf("unable to add container layer: %w", err)
+		sealedContainerLayer, errLayer := AddSealedContainer(memoryStore, c)
+		if errLayer != nil {
+			return nil, fmt.Errorf("unable to add container layer: %w", errLayer)
 		}
 
 		// Add to manifest
@@ -70,9 +70,9 @@ func Push(ctx context.Context, repository string, i *Image) (*ocispec.Descriptor
 	// Add all template archive
 	for _, ta := range i.TemplateArchives {
 		// Create a layer for each template archive
-		templateLayer, err := AddTemplateArchive(memoryStore, ta)
-		if err != nil {
-			return nil, fmt.Errorf("unable to add template layer: %w", err)
+		templateLayer, errLayer := AddTemplateArchive(memoryStore, ta)
+		if errLayer != nil {
+			return nil, fmt.Errorf("unable to add template layer: %w", errLayer)
 		}
 
 		// Add to manifest
