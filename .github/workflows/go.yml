@@ -72,7 +72,7 @@ jobs:
           go-version: 1.17
       -
         name: Cache Go modules
-        uses: actions/cache@v1
+        uses: actions/cache@v2.1.7
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -130,7 +130,7 @@ jobs:
           go-version: 1.17 # test only the latest go version to speed up CI
       -
         name: Cache Go modules
-        uses: actions/cache@v2.1.4
+        uses: actions/cache@v2.1.7
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -168,7 +168,7 @@ jobs:
           go-version: 1.17 # test only the latest go version to speed up CI
       -
         name: Cache Go modules
-        uses: actions/cache@v2.1.4
+        uses: actions/cache@v2.1.7
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -206,7 +206,7 @@ jobs:
           go-version: 1.17 # test only the latest go version to speed up CI
       -
         name: Cache Go modules
-        uses: actions/cache@v2.1.4
+        uses: actions/cache@v2.1.7
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
