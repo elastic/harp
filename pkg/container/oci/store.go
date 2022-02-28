@@ -17,23 +17,16 @@
 
 package oci
 
-import containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
-
-const (
-	harpSealedContainerLayerMediaType = "application/vnd.elastic.harp.sealed-container.layer.v1"
+import (
+	"oras.land/oras-go/pkg/content"
 )
 
-type SealedContainer struct {
-	Name      string                 `json:"name"`
-	Container *containerv1.Container `json:"container"`
+type DescriptorStore struct {
+	*content.Memory
 }
 
-type TemplateArchive struct {
-	Name    string `json:"name"`
-	Archive []byte `json:"archive"`
-}
-
-type Image struct {
-	Containers       []*SealedContainer
-	TemplateArchives []*TemplateArchive
+func NewDescriptorStore() *DescriptorStore {
+	return &DescriptorStore{
+		Memory: content.NewMemory(),
+	}
 }

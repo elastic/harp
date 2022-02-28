@@ -18,8 +18,8 @@
 package oci
 
 import (
-	"bytes"
 	"context"
+	"errors"
 	"fmt"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -27,12 +27,18 @@ import (
 	"oras.land/oras-go/pkg/auth/docker"
 	"oras.land/oras-go/pkg/content"
 	"oras.land/oras-go/pkg/oras"
-
-	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
-	"github.com/elastic/harp/pkg/container"
 )
 
-func Push(ctx context.Context, c *containerv1.Container, repository, path string) (*ocispec.Descriptor, error) {
+// Push the given image descriptor in the given repository.
+func Push(ctx context.Context, repository string, i *Image) (*ocispec.Descriptor, error) {
+	// Check arguments
+	if repository == "" {
+		return nil, errors.New("repository must not be blank")
+	}
+	if i == nil {
+		return nil, errors.New("image must not be nil")
+	}
+
 	// Use docker client.
 	cli, err := docker.NewClient()
 	if err != nil {
@@ -45,29 +51,44 @@ func Push(ctx context.Context, c *containerv1.Container, repository, path string
 		return nil, fmt.Errorf("docker resolver: %w", err)
 	}
 
-	// Dump container
-	var buf bytes.Buffer
-	if errDump := container.Dump(&buf, c); errDump != nil {
-		return nil, fmt.Errorf("unable to serialize container for OCI layer: %w", errDump)
+	// Create in-memory image
+	memoryStore := content.NewMemory()
+	descriptors := []ocispec.Descriptor{}
+
+	// Add all containers
+	for _, c := range i.Containers {
+		// Create a layer for each sealed containers
+		sealedContainerLayer, err := AddSealedContainer(memoryStore, c)
+		if err != nil {
+			return nil, fmt.Errorf("unable to add container layer: %w", err)
+		}
+
+		// Add to manifest
+		descriptors = append(descriptors, *sealedContainerLayer)
 	}
 
-	// Create OCI layer
-	memoryStore := content.NewMemory()
-	sealedContainerLayer, err := memoryStore.Add(path, harpSealedContainerLayerMediaType, buf.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("building layers: %w", err)
+	// Add all template archive
+	for _, ta := range i.TemplateArchives {
+		// Create a layer for each template archive
+		templateLayer, err := AddTemplateArchive(memoryStore, ta)
+		if err != nil {
+			return nil, fmt.Errorf("unable to add template layer: %w", err)
+		}
+
+		// Add to manifest
+		descriptors = append(descriptors, *templateLayer)
 	}
 
 	// Generate manifest.
-	manifest, manifestDesc, config, configDesc, err := content.GenerateManifestAndConfig(nil, nil, sealedContainerLayer)
+	manifest, manifestDesc, config, configDesc, err := content.GenerateManifestAndConfig(nil, nil, descriptors...)
 	if err != nil {
-		return nil, fmt.Errorf("unable to generate OCI manifest: %w", err)
+		return nil, fmt.Errorf("unable to generate manifest: %w", err)
 	}
 
 	// Add the manifest to memory store.
 	memoryStore.Set(configDesc, config)
 	if errManifest := memoryStore.StoreManifest(repository, manifestDesc, manifest); errManifest != nil {
-		return nil, fmt.Errorf("unable to register OCI manifest: %w", errManifest)
+		return nil, fmt.Errorf("unable to register manifest: %w", errManifest)
 	}
 
 	// Pushing the image

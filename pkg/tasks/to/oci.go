@@ -63,7 +63,14 @@ func (t *OCITask) Run(ctx context.Context) error {
 	}
 
 	// Push the container
-	m, err := oci.Push(ctx, c, t.Repository, t.Path)
+	m, err := oci.Push(ctx, t.Repository, &oci.Image{
+		Containers: []*oci.SealedContainer{
+			{
+				Name:      t.Path,
+				Container: c,
+			},
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("unable to push contain,er to registry: %w", err)
 	}
