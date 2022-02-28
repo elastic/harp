@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package linter
+package ruleset
 
 import (
 	"fmt"
@@ -75,10 +75,10 @@ func TestYAML(t *testing.T) {
 	}
 
 	// Generate invalid test cases
-	tests = append(tests, generateReaderTests(t, "../../../../test/fixtures/ruleset", "invalid", true)...)
+	tests = append(tests, generateReaderTests(t, "../../../test/fixtures/ruleset", "invalid", true)...)
 
 	// Generate valid test cases
-	tests = append(tests, generateReaderTests(t, "../../../../test/fixtures/ruleset", "valid", false)...)
+	tests = append(tests, generateReaderTests(t, "../../../test/fixtures/ruleset", "valid", false)...)
 
 	// Execute them
 	for _, tt := range tests {

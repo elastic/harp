@@ -15,152 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package linter
+package ruleset
 
 import (
 	"context"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	fuzz "github.com/google/gofuzz"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestValidate(t *testing.T) {
-	type args struct {
-		spec *bundlev1.RuleSet
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name:    "nil",
-			wantErr: true,
-		},
-		{
-			name: "invalid apiVersion",
-			args: args{
-				spec: &bundlev1.RuleSet{
-					ApiVersion: "foo",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "invalid kind",
-			args: args{
-				spec: &bundlev1.RuleSet{
-					ApiVersion: "harp.elastic.co/v1",
-					Kind:       "foo",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "nil meta",
-			args: args{
-				spec: &bundlev1.RuleSet{
-					ApiVersion: "harp.elastic.co/v1",
-					Kind:       "RuleSet",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "meta name not defined",
-			args: args{
-				spec: &bundlev1.RuleSet{
-					ApiVersion: "harp.elastic.co/v1",
-					Kind:       "RuleSet",
-					Meta:       &bundlev1.RuleSetMeta{},
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "nil spec",
-			args: args{
-				spec: &bundlev1.RuleSet{
-					ApiVersion: "harp.elastic.co/v1",
-					Kind:       "RuleSet",
-					Meta:       &bundlev1.RuleSetMeta{},
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "no action patch",
-			args: args{
-				spec: &bundlev1.RuleSet{
-					ApiVersion: "harp.elastic.co/v1",
-					Kind:       "RuleSet",
-					Meta:       &bundlev1.RuleSetMeta{},
-					Spec:       &bundlev1.RuleSetSpec{},
-				},
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := Validate(tt.args.spec); (err != nil) != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestChecksum(t *testing.T) {
-	type args struct {
-		spec *bundlev1.RuleSet
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name:    "nil",
-			wantErr: true,
-		},
-		{
-			name: "valid",
-			args: args{
-				spec: &bundlev1.RuleSet{
-					ApiVersion: "harp.elastic.co/v1",
-					Kind:       "RuleSet",
-					Meta:       &bundlev1.RuleSetMeta{},
-					Spec:       &bundlev1.RuleSetSpec{},
-				},
-			},
-			wantErr: false,
-			want:    "yM_TR6rMWW7BGA1Ms-U3WK6E4Xax5qRBMjK4VQLyZmQ",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := Checksum(tt.args.spec)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Checksum() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Checksum() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func mustLoadRuleSet(filePath string) *bundlev1.RuleSet {
-	if err := os.Chdir(filepath.Dir(filePath)); err != nil {
-		panic(err)
-	}
-
 	f, err := os.Open(filePath)
 	if err != nil {
 		panic(err)
@@ -176,8 +44,8 @@ func mustLoadRuleSet(filePath string) *bundlev1.RuleSet {
 
 func TestEvaluate(t *testing.T) {
 	type args struct {
-		spec *bundlev1.RuleSet
-		b    *bundlev1.Bundle
+		specFilePath string
+		b            *bundlev1.Bundle
 	}
 	tests := []struct {
 		name    string
@@ -191,15 +59,15 @@ func TestEvaluate(t *testing.T) {
 		{
 			name: "empty bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/cso.yaml"),
-				b:    &bundlev1.Bundle{},
+				specFilePath: "../../../test/fixtures/ruleset/valid/cso.yaml",
+				b:            &bundlev1.Bundle{},
 			},
 			wantErr: true,
 		},
 		{
 			name: "cso - invalid bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/cso.yaml"),
+				specFilePath: "../../../test/fixtures/ruleset/valid/cso.yaml",
 				b: &bundlev1.Bundle{
 					Packages: []*bundlev1.Package{
 						{
@@ -213,7 +81,7 @@ func TestEvaluate(t *testing.T) {
 		{
 			name: "cso - valid bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/cso.yaml"),
+				specFilePath: "../../../test/fixtures/ruleset/valid/cso.yaml",
 				b: &bundlev1.Bundle{
 					Packages: []*bundlev1.Package{
 						{
@@ -227,7 +95,7 @@ func TestEvaluate(t *testing.T) {
 		{
 			name: "db - valid bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/database-secret-validator.yaml"),
+				specFilePath: "../../../test/fixtures/ruleset/valid/database-secret-validator.yaml",
 				b: &bundlev1.Bundle{
 					Packages: []*bundlev1.Package{
 						{
@@ -257,7 +125,7 @@ func TestEvaluate(t *testing.T) {
 		{
 			name: "db - invalid bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/database-secret-validator.yaml"),
+				specFilePath: "../../../test/fixtures/ruleset/valid/database-secret-validator.yaml",
 				b: &bundlev1.Bundle{
 					Packages: []*bundlev1.Package{
 						{
@@ -278,7 +146,7 @@ func TestEvaluate(t *testing.T) {
 		{
 			name: "rego - valid bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/rego.yaml"),
+				specFilePath: "../../../test/fixtures/ruleset/valid/rego.yaml",
 				b: &bundlev1.Bundle{
 					Packages: []*bundlev1.Package{
 						{
@@ -311,7 +179,7 @@ func TestEvaluate(t *testing.T) {
 		{
 			name: "rego - invalid bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/rego.yaml"),
+				specFilePath: "../../../test/fixtures/ruleset/valid/rego.yaml",
 				b: &bundlev1.Bundle{
 					Packages: []*bundlev1.Package{
 						{
@@ -328,7 +196,7 @@ func TestEvaluate(t *testing.T) {
 		{
 			name: "regofile - valid bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/rego-file.yaml"),
+				specFilePath: "../../../test/fixtures/ruleset/valid/rego-file.yaml",
 				b: &bundlev1.Bundle{
 					Packages: []*bundlev1.Package{
 						{
@@ -361,7 +229,7 @@ func TestEvaluate(t *testing.T) {
 		{
 			name: "regofile - invalid bundle",
 			args: args{
-				spec: mustLoadRuleSet("../../../../test/fixtures/ruleset/valid/rego-file.yaml"),
+				specFilePath: "../../../test/fixtures/ruleset/valid/rego-file.yaml",
 				b: &bundlev1.Bundle{
 					Packages: []*bundlev1.Package{
 						{
@@ -378,11 +246,28 @@ func TestEvaluate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := Evaluate(context.Background(), tt.args.b, tt.args.spec)
+			var spec *bundlev1.RuleSet
+			if tt.args.specFilePath != "" {
+				currentDir, err := os.Getwd()
+				assert.NoError(t, err)
+
+				absPath, err := filepath.Abs(tt.args.specFilePath)
+				assert.NoError(t, err)
+
+				dir, file := filepath.Split(absPath)
+				err = os.Chdir(dir)
+				assert.NoError(t, err)
+				spec = mustLoadRuleSet(file)
+
+				defer os.Chdir(currentDir)
+			}
+
+			err := Evaluate(context.Background(), tt.args.b, spec)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Evaluate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 		})
 	}
 }

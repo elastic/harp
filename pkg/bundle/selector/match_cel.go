@@ -28,7 +28,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine/cel/ext"
+	"github.com/elastic/harp/pkg/bundle/ruleset/engine/cel/ext"
 	"github.com/elastic/harp/pkg/sdk/log"
 )
 

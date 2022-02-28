@@ -15,72 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package linter
+package ruleset
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/gobwas/glob"
-	"golang.org/x/crypto/blake2b"
-	"google.golang.org/protobuf/proto"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine"
-	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine/cel"
-	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine/rego"
+	"github.com/elastic/harp/pkg/bundle/ruleset/engine"
+	"github.com/elastic/harp/pkg/bundle/ruleset/engine/cel"
+	"github.com/elastic/harp/pkg/bundle/ruleset/engine/rego"
 )
-
-// Validate bundle patch.
-func Validate(spec *bundlev1.RuleSet) error {
-	// Check if spec is nil
-	if spec == nil {
-		return fmt.Errorf("unable to validate bundle patch: patch is nil")
-	}
-
-	if spec.ApiVersion != "harp.elastic.co/v1" {
-		return fmt.Errorf("apiVersion should be 'harp.elastic.co/v1'")
-	}
-
-	if spec.Kind != "RuleSet" {
-		return fmt.Errorf("kind should be 'RuleSet'")
-	}
-
-	if spec.Meta == nil {
-		return fmt.Errorf("meta should be 'nil'")
-	}
-
-	if spec.Spec == nil {
-		return fmt.Errorf("spec should be 'nil'")
-	}
-
-	// No error
-	return nil
-}
-
-// Checksum calculates the specification checksum.
-func Checksum(spec *bundlev1.RuleSet) (string, error) {
-	// Validate bundle template
-	if err := Validate(spec); err != nil {
-		return "", fmt.Errorf("unable to validate spec: %w", err)
-	}
-
-	// Encode spec as protobuf
-	payload, err := proto.Marshal(spec)
-	if err != nil {
-		return "", fmt.Errorf("unable to encode bundle patch: %w", err)
-	}
-
-	// Calculate checksum
-	checksum := blake2b.Sum256(payload)
-
-	// No error
-	return base64.RawURLEncoding.EncodeToString(checksum[:]), nil
-}
 
 // Evaluate given bundl using the loaded ruleset.
 //nolint:gocyclo // to refactor
