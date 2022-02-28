@@ -15,29 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package oci
 
-import (
-	"github.com/spf13/cobra"
+const (
+	harpSealedContainerLayerMediaType = "application/vnd.elastic.harp.sealed-container.layer.v1+json"
 )
-
-// -----------------------------------------------------------------------------
-
-var toCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "to",
-		Short: "Secret container conversion commands",
-	}
-
-	// Add sub commands
-	cmd.AddCommand(toVaultCmd())
-	cmd.AddCommand(toObjectCmd())
-	cmd.AddCommand(toRulesetCmd())
-	cmd.AddCommand(toEtcd3Cmd())
-	cmd.AddCommand(toConsulCmd())
-	cmd.AddCommand(toZookeeperCmd())
-	cmd.AddCommand(toGithubActionCmd())
-	cmd.AddCommand(toOCICmd())
-
-	return cmd
-}

@@ -155,3 +155,19 @@ func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (
 	// Delegate to strategy
 	return ss.Unseal(container, identity)
 }
+
+// IsSealed returns true if the given container is sealed.
+func IsSealed(container *containerv1.Container) bool {
+	// Check parameters
+	if container == nil {
+		return false
+	}
+
+	// Check headers
+	if container.Headers.ContentType != containerSealedContentType {
+		return false
+	}
+
+	// Default sealed
+	return true
+}
