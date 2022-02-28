@@ -20,6 +20,16 @@
 package main
 
 import (
+	// Register hash functions
+	//nolint:gosec // For legacy compatibility
+	_ "crypto/md5"
+	//nolint:gosec // For legacy compatibility
+	_ "crypto/sha1"
+	_ "crypto/sha256"
+	_ "crypto/sha512"
+
+	_ "golang.org/x/crypto/sha3"
+
 	// Register encryption transformers
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/dae"

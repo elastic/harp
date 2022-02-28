@@ -18,23 +18,11 @@
 package hash
 
 import (
-	// ensure crypto algorithms are initialized
 	"crypto"
-	//nolint:gosec // For legacy compatibility
-	_ "crypto/md5"
-	//nolint:gosec // For legacy compatibility
-	_ "crypto/sha1"
-	_ "crypto/sha256"
-	_ "crypto/sha512"
 	"fmt"
 	"hash"
 	"sort"
 	"strings"
-
-	// ensure crypto algorithms are initialized
-	_ "golang.org/x/crypto/blake2b"
-	_ "golang.org/x/crypto/blake2s"
-	_ "golang.org/x/crypto/sha3"
 )
 
 var name2Hash = map[string]crypto.Hash{}
