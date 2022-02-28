@@ -76,7 +76,7 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
-          check-lastest: true
+          check-latest: true
       -
         name: Cache Go modules
         uses: actions/cache@v2.1.7
