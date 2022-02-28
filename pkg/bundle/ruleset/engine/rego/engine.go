@@ -26,7 +26,7 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/elastic/harp/pkg/bundle/ruleset/linter/engine"
+	"github.com/elastic/harp/pkg/bundle/ruleset/engine"
 )
 
 const (
@@ -76,16 +76,20 @@ func (re *ruleEngine) EvaluatePackage(ctx context.Context, p *bundlev1.Package) 
 		return nil
 	}
 
-	// Extract result
-	compliant, ok := results[0].Expressions[0].Value.(bool)
-	if !ok {
-		// Handle unexpected result type.
-		return errors.New("the policy must return boolean")
-	}
+	for _, result := range results {
+		for _, expression := range result.Expressions {
+			// Extract result
+			compliant, ok := expression.Value.(bool)
+			if !ok {
+				// Handle unexpected result type.
+				return errors.New("the policy must return boolean")
+			}
 
-	// Check package compliance
-	if !compliant {
-		return engine.ErrRuleNotValid
+			// Check package compliance
+			if !compliant {
+				return engine.ErrRuleNotValid
+			}
+		}
 	}
 
 	// Package validated

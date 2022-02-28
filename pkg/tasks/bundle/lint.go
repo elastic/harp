@@ -23,7 +23,7 @@ import (
 	"fmt"
 
 	"github.com/elastic/harp/pkg/bundle"
-	"github.com/elastic/harp/pkg/bundle/ruleset/linter"
+	"github.com/elastic/harp/pkg/bundle/ruleset"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 )
@@ -57,7 +57,7 @@ func (t *LintTask) Run(ctx context.Context) error {
 	}
 
 	// Parse the input specification
-	spec, err := linter.YAML(rsReader)
+	spec, err := ruleset.YAML(rsReader)
 	if err != nil {
 		return fmt.Errorf("unable to parse ruleset file: %w", err)
 	}
@@ -68,7 +68,7 @@ func (t *LintTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to load bundle content: %w", err)
 	}
 
-	if err := linter.Evaluate(ctx, b, spec); err != nil {
+	if err := ruleset.Evaluate(ctx, b, spec); err != nil {
 		return fmt.Errorf("unable to validate given bundle: %w", err)
 	}
 
