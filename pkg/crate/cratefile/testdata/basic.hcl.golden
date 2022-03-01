@@ -1,0 +1,21 @@
+(*cratefile.Config)({
+ Container: (cratefile.Container) {
+  Name: (string) (len=9) "region-eu",
+  Path: (string) (len=16) "region-eu.bundle",
+  Identities: ([]string) (len=1 cap=1) {
+   (string) (len=50) "v1.ipk.7u8B1VFrHyMeWyt8Jzj1Nj2BgVB7z-umD8R-OOnJahE"
+  }
+ },
+ Archives: ([]cratefile.Archive) (len=1 cap=1) {
+  (cratefile.Archive) {
+   Name: (string) (len=10) "production",
+   RootPath: (string) (len=12) "./production",
+   IncludeGlob: ([]string) (len=1 cap=1) {
+    (string) (len=2) "**"
+   },
+   ExcludeGlob: ([]string) (len=1 cap=1) {
+    (string) (len=5) "**.go"
+   }
+  }
+ }
+})

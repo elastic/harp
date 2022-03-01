@@ -15,26 +15,26 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package cratefile
 
-import (
-	"github.com/spf13/cobra"
-)
+// Config is the configuration structure for bundle DSL.
+type Config struct {
+	Container Container `hcl:"container,block"`
+	Archives  []Archive `hcl:"archive,block"`
+}
 
-// -----------------------------------------------------------------------------
+// Container is the pointer to the secret container.
+type Container struct {
+	Name       string   `hcl:"name,label"`
+	Path       string   `hcl:"path"`
+	Identities []string `hcl:"identities,optional"`
+}
 
-var containerCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "container",
-		Aliases: []string{"c"},
-		Short:   "Secret container commands",
-	}
-
-	// Bundle commands
-	cmd.AddCommand(containerIdentityCmd())
-	cmd.AddCommand(containerRecoveryCmd())
-	cmd.AddCommand(containerSealCmd())
-	cmd.AddCommand(containerUnsealCmd())
-
-	return cmd
+// Archive is a file collection which will be compressed as a tar.gz to be
+// added to the crate.
+type Archive struct {
+	Name        string   `hcl:"name,label"`
+	RootPath    string   `hcl:"root"`
+	IncludeGlob []string `hcl:"includes"`
+	ExcludeGlob []string `hcl:"excludes,optional"`
 }

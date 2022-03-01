@@ -15,26 +15,44 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package cratefile
 
 import (
-	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/sebdah/goldie"
+	"github.com/stretchr/testify/require"
 )
 
-// -----------------------------------------------------------------------------
+func init() {
+	goldie.FixtureDir = "testdata"
+	spew.Config.DisablePointerAddresses = true
+}
 
-var containerCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "container",
-		Aliases: []string{"c"},
-		Short:   "Secret container commands",
+func TestParseFile(t *testing.T) {
+	f, err := os.Open("testdata")
+	require.NoError(t, err)
+	defer f.Close()
+
+	fis, err := f.Readdir(-1)
+	require.NoError(t, err)
+	for _, fi := range fis {
+		if fi.IsDir() {
+			continue
+		}
+
+		if filepath.Ext(fi.Name()) == ".golden" {
+			continue
+		}
+
+		t.Run(fi.Name(), func(t *testing.T) {
+			cfg, err := ParseFile(filepath.Join("testdata", fi.Name()))
+			require.NoError(t, err)
+
+			goldie.Assert(t, fi.Name(), []byte(spew.Sdump(cfg)))
+		})
 	}
-
-	// Bundle commands
-	cmd.AddCommand(containerIdentityCmd())
-	cmd.AddCommand(containerRecoveryCmd())
-	cmd.AddCommand(containerSealCmd())
-	cmd.AddCommand(containerUnsealCmd())
-
-	return cmd
 }

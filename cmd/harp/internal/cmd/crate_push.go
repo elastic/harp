@@ -20,6 +20,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"oras.land/oras-go/pkg/content"
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
@@ -32,26 +33,23 @@ type cratePushParams struct {
 	inputPath  string
 	outputPath string
 	to         string
-	path       string
+	ref        string
 	json       bool
+	opts       content.RegistryOptions
 }
 
 var cratePushCmd = func() *cobra.Command {
 	params := &cratePushParams{}
 
 	longDesc := cmdutil.LongDesc(`
-	Export a sealed container to an OCI compatible registry.
-
-	The container will be pushed as 'harp.sealed' file inside a dedicated OCI layer.
-	This will allow you to reuse general purpose OCI registry to push and pull
-	prepared secret containers.`)
+	Export a crate to an OCI compatible registry.`)
 
 	examples := cmdutil.Examples(`
-	# Push a container from STDIN to github container registry
-	harp crate push --to registry:ghcr.io/elastic/harp --ref region-boostrap:v1
+	# Push a crate to github container registry
+	harp crate push --in Cratefile --to registry:ghcr.io/elastic/harp --ref region-boostrap:v1
 
-	# Push a container from a file to Google container registry
-	harp crate push --to region.gcr.io --ref YOUR_GCP_PROJECT_ID/project-secrets:latest`)
+	# Push a crate to Google container registry
+	harp crate push --in Cratefile --to registry:region.gcr.io --ref YOUR_GCP_PROJECT_ID/project-secrets:latest`)
 	cmd := &cobra.Command{
 		Use:     "push",
 		Short:   "Push a crate",
@@ -64,11 +62,12 @@ var cratePushCmd = func() *cobra.Command {
 
 			// Prepare task
 			t := &crate.PushTask{
-				ContainerReader: cmdutil.FileReader(params.inputPath),
-				OutputWriter:    cmdutil.FileWriter(params.outputPath),
-				Target:          params.to,
-				Path:            params.path,
-				JSONOutput:      params.json,
+				SpecReader:   cmdutil.FileReader(params.inputPath),
+				OutputWriter: cmdutil.FileWriter(params.outputPath),
+				Target:       params.to,
+				Ref:          params.ref,
+				JSONOutput:   params.json,
+				RegistryOpts: params.opts,
 			}
 
 			// Run the task
@@ -79,11 +78,17 @@ var cratePushCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Container path ('-' for stdin or filename)")
+	cmd.Flags().StringVarP(&params.inputPath, "cratefile", "f", "-", "Specification path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdout or filename)")
 	cmd.Flags().StringVar(&params.to, "to", "", "Target destination (registry:<url>, oci:<path>, files:<path>)")
-	cmd.Flags().StringVar(&params.path, "path", "harp.sealed", "Container path")
+	log.CheckErr("unable to mark 'to' flag as required.", cmd.MarkFlagRequired("to"))
+	cmd.Flags().StringVar(&params.ref, "ref", "harp.sealed", "Container path")
 	cmd.Flags().BoolVar(&params.json, "json", false, "Enable JSON output")
+	cmd.Flags().StringArrayVarP(&params.opts.Configs, "config", "c", nil, "Authentication config path")
+	cmd.Flags().StringVarP(&params.opts.Username, "username", "u", "", "Registry username")
+	cmd.Flags().StringVarP(&params.opts.Password, "password", "p", "", "Registry password")
+	cmd.Flags().BoolVarP(&params.opts.Insecure, "insecure", "", false, "Allow connections to SSL registry without certs")
+	cmd.Flags().BoolVarP(&params.opts.PlainHTTP, "plain-http", "", false, "Use plain http and not https")
 
 	return cmd
 }

@@ -15,26 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package crate
 
 import (
-	"github.com/spf13/cobra"
+	"errors"
+
+	"github.com/elastic/harp/pkg/crate/cratefile"
 )
 
-// -----------------------------------------------------------------------------
-
-var containerCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "container",
-		Aliases: []string{"c"},
-		Short:   "Secret container commands",
+// Build a crate from the given specification.
+func Build(spec *cratefile.Config) (*Image, error) {
+	// Check arguments
+	if spec == nil {
+		return nil, errors.New("unable to build a crate with nil specification")
 	}
 
-	// Bundle commands
-	cmd.AddCommand(containerIdentityCmd())
-	cmd.AddCommand(containerRecoveryCmd())
-	cmd.AddCommand(containerSealCmd())
-	cmd.AddCommand(containerUnsealCmd())
-
-	return cmd
+	// No error
+	return nil, nil
 }
