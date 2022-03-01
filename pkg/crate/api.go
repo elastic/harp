@@ -15,28 +15,29 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cmd
+package crate
 
 import (
-	"github.com/spf13/cobra"
+	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
+	"github.com/elastic/harp/pkg/crate/schema"
 )
 
-// -----------------------------------------------------------------------------
+const (
+	harpSealedContainerLayerMediaType = "application/vnd.elastic.harp.sealed-container.layer.v1"
+)
 
-var toCmd = func() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "to",
-		Short: "Secret container conversion commands",
-	}
+type SealedContainer struct {
+	Name      string                 `json:"name"`
+	Container *containerv1.Container `json:"container"`
+}
 
-	// Add sub commands
-	cmd.AddCommand(toVaultCmd())
-	cmd.AddCommand(toObjectCmd())
-	cmd.AddCommand(toRulesetCmd())
-	cmd.AddCommand(toEtcd3Cmd())
-	cmd.AddCommand(toConsulCmd())
-	cmd.AddCommand(toZookeeperCmd())
-	cmd.AddCommand(toGithubActionCmd())
+type TemplateArchive struct {
+	Name    string `json:"name"`
+	Archive []byte `json:"archive"`
+}
 
-	return cmd
+type Image struct {
+	Config           schema.Config
+	Containers       []*SealedContainer
+	TemplateArchives []*TemplateArchive
 }

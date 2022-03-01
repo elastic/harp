@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/elastic/harp/pkg/container/oci/schema"
+	"github.com/elastic/harp/pkg/crate/schema"
 )
 
 func NewConfig() schema.Config {
@@ -33,9 +33,9 @@ func NewConfig() schema.Config {
 // -----------------------------------------------------------------------------
 
 type Config struct {
-	V              schema.Version `json:"co.elastic.harp.oci.version"`
-	ContainerFiles []string       `json:"co.elastic.harp.oci.containers"`
-	TemplateFiles  []string       `json:"co.elastic.harp.oci.templates"`
+	V              schema.Version `json:"co.elastic.harp.crate.version"`
+	ContainerFiles []string       `json:"co.elastic.harp.crate.containers"`
+	TemplateFiles  []string       `json:"co.elastic.harp.crate.templates"`
 }
 
 // Containers returns the current image container filenames.

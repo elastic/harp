@@ -23,21 +23,21 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/tasks/to"
+	"github.com/elastic/harp/pkg/tasks/crate"
 )
 
 // -----------------------------------------------------------------------------
 
-type toOCIParams struct {
+type cratePushParams struct {
 	inputPath  string
 	outputPath string
-	repository string
+	to         string
 	path       string
 	json       bool
 }
 
-var toOCICmd = func() *cobra.Command {
-	params := &toOCIParams{}
+var cratePushCmd = func() *cobra.Command {
+	params := &cratePushParams{}
 
 	longDesc := cmdutil.LongDesc(`
 	Export a sealed container to an OCI compatible registry.
@@ -48,25 +48,25 @@ var toOCICmd = func() *cobra.Command {
 
 	examples := cmdutil.Examples(`
 	# Push a container from STDIN to github container registry
-	harp to oci --repository ghcr.io/elastic/harp/production-secrets:v1
+	harp crate push --to registry:ghcr.io/elastic/harp --ref region-boostrap:v1
 
 	# Push a container from a file to Google container registry
-	harp to oci --repository region.gcr.io/YOUR_GCP_PROJECT_ID/project-secrets:latest`)
+	harp crate push --to region.gcr.io --ref YOUR_GCP_PROJECT_ID/project-secrets:latest`)
 	cmd := &cobra.Command{
-		Use:     "oci",
-		Short:   "Push a sealed secret container in an OCI compliant registry",
+		Use:     "push",
+		Short:   "Push a crate",
 		Long:    longDesc,
 		Example: examples,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
-			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-to-oci", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-crate-push", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
 			// Prepare task
-			t := &to.OCITask{
+			t := &crate.PushTask{
 				ContainerReader: cmdutil.FileReader(params.inputPath),
 				OutputWriter:    cmdutil.FileWriter(params.outputPath),
-				Repository:      params.repository,
+				Target:          params.to,
 				Path:            params.path,
 				JSONOutput:      params.json,
 			}
@@ -81,7 +81,7 @@ var toOCICmd = func() *cobra.Command {
 	// Parameters
 	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Container path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdout or filename)")
-	cmd.Flags().StringVar(&params.repository, "repository", "", "Repository address")
+	cmd.Flags().StringVar(&params.to, "to", "", "Target destination (registry:<url>, oci:<path>, files:<path>)")
 	cmd.Flags().StringVar(&params.path, "path", "harp.sealed", "Container path")
 	cmd.Flags().BoolVar(&params.json, "json", false, "Enable JSON output")
 

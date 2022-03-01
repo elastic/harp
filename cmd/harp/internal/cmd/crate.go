@@ -15,29 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package oci
+package cmd
 
 import (
-	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
-	"github.com/elastic/harp/pkg/container/oci/schema"
+	"github.com/spf13/cobra"
 )
 
-const (
-	harpSealedContainerLayerMediaType = "application/vnd.elastic.harp.sealed-container.layer.v1"
-)
+// -----------------------------------------------------------------------------
 
-type SealedContainer struct {
-	Name      string                 `json:"name"`
-	Container *containerv1.Container `json:"container"`
-}
+var crateCmd = func() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "crate",
+		Short: "Crate management commands",
+	}
 
-type TemplateArchive struct {
-	Name    string `json:"name"`
-	Archive []byte `json:"archive"`
-}
+	// Add sub commands
+	cmd.AddCommand(cratePushCmd())
 
-type Image struct {
-	Config           schema.Config
-	Containers       []*SealedContainer
-	TemplateArchives []*TemplateArchive
+	return cmd
 }

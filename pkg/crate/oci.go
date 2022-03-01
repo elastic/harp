@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package oci
+package crate
 
 import (
 	"bytes"
@@ -25,9 +25,10 @@ import (
 
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"oras.land/oras-go/pkg/content"
 
 	"github.com/elastic/harp/pkg/container"
-	"github.com/elastic/harp/pkg/container/oci/schema"
+	"github.com/elastic/harp/pkg/crate/schema"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
@@ -36,9 +37,61 @@ type StoreSetter interface {
 	Set(ocispec.Descriptor, []byte)
 }
 
+// PrepareImage is used to assemble the OCI image according to given specification.
+func PrepareImage(store StoreSetter, image *Image) ([]byte, *ocispec.Descriptor, error) {
+	// Check arguments
+	if types.IsNil(store) {
+		return nil, nil, errors.New("unable to prepare an image with nil storage")
+	}
+	if image == nil {
+		return nil, nil, errors.New("given image is nil")
+	}
+
+	// Add config
+	config, err := addConfig(store, image)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to add config layer: %w", err)
+	}
+
+	layers := []ocispec.Descriptor{}
+
+	// Add all containers
+	for _, c := range image.Containers {
+		// Create a layer for each sealed containers
+		sealedContainerLayer, errLayer := addSealedContainer(store, c)
+		if errLayer != nil {
+			return nil, nil, fmt.Errorf("unable to add container layer: %w", errLayer)
+		}
+
+		// Add to manifest
+		layers = append(layers, *sealedContainerLayer)
+	}
+
+	// Add all template archive
+	for _, ta := range image.TemplateArchives {
+		// Create a layer for each template archive
+		templateLayer, errLayer := addTemplateArchive(store, ta)
+		if errLayer != nil {
+			return nil, nil, fmt.Errorf("unable to add template layer: %w", errLayer)
+		}
+
+		// Add to manifest
+		layers = append(layers, *templateLayer)
+	}
+
+	// Generate manifest.
+	manifestBytes, manifest, errManifest := content.GenerateManifest(config, nil, layers...)
+	if errManifest != nil {
+		return nil, nil, fmt.Errorf("unable to generate manifest: %w", errManifest)
+	}
+
+	// No error
+	return manifestBytes, &manifest, nil
+}
+
 // AddConfig register the OCI configuration layer to retrieve information about
 // the image.
-func AddConfig(store StoreSetter, image *Image) (*ocispec.Descriptor, error) {
+func addConfig(store StoreSetter, image *Image) (*ocispec.Descriptor, error) {
 	// Check arguments
 	if types.IsNil(store) {
 		return nil, errors.New("unable to register sealed container with nil storage")
@@ -71,7 +124,7 @@ func AddConfig(store StoreSetter, image *Image) (*ocispec.Descriptor, error) {
 }
 
 // AddSealedContainer registers a new layer to the current store for the given selaed container.
-func AddSealedContainer(store StoreSetter, c *SealedContainer) (*ocispec.Descriptor, error) {
+func addSealedContainer(store StoreSetter, c *SealedContainer) (*ocispec.Descriptor, error) {
 	// Check arguments
 	if types.IsNil(store) {
 		return nil, errors.New("unable to register sealed container with nil storage")
@@ -90,27 +143,27 @@ func AddSealedContainer(store StoreSetter, c *SealedContainer) (*ocispec.Descrip
 	}
 
 	// Get layer content
-	content := payload.Bytes()
+	body := payload.Bytes()
 
 	// Prepare a layer
 	containerDesc := ocispec.Descriptor{
 		MediaType: harpSealedContainerLayerMediaType,
-		Digest:    digest.FromBytes(content),
-		Size:      int64(len(content)),
+		Digest:    digest.FromBytes(body),
+		Size:      int64(len(body)),
 		Annotations: map[string]string{
 			ocispec.AnnotationTitle: path.Join("containers", path.Clean(c.Name)),
 		},
 	}
 
 	// Assign the store
-	store.Set(containerDesc, content)
+	store.Set(containerDesc, body)
 
 	// No error
 	return &containerDesc, nil
 }
 
 // AddTemplateArchive registers a new layer to the current store for the given archive.
-func AddTemplateArchive(store StoreSetter, ta *TemplateArchive) (*ocispec.Descriptor, error) {
+func addTemplateArchive(store StoreSetter, ta *TemplateArchive) (*ocispec.Descriptor, error) {
 	// Check arguments
 	if types.IsNil(store) {
 		return nil, errors.New("unable to register sealed container with nil storage")

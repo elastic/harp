@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package oci
+package crate
 
 import (
 	"oras.land/oras-go/pkg/content"
