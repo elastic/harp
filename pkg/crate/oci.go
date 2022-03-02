@@ -22,11 +22,13 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/pkg/content"
 
+	"github.com/elastic/harp/build/version"
 	"github.com/elastic/harp/pkg/container"
 	"github.com/elastic/harp/pkg/crate/schema"
 	"github.com/elastic/harp/pkg/sdk/types"
@@ -80,7 +82,10 @@ func PrepareImage(store StoreSetter, image *Image) ([]byte, *ocispec.Descriptor,
 	}
 
 	// Generate manifest.
-	manifestBytes, manifest, errManifest := content.GenerateManifest(config, nil, layers...)
+	manifestBytes, manifest, errManifest := content.GenerateManifest(config, map[string]string{
+		ocispec.AnnotationCreated: time.Now().UTC().Format(time.RFC3339),
+		ocispec.AnnotationVersion: version.Version,
+	}, layers...)
 	if errManifest != nil {
 		return nil, nil, fmt.Errorf("unable to generate manifest: %w", errManifest)
 	}
@@ -108,7 +113,7 @@ func addConfig(store StoreSetter, image *Image) (*ocispec.Descriptor, error) {
 
 	// Prepare layer
 	configDesc := ocispec.Descriptor{
-		MediaType: ocispec.MediaTypeImageConfig,
+		MediaType: harpConfigMediaType,
 		Digest:    digest.FromBytes(configBytes),
 		Size:      int64(len(configBytes)),
 		Annotations: map[string]string{
@@ -147,7 +152,7 @@ func addSealedContainer(store StoreSetter, c *SealedContainer) (*ocispec.Descrip
 
 	// Prepare a layer
 	containerDesc := ocispec.Descriptor{
-		MediaType: harpSealedContainerLayerMediaType,
+		MediaType: harpContainerLayerMediaType,
 		Digest:    digest.FromBytes(body),
 		Size:      int64(len(body)),
 		Annotations: map[string]string{

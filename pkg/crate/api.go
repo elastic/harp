@@ -23,7 +23,9 @@ import (
 )
 
 const (
-	harpSealedContainerLayerMediaType = "application/vnd.elastic.harp.sealed-container.layer.v1"
+	harpContainerLayerMediaType = "application/vnd.elastic.harp.container.layer.v1+protobuf"
+	harpConfigMediaType         = "application/vnd.elastic.harp.config.v1+json"
+	harpDataMediaType           = "application/vnd.elastic.harp.data.v1.tar+gzip"
 )
 
 type SealedContainer struct {

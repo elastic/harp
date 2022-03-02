@@ -364,12 +364,12 @@ func Test_EncryptDecryptJWE(t *testing.T) {
 
 	jwe, err := EncryptJWE("test", claims)
 	if err != nil {
-		t.Fatalf("unbale to encrypt claims: %v", err)
+		t.Fatalf("unable to encrypt claims: %v", err)
 	}
 
 	got, err := DecryptJWE("test", jwe)
 	if err != nil {
-		t.Fatalf("unbale to decrypt claims: %v", err)
+		t.Fatalf("unable to decrypt claims: %v", err)
 	}
 
 	if report := cmp.Diff(claims, got); report != "" {

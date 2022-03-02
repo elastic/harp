@@ -18,9 +18,19 @@
 package crate
 
 import (
+	"crypto/rand"
 	"errors"
+	"fmt"
+	"io"
+	"os"
 
+	"github.com/elastic/harp/pkg/container"
 	"github.com/elastic/harp/pkg/crate/cratefile"
+	schemav1 "github.com/elastic/harp/pkg/crate/schema/v1"
+)
+
+const (
+	maxContainerSize = 25 * 1024 * 1024
 )
 
 // Build a crate from the given specification.
@@ -30,6 +40,41 @@ func Build(spec *cratefile.Config) (*Image, error) {
 		return nil, errors.New("unable to build a crate with nil specification")
 	}
 
+	// Open container file
+	cf, err := os.Open(spec.Container.Path)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open container '%s': %w", spec.Container.Path, err)
+	}
+
+	// Try to load container
+	c, err := container.Load(io.LimitReader(cf, maxContainerSize))
+	if err != nil {
+		return nil, fmt.Errorf("unable to load input container '%s': %w", spec.Container.Path, err)
+	}
+
+	// Check container sealing status
+	if !container.IsSealed(c) {
+		// Seal with appropriate algorithm
+		sc, err := container.Seal(rand.Reader, c, spec.Container.Identities...)
+		if err != nil {
+			return nil, fmt.Errorf("unable to seal container '%s': %w", spec.Container.Path, err)
+		}
+
+		// Replace container instance by the sealed one
+		c = sc
+	}
+
+	// Create
+	res := &Image{
+		Config: schemav1.NewConfig(),
+		Containers: []*SealedContainer{
+			{
+				Name:      spec.Container.Name,
+				Container: c,
+			},
+		},
+	}
+
 	// No error
-	return nil, nil
+	return res, nil
 }

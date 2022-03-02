@@ -85,13 +85,13 @@ var containerSealCmd = func() *cobra.Command {
 				// Convert to sealing public key
 				identityPublicKey, err := key.FromString(ipk)
 				if err != nil {
-					log.For(ctx).Fatal("unbale to parse identity public key", zap.Error(err), zap.String("ipk", ipk))
+					log.For(ctx).Fatal("unable to parse identity public key", zap.Error(err), zap.String("ipk", ipk))
 				}
 
 				// Try to convert the key
 				sealingPublicKey := identityPublicKey.SealingKey()
 				if sealingPublicKey == "" {
-					log.For(ctx).Fatal("unbale to convert identity public key to a sealing key", zap.Error(err), zap.String("ipk", ipk))
+					log.For(ctx).Fatal("unable to convert identity public key to a sealing key", zap.Error(err), zap.String("ipk", ipk))
 				}
 
 				// Add to sealing keys

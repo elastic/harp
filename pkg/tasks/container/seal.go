@@ -77,17 +77,6 @@ func (t *SealTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to read input container: %w", err)
 	}
 
-	// Initialize seal strategy
-	var ss seal.Strategy
-	switch t.SealVersion {
-	case 1:
-		ss = sealv1.New()
-	case 2:
-		ss = sealv2.New()
-	default:
-		ss = sealv1.New()
-	}
-
 	var containerKey string
 	if !t.DisableContainerIdentity {
 		opts := []seal.GenerateOption{}
@@ -109,6 +98,17 @@ func (t *SealTask) Run(ctx context.Context) error {
 			opts = append(opts, seal.WithDeterministicKey(memguard.NewBufferFromBytes(masterKeyRaw), t.DCKDTarget))
 		}
 
+		// Initialize seal strategy
+		var ss seal.Strategy
+		switch t.SealVersion {
+		case 1:
+			ss = sealv1.New()
+		case 2:
+			ss = sealv2.New()
+		default:
+			ss = sealv1.New()
+		}
+
 		// Generate container key
 		containerPublicKey, containerSecretKey, errGenerate := ss.GenerateKey(opts...)
 		if errGenerate != nil {
@@ -123,7 +123,7 @@ func (t *SealTask) Run(ctx context.Context) error {
 	}
 
 	// Seal the container
-	sealedContainer, err := ss.Seal(rand.Reader, in, t.PeerPublicKeys...)
+	sealedContainer, err := container.Seal(rand.Reader, in, t.PeerPublicKeys...)
 	if err != nil {
 		return fmt.Errorf("unable to seal container: %w", err)
 	}

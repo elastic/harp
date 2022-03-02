@@ -136,7 +136,7 @@ func (t *DumpTask) dumpMetadata(writer io.Writer, b *bundlev1.Bundle) error {
 	// Export metadata as map
 	metaMap, err := bundle.AsMetadataMap(b)
 	if err != nil {
-		return fmt.Errorf("unbale to convert bundle content: %w", err)
+		return fmt.Errorf("unable to convert bundle content: %w", err)
 	}
 
 	// Encode as JSON

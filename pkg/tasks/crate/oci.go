@@ -97,12 +97,12 @@ func (t *PushTask) Run(ctx context.Context) error {
 
 	if t.JSONOutput {
 		if err := json.NewEncoder(writer).Encode(m); err != nil {
-			return fmt.Errorf("unbale to encode manifest as JSON: %w", err)
+			return fmt.Errorf("unable to encode manifest as JSON: %w", err)
 		}
 	} else {
-		fmt.Fprintf(writer, "Container successfully pushed !")
-		fmt.Fprintf(writer, "Digest: %x", m.Digest)
-		fmt.Fprintf(writer, "Size: %d", m.Size)
+		fmt.Fprintf(writer, "Container successfully pushed !\n")
+		fmt.Fprintf(writer, "Digest: %s\n", m.Digest.Hex())
+		fmt.Fprintf(writer, "Size: %d\n", m.Size)
 	}
 
 	// No error

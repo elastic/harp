@@ -25,6 +25,7 @@ import (
 	"github.com/elastic/harp/pkg/sdk/types"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/pkg/content"
+	orascontext "oras.land/oras-go/pkg/context"
 	"oras.land/oras-go/pkg/oras"
 	"oras.land/oras-go/pkg/target"
 )
@@ -57,7 +58,11 @@ func Push(ctx context.Context, registry target.Target, imageRef string, i *Image
 	}
 
 	// Pushing the image
-	containerManifest, err := oras.Copy(ctx, memoryStore, imageRef, registry, "")
+	containerManifest, err := oras.Copy(orascontext.WithLoggerDiscarded(ctx), memoryStore, imageRef, registry, "", oras.WithAllowedMediaTypes([]string{
+		harpConfigMediaType,
+		harpContainerLayerMediaType,
+		harpDataMediaType,
+	}))
 	if err != nil {
 		return nil, fmt.Errorf("pushing manifest: %w", err)
 	}

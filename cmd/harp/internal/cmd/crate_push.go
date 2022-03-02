@@ -44,12 +44,8 @@ var cratePushCmd = func() *cobra.Command {
 	longDesc := cmdutil.LongDesc(`
 	Export a crate to an OCI compatible registry.`)
 
-	examples := cmdutil.Examples(`
-	# Push a crate to github container registry
-	harp crate push --in Cratefile --to registry:ghcr.io/elastic/harp --ref region-boostrap:v1
+	examples := cmdutil.Examples(``)
 
-	# Push a crate to Google container registry
-	harp crate push --in Cratefile --to registry:region.gcr.io --ref YOUR_GCP_PROJECT_ID/project-secrets:latest`)
 	cmd := &cobra.Command{
 		Use:     "push",
 		Short:   "Push a crate",
@@ -78,7 +74,7 @@ var cratePushCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVarP(&params.inputPath, "cratefile", "f", "-", "Specification path ('-' for stdin or filename)")
+	cmd.Flags().StringVarP(&params.inputPath, "cratefile", "f", "Cratefile", "Specification path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdout or filename)")
 	cmd.Flags().StringVar(&params.to, "to", "", "Target destination (registry:<url>, oci:<path>, files:<path>)")
 	log.CheckErr("unable to mark 'to' flag as required.", cmd.MarkFlagRequired("to"))

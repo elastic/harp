@@ -400,7 +400,7 @@ func VerifyJWT(token string, key interface{}) (interface{}, error) {
 func Bech32Decode(in string) (interface{}, error) {
 	hrp, data, err := bech32.Decode(in)
 	if err != nil {
-		return nil, fmt.Errorf("unbale to decode Bech32 encoding string: %w", err)
+		return nil, fmt.Errorf("unable to decode Bech32 encoding string: %w", err)
 	}
 
 	return struct {

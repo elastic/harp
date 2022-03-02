@@ -1,0 +1,6 @@
+container "postgres" {
+	path = "postgres.bundle"
+	identities = [
+		"v1.ipk.Ky60amL-6AYYQomvxivXDVS5d50h6BJkpDA0Hrqny7s"
+	]
+}
