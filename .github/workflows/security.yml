@@ -24,7 +24,7 @@ jobs:
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
       -
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         uses: actions/setup-go@v3
         with:
@@ -51,7 +51,7 @@ jobs:
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
       -
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@master
@@ -84,7 +84,7 @@ jobs:
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
       -
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/golang@master
