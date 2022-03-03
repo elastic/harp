@@ -4,3 +4,8 @@ container "postgres" {
 		"v1.ipk.Ky60amL-6AYYQomvxivXDVS5d50h6BJkpDA0Hrqny7s"
 	]
 }
+
+archive "postgres" {
+    root = "./templates"
+    includes = ["**"]
+}
