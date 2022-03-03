@@ -61,7 +61,7 @@ func Push(ctx context.Context, registry target.Target, imageRef string, i *Image
 	containerManifest, err := oras.Copy(orascontext.WithLoggerDiscarded(ctx), memoryStore, imageRef, registry, "", oras.WithAllowedMediaTypes([]string{
 		harpConfigMediaType,
 		harpContainerLayerMediaType,
-		harpDataMediaType,
+		harpDataLayerMediaType,
 	}))
 	if err != nil {
 		return nil, fmt.Errorf("pushing manifest: %w", err)

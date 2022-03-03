@@ -179,7 +179,7 @@ func addTemplateArchive(store StoreSetter, ta *TemplateArchive) (*ocispec.Descri
 
 	// Prepare a layer
 	containerDesc := ocispec.Descriptor{
-		MediaType: harpDataMediaType,
+		MediaType: harpDataLayerMediaType,
 		Digest:    digest.FromBytes(ta.Archive),
 		Size:      int64(len(ta.Archive)),
 		Annotations: map[string]string{
