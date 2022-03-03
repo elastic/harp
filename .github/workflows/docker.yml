@@ -10,6 +10,7 @@ on:
 permissions:
   # Required to stop running workflows
   actions: write
+  packages: write
 
 jobs:
   build-docker-images:
@@ -57,12 +58,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: VERSION=${{ github.event.inputs.release }}
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:v${{ github.event.inputs.release }}
+            ghcr.io/${{ github.repository }}/harp:latest
+            ghcr.io/${{ github.repository }}/harp:v${{ github.event.inputs.release }}
           labels: ${{ steps.meta.outputs.labels }}
-      -
-        name: Sign the published Docker image
-        shell: bash
-        env:
-          COSIGN_EXPERIMENTAL: "true"
-        run: cosign sign ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
