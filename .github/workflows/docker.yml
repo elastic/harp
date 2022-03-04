@@ -47,7 +47,6 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: |
-            elastic/harp
             ghcr.io/elastic/harp
       -
         id: build-and-push
@@ -56,8 +55,35 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
+          push: true
           build-args: VERSION=${{ github.event.inputs.release }}
           tags: |
-            ghcr.io/${{ github.repository }}/harp:latest
-            ghcr.io/${{ github.repository }}/harp:v${{ github.event.inputs.release }}
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:v${{ github.event.inputs.release }}
           labels: ${{ steps.meta.outputs.labels }}
+      -
+        name: Create SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ github.token }}
+          artifact-name: sbom.spdx
+          format: spdx
+      -
+        name: Sign image and add attestations
+        run: |
+          echo -n "${COSIGN_PASSWORD}" | \
+          cosign sign --key <(echo -n "${COSIGN_KEY}") \
+            -a "repo=${{ github.repository }}" \
+            -a "workflow=${{ github.workflow }}" \
+            -a "ref=${{ github.sha }}" \
+            ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
+          cosign attach sbom --sbom sbom.spdx ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      -
+        name: Verify the signature
+        run: |
+          cosign verify --key build/artifact/cosign.pub ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
