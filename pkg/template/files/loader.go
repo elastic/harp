@@ -19,8 +19,7 @@ package files
 
 import (
 	"fmt"
-
-	"github.com/spf13/afero"
+	"io/fs"
 )
 
 // BufferedFile represents an archive file buffered for later processing.
@@ -35,8 +34,9 @@ type ContentLoader interface {
 }
 
 // Loader returns a new BufferedFile list from given path name.
-func Loader(fs afero.Fs, name string) (ContentLoader, error) {
-	fi, err := fs.Stat(name)
+func Loader(filesystem fs.FS, name string) (ContentLoader, error) {
+	// Check if it's a directory
+	fi, err := fs.Stat(filesystem, name)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get file info for '%s': %w", name, err)
 	}
@@ -44,8 +44,8 @@ func Loader(fs afero.Fs, name string) (ContentLoader, error) {
 	// Is directory
 	if fi.IsDir() {
 		return &DirLoader{
-			fs:   fs,
-			name: name,
+			filesystem: filesystem,
+			name:       name,
 		}, nil
 	}
 

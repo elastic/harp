@@ -19,8 +19,7 @@ package cmdutil
 
 import (
 	"fmt"
-
-	"github.com/spf13/afero"
+	"io/fs"
 
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/template/engine"
@@ -28,14 +27,14 @@ import (
 )
 
 // Files returns template files.
-func Files(fs afero.Fs, basePath string) (engine.Files, error) {
+func Files(fileSystem fs.FS, basePath string) (engine.Files, error) {
 	// Check arguments
-	if types.IsNil(fs) {
+	if types.IsNil(fileSystem) {
 		return nil, fmt.Errorf("unable to load files without a default filesystem to use")
 	}
 
 	// Get appropriate loader
-	loader, err := files.Loader(afero.NewReadOnlyFs(fs), basePath)
+	loader, err := files.Loader(fileSystem, basePath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to process files: %w", err)
 	}

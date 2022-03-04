@@ -19,44 +19,44 @@ package files
 
 import (
 	"fmt"
-	"os"
+	"io/fs"
 	"path/filepath"
-	"strings"
-
-	"github.com/spf13/afero"
 )
 
 // DirLoader loads a chart from a directory
 type DirLoader struct {
-	fs   afero.Fs
-	name string
+	filesystem fs.FS
+	name       string
 }
 
 // Load loads the chart
 func (l DirLoader) Load() ([]*BufferedFile, error) {
-	return LoadDir(l.fs, l.name)
+	return LoadDir(l.filesystem, l.name)
 }
 
 // LoadDir loads from a directory.
 //
 // This loads charts only from directories.
-func LoadDir(fs afero.Fs, dir string) ([]*BufferedFile, error) {
-	// Retrieve absolute path
-	topdir, err := filepath.Abs(dir)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get absolute path of '%s': %w", dir, err)
+func LoadDir(filesystem fs.FS, dir string) ([]*BufferedFile, error) {
+	// Check if path is valid
+	if !fs.ValidPath(dir) {
+		return nil, fmt.Errorf("'%s' is not a valid path", dir)
 	}
 
 	result := []*BufferedFile{}
-	topdir += string(filepath.Separator)
+	topdir := dir
 
-	walk := func(name string, fi os.FileInfo, errWalk error) error {
+	walk := func(name string, d fs.DirEntry, errWalk error) error {
 		// Check walk error
 		if errWalk != nil {
 			return errWalk
 		}
 
-		n := strings.TrimPrefix(name, topdir)
+		// Compute relative path
+		n, err := filepath.Rel(topdir, name)
+		if err != nil {
+			return fmt.Errorf("unable to compute relative path: %w", err)
+		}
 		if n == "" {
 			return nil
 		}
@@ -65,18 +65,18 @@ func LoadDir(fs afero.Fs, dir string) ([]*BufferedFile, error) {
 		n = filepath.ToSlash(n)
 
 		// Ignore if it is a directory
-		if fi.IsDir() {
+		if d.IsDir() {
 			return nil
 		}
 
 		// Irregular files include devices, sockets, and other uses of files that
 		// are not regular files.
-		if !fi.Mode().IsRegular() {
+		if !d.Type().IsRegular() {
 			return fmt.Errorf("cannot load irregular file %s as it has file mode type bits set", name)
 		}
 
 		// Read file content
-		data, err := afero.ReadFile(fs, name)
+		data, err := fs.ReadFile(filesystem, name)
 		if err != nil {
 			return fmt.Errorf("error reading %s: %w", name, err)
 		}
@@ -87,7 +87,7 @@ func LoadDir(fs afero.Fs, dir string) ([]*BufferedFile, error) {
 		// No error
 		return nil
 	}
-	if err := afero.Walk(fs, topdir, walk); err != nil {
+	if err := fs.WalkDir(filesystem, topdir, walk); err != nil {
 		return nil, fmt.Errorf("unable to walk directory '%s' : %w", topdir, err)
 	}
 

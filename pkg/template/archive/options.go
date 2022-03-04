@@ -15,33 +15,33 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package files
+package archive
 
-import (
-	"os"
-	"path/filepath"
-	"testing"
-)
+type createOptions struct {
+	rootPath     string
+	includeGlobs []string
+	excludeGlobs []string
+}
 
-func TestLoadDir(t *testing.T) {
-	// Get basepath
-	basePath, err := filepath.Abs("../../../test")
-	if err != nil {
-		t.Fatalf("Failed to load testdata: %s", err)
+type CreateOption func(opts *createOptions)
+
+// WithCreateRootPath sets the root path for archive creation.
+func WithCreateRootPath(value string) CreateOption {
+	return func(opts *createOptions) {
+		opts.rootPath = value
 	}
+}
 
-	// Initialize filesystem
-	fileSystem := os.DirFS(basePath)
+// IncludeFiles sets the file inclusion filter values.
+func IncludeFiles(values ...string) CreateOption {
+	return func(opts *createOptions) {
+		opts.includeGlobs = values
+	}
+}
 
-	l, err := Loader(fileSystem, ".")
-	if err != nil {
-		t.Fatalf("Failed to load testdata: %s", err)
-	}
-	c, err := l.Load()
-	if err != nil {
-		t.Fatalf("Failed to load testdata: %s", err)
-	}
-	if len(c) == 0 {
-		t.Fatalf("Failed to load all test files")
+// ExcludeFiles sets the file exclusion filter values.
+func ExcludeFiles(values ...string) CreateOption {
+	return func(opts *createOptions) {
+		opts.includeGlobs = values
 	}
 }

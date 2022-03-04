@@ -20,20 +20,25 @@ package crate
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
+
+	"oras.land/oras-go/pkg/content"
+	"oras.land/oras-go/pkg/target"
 
 	"github.com/elastic/harp/pkg/crate"
 	"github.com/elastic/harp/pkg/crate/cratefile"
 	"github.com/elastic/harp/pkg/tasks"
-	"oras.land/oras-go/pkg/content"
-	"oras.land/oras-go/pkg/target"
 )
 
 // PushTask implements secret-container publication process to and OCI compatible registry.
 type PushTask struct {
 	SpecReader   tasks.ReaderProvider
 	OutputWriter tasks.WriterProvider
+	ContextPath  string
 	Target       string
 	Ref          string
 	JSONOutput   bool
@@ -41,6 +46,7 @@ type PushTask struct {
 }
 
 // Run the task.
+//nolint:gocyclo // to refactor
 func (t *PushTask) Run(ctx context.Context) error {
 	// Create the reader
 	reader, err := t.SpecReader(ctx)
@@ -60,9 +66,7 @@ func (t *PushTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to parse input cratefile: %w", err)
 	}
 
-	var (
-		to target.Target
-	)
+	var to target.Target
 
 	toParts := strings.SplitN(t.Target, ":", 2)
 	// Build appropriate target instance
@@ -83,8 +87,26 @@ func (t *PushTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unknown target argument: %s", t.Target)
 	}
 
+	// Get absolute contxt path
+	absContextPath, err := filepath.Abs(t.ContextPath)
+	if err != nil {
+		return fmt.Errorf("unable to get absoklute context path: %w", err)
+	}
+
+	// Ensure the root actually exists
+	contextPath, err := os.Stat(t.ContextPath)
+	if err != nil {
+		return fmt.Errorf("unable to check context path: %w", err)
+	}
+	if !contextPath.Mode().IsRegular() {
+		return errors.New("context path is not a regular file")
+	}
+	if !contextPath.IsDir() {
+		return errors.New("context path must be a directory")
+	}
+
 	// Prepare image from cratefile
-	img, err := crate.Build(spec)
+	img, err := crate.Build(os.DirFS(absContextPath), spec)
 	if err != nil {
 		return fmt.Errorf("unable to generate image descriptor from specification: %w", err)
 	}
