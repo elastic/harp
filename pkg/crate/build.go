@@ -24,11 +24,14 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"strings"
 
 	"github.com/elastic/harp/pkg/container"
 	"github.com/elastic/harp/pkg/crate/cratefile"
 	schemav1 "github.com/elastic/harp/pkg/crate/schema/v1"
+	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/template/archive"
+	"go.uber.org/zap"
 )
 
 const (
@@ -41,6 +44,8 @@ func Build(rootFs fs.FS, spec *cratefile.Config) (*Image, error) {
 	if spec == nil {
 		return nil, errors.New("unable to build a crate with nil specification")
 	}
+
+	log.Bg().Info("Extract container ...", zap.String("container", spec.Container.Path))
 
 	// Open container file
 	cf, err := fs.ReadFile(rootFs, spec.Container.Path)
@@ -56,11 +61,15 @@ func Build(rootFs fs.FS, spec *cratefile.Config) (*Image, error) {
 
 	// Check container sealing status
 	if !container.IsSealed(c) {
+		log.Bg().Info("Sealing container ...", zap.String("container", spec.Container.Path))
+
 		// Seal with appropriate algorithm
 		sc, err := container.Seal(rand.Reader, c, spec.Container.Identities...)
 		if err != nil {
 			return nil, fmt.Errorf("unable to seal container '%s': %w", spec.Container.Path, err)
 		}
+
+		log.Bg().Info("Container sealed ...", zap.String("container", spec.Container.Path))
 
 		// Replace container instance by the sealed one
 		c = sc
@@ -76,11 +85,17 @@ func Build(rootFs fs.FS, spec *cratefile.Config) (*Image, error) {
 	// Create archives
 	archiveNames := []string{}
 	for _, arch := range spec.Archives {
+		// Clean root path
+		rootPath := strings.TrimPrefix(arch.RootPath, ".")
+		rootPath = strings.TrimPrefix(rootPath, "/")
+
 		// Restrict sub filesystem
-		subFs, errFs := fs.Sub(rootFs, arch.RootPath)
+		subFs, errFs := fs.Sub(rootFs, rootPath)
 		if errFs != nil {
 			return nil, fmt.Errorf("unable to restrict to sub-filesystem: %w", errFs)
 		}
+
+		log.Bg().Info("Creating archive ...", zap.String("archive", arch.Name), zap.String("path", arch.RootPath))
 
 		// Create tar.gz archive
 		var buf bytes.Buffer

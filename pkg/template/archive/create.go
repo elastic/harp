@@ -19,7 +19,6 @@ package archive
 
 import (
 	"archive/tar"
-	"bytes"
 	"compress/gzip"
 	"errors"
 	"fmt"
@@ -63,9 +62,6 @@ func Create(fileSystem fs.FS, w io.Writer, opts ...CreateOption) error {
 	rootFi, err := fs.Stat(fileSystem, dopts.rootPath)
 	if err != nil {
 		return fmt.Errorf("unable to tar files: %w", err)
-	}
-	if !rootFi.Mode().IsRegular() {
-		return errors.New("root path is not a regular file")
 	}
 	if !rootFi.IsDir() {
 		return errors.New("root path must be a directory")
@@ -144,6 +140,8 @@ func Create(fileSystem fs.FS, w io.Writer, opts ...CreateOption) error {
 			return fmt.Errorf("unable to retrieve fileInfo for '%s': %w", file, err)
 		}
 
+		log.Bg().Info("Add file to archive ...", zap.String("file", file))
+
 		// generate tar header
 		header, err := tar.FileInfoHeader(fi, file)
 		if err != nil {
@@ -160,11 +158,11 @@ func Create(fileSystem fs.FS, w io.Writer, opts ...CreateOption) error {
 
 		// if not a dir, write file content
 		if !fi.IsDir() {
-			data, err := fs.ReadFile(fileSystem, file)
+			data, err := fileSystem.Open(file)
 			if err != nil {
 				return err
 			}
-			if _, err := io.Copy(tw, bytes.NewReader(data)); err != nil {
+			if _, err := io.Copy(tw, io.LimitReader(data, 25*1024*1024)); err != nil {
 				return err
 			}
 		}

@@ -20,17 +20,18 @@ package crate
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"go.uber.org/zap"
 	"oras.land/oras-go/pkg/content"
 	"oras.land/oras-go/pkg/target"
 
 	"github.com/elastic/harp/pkg/crate"
 	"github.com/elastic/harp/pkg/crate/cratefile"
+	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -90,20 +91,19 @@ func (t *PushTask) Run(ctx context.Context) error {
 	// Get absolute contxt path
 	absContextPath, err := filepath.Abs(t.ContextPath)
 	if err != nil {
-		return fmt.Errorf("unable to get absoklute context path: %w", err)
+		return fmt.Errorf("unable to get absolute context path: %w", err)
 	}
 
 	// Ensure the root actually exists
-	contextPath, err := os.Stat(t.ContextPath)
+	fi, err := os.Stat(absContextPath)
 	if err != nil {
 		return fmt.Errorf("unable to check context path: %w", err)
 	}
-	if !contextPath.Mode().IsRegular() {
-		return errors.New("context path is not a regular file")
+	if !fi.IsDir() {
+		return fmt.Errorf("context path '%s' must be a directory", absContextPath)
 	}
-	if !contextPath.IsDir() {
-		return errors.New("context path must be a directory")
-	}
+
+	log.For(ctx).Info("Building image from context ...", zap.String("context", absContextPath))
 
 	// Prepare image from cratefile
 	img, err := crate.Build(os.DirFS(absContextPath), spec)

@@ -30,12 +30,13 @@ import (
 // -----------------------------------------------------------------------------
 
 type cratePushParams struct {
-	inputPath  string
-	outputPath string
-	to         string
-	ref        string
-	json       bool
-	opts       content.RegistryOptions
+	inputPath   string
+	outputPath  string
+	contextPath string
+	to          string
+	ref         string
+	json        bool
+	opts        content.RegistryOptions
 }
 
 var cratePushCmd = func() *cobra.Command {
@@ -64,6 +65,7 @@ var cratePushCmd = func() *cobra.Command {
 				Ref:          params.ref,
 				JSONOutput:   params.json,
 				RegistryOpts: params.opts,
+				ContextPath:  params.contextPath,
 			}
 
 			// Run the task
@@ -76,7 +78,7 @@ var cratePushCmd = func() *cobra.Command {
 	// Parameters
 	cmd.Flags().StringVarP(&params.inputPath, "cratefile", "f", "Cratefile", "Specification path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdout or filename)")
-	cmd.Flags().StringVar(&params.to, "to", "", "Target destination (registry:<url>, oci:<path>, files:<path>)")
+	cmd.Flags().StringVar(&params.to, "to", "registry", "Target destination (registry, oci:<path>, files:<path>)")
 	log.CheckErr("unable to mark 'to' flag as required.", cmd.MarkFlagRequired("to"))
 	cmd.Flags().StringVar(&params.ref, "ref", "harp.sealed", "Container path")
 	cmd.Flags().BoolVar(&params.json, "json", false, "Enable JSON output")
@@ -85,6 +87,7 @@ var cratePushCmd = func() *cobra.Command {
 	cmd.Flags().StringVarP(&params.opts.Password, "password", "p", "", "Registry password")
 	cmd.Flags().BoolVarP(&params.opts.Insecure, "insecure", "", false, "Allow connections to SSL registry without certs")
 	cmd.Flags().BoolVarP(&params.opts.PlainHTTP, "plain-http", "", false, "Use plain http and not https")
+	cmd.Flags().StringVar(&params.contextPath, "root", ".", "Defines the root context path")
 
 	return cmd
 }

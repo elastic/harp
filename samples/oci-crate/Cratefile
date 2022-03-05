@@ -6,6 +6,7 @@ container "postgres" {
 }
 
 archive "postgres" {
+    # Relative to root context path
     root = "./templates"
     includes = ["**"]
 }
