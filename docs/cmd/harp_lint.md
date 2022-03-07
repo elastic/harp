@@ -2,8 +2,31 @@
 
 Configuration linter commands
 
+### Synopsis
+
+Validate input YAML/JSON content with the selected JSONSchema definition.
+
 ```
 harp lint [flags]
+```
+
+### Examples
+
+```
+  # Validate a Bundle JSON dump from STDIN
+  harp lint
+  
+  # Validate a BundleTemplate from a file
+  harp lint --schema BundleTemplate --in template.yaml
+  
+  # Validate a RuleSet
+  harp lint --schema RuleSet --in ruleset.yaml
+  
+  # Validate a BundlePatch
+  harp lint --schema BundlePatch --in patch.yaml
+  
+  # Display a schema definition
+  harp lint --schema Bundle --schema-only
 ```
 
 ### Options
