@@ -18,7 +18,9 @@
 package cmd
 
 import (
-	"github.com/spf13/afero"
+	"os"
+	"path/filepath"
+
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
@@ -66,8 +68,12 @@ var fromTemplateCmd = func() *cobra.Command {
 			// Load files
 			var files engine.Files
 			if rootPath != "" {
-				var err error
-				files, err = tplcmdutil.Files(afero.NewOsFs(), rootPath)
+				absRootPath, err := filepath.Abs(rootPath)
+				if err != nil {
+					log.For(ctx).Fatal("unable to get absolute file paht for root path", zap.Error(err))
+				}
+
+				files, err = tplcmdutil.Files(os.DirFS(absRootPath), ".")
 				if err != nil {
 					log.For(ctx).Fatal("unable to process files", zap.Error(err))
 				}

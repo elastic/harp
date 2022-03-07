@@ -19,13 +19,16 @@ package container
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/awnumar/memguard"
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
+	"github.com/elastic/harp/pkg/container/identity/key"
 	"github.com/elastic/harp/pkg/container/seal"
 	v1 "github.com/elastic/harp/pkg/container/seal/v1"
 	v2 "github.com/elastic/harp/pkg/container/seal/v2"
@@ -154,4 +157,91 @@ func Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (
 
 	// Delegate to strategy
 	return ss.Unseal(container, identity)
+}
+
+// IsSealed returns true if the given container is sealed.
+func IsSealed(container *containerv1.Container) bool {
+	// Check parameters
+	if types.IsNil(container) {
+		return false
+	}
+	if types.IsNil(container.Headers) {
+		return false
+	}
+
+	// Check headers
+	if container.Headers.ContentType != containerSealedContentType {
+		return false
+	}
+
+	// Check sealing algorithm
+	if container.Headers.SealVersion == 0 {
+		return false
+	}
+
+	// Default sealed
+	return true
+}
+
+func Seal(rand io.Reader, container *containerv1.Container, encodedPeersPublicKey ...string) (*containerv1.Container, error) {
+	// Check parameters
+	if types.IsNil(container) {
+		return nil, errors.New("unable to seal a nil container")
+	}
+	if IsSealed(container) {
+		return nil, errors.New("the container is already sealed")
+	}
+
+	// Validate peer public keys
+	hasV1 := false
+	hasV2 := false
+	for i, pub := range encodedPeersPublicKey {
+		switch {
+		case strings.HasPrefix(pub, "v1.sk."):
+			hasV1 = true
+		case strings.HasPrefix(pub, "v1.ipk."):
+			hasV1 = true
+
+			// Convert to sealing public key
+			identityPublicKey, err := key.FromString(pub)
+			if err != nil {
+				return nil, fmt.Errorf("unable to convert v1 identity public key '%s': %w", pub, err)
+			}
+
+			// Replace identity key by sealing key
+			encodedPeersPublicKey[i] = identityPublicKey.SealingKey()
+		case strings.HasPrefix(pub, "v2.sk."):
+			hasV2 = true
+		case strings.HasPrefix(pub, "v2.ipk."):
+			hasV2 = true
+
+			// Convert to sealing public key
+			identityPublicKey, err := key.FromString(pub)
+			if err != nil {
+				return nil, fmt.Errorf("unable to convert v2 identity public key '%s': %w", pub, err)
+			}
+
+			// Replace identity key by sealing key
+			encodedPeersPublicKey[i] = identityPublicKey.SealingKey()
+		default:
+			return nil, fmt.Errorf("invalid key '%s'", pub)
+		}
+	}
+	if hasV1 && hasV2 {
+		return nil, errors.New("peer public keys are using mixed versions - use v1 or v2 keys")
+	}
+
+	// Create sealing strategy instance
+	var ss seal.Strategy
+	switch {
+	case hasV1:
+		ss = v1.New()
+	case hasV2:
+		ss = v2.New()
+	default:
+		return nil, errors.New("unsupported sealing algorithm")
+	}
+
+	// Delegate to strategy
+	return ss.Seal(rand, container, encodedPeersPublicKey...)
 }

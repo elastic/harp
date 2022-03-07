@@ -49,7 +49,7 @@ func generateReaderTests(t *testing.T, rootPath, state string, wantErr bool) []r
 		if info.IsDir() {
 			return nil
 		}
-		if filepath.Ext(path) != "yaml" {
+		if filepath.Ext(path) != ".yaml" {
 			return nil
 		}
 

@@ -18,10 +18,9 @@
 package files
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/spf13/afero"
 )
 
 func TestLoadDir(t *testing.T) {
@@ -31,10 +30,10 @@ func TestLoadDir(t *testing.T) {
 		t.Fatalf("Failed to load testdata: %s", err)
 	}
 
-	// Initialize afero
-	fs := afero.NewReadOnlyFs(afero.NewOsFs())
+	// Initialize filesystem
+	fileSystem := os.DirFS(basePath)
 
-	l, err := Loader(fs, basePath)
+	l, err := Loader(fileSystem, ".")
 	if err != nil {
 		t.Fatalf("Failed to load testdata: %s", err)
 	}

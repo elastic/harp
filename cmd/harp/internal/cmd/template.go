@@ -20,9 +20,10 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 
 	"github.com/hashicorp/vault/api"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
@@ -74,6 +75,7 @@ var templateCmd = func() *cobra.Command {
 	return cmd
 }
 
+//nolint:funlen // to split
 func runTemplate(cmd *cobra.Command, args []string) {
 	ctx, cancel := cmdutil.Context(cmd.Context(), "harp-template", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
@@ -104,10 +106,14 @@ func runTemplate(cmd *cobra.Command, args []string) {
 	// Load files
 	var files engine.Files
 	if templateRootPath != "" {
-		var errLoader error
-		files, errLoader = tplcmdutil.Files(afero.NewOsFs(), templateRootPath)
-		if errLoader != nil {
-			log.For(ctx).Fatal("unable to process files", zap.Error(errLoader))
+		absRootPath, errAbs := filepath.Abs(templateRootPath)
+		if errAbs != nil {
+			log.For(ctx).Fatal("unable to get absolute template root path", zap.Error(errAbs))
+		}
+
+		files, errAbs = tplcmdutil.Files(os.DirFS(absRootPath), ".")
+		if errAbs != nil {
+			log.For(ctx).Fatal("unable to process files", zap.Error(errAbs))
 		}
 	}
 

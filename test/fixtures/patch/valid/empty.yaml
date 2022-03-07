@@ -5,4 +5,4 @@ meta:
   owner: cloud-security@elastic.co
   description: "Patch without rules"
 spec:
-  rules:
+  rules: []

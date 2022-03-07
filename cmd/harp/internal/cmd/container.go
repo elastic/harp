@@ -26,7 +26,7 @@ import (
 var containerCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "container",
-		Aliases: []string{"c", "crate"},
+		Aliases: []string{"c"},
 		Short:   "Secret container commands",
 	}
 

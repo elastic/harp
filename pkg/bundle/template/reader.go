@@ -44,7 +44,7 @@ func YAML(r io.Reader) (*bundlev1.Template, error) {
 	// Drain reader
 	jsonData, err := io.ReadAll(jsonReader)
 	if err != nil {
-		return nil, fmt.Errorf("unbale to drain all json reader content: %w", err)
+		return nil, fmt.Errorf("unable to drain all json reader content: %w", err)
 	}
 
 	// Initialize empty definition object

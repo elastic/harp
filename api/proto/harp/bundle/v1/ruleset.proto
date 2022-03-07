@@ -27,8 +27,6 @@ option java_package = "com.github.elastic.cloudsec.harp.bundle.v1";
 option objc_class_prefix = "SBX";
 option php_namespace = "Harp\\Bundle\\V1";
 
-// -----------------------------------------------------------------------------
-
 // RuleSet represents bundle linter ruleset definition.
 message RuleSet {
   // Default to ""

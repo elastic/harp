@@ -1,9 +1,0 @@
-apiVersion: harp.elastic.co/v1
-kind: BundleTemplate
-meta:
-  name: "empty-template"
-  owner: cloud-security@elastic.co
-  description: "Empty template test case"
-spec:
-  selector:
-  namespaces:

@@ -57,6 +57,7 @@ var mainCmd = func() *cobra.Command {
 
 	cmd.AddCommand(bundleCmd())
 	cmd.AddCommand(containerCmd())
+	cmd.AddCommand(crateCmd())
 	cmd.AddCommand(keygenCmd())
 	cmd.AddCommand(passphraseCmd())
 	cmd.AddCommand(docCmd())
@@ -73,6 +74,7 @@ var mainCmd = func() *cobra.Command {
 
 	cmd.AddCommand(transformCmd())
 	cmd.AddCommand(shareCmd())
+	cmd.AddCommand(lintCmd())
 
 	// Return command
 	return cmd

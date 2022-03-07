@@ -2,6 +2,33 @@
 
 ### Not released yet
 
+BREAKING-CHANGES:
+
+* FIPS artifacts are disabled by default on GitHub Actions CI but still can be
+  built locally.
+* `harp-artifacts` containing all harp binaries will not be produced anymore.
+
+FEATURES:
+
+* cli/lint:
+  * Provide command to Lint YAML/JSON content for `Bundle`, `BundleTemplate`, `RuleSet` and `BundlePatch`. [#138](https://github.com/elastic/harp/pull/138)
+
+* sdk/api:
+  * `Bundle`, `BundleTemplate`, `RuleSet` and `BundlePatch` JSON schema are published. [#138](https://github.com/elastic/harp/pull/138)
+
+* sdk/crate:
+  * A crate is an OCI Compatible image which can be pushed to OCI compliant
+    registries.
+  * `crate push` is used to prepare a `crate` with a `sealed container` and
+    optionally an archive - [OCI Push](samples/oci-crate/) [#138](https://github.com/elastic/harp/pull/138)
+  * This is used to publish the sealed container and the templates used to
+    render the final configuration.
+
+DIST:
+
+* docker:
+  * Multi-architecture docker images are produced.
+
 ## 0.2.8
 
 ### 2022-02-27
@@ -14,9 +41,9 @@ FEATURES:
     computers. [#134](https://github.com/elastic/harp/pull/134)
 
 * cli/transform:
-  * `compress`/`decompress` commands for various algorithms. [#117](github.com/elastic/harp/pull/117)
-  * `hash`/`multihash` command for various hashing algorithms. [#117](github.com/elastic/harp/pull/117)
-  * `encode`/`decode` command for various encoding strategies [#117](github.com/elastic/harp/pull/117)
+  * `compress`/`decompress` commands for various algorithms. [#117](https://github.com/elastic/harp/pull/117)
+  * `hash`/`multihash` command for various hashing algorithms. [#117](https://github.com/elastic/harp/pull/117)
+  * `encode`/`decode` command for various encoding strategies [#117](https://github.com/elastic/harp/pull/117)
 
 * bundle/ruleset:
   * enable `rego` language for RuleSet constraint engine. [#134](https://github.com/elastic/harp/pull/134)
@@ -26,9 +53,9 @@ FEATURES:
     arbitrary data during pipeline execution. [#134](https://github.com/elastic/harp/pull/134)
 
 * sdk/value:
-  * `encoding` reader / writer factory. [#117](github.com/elastic/harp/pull/117)
-  * `compression` reader/writer factory. [#117](github.com/elastic/harp/pull/117)
-  * `hash` writer factory. [#117](github.com/elastic/harp/pull/117)
+  * `encoding` reader / writer factory. [#117](https://github.com/elastic/harp/pull/117)
+  * `compression` reader/writer factory. [#117](https://github.com/elastic/harp/pull/117)
+  * `hash` writer factory. [#117](https://github.com/elastic/harp/pull/117)
 
 CHANGES:
 
