@@ -1,0 +1,79 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/ApplicationComponentNS",
+    "definitions": {
+        "ApplicationComponentNS": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "REQUIRED. Application type."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Application name."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Application short description."
+                },
+                "secrets": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.SecretSuffix"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "REQUIRED. Secret definitions."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Application Component NS",
+            "description": "ApplicationComponentNS describes application components."
+        },
+        "harp.bundle.v1.SecretSuffix": {
+            "properties": {
+                "suffix": {
+                    "type": "string",
+                    "description": "REQUIRED. CSO Suffix."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short description of the purpose of the secret."
+                },
+                "vendor": {
+                    "type": "boolean",
+                    "description": "Defines if secret is managed or not (generated vs static secret)."
+                },
+                "template": {
+                    "type": "string",
+                    "description": "JSON Template for K/V Generation."
+                },
+                "content": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "String Content for file embedding process. (filename / content)"
+                },
+                "labels": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Secret labels contains identifying information used for query (i.e. Patch selector)."
+                },
+                "annotations": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Secret annotations not used internally used by external harp environments."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Secret Suffix",
+            "description": "SecretSuffix holds secret value generation details."
+        }
+    }
+}

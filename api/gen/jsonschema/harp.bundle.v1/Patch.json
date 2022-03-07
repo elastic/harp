@@ -1,0 +1,300 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/Patch",
+    "definitions": {
+        "Patch": {
+            "properties": {
+                "apiVersion": {
+                    "type": "string",
+                    "description": "Default to \"\""
+                },
+                "kind": {
+                    "type": "string",
+                    "description": "Default to \"BundlePatch\""
+                },
+                "meta": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchMeta",
+                    "additionalProperties": false,
+                    "description": "BundlePatch metadata"
+                },
+                "spec": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchSpec",
+                    "additionalProperties": false,
+                    "description": "BundlePatch specification"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch",
+            "description": "Patch represents bundle patch definition."
+        },
+        "harp.bundle.v1.PatchExecutor": {
+            "properties": {
+                "disableAnnotations": {
+                    "type": "boolean",
+                    "description": "Enable/Disable annotations after patch application."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Executor"
+        },
+        "harp.bundle.v1.PatchMeta": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Template name."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "REQUIRED. Template owner."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short description for template role."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Meta",
+            "description": "PatchMeta handles patch metadata."
+        },
+        "harp.bundle.v1.PatchOperation": {
+            "properties": {
+                "add": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Add a new case-sentitive key and value to related data map. Key and Value can be templatized."
+                },
+                "remove": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Remove a case-sensitive key from related data map. Key and Value can be templatized."
+                },
+                "update": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Update case-sensitive existing key from related data map. Key and Value can be templatized."
+                },
+                "replaceKeys": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Replace case-sensitive existing key using the associated value. Value can be templatized."
+                },
+                "removeKeys": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Remove all keys matching these given regexp."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Operation",
+            "description": "PatchOperation represents atomic patch operations executable on a k/v map."
+        },
+        "harp.bundle.v1.PatchPackage": {
+            "properties": {
+                "path": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchPackagePath",
+                    "additionalProperties": false,
+                    "description": "Path operations."
+                },
+                "annotations": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchOperation",
+                    "additionalProperties": false,
+                    "description": "Annotation operations."
+                },
+                "labels": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchOperation",
+                    "additionalProperties": false,
+                    "description": "Label operations."
+                },
+                "data": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchSecret",
+                    "additionalProperties": false,
+                    "description": "Secret data operations."
+                },
+                "remove": {
+                    "type": "boolean",
+                    "description": "Flag as remove."
+                },
+                "create": {
+                    "type": "boolean",
+                    "description": "Flag to create if not exist."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Package",
+            "description": "PatchPackage represents package operations."
+        },
+        "harp.bundle.v1.PatchPackagePath": {
+            "properties": {
+                "template": {
+                    "type": "string",
+                    "description": "Template used to completely rewrite the package path."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Package Path",
+            "description": "PatchPackagePath represents package path operations."
+        },
+        "harp.bundle.v1.PatchRule": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Rule identifier."
+                },
+                "selector": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchSelector",
+                    "additionalProperties": false,
+                    "description": "Used to determine is patch strategy is applicable to the package."
+                },
+                "package": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchPackage",
+                    "additionalProperties": false,
+                    "description": "Package patch operations."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Rule",
+            "description": "PatchRule represents an operation to apply to a given bundle."
+        },
+        "harp.bundle.v1.PatchSecret": {
+            "properties": {
+                "annotations": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchOperation",
+                    "additionalProperties": false,
+                    "description": "Secret data annotation operations."
+                },
+                "labels": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchOperation",
+                    "additionalProperties": false,
+                    "description": "Secret data label operations."
+                },
+                "template": {
+                    "type": "string",
+                    "description": "Template to override secret data."
+                },
+                "kv": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchOperation",
+                    "additionalProperties": false,
+                    "description": "Used to target specific keys inside the secret data."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Secret",
+            "description": "PatchSecret represents secret data operations."
+        },
+        "harp.bundle.v1.PatchSelector": {
+            "properties": {
+                "matchPath": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchSelectorMatchPath",
+                    "additionalProperties": false,
+                    "description": "Match a package by using its path (secret path)."
+                },
+                "jmesPath": {
+                    "type": "string",
+                    "description": "Match a package using a JMESPath query."
+                },
+                "rego": {
+                    "type": "string",
+                    "description": "Match a package using a Rego policy."
+                },
+                "regoFile": {
+                    "type": "string",
+                    "description": "Match a package using a REgo policy stored in an external file."
+                },
+                "matchSecret": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchSelectorMatchSecret",
+                    "additionalProperties": false,
+                    "description": "Match a package by secret."
+                },
+                "cel": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Match a package using CEL expressions."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Selector",
+            "description": "PatchSelector represents selecting strategies used to match a bundle resource."
+        },
+        "harp.bundle.v1.PatchSelectorMatchPath": {
+            "properties": {
+                "strict": {
+                    "type": "string",
+                    "description": "Strict case-sensitive path matching. Value can be templatized."
+                },
+                "regex": {
+                    "type": "string",
+                    "description": "Regex path matching. Value can be templatized."
+                },
+                "glob": {
+                    "type": "string",
+                    "description": "Glob path matching. - https://github.com/gobwas/glob Value can be templatized."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Selector Match Path",
+            "description": "PatchSelectorMatchPath represents package path matching strategies."
+        },
+        "harp.bundle.v1.PatchSelectorMatchSecret": {
+            "properties": {
+                "strict": {
+                    "type": "string",
+                    "description": "Strict case-sensitive secret matching. Value can be templatized."
+                },
+                "regex": {
+                    "type": "string",
+                    "description": "Regex secret matching. Value can be templatized."
+                },
+                "glob": {
+                    "type": "string",
+                    "description": "Glob path matching. - https://github.com/gobwas/glob Value can be templatized."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Selector Match Secret",
+            "description": "PatchSelectorMatchPath represents package path matching strategies."
+        },
+        "harp.bundle.v1.PatchSpec": {
+            "properties": {
+                "executor": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchExecutor",
+                    "additionalProperties": false
+                },
+                "rules": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.PatchRule"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Patch selector rules. Applied in the declaration order."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Spec",
+            "description": "PatchSpec repesetns bundle patch specification holder."
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/KV",
+    "definitions": {
+        "KV": {
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "description": "Key"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Golang type of initial value before packing"
+                },
+                "value": {
+                    "type": "string",
+                    "description": "Value must be encoded using secret.Pack method",
+                    "format": "binary",
+                    "binaryEncoding": "base64"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "KV",
+            "description": "KV contains the key, the value and the type of the value."
+        }
+    }
+}

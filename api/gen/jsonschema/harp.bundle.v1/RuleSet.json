@@ -1,0 +1,103 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/RuleSet",
+    "definitions": {
+        "RuleSet": {
+            "properties": {
+                "apiVersion": {
+                    "type": "string",
+                    "description": "Default to \"\""
+                },
+                "kind": {
+                    "type": "string",
+                    "description": "Default to \"RuleSet\""
+                },
+                "meta": {
+                    "$ref": "#/definitions/harp.bundle.v1.RuleSetMeta",
+                    "additionalProperties": false,
+                    "description": "RuleSet metadata"
+                },
+                "spec": {
+                    "$ref": "#/definitions/harp.bundle.v1.RuleSetSpec",
+                    "additionalProperties": false,
+                    "description": "RuleSet specification"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Rule Set",
+            "description": "RuleSet represents bundle linter ruleset definition."
+        },
+        "harp.bundle.v1.Rule": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Rule name."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "OPTIONAL. Rule description."
+                },
+                "path": {
+                    "type": "string",
+                    "description": "REQUIRED. Rule path matcher filter."
+                },
+                "constraints": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "OPTIONAL. CEL Constraint collection."
+                },
+                "rego": {
+                    "type": "string",
+                    "description": "OPTIONAL. Rego policy."
+                },
+                "regoFile": {
+                    "type": "string",
+                    "description": "OPTIONAL. Rego policy file."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Rule",
+            "description": "Rule represents linter rule specification."
+        },
+        "harp.bundle.v1.RuleSetMeta": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. RuleSet name."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "REQUIRED. RuleSet owner."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short description for ruleset."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Rule Set Meta",
+            "description": "PatchMeta handles patch metadata."
+        },
+        "harp.bundle.v1.RuleSetSpec": {
+            "properties": {
+                "rules": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.Rule"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Rule collection."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Rule Set Spec",
+            "description": "RuleSetSpec repesents ruleset specification holder."
+        }
+    }
+}

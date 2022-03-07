@@ -27,8 +27,6 @@ option java_package = "com.github.elastic.cloudsec.harp.bundle.v1";
 option objc_class_prefix = "SBX";
 option php_namespace = "harp\\Bundle\\V1";
 
-// -----------------------------------------------------------------------------
-
 // Patch represents bundle patch definition.
 message Patch {
   // Default to ""

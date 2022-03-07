@@ -1,0 +1,26 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/RuleSetMeta",
+    "definitions": {
+        "RuleSetMeta": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. RuleSet name."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "REQUIRED. RuleSet owner."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short description for ruleset."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Rule Set Meta",
+            "description": "PatchMeta handles patch metadata."
+        }
+    }
+}

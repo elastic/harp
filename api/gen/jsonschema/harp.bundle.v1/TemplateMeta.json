@@ -1,0 +1,26 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/TemplateMeta",
+    "definitions": {
+        "TemplateMeta": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Template name."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "REQUIRED. Template owner."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short description for template role."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Template Meta",
+            "description": "TemplateMeta handles bundle template metadata."
+        }
+    }
+}

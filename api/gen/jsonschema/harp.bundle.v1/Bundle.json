@@ -1,0 +1,589 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/Bundle",
+    "definitions": {
+        "Bundle": {
+            "properties": {
+                "labels": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects."
+                },
+                "annotations": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata."
+                },
+                "version": {
+                    "type": "integer",
+                    "description": "Version of the file"
+                },
+                "packages": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.Package"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Secret package collection"
+                },
+                "template": {
+                    "$ref": "#/definitions/harp.bundle.v1.Template",
+                    "additionalProperties": false,
+                    "description": "Bundle template object"
+                },
+                "values": {
+                    "additionalProperties": false,
+                    "type": "string",
+                    "description": "Associated values"
+                },
+                "merkleTreeRoot": {
+                    "type": "string",
+                    "description": "Merkle Tree root",
+                    "format": "binary",
+                    "binaryEncoding": "base64"
+                },
+                "userData": {
+                    "additionalProperties": {
+                        "properties": {
+                            "typeUrl": {
+                                "type": "string",
+                                "description": "A URL/resource name that uniquely identifies the type of the serialized protocol buffer message. This string must contain at least one \"/\" character. The last segment of the URL's path must represent the fully qualified name of the type (as in `path/google.protobuf.Duration`). The name should be in a canonical form (e.g., leading \".\" is not accepted). In practice, teams usually precompile into the binary all types that they expect it to use in the context of Any. However, for URLs which use the scheme `http`, `https`, or no scheme, one can optionally set up a type server that maps type URLs to message definitions as follows: * If no scheme is provided, `https` is assumed. * An HTTP GET on the URL must yield a [google.protobuf.Type][]   value in binary format, or produce an error. * Applications are allowed to cache lookup results based on the   URL, or have them precompiled into a binary to avoid any   lookup. Therefore, binary compatibility needs to be preserved   on changes to types. (Use versioned type names to manage   breaking changes.) Note: this functionality is not currently available in the official protobuf release, and it is not used for type URLs beginning with type.googleapis.com. Schemes other than `http`, `https` (or the empty scheme) might be used with implementation specific semantics."
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object"
+                    },
+                    "type": "object",
+                    "description": "User data storage"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Bundle",
+            "description": "Bundle is a concrete secret bundle."
+        },
+        "harp.bundle.v1.ApplicationComponentNS": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "REQUIRED. Application type."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Application name."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Application short description."
+                },
+                "secrets": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.SecretSuffix"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "REQUIRED. Secret definitions."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Application Component NS",
+            "description": "ApplicationComponentNS describes application components."
+        },
+        "harp.bundle.v1.InfrastructureNS": {
+            "properties": {
+                "provider": {
+                    "type": "string",
+                    "description": "REQUIRED. Infrastructure provider"
+                },
+                "account": {
+                    "type": "string",
+                    "description": "REQUIRED. Infrastructure provider account"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Infrastructure provider account alias (user-friendly name)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short descript for the infrastructure purpose."
+                },
+                "regions": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.InfrastructureRegionNS"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "REQUIRED. Cloud Provider Regions"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Infrastructure NS",
+            "description": "InfrastructureSpec is the container for R1 secret generators."
+        },
+        "harp.bundle.v1.InfrastructureRegionNS": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Infrastructure provider region name"
+                },
+                "services": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.InfrastructureServiceNS"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "REQUIRED. Service secret definitions"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Infrastructure Region NS",
+            "description": "InfrastructureRegionSpec describes region partition."
+        },
+        "harp.bundle.v1.InfrastructureServiceNS": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "REQUIRED. Service type."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Service name."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Service usage short description."
+                },
+                "secrets": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.SecretSuffix"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "REQUIRED. Secret definitions."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Infrastructure Service NS",
+            "description": "InfrastructureServiceSpec describes infrastructure service."
+        },
+        "harp.bundle.v1.KV": {
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "description": "Key"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Golang type of initial value before packing"
+                },
+                "value": {
+                    "type": "string",
+                    "description": "Value must be encoded using secret.Pack method",
+                    "format": "binary",
+                    "binaryEncoding": "base64"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "KV",
+            "description": "KV contains the key, the value and the type of the value."
+        },
+        "harp.bundle.v1.Namespaces": {
+            "properties": {
+                "infrastructure": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.InfrastructureNS"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Infrastructure secret definitions."
+                },
+                "platform": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.PlatformRegionNS"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Platform secret definitions."
+                },
+                "product": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.ProductComponentNS"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Product secret definitions."
+                },
+                "application": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.ApplicationComponentNS"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Application secret definitions."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Namespaces",
+            "description": "Namespaces defines secret generation template specification accoridng to CSO path naming."
+        },
+        "harp.bundle.v1.Package": {
+            "properties": {
+                "labels": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects."
+                },
+                "annotations": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Package name as a complete secret path (CSO compliance recommended)"
+                },
+                "secrets": {
+                    "$ref": "#/definitions/harp.bundle.v1.SecretChain",
+                    "additionalProperties": false,
+                    "description": "Active secret version"
+                },
+                "versions": {
+                    "additionalProperties": {
+                        "$ref": "#/definitions/harp.bundle.v1.SecretChain",
+                        "additionalProperties": false
+                    },
+                    "type": "object",
+                    "description": "SecretChain versions"
+                },
+                "userData": {
+                    "additionalProperties": {
+                        "properties": {
+                            "typeUrl": {
+                                "type": "string",
+                                "description": "A URL/resource name that uniquely identifies the type of the serialized protocol buffer message. This string must contain at least one \"/\" character. The last segment of the URL's path must represent the fully qualified name of the type (as in `path/google.protobuf.Duration`). The name should be in a canonical form (e.g., leading \".\" is not accepted). In practice, teams usually precompile into the binary all types that they expect it to use in the context of Any. However, for URLs which use the scheme `http`, `https`, or no scheme, one can optionally set up a type server that maps type URLs to message definitions as follows: * If no scheme is provided, `https` is assumed. * An HTTP GET on the URL must yield a [google.protobuf.Type][]   value in binary format, or produce an error. * Applications are allowed to cache lookup results based on the   URL, or have them precompiled into a binary to avoid any   lookup. Therefore, binary compatibility needs to be preserved   on changes to types. (Use versioned type names to manage   breaking changes.) Note: this functionality is not currently available in the official protobuf release, and it is not used for type URLs beginning with type.googleapis.com. Schemes other than `http`, `https` (or the empty scheme) might be used with implementation specific semantics."
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object"
+                    },
+                    "type": "object",
+                    "description": "User data storage"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Package",
+            "description": "Package is a secret organizational unit."
+        },
+        "harp.bundle.v1.PlatformComponentNS": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "REQUIRED. Component type."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Component name."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Component short description."
+                },
+                "secrets": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.SecretSuffix"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "REQUIRED. Secret definitions."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Platform Component NS",
+            "description": "PlatformComponentSpec describes platform components."
+        },
+        "harp.bundle.v1.PlatformRegionNS": {
+            "properties": {
+                "region": {
+                    "type": "string",
+                    "description": "REQUIRED. Platform region name."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Platform region short description."
+                },
+                "components": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.PlatformComponentNS"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "REQUIRED. Platform components deployed in the given region."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Platform Region NS",
+            "description": "PlatformRegionNS is the container for R2 secret generators."
+        },
+        "harp.bundle.v1.ProductComponentNS": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "REQUIRED. Product type."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Product name."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Product short description."
+                },
+                "secrets": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.SecretSuffix"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "REQUIRED. Secret definitions."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Product Component NS",
+            "description": "ProductComponentNS describes product components."
+        },
+        "harp.bundle.v1.SecretChain": {
+            "properties": {
+                "labels": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects."
+                },
+                "annotations": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata."
+                },
+                "version": {
+                    "type": "integer",
+                    "description": "Version identifier"
+                },
+                "data": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.KV"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Secret K/V collection"
+                },
+                "previousVersion": {
+                    "additionalProperties": false,
+                    "type": "integer",
+                    "description": "Link to previous version"
+                },
+                "nextVersion": {
+                    "additionalProperties": false,
+                    "type": "integer",
+                    "description": "Link to next version"
+                },
+                "locked": {
+                    "additionalProperties": false,
+                    "type": "string",
+                    "description": "Locked buffer when encryption is enabled"
+                },
+                "userData": {
+                    "additionalProperties": {
+                        "properties": {
+                            "typeUrl": {
+                                "type": "string",
+                                "description": "A URL/resource name that uniquely identifies the type of the serialized protocol buffer message. This string must contain at least one \"/\" character. The last segment of the URL's path must represent the fully qualified name of the type (as in `path/google.protobuf.Duration`). The name should be in a canonical form (e.g., leading \".\" is not accepted). In practice, teams usually precompile into the binary all types that they expect it to use in the context of Any. However, for URLs which use the scheme `http`, `https`, or no scheme, one can optionally set up a type server that maps type URLs to message definitions as follows: * If no scheme is provided, `https` is assumed. * An HTTP GET on the URL must yield a [google.protobuf.Type][]   value in binary format, or produce an error. * Applications are allowed to cache lookup results based on the   URL, or have them precompiled into a binary to avoid any   lookup. Therefore, binary compatibility needs to be preserved   on changes to types. (Use versioned type names to manage   breaking changes.) Note: this functionality is not currently available in the official protobuf release, and it is not used for type URLs beginning with type.googleapis.com. Schemes other than `http`, `https` (or the empty scheme) might be used with implementation specific semantics."
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "Must be a valid serialized protocol buffer of the above specified type.",
+                                "format": "binary",
+                                "binaryEncoding": "base64"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "type": "object"
+                    },
+                    "type": "object",
+                    "description": "User data storage"
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Secret Chain",
+            "description": "SecretChain describe a secret version chain."
+        },
+        "harp.bundle.v1.SecretSuffix": {
+            "properties": {
+                "suffix": {
+                    "type": "string",
+                    "description": "REQUIRED. CSO Suffix."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short description of the purpose of the secret."
+                },
+                "vendor": {
+                    "type": "boolean",
+                    "description": "Defines if secret is managed or not (generated vs static secret)."
+                },
+                "template": {
+                    "type": "string",
+                    "description": "JSON Template for K/V Generation."
+                },
+                "content": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "String Content for file embedding process. (filename / content)"
+                },
+                "labels": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Secret labels contains identifying information used for query (i.e. Patch selector)."
+                },
+                "annotations": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Secret annotations not used internally used by external harp environments."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Secret Suffix",
+            "description": "SecretSuffix holds secret value generation details."
+        },
+        "harp.bundle.v1.Selector": {
+            "properties": {
+                "quality": {
+                    "type": "string",
+                    "description": "Quality defines default quality value for CSO path builder."
+                },
+                "platform": {
+                    "type": "string",
+                    "description": "Platform defines default platform value in CSO path builder."
+                },
+                "product": {
+                    "type": "string",
+                    "description": "Product defines default product value in CSO path builder."
+                },
+                "application": {
+                    "type": "string",
+                    "description": "Application defines default application value in CSO path builder."
+                },
+                "version": {
+                    "type": "string",
+                    "description": "Version defines default version value in CSO path builder."
+                },
+                "component": {
+                    "type": "string",
+                    "description": "Component defines default component value in CSO path builder."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Selector",
+            "description": "BundleTemplateSelector defines secret path generator default values."
+        },
+        "harp.bundle.v1.Template": {
+            "properties": {
+                "apiVersion": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/harp.bundle.v1.TemplateMeta",
+                    "additionalProperties": false
+                },
+                "spec": {
+                    "$ref": "#/definitions/harp.bundle.v1.TemplateSpec",
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Template",
+            "description": "Template represents bundle template generation definition."
+        },
+        "harp.bundle.v1.TemplateMeta": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Template name."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "REQUIRED. Template owner."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short description for template role."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Template Meta",
+            "description": "TemplateMeta handles bundle template metadata."
+        },
+        "harp.bundle.v1.TemplateSpec": {
+            "properties": {
+                "selector": {
+                    "$ref": "#/definitions/harp.bundle.v1.Selector",
+                    "additionalProperties": false
+                },
+                "namespaces": {
+                    "$ref": "#/definitions/harp.bundle.v1.Namespaces",
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Template Spec",
+            "description": "TemplateSpec handles bundle template specification."
+        }
+    }
+}

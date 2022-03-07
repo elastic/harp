@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "#/definitions/PatchOperation",
+    "definitions": {
+        "PatchOperation": {
+            "properties": {
+                "add": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Add a new case-sentitive key and value to related data map. Key and Value can be templatized."
+                },
+                "remove": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Remove a case-sensitive key from related data map. Key and Value can be templatized."
+                },
+                "update": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Update case-sensitive existing key from related data map. Key and Value can be templatized."
+                },
+                "replaceKeys": {
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "type": "object",
+                    "description": "Replace case-sensitive existing key using the associated value. Value can be templatized."
+                },
+                "removeKeys": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Remove all keys matching these given regexp."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Operation",
+            "description": "PatchOperation represents atomic patch operations executable on a k/v map."
+        }
+    }
+}
