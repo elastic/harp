@@ -1,28 +1,65 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "$ref": "#/definitions/PatchRule",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$ref": "#/definitions/Patch",
     "definitions": {
-        "PatchRule": {
+        "Patch": {
             "properties": {
-                "id": {
+                "apiVersion": {
                     "type": "string",
-                    "description": "Rule identifier."
+                    "description": "Default to \"harp.elastic.co/v1\"",
+                    "const": "harp.elastic.co/v1"
                 },
-                "selector": {
-                    "$ref": "#/definitions/harp.bundle.v1.PatchSelector",
-                    "additionalProperties": false,
-                    "description": "Used to determine is patch strategy is applicable to the package."
+                "kind": {
+                    "type": "string",
+                    "description": "Default to \"BundlePatch\"",
+                    "const": "BundlePatch"
                 },
-                "package": {
-                    "$ref": "#/definitions/harp.bundle.v1.PatchPackage",
+                "meta": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchMeta",
                     "additionalProperties": false,
-                    "description": "Package patch operations."
+                    "description": "BundlePatch metadata"
+                },
+                "spec": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchSpec",
+                    "additionalProperties": false,
+                    "description": "BundlePatch specification"
                 }
             },
             "additionalProperties": false,
             "type": "object",
-            "title": "Patch Rule",
-            "description": "PatchRule represents an operation to apply to a given bundle."
+            "title": "Patch",
+            "description": "Patch represents bundle patch definition."
+        },
+        "harp.bundle.v1.PatchExecutor": {
+            "properties": {
+                "disableAnnotations": {
+                    "type": "boolean",
+                    "description": "Enable/Disable annotations after patch application."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Executor"
+        },
+        "harp.bundle.v1.PatchMeta": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "REQUIRED. Template name."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "REQUIRED. Template owner."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "REQUIRED. Short description for template role."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Meta",
+            "description": "PatchMeta handles patch metadata."
         },
         "harp.bundle.v1.PatchOperation": {
             "properties": {
@@ -114,6 +151,28 @@
             "type": "object",
             "title": "Patch Package Path",
             "description": "PatchPackagePath represents package path operations."
+        },
+        "harp.bundle.v1.PatchRule": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Rule identifier."
+                },
+                "selector": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchSelector",
+                    "additionalProperties": false,
+                    "description": "Used to determine is patch strategy is applicable to the package."
+                },
+                "package": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchPackage",
+                    "additionalProperties": false,
+                    "description": "Package patch operations."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Rule",
+            "description": "PatchRule represents an operation to apply to a given bundle."
         },
         "harp.bundle.v1.PatchSecret": {
             "properties": {
@@ -218,6 +277,26 @@
             "type": "object",
             "title": "Patch Selector Match Secret",
             "description": "PatchSelectorMatchPath represents package path matching strategies."
+        },
+        "harp.bundle.v1.PatchSpec": {
+            "properties": {
+                "executor": {
+                    "$ref": "#/definitions/harp.bundle.v1.PatchExecutor",
+                    "additionalProperties": false
+                },
+                "rules": {
+                    "items": {
+                        "$ref": "#/definitions/harp.bundle.v1.PatchRule"
+                    },
+                    "additionalProperties": false,
+                    "type": "array",
+                    "description": "Patch selector rules. Applied in the declaration order."
+                }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "title": "Patch Spec",
+            "description": "PatchSpec repesetns bundle patch specification holder."
         }
     }
 }

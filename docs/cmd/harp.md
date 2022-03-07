@@ -16,10 +16,12 @@ Extensible secret management tool
 * [harp completion](harp_completion.md)	 - Generate the autocompletion script for the specified shell
 * [harp config](harp_config.md)	 - Manage Service Configuration
 * [harp container](harp_container.md)	 - Secret container commands
+* [harp crate](harp_crate.md)	 - Crate management commands
 * [harp cso](harp_cso.md)	 - CSO commands
 * [harp doc](harp_doc.md)	 - Generates documentation and autocompletion
 * [harp from](harp_from.md)	 - Secret container generation commands
 * [harp keygen](harp_keygen.md)	 - Key generation commands
+* [harp lint](harp_lint.md)	 - Configuration linter commands
 * [harp passphrase](harp_passphrase.md)	 - Generate and print a diceware passphrase
 * [harp plugin](harp_plugin.md)	 - Manage harp plugins
 * [harp share](harp_share.md)	 - Share secret using Vault Cubbyhole

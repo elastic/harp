@@ -34,7 +34,6 @@ import (
 	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
 	_ "gotest.tools/gotestsum"
 	_ "mvdan.cc/gofumpt"
-	_ "github.com/chrusty/protoc-gen-jsonschema/cmd/protoc-gen-jsonschema"
 
 	_ "github.com/elastic/go-licenser"
 )
@@ -53,4 +52,3 @@ import (
 //go:generate go build -v -o=./bin/gotestsum gotest.tools/gotestsum
 //go:generate go build -v -o=./bin/gofumpt mvdan.cc/gofumpt
 //go:generate go build -v -o=./bin/cyclonedx-gomod github.com/CycloneDX/cyclonedx-gomod
-//go:generate go build -v -o=./bin/protoc-gen-jsonschema github.com/chrusty/protoc-gen-jsonschema/cmd/protoc-gen-jsonschema

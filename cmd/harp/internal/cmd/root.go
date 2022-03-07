@@ -74,6 +74,7 @@ var mainCmd = func() *cobra.Command {
 
 	cmd.AddCommand(transformCmd())
 	cmd.AddCommand(shareCmd())
+	cmd.AddCommand(lintCmd())
 
 	// Return command
 	return cmd

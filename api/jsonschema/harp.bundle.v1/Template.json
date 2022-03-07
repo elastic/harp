@@ -1,14 +1,16 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "$ref": "#/definitions/Template",
     "definitions": {
         "Template": {
             "properties": {
                 "apiVersion": {
-                    "type": "string"
+                    "type": "string",
+                    "const": "harp.elastic.co/v1"
                 },
                 "kind": {
-                    "type": "string"
+                    "type": "string",
+                    "const": "BundleTemplate"
                 },
                 "meta": {
                     "$ref": "#/definitions/harp.bundle.v1.TemplateMeta",

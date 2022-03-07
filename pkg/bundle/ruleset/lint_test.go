@@ -17,56 +17,9 @@
 
 package ruleset
 
-import (
-	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-	"testing"
-)
+import "testing"
 
-func mustLoad(filePath string) io.Reader {
-	f, err := os.Open(filePath)
-	if err != nil {
-		panic(err)
-	}
-	return f
-}
-
-type readerTestCase struct {
-	name    string
-	args    io.Reader
-	wantErr bool
-}
-
-func generateReaderTests(t *testing.T, rootPath, state string, wantErr bool) []readerTestCase {
-	tests := []readerTestCase{}
-	// Generate invalid test cases
-	if err := filepath.Walk(filepath.Join(rootPath, state), func(path string, info os.FileInfo, errWalk error) error {
-		if errWalk != nil {
-			return errWalk
-		}
-		if info.IsDir() {
-			return nil
-		}
-		if filepath.Ext(path) != ".yaml" {
-			return nil
-		}
-
-		tests = append(tests, readerTestCase{
-			name:    fmt.Sprintf("%s-%s", state, filepath.Base(info.Name())),
-			args:    mustLoad(path),
-			wantErr: wantErr,
-		})
-		return nil
-	}); err != nil {
-		t.Fatal(err)
-	}
-
-	return tests
-}
-
-func TestYAML(t *testing.T) {
+func TestLint(t *testing.T) {
 	tests := []readerTestCase{
 		{
 			name:    "nil",
@@ -83,9 +36,9 @@ func TestYAML(t *testing.T) {
 	// Execute them
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := YAML(tt.args)
+			_, err := Lint(tt.args)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("YAML() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Lint() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
