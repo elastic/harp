@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/Template",
+  "$id": "https://ela.st/harp-v1-template.json",
   "definitions": {
     "Template": {
       "properties": {
@@ -346,23 +347,35 @@
         }
       },
       "required": ["suffix"],
-      "oneOf": [
-        {
-          "allOf": [
-            { "required": ["template"]},
-            { "not": { "required": ["content"]}}
+      "oneOf": [{
+          "allOf": [{
+              "required": ["template"]
+            },
+            {
+              "not": {
+                "required": ["content"]
+              }
+            }
           ]
         },
         {
-          "allOf": [
-            { "required": ["content"]},
-            { "not": { "required": ["template"]}}
+          "allOf": [{
+              "required": ["content"]
+            },
+            {
+              "not": {
+                "required": ["template"]
+              }
+            }
           ]
         },
         {
-          "allOf": [
-            { "required": ["template"]},
-            { "required": ["content"]}
+          "allOf": [{
+              "required": ["template"]
+            },
+            {
+              "required": ["content"]
+            }
           ]
         }
       ],

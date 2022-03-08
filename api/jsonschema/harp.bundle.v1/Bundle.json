@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/Bundle",
+  "$id": "https://ela.st/harp-v1-bundle.json",
   "definitions": {
     "Bundle": {
       "properties": {
@@ -8,19 +9,26 @@
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects."
+          "type": ["object", "null"],
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.",
+          "default": {
+            "key": "value"
+          }
         },
         "annotations": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata."
+          "type": ["object", "null"],
+          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.",
+          "default": {
+            "key": "value"
+          }
         },
         "version": {
           "type": "integer",
-          "description": "Version of the file"
+          "description": "Version of the file",
+          "minimum": 0
         },
         "packages": {
           "items": {
@@ -37,7 +45,7 @@
         },
         "values": {
           "additionalProperties": false,
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Associated values"
         },
         "merkleTreeRoot": {
@@ -67,6 +75,7 @@
           "description": "User data storage"
         }
       },
+      "required": ["packages"],
       "additionalProperties": false,
       "type": "object",
       "title": "Bundle",
@@ -76,15 +85,15 @@
       "properties": {
         "type": {
           "type": "string",
-          "description": "REQUIRED. Application type."
+          "description": "Application type."
         },
         "name": {
           "type": "string",
-          "description": "REQUIRED. Application name."
+          "description": "Application name."
         },
         "description": {
-          "type": "string",
-          "description": "REQUIRED. Application short description."
+          "type": ["string", "null"],
+          "description": "Application short description."
         },
         "secrets": {
           "items": {
@@ -92,9 +101,10 @@
           },
           "additionalProperties": false,
           "type": "array",
-          "description": "REQUIRED. Secret definitions."
+          "description": "Secret definitions."
         }
       },
+      "required": ["type", "name", "secrets"],
       "additionalProperties": false,
       "type": "object",
       "title": "Application Component NS",
@@ -104,19 +114,28 @@
       "properties": {
         "provider": {
           "type": "string",
-          "description": "REQUIRED. Infrastructure provider"
+          "description": "Infrastructure provider",
+          "default": "aws",
+          "examples": [
+            "aws",
+            "azure",
+            "gcp",
+            "ibm",
+            "local"
+          ]
         },
         "account": {
           "type": "string",
-          "description": "REQUIRED. Infrastructure provider account"
+          "description": "Infrastructure provider account",
+          "default": "1234567890"
         },
         "name": {
-          "type": "string",
-          "description": "REQUIRED. Infrastructure provider account alias (user-friendly name)"
+          "type": ["string", "null"],
+          "description": "Infrastructure provider account alias (user-friendly name)"
         },
         "description": {
           "type": "string",
-          "description": "REQUIRED. Short descript for the infrastructure purpose."
+          "description": "Short description for the infrastructure purpose."
         },
         "regions": {
           "items": {
@@ -124,9 +143,10 @@
           },
           "additionalProperties": false,
           "type": "array",
-          "description": "REQUIRED. Cloud Provider Regions"
+          "description": "Cloud Provider Regions"
         }
       },
+      "required": ["provider", "account", "regions"],
       "additionalProperties": false,
       "type": "object",
       "title": "Infrastructure NS",
@@ -136,7 +156,9 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "REQUIRED. Infrastructure provider region name"
+          "description": "Infrastructure provider region name",
+          "default": "global",
+          "examples": ["eu-central-1", "us-east-1"]
         },
         "services": {
           "items": {
@@ -144,9 +166,10 @@
           },
           "additionalProperties": false,
           "type": "array",
-          "description": "REQUIRED. Service secret definitions"
+          "description": "Service secret definitions"
         }
       },
+      "required": ["name", "services"],
       "additionalProperties": false,
       "type": "object",
       "title": "Infrastructure Region NS",
@@ -156,15 +179,15 @@
       "properties": {
         "type": {
           "type": "string",
-          "description": "REQUIRED. Service type."
+          "description": "Service type."
         },
         "name": {
           "type": "string",
-          "description": "REQUIRED. Service name."
+          "description": "Service name."
         },
         "description": {
-          "type": "string",
-          "description": "REQUIRED. Service usage short description."
+          "type": ["string", "null"],
+          "description": "Service usage short description."
         },
         "secrets": {
           "items": {
@@ -172,9 +195,10 @@
           },
           "additionalProperties": false,
           "type": "array",
-          "description": "REQUIRED. Secret definitions."
+          "description": "Secret definitions."
         }
       },
+      "required": ["type", "name", "secrets"],
       "additionalProperties": false,
       "type": "object",
       "title": "Infrastructure Service NS",
@@ -197,6 +221,7 @@
           "binaryEncoding": "base64"
         }
       },
+      "required": ["key", "type", "value"],
       "additionalProperties": false,
       "type": "object",
       "title": "KV",
@@ -237,6 +262,12 @@
           "description": "Application secret definitions."
         }
       },
+      "anyOf": [
+        {"required": ["infrastructure"]},
+        {"required": ["platform"]},
+        {"required": ["product"]},
+        {"required": ["application"]}
+      ],
       "additionalProperties": false,
       "type": "object",
       "title": "Namespaces",
@@ -248,19 +279,26 @@
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects."
+          "type": ["object", "null"],
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.",
+          "default": {
+            "key": "value"
+          }
         },
         "annotations": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata."
+          "type": ["object", "null"],
+          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.",
+          "default": {
+            "key": "value"
+          }
         },
         "name": {
           "type": "string",
-          "description": "Package name as a complete secret path (CSO compliance recommended)"
+          "description": "Package name as a complete secret path (CSO compliance recommended)",
+          "default": "ring/path/subpath/prefix"
         },
         "secrets": {
           "$ref": "#/definitions/harp.bundle.v1.SecretChain",
@@ -272,7 +310,7 @@
             "$ref": "#/definitions/harp.bundle.v1.SecretChain",
             "additionalProperties": false
           },
-          "type": "object",
+          "type": ["object", "null"],
           "description": "SecretChain versions"
         },
         "userData": {
@@ -296,6 +334,7 @@
           "description": "User data storage"
         }
       },
+      "required": ["name", "secrets"],
       "additionalProperties": false,
       "type": "object",
       "title": "Package",
@@ -305,15 +344,25 @@
       "properties": {
         "type": {
           "type": "string",
-          "description": "REQUIRED. Component type."
+          "description": "Component type. Try to use infrastructure independent type.",
+          "default": "database",
+          "examples": [
+            "database",
+            "persistence",
+            "objectstorage",
+            "filestorage",
+            "apigateway",
+            "loadbalancer"
+          ]
         },
         "name": {
           "type": "string",
-          "description": "REQUIRED. Component name."
+          "description": "Component name.",
+          "default": ""
         },
         "description": {
-          "type": "string",
-          "description": "REQUIRED. Component short description."
+          "type": ["string", "null"],
+          "description": "Component short description."
         },
         "secrets": {
           "items": {
@@ -321,9 +370,10 @@
           },
           "additionalProperties": false,
           "type": "array",
-          "description": "REQUIRED. Secret definitions."
+          "description": "Secret definitions."
         }
       },
+      "required": ["type", "name", "secrets"],
       "additionalProperties": false,
       "type": "object",
       "title": "Platform Component NS",
@@ -333,10 +383,12 @@
       "properties": {
         "region": {
           "type": "string",
-          "description": "REQUIRED. Platform region name."
+          "description": "Platform region name.",
+          "default": "global",
+          "examples": ["eu-central-1", "us-east-1"]
         },
         "description": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "REQUIRED. Platform region short description."
         },
         "components": {
@@ -348,6 +400,7 @@
           "description": "REQUIRED. Platform components deployed in the given region."
         }
       },
+      "required": ["region", "components"],
       "additionalProperties": false,
       "type": "object",
       "title": "Platform Region NS",
@@ -357,15 +410,15 @@
       "properties": {
         "type": {
           "type": "string",
-          "description": "REQUIRED. Product type."
+          "description": "Product type."
         },
         "name": {
           "type": "string",
-          "description": "REQUIRED. Product name."
+          "description": "Product name."
         },
         "description": {
           "type": "string",
-          "description": "REQUIRED. Product short description."
+          "description": "Product short description."
         },
         "secrets": {
           "items": {
@@ -373,9 +426,10 @@
           },
           "additionalProperties": false,
           "type": "array",
-          "description": "REQUIRED. Secret definitions."
+          "description": "Secret definitions."
         }
       },
+      "required": ["type", "name", "secrets"],
       "additionalProperties": false,
       "type": "object",
       "title": "Product Component NS",
@@ -387,19 +441,26 @@
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects."
+          "type": ["object", "null"],
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.",
+          "default": {
+            "key": "value"
+          }
         },
         "annotations": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata."
+          "type": ["object", "null"],
+          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.",
+          "default": {
+            "key": "value"
+          }
         },
         "version": {
           "type": "integer",
-          "description": "Version identifier"
+          "description": "Version identifier",
+          "minimum": 0
         },
         "data": {
           "items": {
@@ -412,12 +473,14 @@
         "previousVersion": {
           "additionalProperties": false,
           "type": "integer",
-          "description": "Link to previous version"
+          "description": "Link to previous version",
+          "minimum": 0
         },
         "nextVersion": {
           "additionalProperties": false,
           "type": "integer",
-          "description": "Link to next version"
+          "description": "Link to next version",
+          "minimum": 0
         },
         "locked": {
           "additionalProperties": false,
@@ -445,6 +508,7 @@
           "description": "User data storage"
         }
       },
+      "required": ["data"],
       "additionalProperties": false,
       "type": "object",
       "title": "Secret Chain",
@@ -454,42 +518,83 @@
       "properties": {
         "suffix": {
           "type": "string",
-          "description": "REQUIRED. CSO Suffix."
+          "description": "CSO Suffix.",
+          "default": "path/suffix"
         },
         "description": {
-          "type": "string",
-          "description": "REQUIRED. Short description of the purpose of the secret."
+          "type": ["string", "null"],
+          "description": "Short description of the purpose of the secret."
         },
         "vendor": {
           "type": "boolean",
-          "description": "Defines if secret is managed or not (generated vs static secret)."
+          "description": "Defines if secret is managed or not (generated vs static secret).",
+          "default": false
         },
         "template": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "JSON Template for K/V Generation."
         },
         "content": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
+          "type": ["object", "null"],
           "description": "String Content for file embedding process. (filename / content)"
         },
         "labels": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Secret labels contains identifying information used for query (i.e. Patch selector)."
+          "type": ["object", "null"],
+          "description": "Secret labels contains identifying information used for query (i.e. Patch selector).",
+          "default": {
+            "key": "value"
+          }
         },
         "annotations": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Secret annotations not used internally used by external harp environments."
+          "type": ["object", "null"],
+          "description": "Secret annotations not used internally used by external harp environments.",
+          "default": {
+            "key": "value"
+          }
         }
       },
+      "required": ["suffix"],
+      "oneOf": [{
+          "allOf": [{
+              "required": ["template"]
+            },
+            {
+              "not": {
+                "required": ["content"]
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [{
+              "required": ["content"]
+            },
+            {
+              "not": {
+                "required": ["template"]
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [{
+              "required": ["template"]
+            },
+            {
+              "required": ["content"]
+            }
+          ]
+        }
+      ],
       "additionalProperties": false,
       "type": "object",
       "title": "Secret Suffix",

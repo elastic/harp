@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/Patch",
+  "$id": "https://ela.st/harp-v1-patch.json",
   "definitions": {
     "Patch": {
       "properties": {
