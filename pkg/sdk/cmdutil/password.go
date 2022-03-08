@@ -22,8 +22,9 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/awnumar/memguard"
 	"golang.org/x/term"
+
+	"github.com/awnumar/memguard"
 
 	"github.com/elastic/harp/pkg/sdk/security"
 )

@@ -30,7 +30,7 @@ func Import() error {
 	color.Cyan("## Process imports")
 
 	for pth := range CollectedGoFiles {
-		args := []string{"write", "-s", "Standard", "-s", "Default", "-s", "Prefix(github.com/elastic)"}
+		args := []string{"write", "-s", "Standard", "-s", "Prefix(golang.org/x/)", "-s", "Default", "-s", "Prefix(github.com/elastic)"}
 		args = append(args, pth)
 
 		if err := sh.RunV("gci", args...); err != nil {

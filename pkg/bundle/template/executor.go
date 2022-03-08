@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"golang.org/x/crypto/blake2b"
+
 	"google.golang.org/protobuf/proto"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"

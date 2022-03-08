@@ -33,12 +33,12 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	"github.com/pkg/errors"
-	"go.step.sm/crypto/pemutil"
-
 	// Import Blake2b
 	_ "golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/ssh"
+
+	"github.com/pkg/errors"
+	"go.step.sm/crypto/pemutil"
 	jose "gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
 

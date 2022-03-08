@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../../../api/jsonschema/harp.bundle.v1/Patch.json
 apiVersion: harp.elastic.co/v1
 kind: BundlePatch
 meta:
@@ -24,3 +25,5 @@ spec:
           # Remove '.yaml' suffix
           template: |-
             {{ trimSuffix ".yaml" .Path }}
+
+

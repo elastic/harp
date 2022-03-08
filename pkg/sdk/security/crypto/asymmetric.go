@@ -25,8 +25,9 @@ import (
 	"crypto/rsa"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"golang.org/x/crypto/nacl/box"
+
+	"github.com/pkg/errors"
 
 	"github.com/elastic/harp/build/fips"
 )

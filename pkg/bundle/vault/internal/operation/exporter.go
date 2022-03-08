@@ -27,10 +27,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/imdario/mergo"
-	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+
+	"github.com/imdario/mergo"
+	"go.uber.org/zap"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/secret"

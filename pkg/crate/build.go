@@ -26,12 +26,13 @@ import (
 	"io/fs"
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/elastic/harp/pkg/container"
 	"github.com/elastic/harp/pkg/crate/cratefile"
 	schemav1 "github.com/elastic/harp/pkg/crate/schema/v1"
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/template/archive"
-	"go.uber.org/zap"
 )
 
 const (

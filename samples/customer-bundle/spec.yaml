@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../api/jsonschema/harp.bundle.v1/Template.json
 apiVersion: harp.elastic.co/v1
 kind: BundleTemplate
 
@@ -14,7 +15,6 @@ spec:
     version: "{{ .Values.product.version }}"
 
   namespaces:
-
     #
     # Infrastructure secret templates
     #

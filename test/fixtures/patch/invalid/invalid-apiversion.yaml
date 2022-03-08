@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../../../api/jsonschema/harp.bundle.v1/Patch.json
 apiVersion: foo
 kind: BundlePatch
 meta:

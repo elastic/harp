@@ -22,8 +22,9 @@ import (
 	"reflect"
 	"sort"
 
-	"gitlab.com/NebulousLabs/merkletree"
 	"golang.org/x/crypto/blake2b"
+
+	"gitlab.com/NebulousLabs/merkletree"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	csov1 "github.com/elastic/harp/pkg/cso/v1"
