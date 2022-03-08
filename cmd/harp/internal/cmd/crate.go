@@ -31,6 +31,7 @@ var crateCmd = func() *cobra.Command {
 
 	// Add sub commands
 	cmd.AddCommand(cratePushCmd())
+	cmd.AddCommand(crateCopyCmd())
 
 	return cmd
 }
