@@ -25,3 +25,5 @@ spec:
           # Remove '.yaml' suffix
           template: |-
             {{ trimSuffix ".yaml" .Path }}
+
+

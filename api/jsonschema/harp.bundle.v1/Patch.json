@@ -34,7 +34,8 @@
       "properties": {
         "disableAnnotations": {
           "type": "boolean",
-          "description": "Enable/Disable annotations after patch application."
+          "description": "Enable/Disable annotations after patch application.",
+          "default": false
         }
       },
       "additionalProperties": false,
@@ -45,15 +46,24 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "REQUIRED. Template name."
+          "description": "Patch name.",
+          "default": "bundle-patch-1",
+          "examples": [
+            "postgresql-rotator",
+            "ssh-provisioner",
+            "add-cluster-user"
+          ]
+
         },
         "owner": {
           "type": "string",
-          "description": "REQUIRED. Template owner."
+          "description": "Patch owner.",
+          "default": "owner@domain.tld"
         },
         "description": {
           "type": "string",
-          "description": "REQUIRED. Short description for template role."
+          "description": "Short description for template role.",
+          "default": "This patch is used for ..."
         }
       },
       "additionalProperties": false,
@@ -67,36 +77,47 @@
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Add a new case-sentitive key and value to related data map. Key and Value can be templatized."
+          "type": ["object", "null"],
+          "description": "Add a new case-sentitive key and value to related data map. Key and Value can be templatized.",
+          "default": {
+            "key": "value"
+          }
         },
         "remove": {
           "items": {
             "type": "string"
           },
-          "type": "array",
-          "description": "Remove a case-sensitive key from related data map. Key and Value can be templatized."
+          "type": ["array", "null"],
+          "description": "Remove a case-sensitive key from related data map. Key and Value can be templatized.",
+          "default": ["key"]
         },
         "update": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Update case-sensitive existing key from related data map. Key and Value can be templatized."
+          "type": ["object", "null"],
+          "description": "Update case-sensitive existing key from related data map. Key and Value can be templatized.",
+          "default": {
+            "key-1": "new-value"
+          }
         },
         "replaceKeys": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Replace case-sensitive existing key using the associated value. Value can be templatized."
+          "type": ["object", "null"],
+          "description": "Replace case-sensitive existing key using the associated value. Value can be templatized.",
+          "default": {
+            "key-1": "new-key-1"
+          }
         },
         "removeKeys": {
           "items": {
             "type": "string"
           },
-          "type": "array",
-          "description": "Remove all keys matching these given regexp."
+          "type": ["array", "null"],
+          "description": "Remove all keys matching these given regexp.",
+          "default": ["key-to-remove-1", "key-to-remove-2"]
         }
       },
       "additionalProperties": false,
@@ -144,7 +165,12 @@
       "properties": {
         "template": {
           "type": "string",
-          "description": "Template used to completely rewrite the package path."
+          "title": "Path replacement template",
+          "description": "Template used to completely rewrite the package path.\n Use `{{.Path}}` to retrieve current path value.",
+          "default": "{{.Path}}",
+          "examples": [
+            "{{ trimPrefix \"secrets/\" .Path }}"
+          ]
         }
       },
       "additionalProperties": false,
@@ -155,7 +181,7 @@
     "harp.bundle.v1.PatchRule": {
       "properties": {
         "id": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Rule identifier."
         },
         "selector": {
@@ -169,6 +195,7 @@
           "description": "Package patch operations."
         }
       },
+      "required": ["selector", "package"],
       "additionalProperties": false,
       "type": "object",
       "title": "Patch Rule",
@@ -187,7 +214,7 @@
           "description": "Secret data label operations."
         },
         "template": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Template to override secret data."
         },
         "kv": {
@@ -209,15 +236,15 @@
           "description": "Match a package by using its path (secret path)."
         },
         "jmesPath": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Match a package using a JMESPath query."
         },
         "rego": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Match a package using a Rego policy."
         },
         "regoFile": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Match a package using a REgo policy stored in an external file."
         },
         "matchSecret": {
@@ -229,10 +256,29 @@
           "items": {
             "type": "string"
           },
-          "type": "array",
+          "type": ["array", "null"],
           "description": "Match a package using CEL expressions."
         }
       },
+      "oneOf": [{
+          "required": ["matchPath"]
+        },
+        {
+          "required": ["jmesPath"]
+        },
+        {
+          "required": ["rego"]
+        },
+        {
+          "required": ["regoFile"]
+        },
+        {
+          "required": ["matchSecret"]
+        },
+        {
+          "required": ["cel"]
+        }
+      ],
       "additionalProperties": false,
       "type": "object",
       "title": "Patch Selector",
@@ -242,17 +288,36 @@
       "properties": {
         "strict": {
           "type": "string",
-          "description": "Strict case-sensitive path matching. Value can be templatized."
+          "description": "Strict case-sensitive path matching. Value can be templatized.",
+          "default": "app/secret/path",
+          "examples": [
+            "app/{{.Values.quality}}/database/admin_account"
+          ]
         },
         "regex": {
           "type": "string",
-          "description": "Regex path matching. Value can be templatized."
+          "description": "Regex path matching. Value can be templatized.",
+          "default": "^app/(production|staging)/security/databases/.*_credentials$"
         },
         "glob": {
           "type": "string",
-          "description": "Glob path matching. - https://github.com/gobwas/glob Value can be templatized."
+          "description": "Glob path matching. - https://github.com/gobwas/glob Value can be templatized.",
+          "default": "infra/aws/**",
+          "examples": [
+            "infra/aws/{{.Region}}/ec2/ssh_key"
+          ]
         }
       },
+      "oneOf": [{
+          "required": ["strict"]
+        },
+        {
+          "required": ["regex"]
+        },
+        {
+          "required": ["glob"]
+        }
+      ],
       "additionalProperties": false,
       "type": "object",
       "title": "Patch Selector Match Path",
@@ -273,6 +338,16 @@
           "description": "Glob path matching. - https://github.com/gobwas/glob Value can be templatized."
         }
       },
+      "oneOf": [{
+          "required": ["strict"]
+        },
+        {
+          "required": ["regex"]
+        },
+        {
+          "required": ["glob"]
+        }
+      ],
       "additionalProperties": false,
       "type": "object",
       "title": "Patch Selector Match Secret",

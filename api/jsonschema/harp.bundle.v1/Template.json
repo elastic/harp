@@ -328,15 +328,21 @@
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Secret labels contains identifying information used for query (i.e. Patch selector)."
+          "type": ["object", "null"],
+          "description": "Secret labels contains identifying information used for query (i.e. Patch selector).",
+          "default": {
+            "key": "value"
+          }
         },
         "annotations": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object",
-          "description": "Secret annotations not used internally. Used by external harp environments."
+          "type": ["object", "null"],
+          "description": "Secret annotations not used internally. Used by external harp environments.",
+          "default": {
+            "key": "value"
+          }
         }
       },
       "required": ["suffix"],
