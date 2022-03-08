@@ -18,20 +18,12 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"io"
-	"os"
-	"strings"
-
 	"github.com/spf13/cobra"
-	"github.com/xeipuuv/gojsonschema"
+	"go.uber.org/zap"
 
-	"github.com/elastic/harp/pkg/bundle"
-	"github.com/elastic/harp/pkg/bundle/patch"
-	"github.com/elastic/harp/pkg/bundle/ruleset"
-	"github.com/elastic/harp/pkg/bundle/template"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
+	"github.com/elastic/harp/pkg/sdk/log"
+	"github.com/elastic/harp/pkg/tasks/lint"
 )
 
 // -----------------------------------------------------------------------------
@@ -50,7 +42,7 @@ var lintCmd = func() *cobra.Command {
 		Validate input YAML/JSON content with the selected JSONSchema definition.
 	`)
 	examples := cmdutil.Examples(`
-	# Validate a Bundle JSON dump from STDIN
+	# Validate a JSON dump with schema detection from STDIN
 	harp lint
 
 	# Validate a BundleTemplate from a file
@@ -71,11 +63,21 @@ var lintCmd = func() *cobra.Command {
 		Long:    longDesc,
 		Example: examples,
 		Run: func(cmd *cobra.Command, args []string) {
+			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-lint", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
-			if err := runLint(ctx, params); err != nil {
-				os.Exit(-1)
+			// Prepare task
+			t := &lint.ValidateTask{
+				SourceReader: cmdutil.FileReader(params.inputPath),
+				OutputWriter: cmdutil.FileWriter(params.outputPath),
+				Schema:       params.schema,
+				SchemaOnly:   params.schemaOnly,
+			}
+
+			// Run the task
+			if err := t.Run(ctx); err != nil {
+				log.For(ctx).Fatal("unable to execute task", zap.Error(err))
 			}
 		},
 	}
@@ -83,67 +85,8 @@ var lintCmd = func() *cobra.Command {
 	// Parameters
 	cmd.Flags().StringVar(&params.inputPath, "in", "-", "Container input ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "", "Container output ('' for stdout or filename)")
-	cmd.Flags().StringVar(&params.schema, "schema", "Bundle", "Schema to use for validation (Bundle|BundleTemplate|RuleSet|BundlePatch")
+	cmd.Flags().StringVar(&params.schema, "schema", "", "Override schema detection for validation (Bundle|BundleTemplate|RuleSet|BundlePatch")
 	cmd.Flags().BoolVar(&params.schemaOnly, "schema-only", false, "Display the JSON Schema")
 
 	return cmd
-}
-
-func runLint(_ context.Context, params *lintParams) error {
-	var (
-		schemaDefinition []byte
-		linterFunc       func(io.Reader) ([]gojsonschema.ResultError, error)
-	)
-
-	// Select lint strategy
-	switch {
-	case strings.EqualFold(params.schema, "Bundle"):
-		schemaDefinition = bundle.JSONSchema()
-		linterFunc = bundle.Lint
-	case strings.EqualFold(params.schema, "BundleTemplate"):
-		schemaDefinition = template.JSONSchema()
-		linterFunc = template.Lint
-	case strings.EqualFold(params.schema, "RuleSet"):
-		schemaDefinition = ruleset.JSONSchema()
-		linterFunc = ruleset.Lint
-	case strings.EqualFold(params.schema, "BundlePatch"):
-		schemaDefinition = patch.JSONSchema()
-		linterFunc = patch.Lint
-	default:
-		return fmt.Errorf("given specification '%s' is not supported by the lint command", params.schema)
-	}
-
-	// Create output writer
-	writer, err := cmdutil.Writer(params.outputPath)
-	if err != nil {
-		return fmt.Errorf("unable to open output bundle: %w", err)
-	}
-
-	// Display jsonschema
-	if params.schemaOnly {
-		fmt.Fprintln(writer, string(schemaDefinition))
-		return nil
-	}
-
-	// Create input reader
-	reader, err := cmdutil.Reader(params.inputPath)
-	if err != nil {
-		return fmt.Errorf("unable to read input reader: %w", err)
-	}
-
-	// Execute the lint evaluation
-	validationErrors, err := linterFunc(reader)
-	switch {
-	case len(validationErrors) > 0:
-		for _, e := range validationErrors {
-			fmt.Fprintf(writer, " - %s\n", e.String())
-		}
-		return err
-	case err != nil:
-		return fmt.Errorf("unexpected validation error occurred: %w", err)
-	default:
-	}
-
-	// No error
-	return nil
 }
