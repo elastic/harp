@@ -79,7 +79,6 @@ var cratePushCmd = func() *cobra.Command {
 	cmd.Flags().StringVarP(&params.inputPath, "cratefile", "f", "Cratefile", "Specification path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "-", "Output path ('-' for stdout or filename)")
 	cmd.Flags().StringVar(&params.to, "to", "registry", "Target destination (registry, oci:<path>, files:<path>)")
-	log.CheckErr("unable to mark 'to' flag as required.", cmd.MarkFlagRequired("to"))
 	cmd.Flags().StringVar(&params.ref, "ref", "harp.sealed", "Container path")
 	cmd.Flags().BoolVar(&params.json, "json", false, "Enable JSON output")
 	cmd.Flags().StringArrayVarP(&params.opts.Configs, "config", "c", nil, "Authentication config path")

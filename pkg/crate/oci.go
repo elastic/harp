@@ -22,21 +22,29 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/pkg/content"
 
+	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 	"github.com/elastic/harp/build/version"
 	"github.com/elastic/harp/pkg/container"
 	"github.com/elastic/harp/pkg/crate/schema"
+	schemav1 "github.com/elastic/harp/pkg/crate/schema/v1"
 	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 // StoreSetter is the interface used to mock the image store.
 type StoreSetter interface {
 	Set(ocispec.Descriptor, []byte)
+}
+
+// StoreGetter is the interface used to mock the image store.
+type StoreGetter interface {
+	GetByName(name string) (ocispec.Descriptor, []byte, bool)
 }
 
 // PrepareImage is used to assemble the OCI image according to given specification.
@@ -94,6 +102,84 @@ func PrepareImage(store StoreSetter, image *Image) ([]byte, *ocispec.Descriptor,
 	return manifestBytes, &manifest, nil
 }
 
+// ExtractImage extracts from the given OCI storage the crate image descriptor.
+func ExtractImage(store StoreGetter) (*Image, error) {
+	// Check arguments
+	if store == nil {
+		return nil, errors.New("can't extract crate from a nil store")
+	}
+
+	// Retrieve config
+	cfg, err := getConfig(store)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve config from crate: %w", err)
+	}
+
+	var containers []*SealedContainer
+	// Retrieve container
+	for _, layerName := range cfg.Containers() {
+		c, err := getSealedContainer(store, layerName)
+		if err != nil {
+			return nil, fmt.Errorf("unbale to retrieve container from crate: %w", err)
+		}
+
+		// Add to containers
+		containers = append(containers, &SealedContainer{
+			Name:      strings.TrimPrefix(layerName, "containers/"),
+			Container: c,
+		})
+	}
+
+	// Retrieve archives
+	var archives []*TemplateArchive
+	for _, layerName := range cfg.Templates() {
+		c, err := getTemplateArchive(store, layerName)
+		if err != nil {
+			return nil, fmt.Errorf("unbale to retrieve archive from crate: %w", err)
+		}
+
+		// Add to containers
+		archives = append(archives, &TemplateArchive{
+			Name:    strings.TrimPrefix(layerName, "templates/"),
+			Archive: c,
+		})
+	}
+
+	// No error
+	return &Image{
+		Config:           cfg,
+		Containers:       containers,
+		TemplateArchives: archives,
+	}, nil
+}
+
+// -----------------------------------------------------------------------------
+
+func getConfig(store StoreGetter) (schema.Config, error) {
+	// Check arguments
+	if store == nil {
+		return nil, errors.New("can't extract crate from a nil store")
+	}
+
+	// Extract config from image
+	configDesc, configRaw, hasConfigLayer := store.GetByName("_config.json")
+	if !hasConfigLayer {
+		return nil, errors.New("unable to lookup config layer from crate")
+	}
+	if configDesc.MediaType != harpConfigMediaType {
+		return nil, errors.New("invalid config layer media type value")
+	}
+
+	// Decode config
+	cfg, err := schemav1.ParseConfig(configRaw)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode config object: %w", err)
+	}
+
+	// No error
+	return cfg, nil
+}
+
 // AddConfig register the OCI configuration layer to retrieve information about
 // the image.
 func addConfig(store StoreSetter, image *Image) (*ocispec.Descriptor, error) {
@@ -126,6 +212,36 @@ func addConfig(store StoreSetter, image *Image) (*ocispec.Descriptor, error) {
 
 	// No error
 	return &configDesc, nil
+}
+
+func getSealedContainer(store StoreGetter, layerName string) (*containerv1.Container, error) {
+	// Check arguments
+	if store == nil {
+		return nil, errors.New("can't extract container from a nil store")
+	}
+
+	// Extract config from image
+	containerDesc, containerRaw, hasContainerLayer := store.GetByName(layerName)
+	if !hasContainerLayer {
+		return nil, fmt.Errorf("unable to lookup conainer '%s' layer from crate", layerName)
+	}
+	if containerDesc.MediaType != harpContainerLayerMediaType {
+		return nil, fmt.Errorf("invalid container layer media type value for '%s'", layerName)
+	}
+
+	// Validate as container
+	c, err := container.Load(bytes.NewReader(containerRaw))
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode csealed container from layer '%s': %w", layerName, err)
+	}
+
+	// Must be sealed.
+	if !container.IsSealed(c) {
+		return nil, fmt.Errorf("container layer '%s' has an unsealed container", layerName)
+	}
+
+	// No error
+	return c, nil
 }
 
 // AddSealedContainer registers a new layer to the current store for the given selaed container.
@@ -167,6 +283,25 @@ func addSealedContainer(store StoreSetter, c *SealedContainer) (*ocispec.Descrip
 	return &containerDesc, nil
 }
 
+func getTemplateArchive(store StoreGetter, layerName string) ([]byte, error) {
+	// Check arguments
+	if store == nil {
+		return nil, errors.New("can't extract archive from a nil store")
+	}
+
+	// Extract archive from image
+	archiveDesc, archiveRaw, hasArchiveLayer := store.GetByName(layerName)
+	if !hasArchiveLayer {
+		return nil, fmt.Errorf("unable to lookup archive '%s' layer from crate", layerName)
+	}
+	if archiveDesc.MediaType != harpDataLayerMediaType {
+		return nil, fmt.Errorf("invalid archive layer media type value for '%s'", layerName)
+	}
+
+	// No error
+	return archiveRaw, nil
+}
+
 // AddTemplateArchive registers a new layer to the current store for the given archive.
 func addTemplateArchive(store StoreSetter, ta *TemplateArchive) (*ocispec.Descriptor, error) {
 	// Check arguments
@@ -174,7 +309,7 @@ func addTemplateArchive(store StoreSetter, ta *TemplateArchive) (*ocispec.Descri
 		return nil, errors.New("unable to register sealed container with nil storage")
 	}
 	if ta == nil {
-		return nil, errors.New("given templte archive is nil")
+		return nil, errors.New("given template archive is nil")
 	}
 
 	// Prepare a layer

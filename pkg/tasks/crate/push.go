@@ -23,11 +23,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"go.uber.org/zap"
 	"oras.land/oras-go/pkg/content"
-	"oras.land/oras-go/pkg/target"
 
 	"github.com/elastic/harp/pkg/crate"
 	"github.com/elastic/harp/pkg/crate/cratefile"
@@ -47,7 +45,6 @@ type PushTask struct {
 }
 
 // Run the task.
-//nolint:gocyclo // to refactor
 func (t *PushTask) Run(ctx context.Context) error {
 	// Create the reader
 	reader, err := t.SpecReader(ctx)
@@ -67,25 +64,10 @@ func (t *PushTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to parse input cratefile: %w", err)
 	}
 
-	var to target.Target
-
-	toParts := strings.SplitN(t.Target, ":", 2)
-	// Build appropriate target instance
-	switch toParts[0] {
-	case "files":
-		to = content.NewFile(toParts[1])
-	case "registry":
-		to, err = content.NewRegistry(t.RegistryOpts)
-		if err != nil {
-			return fmt.Errorf("could not create registry target: %w", err)
-		}
-	case "oci":
-		to, err = content.NewOCI(toParts[1])
-		if err != nil {
-			return fmt.Errorf("could not read OCI layout at %s: %w", toParts[1], err)
-		}
-	default:
-		return fmt.Errorf("unknown target argument: %s", t.Target)
+	// Prepare target resolver
+	to, err := getResolver(t.Target, t.RegistryOpts)
+	if err != nil {
+		return fmt.Errorf("unable to initialize target: %w", err)
 	}
 
 	// Get absolute contxt path
@@ -114,7 +96,7 @@ func (t *PushTask) Run(ctx context.Context) error {
 	// Push the container
 	m, err := crate.Push(ctx, to, t.Ref, img)
 	if err != nil {
-		return fmt.Errorf("unable to push contain,er to registry: %w", err)
+		return fmt.Errorf("unable to push crate to registry: %w", err)
 	}
 
 	if t.JSONOutput {

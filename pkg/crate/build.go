@@ -108,7 +108,10 @@ func Build(rootFs fs.FS, spec *cratefile.Config) (*Image, error) {
 		}
 
 		// Add archive format suffix
-		name := fmt.Sprintf("%s.tar.gz", arch.Name)
+		name := arch.Name
+		if !strings.HasSuffix(name, ".tar.gz") {
+			name = fmt.Sprintf("%s.tar.gz", arch.Name)
+		}
 
 		// Add to config manifest
 		archiveNames = append(archiveNames, name)
