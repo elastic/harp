@@ -22,8 +22,9 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/hashicorp/vault/api"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/hashicorp/vault/api"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/vault/internal/operation"

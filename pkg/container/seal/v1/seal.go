@@ -23,9 +23,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/awnumar/memguard"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/crypto/nacl/secretbox"
+
+	"github.com/awnumar/memguard"
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"

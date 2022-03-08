@@ -23,9 +23,10 @@ import (
 	"strings"
 	"time"
 
+	exec "golang.org/x/sys/execabs"
+
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
-	exec "golang.org/x/sys/execabs"
 
 	"github.com/elastic/harp/build/artifact"
 	"github.com/elastic/harp/build/mage/git"

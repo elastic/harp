@@ -38,12 +38,11 @@ func TestVisit_Fuzz(t *testing.T) {
 			Kind:       "BundleTemplate",
 			Spec: &bundlev1.TemplateSpec{
 				Selector: &bundlev1.Selector{
-					Quality:     "production",
-					Product:     "harp",
-					Application: "harp",
-					Version:     "v1.0.0",
-					Platform:    "test",
-					Component:   "cli",
+					Quality:   "production",
+					Product:   "harp",
+					Version:   "v1.0.0",
+					Platform:  "test",
+					Component: "cli",
 				},
 				Namespaces: &bundlev1.Namespaces{},
 			},
@@ -74,12 +73,11 @@ func TestVisit_Template_Fuzz(t *testing.T) {
 			Kind:       "BundleTemplate",
 			Spec: &bundlev1.TemplateSpec{
 				Selector: &bundlev1.Selector{
-					Quality:     "production",
-					Product:     "harp",
-					Application: "harp",
-					Version:     "v1.0.0",
-					Platform:    "test",
-					Component:   "cli",
+					Quality:   "production",
+					Product:   "harp",
+					Version:   "v1.0.0",
+					Platform:  "test",
+					Component: "cli",
 				},
 				Namespaces: &bundlev1.Namespaces{
 					Infrastructure: []*bundlev1.InfrastructureNS{
@@ -171,12 +169,11 @@ func TestVisit_Content_Fuzz(t *testing.T) {
 			Kind:       "BundleTemplate",
 			Spec: &bundlev1.TemplateSpec{
 				Selector: &bundlev1.Selector{
-					Quality:     "production",
-					Product:     "harp",
-					Application: "harp",
-					Version:     "v1.0.0",
-					Platform:    "test",
-					Component:   "cli",
+					Quality:   "production",
+					Product:   "harp",
+					Version:   "v1.0.0",
+					Platform:  "test",
+					Component: "cli",
 				},
 				Namespaces: &bundlev1.Namespaces{
 					Infrastructure: []*bundlev1.InfrastructureNS{

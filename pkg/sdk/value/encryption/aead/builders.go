@@ -24,8 +24,9 @@ import (
 	"fmt"
 	"strings"
 
-	miscreant "github.com/miscreant/miscreant.go"
 	"golang.org/x/crypto/chacha20poly1305"
+
+	miscreant "github.com/miscreant/miscreant.go"
 
 	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/value"

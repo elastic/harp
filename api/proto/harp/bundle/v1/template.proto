@@ -59,12 +59,10 @@ message Selector {
   string platform = 2;
   // Product defines default product value in CSO path builder.
   string product = 3;
-  // Application defines default application value in CSO path builder.
-  string application = 4;
   // Version defines default version value in CSO path builder.
-  string version = 5;
+  string version = 4;
   // Component defines default component value in CSO path builder.
-  string component = 6;
+  string component = 5;
 }
 
 // Namespaces defines secret generation template specification accoridng

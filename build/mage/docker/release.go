@@ -25,10 +25,11 @@ import (
 	"text/template"
 	"time"
 
+	exec "golang.org/x/sys/execabs"
+
 	semver "github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
-	exec "golang.org/x/sys/execabs"
 
 	"github.com/elastic/harp/build/artifact"
 	"github.com/elastic/harp/build/mage/git"

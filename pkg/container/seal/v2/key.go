@@ -27,8 +27,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/awnumar/memguard"
 	"golang.org/x/crypto/pbkdf2"
+
+	"github.com/awnumar/memguard"
 
 	"github.com/elastic/harp/pkg/container/seal"
 )
