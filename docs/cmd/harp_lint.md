@@ -13,7 +13,7 @@ harp lint [flags]
 ### Examples
 
 ```
-  # Validate a Bundle JSON dump from STDIN
+  # Validate a JSON dump with schema detection from STDIN
   harp lint
   
   # Validate a BundleTemplate from a file
@@ -35,7 +35,7 @@ harp lint [flags]
   -h, --help            help for lint
       --in string       Container input ('-' for stdin or filename) (default "-")
       --out string      Container output ('' for stdout or filename)
-      --schema string   Schema to use for validation (Bundle|BundleTemplate|RuleSet|BundlePatch (default "Bundle")
+      --schema string   Override schema detection for validation (Bundle|BundleTemplate|RuleSet|BundlePatch
       --schema-only     Display the JSON Schema
 ```
 
