@@ -34,33 +34,39 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "REQUIRED. Rule name."
+          "description": "Rule name."
         },
         "description": {
-          "type": "string",
-          "description": "OPTIONAL. Rule description."
+          "type": ["string", "null"],
+          "description": "Rule description."
         },
         "path": {
           "type": "string",
-          "description": "REQUIRED. Rule path matcher filter."
+          "description": "Rule path matcher filter."
         },
         "constraints": {
           "items": {
             "type": "string"
           },
-          "type": "array",
-          "description": "OPTIONAL. CEL Constraint collection."
+          "type": ["array", "null"],
+          "description": "CEL Constraint collection."
         },
         "rego": {
-          "type": "string",
-          "description": "OPTIONAL. Rego policy.",
+          "type": ["string", "null"],
+          "description": "Rego policy.",
           "contentMediaType": "application/rego"
         },
         "regoFile": {
-          "type": "string",
-          "description": "OPTIONAL. Rego policy file."
+          "type": ["string", "null"],
+          "description": "Rego policy file."
         }
       },
+      "required": ["name", "path"],
+      "oneOf": [
+        {"required": ["constraints"]},
+        {"required": ["rego"]},
+        {"required": ["regoFile"]}
+      ],
       "additionalProperties": false,
       "type": "object",
       "title": "Rule",
@@ -70,17 +76,18 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "REQUIRED. RuleSet name."
+          "description": "RuleSet name."
         },
         "owner": {
           "type": "string",
-          "description": "REQUIRED. RuleSet owner."
+          "description": "RuleSet owner."
         },
         "description": {
           "type": "string",
-          "description": "REQUIRED. Short description for ruleset."
+          "description": "Short description for ruleset."
         }
       },
+      "required": ["name", "owner", "description"],
       "additionalProperties": false,
       "type": "object",
       "title": "Rule Set Meta",
