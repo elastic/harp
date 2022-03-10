@@ -18,14 +18,13 @@
 package vfs
 
 import (
-	"archive/tar"
 	"bytes"
-	"compress/gzip"
-	"errors"
 	"fmt"
-	"io"
 	"io/fs"
-	"os"
+	"sort"
+	"strings"
+
+	"github.com/gobwas/glob"
 )
 
 var (
@@ -36,93 +35,192 @@ var (
 )
 
 type tarGzFs struct {
-	files map[string][]byte
+	files       map[string]*tarEntry
+	rootEntries []fs.DirEntry
+	rootEntry   *tarEntry
 }
 
-// FromArchive exposes the contents of the given reader (which is a .tar.gz file)
-// as an fs.FS.
-func FromArchive(r io.Reader) (fs.FS, error) {
-	gz, err := gzip.NewReader(r)
+var _ fs.FS = (*tarGzFs)(nil)
+
+// Open opens the named file.
+func (gzfs *tarGzFs) Open(name string) (fs.File, error) {
+	// Shortcut if the file is '.'
+	if name == "." {
+		if gzfs.rootEntries == nil {
+			return &rootFile{}, nil
+		}
+		return &tarFile{
+			tarEntry:   *gzfs.rootEntry,
+			r:          bytes.NewReader(gzfs.rootEntry.b),
+			readDirPos: 0,
+		}, nil
+	}
+
+	// Lookup file.
+	f, err := gzfs.get(name, "open")
 	if err != nil {
-		return nil, fmt.Errorf("unable to open .tar.gz file: %w", err)
+		return nil, err
 	}
 
-	// Retrieve TAR content from GZIP
-	var (
-		tarContents      bytes.Buffer
-		tarContentLength = int64(0)
-	)
+	// Wrapped file content
+	return &tarFile{
+		tarEntry:   *f,
+		r:          bytes.NewReader(f.b),
+		readDirPos: 0,
+	}, nil
+}
 
-	// Chunked read with hard limit to prevent/reduce zipbomb vulnerability
-	// exploitation.
-	for {
-		written, err := io.CopyN(&tarContents, gz, 1024)
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
-			return nil, err
+var _ fs.ReadDirFS = (*tarGzFs)(nil)
+
+// ReadDir is used to enumerate all files from a directory.
+func (gzfs *tarGzFs) ReadDir(name string) ([]fs.DirEntry, error) {
+	// Shortcut if the file is '.'
+	if name == "." {
+		return gzfs.rootEntries, nil
+	}
+
+	// Lookup file.
+	e, err := gzfs.get(name, "readdir")
+	if err != nil {
+		return nil, err
+	}
+
+	// Only directory should be used.
+	if !e.IsDir() {
+		return nil, &fs.PathError{Op: "readdir", Path: name, Err: fs.ErrInvalid}
+	}
+
+	// Sort results by name.
+	sort.Slice(e.entries, func(i, j int) bool {
+		return e.entries[i].Name() < e.entries[j].Name()
+	})
+
+	// Return file entries.
+	return e.entries, nil
+}
+
+var _ fs.ReadFileFS = (*tarGzFs)(nil)
+
+// ReadFile is used to retrieve directly the file content.
+func (gzfs *tarGzFs) ReadFile(name string) ([]byte, error) {
+	// Shortcut if the file is '.'
+	if name == "." {
+		return nil, &fs.PathError{Op: "readfile", Path: name, Err: fs.ErrInvalid}
+	}
+
+	// Lookup file.
+	e, err := gzfs.get(name, "readfile")
+	if err != nil {
+		return nil, err
+	}
+
+	// Entry must be a file
+	if e.IsDir() {
+		return nil, &fs.PathError{Op: "readfile", Path: name, Err: fs.ErrInvalid}
+	}
+
+	// Copy content
+	buf := make([]byte, len(e.b))
+	copy(buf, e.b)
+
+	// No error
+	return buf, nil
+}
+
+var _ fs.StatFS = (*tarGzFs)(nil)
+
+// Stat query the in-memory file system to get file info.
+func (gzfs *tarGzFs) Stat(name string) (fs.FileInfo, error) {
+	// Shortcut if the file is '.'
+	if name == "." {
+		if gzfs.rootEntry == nil {
+			return &rootFile{}, nil
 		}
 
-		// Add to length
-		tarContentLength += written
+		// Return root fileinfo
+		return gzfs.rootEntry.Info()
+	}
 
-		// Check max size
-		if tarContentLength > maxDecompressedSize {
-			return nil, errors.New("the archive contains a too large content (>25MB)")
+	// Lookup file.
+	e, err := gzfs.get(name, "stat")
+	if err != nil {
+		return nil, err
+	}
+
+	// Return fileinfo
+	return e.h.FileInfo(), nil
+}
+
+var _ fs.GlobFS = (*tarGzFs)(nil)
+
+func (gzfs *tarGzFs) Glob(pattern string) (matches []string, _ error) {
+	// Compile pattern
+	g, err := glob.Compile(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("unable to compile glob pattern: %w", err)
+	}
+
+	// Iterate over file names
+	for name := range gzfs.files {
+		// Check if pattern match the file name
+		if g.Match(name) {
+			matches = append(matches, name)
 		}
 	}
 
-	// Close the gzip decompressor
-	if err := gz.Close(); err != nil {
-		return nil, fmt.Errorf("unable to close gzip reader: %w", err)
+	// Return results
+	return
+}
+
+var _ fs.SubFS = (*tarGzFs)(nil)
+
+func (gzfs *tarGzFs) Sub(dir string) (fs.FS, error) {
+	if dir == "." {
+		return gzfs, nil
 	}
 
-	// TAR format reader
-	tarReader := tar.NewReader(bytes.NewBuffer(tarContents.Bytes()))
+	// Lookup directory
+	e, err := gzfs.get(dir, "sub")
+	if err != nil {
+		return nil, err
+	}
 
-	// Prepare in-memory filesystem.
-	var ret tarGzFs
-	ret.files = make(map[string][]byte)
-	for {
-		// Iterate on each file entry
-		hdr, err := tarReader.Next()
-		if errors.Is(err, io.EOF) {
-			break
-		} else if err != nil {
-			return nil, fmt.Errorf("unable to read .tar.gz entry: %w", err)
-		}
+	// Must be a directory
+	if !e.IsDir() {
+		return nil, &fs.PathError{Op: "sub", Path: dir, Err: fs.ErrInvalid}
+	}
 
-		// Load content in memory
-		var fileContents bytes.Buffer
-		if _, err := io.Copy(&fileContents, io.LimitReader(tarReader, maxDecompressedSize)); err != nil {
-			return nil, fmt.Errorf("unable to read .tar.gz entry: %w", err)
-		}
+	// Create a sub-filesystem
+	subfs := &tarGzFs{
+		files:       make(map[string]*tarEntry),
+		rootEntries: e.entries,
+		rootEntry:   e,
+	}
 
-		// Append to in-memory map
-		ret.files[hdr.Name] = fileContents.Bytes()
-
-		// Check file count limit
-		if len(ret.files) > maxFileCount {
-			return nil, errors.New("interrupted extraction, too many files in the archive")
+	// Copy files and remove directory prefix.
+	prefix := dir + "/"
+	for name, file := range gzfs.files {
+		if strings.HasPrefix(name, prefix) {
+			subfs.files[strings.TrimPrefix(name, prefix)] = file
 		}
 	}
 
 	// No error
-	return &ret, nil
+	return subfs, nil
 }
 
-// Open opens the named file.
-func (gzfs *tarGzFs) Open(name string) (fs.File, error) {
-	contents, ok := gzfs.files[name]
-	if !ok {
-		return nil, os.ErrNotExist
+// -----------------------------------------------------------------------------
+
+func (gzfs *tarGzFs) get(name, op string) (*tarEntry, error) {
+	if !fs.ValidPath(name) {
+		return nil, &fs.PathError{Op: op, Path: name, Err: fs.ErrInvalid}
 	}
 
-	// Wrapped file content
-	return &tarGzFile{
-		name:     name,
-		contents: bytes.NewBuffer(contents),
-		size:     int64(len(contents)),
-	}, nil
+	// Lookup file
+	e, ok := gzfs.files[name]
+	if !ok {
+		return nil, &fs.PathError{Op: op, Path: name, Err: fs.ErrNotExist}
+	}
+
+	return e, nil
 }

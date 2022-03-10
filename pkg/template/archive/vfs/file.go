@@ -18,60 +18,175 @@
 package vfs
 
 import (
-	"bytes"
+	"archive/tar"
+	"io"
 	"io/fs"
 	"time"
 )
 
-type tarGzFile struct {
-	name     string
-	size     int64
-	contents *bytes.Buffer
+type tarEntry struct {
+	h *tar.Header
+	b []byte
+
+	// If the file is a directory, the following property will contain
+	// owned files.
+	entries []fs.DirEntry
 }
 
-// Stat returns a fs.FileInfo for the given file.
-func (f *tarGzFile) Stat() (fs.FileInfo, error) {
-	return f, nil
-}
-
-// Read reads the next len(p) bytes from the buffer or until the buffer is drained.
-func (f *tarGzFile) Read(buf []byte) (int, error) {
-	return f.contents.Read(buf)
-}
-
-// Close is a no-op.
-func (f *tarGzFile) Close() error {
-	return nil
-}
-
-// Implementation of fs.FileInfo for tarGzFile.
+// Implementation of fs.DirEntry for tarEntry.
+var _ fs.DirEntry = (*tarEntry)(nil)
 
 // Name returns the basename of the file.
-func (f *tarGzFile) Name() string {
-	return f.name
+func (f *tarEntry) Name() string {
+	return f.h.FileInfo().Name()
 }
 
-// Size returns the length in bytes for this file.
-func (f *tarGzFile) Size() int64 {
-	return f.size
-}
-
-// Mode returns the mode for this file.
-func (*tarGzFile) Mode() fs.FileMode {
-	return 0o444
-}
-
-// Mode returns the mtime for this file (always the Unix epoch).
-func (*tarGzFile) ModTime() time.Time {
-	return time.Unix(0, 0)
+// Type returns file mode.
+func (f *tarEntry) Type() fs.FileMode {
+	return f.h.FileInfo().Mode() & fs.ModeType
 }
 
 // IsDir returns whether this file is a directory (always false).
-func (*tarGzFile) IsDir() bool {
-	return false
+func (f *tarEntry) IsDir() bool {
+	return f.h.FileInfo().IsDir()
+}
+
+// Info returns file info.
+func (f *tarEntry) Info() (fs.FileInfo, error) {
+	return f.h.FileInfo(), nil
+}
+
+type tarFile struct {
+	tarEntry
+	r          io.ReadSeeker
+	readDirPos int
+}
+
+// Implementation of fs.File for tarFile.
+var _ fs.File = (*tarFile)(nil)
+
+// Stat returns a fs.FileInfo for the given file.
+func (f *tarFile) Stat() (fs.FileInfo, error) {
+	return f.h.FileInfo(), nil
+}
+
+// Read reads the next len(p) bytes from the buffer or until the buffer is drained.
+func (f *tarFile) Read(buf []byte) (int, error) {
+	if f.IsDir() {
+		return 0, &fs.PathError{Op: "read", Path: f.Name(), Err: fs.ErrInvalid}
+	}
+
+	return f.r.Read(buf)
+}
+
+// Close is a no-op.
+func (f *tarFile) Close() error {
+	return nil
+}
+
+// Implementation of io.Seeker for tarFile.
+var _ io.Seeker = (*tarFile)(nil)
+
+func (f *tarFile) Seek(offset int64, whence int) (int64, error) {
+	if f.IsDir() {
+		return 0, &fs.PathError{Op: "seek", Path: f.Name(), Err: fs.ErrInvalid}
+	}
+
+	return f.r.Seek(offset, whence)
+}
+
+// Implementation of fs.ReadDirFile for tarFile.
+var _ fs.ReadDirFile = (*tarFile)(nil)
+
+func (f *tarFile) ReadDir(n int) ([]fs.DirEntry, error) {
+	if !f.IsDir() {
+		return nil, &fs.PathError{Op: "readdir", Path: f.Name(), Err: fs.ErrInvalid}
+	}
+
+	if f.readDirPos >= len(f.entries) {
+		if n <= 0 {
+			return nil, nil
+		}
+		return nil, io.EOF
+	}
+
+	var entries []fs.DirEntry
+
+	if n > 0 && f.readDirPos+n <= len(f.entries) {
+		entries = f.entries[f.readDirPos : f.readDirPos+n]
+		f.readDirPos += n
+	} else {
+		entries = f.entries[f.readDirPos:]
+		f.readDirPos += len(entries)
+	}
+
+	return entries, nil
+}
+
+// Implmentation of fs.FileInfo for tarFile.
+var _ fs.FileInfo = (*tarFile)(nil)
+
+// Size returns the length in bytes for this file.
+func (f *tarFile) Size() int64 {
+	return f.h.Size
+}
+
+// Mode returns the mode for this file.
+func (f *tarFile) Mode() fs.FileMode {
+	return f.h.FileInfo().Mode()
+}
+
+// Mode returns the mtime for this file (always the Unix epoch).
+func (f *tarFile) ModTime() time.Time {
+	return f.h.ModTime
 }
 
 // Sys returns nil.
-func (*tarGzFile) Sys() interface{} {
+func (f *tarFile) Sys() interface{} {
+	return nil
+}
+
+// -----------------------------------------------------------------------------
+
+type rootFile struct {
+}
+
+var _ fs.File = (*rootFile)(nil)
+
+func (rf *rootFile) Stat() (fs.FileInfo, error) {
+	return rf, nil
+}
+
+func (*rootFile) Read([]byte) (int, error) {
+	return 0, &fs.PathError{Op: "read", Path: ".", Err: fs.ErrInvalid}
+}
+
+func (*rootFile) Close() error {
+	return nil
+}
+
+var _ fs.FileInfo = (*rootFile)(nil)
+
+func (rf *rootFile) Name() string {
+	return "."
+}
+
+func (rf *rootFile) Size() int64 {
+	return 0
+}
+
+func (rf *rootFile) Mode() fs.FileMode {
+	return fs.ModeDir | 0o755
+}
+
+func (rf *rootFile) ModTime() time.Time {
+	return time.Time{}
+}
+
+func (rf *rootFile) IsDir() bool {
+	return true
+}
+
+func (rf *rootFile) Sys() interface{} {
 	return nil
 }

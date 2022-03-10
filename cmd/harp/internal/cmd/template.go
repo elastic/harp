@@ -18,6 +18,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -35,49 +36,53 @@ import (
 	"github.com/elastic/harp/pkg/vault/kv"
 )
 
-var (
-	templateInputPath     string
-	templateOutputPath    string
-	templateValueFiles    []string
-	templateSecretLoaders []string
-	templateValues        []string
-	templateStringValues  []string
-	templateFileValues    []string
-	templateLeftDelims    string
-	templateRightDelims   string
-	templateAltDelims     bool
-	templateRootPath      string
-)
+type templateParams struct {
+	InputPath     string
+	OutputPath    string
+	ValueFiles    []string
+	SecretLoaders []string
+	Values        []string
+	StringValues  []string
+	FileValues    []string
+	LeftDelims    string
+	RightDelims   string
+	AltDelims     bool
+	RootPath      string
+}
 
 // -----------------------------------------------------------------------------
 
 var templateCmd = func() *cobra.Command {
+	params := &templateParams{}
+
 	cmd := &cobra.Command{
 		Use:     "template",
 		Aliases: []string{"t", "tpl"},
 		Short:   "Read a template and execute it",
-		Run:     runTemplate,
+		Run: func(cmd *cobra.Command, args []string) {
+			runTemplate(cmd.Context(), params)
+		},
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&templateInputPath, "in", "-", "Template input path ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&templateOutputPath, "out", "", "Output file ('-' for stdout or a filename)")
-	cmd.Flags().StringVar(&templateRootPath, "root", "", "Defines file loader root base path")
-	cmd.Flags().StringArrayVarP(&templateSecretLoaders, "secrets-from", "s", []string{"vault"}, "Specifies secret containers to load ('vault' for Vault loader or '-' for stdin or filename)")
-	cmd.Flags().StringArrayVarP(&templateValueFiles, "values", "f", []string{}, "Specifies value files to load")
-	cmd.Flags().StringArrayVar(&templateValues, "set", []string{}, "Specifies value (k=v)")
-	cmd.Flags().StringArrayVar(&templateStringValues, "set-string", []string{}, "Specifies value (k=string)")
-	cmd.Flags().StringArrayVar(&templateFileValues, "set-file", []string{}, "Specifies value (k=filepath)")
-	cmd.Flags().StringVar(&templateLeftDelims, "left-delimiter", "{{", "Template left delimiter (default to '{{')")
-	cmd.Flags().StringVar(&templateRightDelims, "right-delimiter", "}}", "Template right delimiter (default to '}}')")
-	cmd.Flags().BoolVar(&templateAltDelims, "alt-delims", false, "Define '[[' and ']]' as template delimiters.")
+	cmd.Flags().StringVar(&params.InputPath, "in", "-", "Template input path ('-' for stdin or filename)")
+	cmd.Flags().StringVar(&params.OutputPath, "out", "", "Output file ('-' for stdout or a filename)")
+	cmd.Flags().StringVar(&params.RootPath, "root", "", "Defines file loader root base path")
+	cmd.Flags().StringArrayVarP(&params.SecretLoaders, "secrets-from", "s", []string{"vault"}, "Specifies secret containers to load ('vault' for Vault loader or '-' for stdin or filename)")
+	cmd.Flags().StringArrayVarP(&params.ValueFiles, "values", "f", []string{}, "Specifies value files to load")
+	cmd.Flags().StringArrayVar(&params.Values, "set", []string{}, "Specifies value (k=v)")
+	cmd.Flags().StringArrayVar(&params.StringValues, "set-string", []string{}, "Specifies value (k=string)")
+	cmd.Flags().StringArrayVar(&params.FileValues, "set-file", []string{}, "Specifies value (k=filepath)")
+	cmd.Flags().StringVar(&params.LeftDelims, "left-delimiter", "{{", "Template left delimiter (default to '{{')")
+	cmd.Flags().StringVar(&params.RightDelims, "right-delimiter", "}}", "Template right delimiter (default to '}}')")
+	cmd.Flags().BoolVar(&params.AltDelims, "alt-delims", false, "Define '[[' and ']]' as template delimiters.")
 
 	return cmd
 }
 
 //nolint:funlen // to split
-func runTemplate(cmd *cobra.Command, args []string) {
-	ctx, cancel := cmdutil.Context(cmd.Context(), "harp-template", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
+func runTemplate(ctx context.Context, params *templateParams) {
+	ctx, cancel := cmdutil.Context(ctx, "harp-template", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
 
 	var (
@@ -86,17 +91,17 @@ func runTemplate(cmd *cobra.Command, args []string) {
 	)
 
 	// Create input reader
-	reader, err = cmdutil.Reader(templateInputPath)
+	reader, err = cmdutil.Reader(params.InputPath)
 	if err != nil {
-		log.For(ctx).Fatal("unable to open input template", zap.Error(err), zap.String("path", templateInputPath))
+		log.For(ctx).Fatal("unable to open input template", zap.Error(err), zap.String("path", params.InputPath))
 	}
 
 	// Load values
 	valueOpts := tplcmdutil.ValueOptions{
-		ValueFiles:   templateValueFiles,
-		Values:       templateValues,
-		StringValues: templateStringValues,
-		FileValues:   templateFileValues,
+		ValueFiles:   params.ValueFiles,
+		Values:       params.Values,
+		StringValues: params.StringValues,
+		FileValues:   params.FileValues,
 	}
 	values, err := valueOpts.MergeValues()
 	if err != nil {
@@ -105,8 +110,8 @@ func runTemplate(cmd *cobra.Command, args []string) {
 
 	// Load files
 	var files engine.Files
-	if templateRootPath != "" {
-		absRootPath, errAbs := filepath.Abs(templateRootPath)
+	if params.RootPath != "" {
+		absRootPath, errAbs := filepath.Abs(params.RootPath)
 		if errAbs != nil {
 			log.For(ctx).Fatal("unable to get absolute template root path", zap.Error(errAbs))
 		}
@@ -120,18 +125,18 @@ func runTemplate(cmd *cobra.Command, args []string) {
 	// Drain reader
 	body, err := io.ReadAll(reader)
 	if err != nil {
-		log.For(ctx).Fatal("unable to drain input template reader", zap.Error(err), zap.String("path", templateInputPath))
+		log.For(ctx).Fatal("unable to drain input template reader", zap.Error(err), zap.String("path", params.InputPath))
 	}
 
 	// If alternative delimiters is used
-	if templateAltDelims {
-		templateLeftDelims = "[["
-		templateRightDelims = "]]"
+	if params.AltDelims {
+		params.LeftDelims = "[["
+		params.RightDelims = "]]"
 	}
 
 	// Process secret readers
 	secretReaders := []engine.SecretReaderFunc{}
-	for _, sr := range templateSecretLoaders {
+	for _, sr := range params.SecretLoaders {
 		if sr == "vault" {
 			// Initialize Vault connection
 			vaultClient, errVault := api.NewClient(api.DefaultConfig())
@@ -161,20 +166,20 @@ func runTemplate(cmd *cobra.Command, args []string) {
 
 	// Compile and execute template
 	out, err := engine.RenderContext(engine.NewContext(
-		engine.WithName(templateInputPath),
-		engine.WithDelims(templateLeftDelims, templateRightDelims),
+		engine.WithName(params.InputPath),
+		engine.WithDelims(params.LeftDelims, params.RightDelims),
 		engine.WithValues(values),
 		engine.WithFiles(files),
 		engine.WithSecretReaders(secretReaders...),
 	), string(body))
 	if err != nil {
-		log.For(ctx).Fatal("unable to produce output content", zap.Error(err), zap.String("path", templateInputPath))
+		log.For(ctx).Fatal("unable to produce output content", zap.Error(err), zap.String("path", params.InputPath))
 	}
 
 	// Create output writer
-	writer, err := cmdutil.Writer(templateOutputPath)
+	writer, err := cmdutil.Writer(params.OutputPath)
 	if err != nil {
-		log.For(ctx).Fatal("unable to create output writer", zap.Error(err), zap.String("path", templateOutputPath))
+		log.For(ctx).Fatal("unable to create output writer", zap.Error(err), zap.String("path", params.OutputPath))
 	}
 
 	// Write rendered content
