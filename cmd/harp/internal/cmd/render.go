@@ -26,7 +26,7 @@ import (
 	"github.com/elastic/harp/pkg/tasks/template"
 )
 
-type templateParams struct {
+type renderParams struct {
 	InputPath     string
 	OutputPath    string
 	ValueFiles    []string
@@ -38,35 +38,53 @@ type templateParams struct {
 	RightDelims   string
 	AltDelims     bool
 	RootPath      string
+	DryRun        bool
 }
 
 // -----------------------------------------------------------------------------
 
-var templateCmd = func() *cobra.Command {
-	params := &templateParams{}
+var renderCmd = func() *cobra.Command {
+	params := &renderParams{}
+
+	longDesc := cmdutil.LongDesc(`
+	Generate a config filesytem from a template hierarchy or archive.
+	`)
+	examples := cmdutil.Examples(`
+	# Generate a configuration filesystem from a folder hierarchy
+	harp render --in templates/database --out postgres
+
+	# Generate a configuration filesystem from an archive
+	harp render --in templates.tar.gz --out configMap
+
+	# Test template generation
+	harp render --in templates.tar.gz --dry-run
+	`)
 
 	cmd := &cobra.Command{
-		Use:     "template",
-		Aliases: []string{"t", "tpl"},
-		Short:   "Read a template and execute it",
+		Use:     "render",
+		Aliases: []string{"r"},
+		Short:   "Render a template filesystem",
+		Long:    longDesc,
+		Example: examples,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "template-render", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
 			// Prepare task
-			t := &template.RenderTask{
-				InputReader:   cmdutil.FileReader(params.InputPath),
-				OutputWriter:  cmdutil.FileWriter(params.OutputPath),
-				ValueFiles:    params.ValueFiles,
-				Values:        params.Values,
-				StringValues:  params.StringValues,
-				FileValues:    params.FileValues,
-				RootPath:      params.RootPath,
-				SecretLoaders: params.SecretLoaders,
-				LeftDelims:    params.LeftDelims,
-				RightDelims:   params.RightDelims,
-				AltDelims:     params.AltDelims,
+			t := &template.FileSystemTask{
+				InputPath:          params.InputPath,
+				OutputPath:         params.OutputPath,
+				ValueFiles:         params.ValueFiles,
+				Values:             params.Values,
+				StringValues:       params.StringValues,
+				FileValues:         params.FileValues,
+				FileLoaderRootPath: params.RootPath,
+				SecretLoaders:      params.SecretLoaders,
+				LeftDelims:         params.LeftDelims,
+				RightDelims:        params.RightDelims,
+				AltDelims:          params.AltDelims,
+				DryRun:             params.DryRun,
 			}
 
 			// Run the task
@@ -77,8 +95,9 @@ var templateCmd = func() *cobra.Command {
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&params.InputPath, "in", "-", "Template input path ('-' for stdin or filename)")
-	cmd.Flags().StringVar(&params.OutputPath, "out", "", "Output file ('-' for stdout or a filename)")
+	cmd.Flags().StringVar(&params.InputPath, "in", "", "Template input path (directory or archive)")
+	log.CheckErr("unable to mark 'in' flag as required.", cmd.MarkFlagRequired("in"))
+	cmd.Flags().StringVar(&params.OutputPath, "out", "", "Output path")
 	cmd.Flags().StringVar(&params.RootPath, "root", "", "Defines file loader root base path")
 	cmd.Flags().StringArrayVarP(&params.SecretLoaders, "secrets-from", "s", []string{"vault"}, "Specifies secret containers to load ('vault' for Vault loader or '-' for stdin or filename)")
 	cmd.Flags().StringArrayVarP(&params.ValueFiles, "values", "f", []string{}, "Specifies value files to load")
@@ -88,6 +107,7 @@ var templateCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&params.LeftDelims, "left-delimiter", "{{", "Template left delimiter (default to '{{')")
 	cmd.Flags().StringVar(&params.RightDelims, "right-delimiter", "}}", "Template right delimiter (default to '}}')")
 	cmd.Flags().BoolVar(&params.AltDelims, "alt-delims", false, "Define '[[' and ']]' as template delimiters.")
+	cmd.Flags().BoolVar(&params.DryRun, "dry-run", false, "Generate in-memory only.")
 
 	return cmd
 }

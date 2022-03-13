@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package vfs
+package targzfs
 
 import (
 	"archive/tar"
@@ -25,12 +25,25 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"os"
 	"path"
 )
 
-// FromArchive exposes the contents of the given reader (which is a .tar.gz file)
+// FromFile creates an archive filesystem from a filename.
+func FromFile(name string) (fs.FS, error) {
+	// Open the target file
+	fn, err := os.Open(name)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open archive %q: %w", name, err)
+	}
+
+	// Delegate to reader constructor.
+	return FromReader(fn)
+}
+
+// FromReader exposes the contents of the given reader (which is a .tar.gz file)
 // as an fs.FS.
-func FromArchive(r io.Reader) (fs.FS, error) {
+func FromReader(r io.Reader) (fs.FS, error) {
 	gz, err := gzip.NewReader(r)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open .tar.gz file: %w", err)

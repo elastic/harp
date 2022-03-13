@@ -15,44 +15,50 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package crate
+package template
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
-	"github.com/elastic/harp/pkg/sdk/fsutil"
-	"github.com/elastic/harp/pkg/sdk/fsutil/targzfs"
 	"github.com/elastic/harp/pkg/tasks"
+	tplcmdutil "github.com/elastic/harp/pkg/template/cmdutil"
 )
 
-// ExtractArchiveTask implements archive extraction task.
-type ExtractArchiveTask struct {
-	ArchiveReader tasks.ReaderProvider
-	OutputPath    string
+// ValueTask implements value object generation task.
+type ValueTask struct {
+	OutputWriter tasks.WriterProvider
+	ValueFiles   []string
+	Values       []string
+	StringValues []string
+	FileValues   []string
 }
 
 // Run the task.
-func (t *ExtractArchiveTask) Run(ctx context.Context) error {
-	// Create the reader
-	reader, err := t.ArchiveReader(ctx)
+func (t *ValueTask) Run(ctx context.Context) error {
+	// Load values
+	valueOpts := tplcmdutil.ValueOptions{
+		ValueFiles:   t.ValueFiles,
+		Values:       t.Values,
+		StringValues: t.StringValues,
+		FileValues:   t.FileValues,
+	}
+	values, err := valueOpts.MergeValues()
 	if err != nil {
-		return fmt.Errorf("unable to open input reader: %w", err)
+		return fmt.Errorf("unable to process values: %w", err)
 	}
 
-	// Create virtual filesystem from input reader.
-	fs, err := targzfs.FromReader(reader)
+	// Create output writer
+	writer, err := t.OutputWriter(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to create archive filesystem: %w", err)
+		return fmt.Errorf("unable to create output writer: %w", err)
 	}
 
-	// Dump the filesystem to disk
-	if err := fsutil.Dump(fs, t.OutputPath); err != nil {
-		return fmt.Errorf("unable to dump archive to disk: %w", err)
+	// Write rendered content
+	if err := json.NewEncoder(writer).Encode(values); err != nil {
+		return fmt.Errorf("unable to dump values as JSON: %w", err)
 	}
 
-	// No error
 	return nil
 }
-
-// -----------------------------------------------------------------------------

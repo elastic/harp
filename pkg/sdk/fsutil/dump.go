@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package vfs
+package fsutil
 
 import (
 	"errors"
@@ -67,7 +67,7 @@ func Dump(srcFs fs.FS, outPath string) error {
 			return fmt.Errorf("unable to open source file: %w", err)
 		}
 
-		log.Bg().Debug("Decompress file ...", zap.String("file", path))
+		log.Bg().Debug("Copy file ...", zap.String("file", path))
 
 		// Open the target file
 		if _, err := io.Copy(targetFile, srcFile); err != nil {
