@@ -18,26 +18,26 @@
 package cmd
 
 import (
-	"encoding/json"
-
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	tplcmdutil "github.com/elastic/harp/pkg/template/cmdutil"
+	"github.com/elastic/harp/pkg/tasks/template"
 )
+
+type valuesParams struct {
+	OutputPath   string
+	ValueFiles   []string
+	Values       []string
+	StringValues []string
+	FileValues   []string
+}
 
 // -----------------------------------------------------------------------------
 
 var valuesCmd = func() *cobra.Command {
-	var (
-		outputPath   string
-		valueFiles   []string
-		values       []string
-		stringValues []string
-		fileValues   []string
-	)
+	params := &valuesParams{}
 
 	cmd := &cobra.Command{
 		Use:     "values",
@@ -48,37 +48,28 @@ var valuesCmd = func() *cobra.Command {
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-values", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
-			// Load values
-			valueOpts := tplcmdutil.ValueOptions{
-				ValueFiles:   valueFiles,
-				Values:       values,
-				StringValues: stringValues,
-				FileValues:   fileValues,
-			}
-			values, err := valueOpts.MergeValues()
-			if err != nil {
-				log.For(ctx).Fatal("unable to process values", zap.Error(err))
+			// Prepare task
+			t := &template.ValueTask{
+				OutputWriter: cmdutil.FileWriter(params.OutputPath),
+				ValueFiles:   params.ValueFiles,
+				Values:       params.Values,
+				StringValues: params.StringValues,
+				FileValues:   params.FileValues,
 			}
 
-			// Create output writer
-			writer, err := cmdutil.Writer(outputPath)
-			if err != nil {
-				log.For(ctx).Fatal("unable to create output writer", zap.Error(err), zap.String("path", outputPath))
-			}
-
-			// Write rendered content
-			if err := json.NewEncoder(writer).Encode(values); err != nil {
-				log.For(ctx).Fatal("unable to dump values as JSON", zap.Error(err), zap.String("path", outputPath))
+			// Run the task
+			if err := t.Run(ctx); err != nil {
+				log.For(ctx).Fatal("unable to execute task", zap.Error(err))
 			}
 		},
 	}
 
 	// Parameters
-	cmd.Flags().StringVar(&outputPath, "out", "", "Output file ('-' for stdout or a filename)")
-	cmd.Flags().StringArrayVarP(&valueFiles, "values", "f", []string{}, "Specifies value files to load. Use <path>:<type>[:<prefix>] to override type detection (json,yaml,xml,hocon,toml)")
-	cmd.Flags().StringArrayVar(&values, "set", []string{}, "Specifies value (k=v)")
-	cmd.Flags().StringArrayVar(&stringValues, "set-string", []string{}, "Specifies value (k=string)")
-	cmd.Flags().StringArrayVar(&fileValues, "set-file", []string{}, "Specifies value (k=filepath)")
+	cmd.Flags().StringVar(&params.OutputPath, "out", "", "Output file ('-' for stdout or a filename)")
+	cmd.Flags().StringArrayVarP(&params.ValueFiles, "values", "f", []string{}, "Specifies value files to load. Use <path>:<type>[:<prefix>] to override type detection (json,yaml,xml,hocon,toml)")
+	cmd.Flags().StringArrayVar(&params.Values, "set", []string{}, "Specifies value (k=v)")
+	cmd.Flags().StringArrayVar(&params.StringValues, "set-string", []string{}, "Specifies value (k=string)")
+	cmd.Flags().StringArrayVar(&params.FileValues, "set-file", []string{}, "Specifies value (k=filepath)")
 
 	return cmd
 }

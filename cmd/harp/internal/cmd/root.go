@@ -67,6 +67,7 @@ var mainCmd = func() *cobra.Command {
 	cmd.AddCommand(csoCmd())
 
 	cmd.AddCommand(templateCmd())
+	cmd.AddCommand(renderCmd())
 	cmd.AddCommand(valuesCmd())
 
 	cmd.AddCommand(fromCmd())

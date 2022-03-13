@@ -120,7 +120,7 @@ func ExtractImage(store StoreGetter) (*Image, error) {
 	for _, layerName := range cfg.Containers() {
 		c, err := getSealedContainer(store, layerName)
 		if err != nil {
-			return nil, fmt.Errorf("unbale to retrieve container from crate: %w", err)
+			return nil, fmt.Errorf("unable to retrieve container from crate: %w", err)
 		}
 
 		// Add to containers
@@ -135,7 +135,7 @@ func ExtractImage(store StoreGetter) (*Image, error) {
 	for _, layerName := range cfg.Templates() {
 		c, err := getTemplateArchive(store, layerName)
 		if err != nil {
-			return nil, fmt.Errorf("unbale to retrieve archive from crate: %w", err)
+			return nil, fmt.Errorf("unable to retrieve archive from crate: %w", err)
 		}
 
 		// Add to containers

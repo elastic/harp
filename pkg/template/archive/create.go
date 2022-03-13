@@ -110,12 +110,6 @@ func Create(fileSystem fs.FS, w io.Writer, opts ...CreateOption) error {
 			return nil
 		}
 
-		// Ignore non regular files
-		if !dirEntry.Type().IsRegular() {
-			log.Bg().Debug("ignoring irregular file ...", zap.String("file", file))
-			return nil
-		}
-
 		// Process inclusions
 		keep := false
 		for _, f := range includes {
@@ -150,6 +144,9 @@ func Create(fileSystem fs.FS, w io.Writer, opts ...CreateOption) error {
 
 		// must provide real name
 		header.Name = file
+		header.Size = fi.Size()
+		header.Mode = int64(fi.Mode())
+		header.ModTime = fi.ModTime()
 
 		// write header
 		if err := tw.WriteHeader(header); err != nil {

@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package vfs
+package targzfs
 
 import (
 	"archive/tar"
@@ -26,22 +26,24 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 )
 
-var (
-	// Block decompression if the TAR archive is larger than 25MB.
-	maxDecompressedSize = int64(25 * 1024 * 1024)
-	// Block decompression if the archive has more than 10k files.
-	maxFileCount = 10000
-)
+// FromFile creates an archive filesystem from a filename.
+func FromFile(name string) (fs.FS, error) {
+	// Open the target file
+	fn, err := os.Open(name)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open archive %q: %w", name, err)
+	}
 
-type tarGzFs struct {
-	files map[string][]byte
+	// Delegate to reader constructor.
+	return FromReader(fn)
 }
 
-// FromArchive exposes the contents of the given reader (which is a .tar.gz file)
+// FromReader exposes the contents of the given reader (which is a .tar.gz file)
 // as an fs.FS.
-func FromArchive(r io.Reader) (fs.FS, error) {
+func FromReader(r io.Reader) (fs.FS, error) {
 	gz, err := gzip.NewReader(r)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open .tar.gz file: %w", err)
@@ -82,8 +84,12 @@ func FromArchive(r io.Reader) (fs.FS, error) {
 	tarReader := tar.NewReader(bytes.NewBuffer(tarContents.Bytes()))
 
 	// Prepare in-memory filesystem.
-	var ret tarGzFs
-	ret.files = make(map[string][]byte)
+	ret := &tarGzFs{
+		files:       make(map[string]*tarEntry),
+		rootEntries: make([]fs.DirEntry, 0, 10),
+		rootEntry:   nil,
+	}
+
 	for {
 		// Iterate on each file entry
 		hdr, err := tarReader.Next()
@@ -93,14 +99,37 @@ func FromArchive(r io.Reader) (fs.FS, error) {
 			return nil, fmt.Errorf("unable to read .tar.gz entry: %w", err)
 		}
 
+		// Clean file path.
+		name := path.Clean(hdr.Name)
+		if name == "." {
+			continue
+		}
+
 		// Load content in memory
 		var fileContents bytes.Buffer
 		if _, err := io.Copy(&fileContents, io.LimitReader(tarReader, maxDecompressedSize)); err != nil {
 			return nil, fmt.Errorf("unable to read .tar.gz entry: %w", err)
 		}
 
-		// Append to in-memory map
-		ret.files[hdr.Name] = fileContents.Bytes()
+		// Register file
+		e := &tarEntry{
+			h:       hdr,
+			b:       fileContents.Bytes(),
+			entries: nil,
+		}
+
+		// Add as file entry
+		ret.files[name] = e
+
+		// Create directories
+		dir := path.Dir(name)
+		if dir == "." {
+			ret.rootEntries = append(ret.rootEntries, e)
+		} else {
+			if parent, ok := ret.files[dir]; ok {
+				parent.entries = append(parent.entries, e)
+			}
+		}
 
 		// Check file count limit
 		if len(ret.files) > maxFileCount {
@@ -109,20 +138,5 @@ func FromArchive(r io.Reader) (fs.FS, error) {
 	}
 
 	// No error
-	return &ret, nil
-}
-
-// Open opens the named file.
-func (gzfs *tarGzFs) Open(name string) (fs.File, error) {
-	contents, ok := gzfs.files[name]
-	if !ok {
-		return nil, os.ErrNotExist
-	}
-
-	// Wrapped file content
-	return &tarGzFile{
-		name:     name,
-		contents: bytes.NewBuffer(contents),
-		size:     int64(len(contents)),
-	}, nil
+	return ret, nil
 }
