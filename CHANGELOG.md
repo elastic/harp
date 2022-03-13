@@ -1,3 +1,12 @@
+## 0.2.10
+
+### 2022-03-13
+
+DIST:
+
+* CI:
+  * fix cosign public key location.
+
 ## 0.2.9
 
 ### 2022-03-13
