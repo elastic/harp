@@ -6,9 +6,8 @@ go 1.17
 replace github.com/denis-tingajkin/go-header => github.com/denis-tingaikin/go-header v0.4.2
 
 require (
-	github.com/CycloneDX/cyclonedx-gomod v1.1.0
-	github.com/chrusty/protoc-gen-jsonschema v0.0.0-20220206194317-7587d72b5b0f
-	github.com/daixiang0/gci v0.3.1-0.20220208004058-76d765e3ab48
+	github.com/CycloneDX/cyclonedx-gomod v1.2.0
+	github.com/daixiang0/gci v0.3.2
 	github.com/elastic/go-licenser v0.4.0
 	github.com/fatih/color v1.13.0
 	github.com/frapposelli/wwhrd v0.4.0
@@ -19,7 +18,7 @@ require (
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf v1.27.1
 	gotest.tools/gotestsum v1.7.0
-	mvdan.cc/gofumpt v0.2.1
+	mvdan.cc/gofumpt v0.3.0
 )
 
 require (
@@ -27,14 +26,13 @@ require (
 	github.com/Antonboom/errname v0.1.5 // indirect
 	github.com/Antonboom/nilnil v0.1.0 // indirect
 	github.com/BurntSushi/toml v1.0.0 // indirect
-	github.com/CycloneDX/cyclonedx-go v0.4.0 // indirect
+	github.com/CycloneDX/cyclonedx-go v0.5.0 // indirect
 	github.com/Djarvur/go-err113 v0.0.0-20210108212216-aea10b59be24 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/OpenPeeDeeP/depguard v1.1.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
-	github.com/alecthomas/jsonschema v0.0.0-20210918223802-a1d3f4b43d7b // indirect
 	github.com/alexkohler/prealloc v1.0.0 // indirect
 	github.com/ashanbrown/forbidigo v1.3.0 // indirect
 	github.com/ashanbrown/makezero v1.1.0 // indirect
@@ -57,7 +55,6 @@ require (
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/esimonov/ifshort v1.0.4 // indirect
 	github.com/ettle/strcase v0.1.1 // indirect
-	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/fzipp/gocyclo v0.4.0 // indirect
@@ -101,8 +98,6 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
 	github.com/hhatto/gorst v0.0.0-20181029133204-ca9f730cac5b // indirect
-	github.com/iancoleman/orderedmap v0.2.0 // indirect
-	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
@@ -154,7 +149,7 @@ require (
 	github.com/quasilyte/go-ruleguard v0.3.15 // indirect
 	github.com/quasilyte/gogrep v0.0.0-20220103110004-ffaa07af02e3 // indirect
 	github.com/quasilyte/regex/syntax v0.0.0-20200407221936-30656e2c4a95 // indirect
-	github.com/rs/zerolog v1.26.0 // indirect
+	github.com/rs/zerolog v1.26.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ryancurrah/gomodguard v1.2.3 // indirect
 	github.com/ryanrolds/sqlclosecheck v0.3.0 // indirect
@@ -188,9 +183,6 @@ require (
 	github.com/ultraware/whitespace v0.0.5 // indirect
 	github.com/uudashr/gocognit v1.0.5 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
-	github.com/xeipuuv/gojsonpointer v0.0.0-20190809123943-df4f5c81cb3b // indirect
-	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/yagipy/maintidx v1.0.0 // indirect
 	github.com/yeya24/promlinter v0.1.1-0.20210918184747-d757024714a1 // indirect
 	gitlab.com/bosi/decorder v0.2.1 // indirect
@@ -199,7 +191,7 @@ require (
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220111092808-5a964db01320 // indirect
+	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.9 // indirect

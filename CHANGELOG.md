@@ -1,6 +1,6 @@
 ## 0.2.9
 
-### Not released yet
+### 2022-03-13
 
 BREAKING-CHANGES:
 
@@ -13,8 +13,15 @@ FEATURES:
 * cli/lint:
   * Provide command to Lint YAML/JSON content for `Bundle`, `BundleTemplate`, `RuleSet` and `BundlePatch`. [#138](https://github.com/elastic/harp/pull/138)
 
+* cli/render:
+  * Generate a configuration file system from an archive. [#149](https://github.com/elastic/harp/pull/149)
+
+* cli/template:
+  * Support archive as file loader.
+
 * sdk/api:
   * `Bundle`, `BundleTemplate`, `RuleSet` and `BundlePatch` JSON schema are published. [#138](https://github.com/elastic/harp/pull/138)
+  * JSON Schema for all configuration files. [#145](https://github.com/elastic/harp/pull/145)
 
 * sdk/crate:
   * A crate is an OCI Compatible image which can be pushed to OCI compliant
@@ -23,6 +30,7 @@ FEATURES:
     optionally an archive - [OCI Push](samples/oci-crate/) [#138](https://github.com/elastic/harp/pull/138)
   * This is used to publish the sealed container and the templates used to
     render the final configuration.
+  * `crate copy` is used to retrieve a remote crate from a registry. [#147](https://github.com/elastic/harp/pull/147)
 
 DIST:
 

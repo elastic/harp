@@ -24,7 +24,7 @@ package tools
 
 // tool dependencies
 import (
-	_ "github.com/CycloneDX/cyclonedx-gomod"
+	_ "github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod"
 	_ "github.com/daixiang0/gci"
 	_ "github.com/frapposelli/wwhrd"
 	_ "github.com/golang/mock/mockgen"
@@ -51,4 +51,4 @@ import (
 //go:generate go build -v -o=./bin/protoc-gen-go google.golang.org/protobuf/cmd/protoc-gen-go
 //go:generate go build -v -o=./bin/gotestsum gotest.tools/gotestsum
 //go:generate go build -v -o=./bin/gofumpt mvdan.cc/gofumpt
-//go:generate go build -v -o=./bin/cyclonedx-gomod github.com/CycloneDX/cyclonedx-gomod
+//go:generate go build -v -o=./bin/cyclonedx-gomod github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod
