@@ -24,6 +24,7 @@ Extensible secret management tool
 * [harp lint](harp_lint.md)	 - Configuration linter commands
 * [harp passphrase](harp_passphrase.md)	 - Generate and print a diceware passphrase
 * [harp plugin](harp_plugin.md)	 - Manage harp plugins
+* [harp render](harp_render.md)	 - Render a template filesystem
 * [harp share](harp_share.md)	 - Share secret using Vault Cubbyhole
 * [harp template](harp_template.md)	 - Read a template and execute it
 * [harp to](harp_to.md)	 - Secret container conversion commands
