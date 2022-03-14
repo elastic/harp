@@ -107,7 +107,7 @@ func FromReader(r io.Reader) (fs.FS, error) {
 
 		// Load content in memory
 		var fileContents bytes.Buffer
-		if _, err := io.Copy(&fileContents, io.LimitReader(tarReader, maxDecompressedSize)); err != nil {
+		if _, err := io.CopyN(&fileContents, tarReader, maxDecompressedSize); err != nil {
 			return nil, fmt.Errorf("unable to read .tar.gz entry: %w", err)
 		}
 

@@ -1,6 +1,6 @@
 ARG VERSION=0.2.8
 
-FROM --platform=${BUILDPLATFORM} alpine:3 as downloader
+FROM alpine:3 as downloader
 
 ARG VERSION
 ARG TARGETPLATFORM
@@ -15,7 +15,6 @@ RUN \
     "linux/amd64") DOWNLOAD_ARCH="linux-amd64"  ;; \
     "linux/arm64") DOWNLOAD_ARCH="linux-arm64"  ;; \
   esac && \
-  apk update --no-cache && \
   apk add --no-cache curl upx && \
   curl -sLO https://github.com/elastic/harp/releases/download/v${VERSION}/harp-${DOWNLOAD_ARCH}.tar.gz && \
   curl -sLO https://github.com/elastic/harp/releases/download/v${VERSION}/harp-${DOWNLOAD_ARCH}.tar.gz.sig && \
@@ -31,7 +30,6 @@ FROM alpine:3
 ARG VERSION
 
 RUN apk update --no-cache && \
-    apk upgrade --no-cache && \
     apk add --no-cache ca-certificates && \
     rm -rf /var/cache/apk/*
 

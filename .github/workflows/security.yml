@@ -16,6 +16,7 @@ permissions:
 jobs:
   vulns:
     name: Nancy scanner
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       -
@@ -38,6 +39,7 @@ jobs:
 
   trivy:
     name: Trivy scanner
+    continue-on-error: true
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -70,6 +72,8 @@ jobs:
 
   snyk:
     name: Snyk scanner
+    continue-on-error: true
+    if: (github.action != 'dependabot[bot]')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -98,3 +102,38 @@ jobs:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: snyk-results.sarif
+
+  semgrep:
+    name: Static analysis (semgrep)
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    if: (github.action != 'dependabot[bot]')
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: read
+
+    steps:
+      -
+        name: Cancel previous workflows
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+      -
+        uses: actions/checkout@v3
+      -
+        uses: returntocorp/semgrep-action@v1
+        with:
+          generateSarif: "1"
+          config: >-
+            p/security-audit
+            p/secrets
+            p/supply-chain
+            p/docker
+            p/golang
+            p/trailofbits
+      -
+        name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: semgrep.sarif

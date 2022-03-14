@@ -225,12 +225,15 @@ func applyPackagePatch(pkg *bundlev1.Package, p *bundlev1.PatchPackage, values m
 		return fmt.Errorf("cannot process nil patch")
 	}
 
-	// Patch convcerns path
+	// Patch concerns path
 	if p.Path != nil {
-		var err error
-		if pkg.Name, err = applyPackagePathPatch(pkg.Name, p.Path, values); err != nil {
+		newPath, err := applyPackagePathPatch(pkg.Name, p.Path, values)
+		if err != nil {
 			return fmt.Errorf("unable to process `%s` name operations: %w", pkg.Name, err)
 		}
+
+		// Update package name
+		pkg.Name = newPath
 	}
 
 	// Patch concerns annotations
@@ -316,20 +319,27 @@ func applySecretPatch(secrets *bundlev1.SecretChain, op *bundlev1.PatchSecret, v
 		if secrets.Data == nil {
 			secrets.Data = make([]*bundlev1.KV, 0)
 		}
-		if secrets.Data, err = updateSecret(secrets.Data, kv); err != nil {
+		updatedData, err := updateSecret(secrets.Data, kv)
+		if err != nil {
 			return fmt.Errorf("unable to uppdate kv from template: %w", err)
 		}
+
+		// Update secret data
+		secrets.Data = updatedData
 	}
 
 	// Check K/V
 	if op.Kv != nil {
-		var err error
 		if secrets.Data == nil {
 			secrets.Data = make([]*bundlev1.KV, 0)
 		}
-		if secrets.Data, err = applySecretKVPatch(secrets.Data, op.Kv, values); err != nil {
+		updatedData, err := applySecretKVPatch(secrets.Data, op.Kv, values)
+		if err != nil {
 			return fmt.Errorf("unable to process kv: %w", err)
 		}
+
+		// Update secret data
+		secrets.Data = updatedData
 	}
 
 	// No error

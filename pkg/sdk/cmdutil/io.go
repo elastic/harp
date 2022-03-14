@@ -140,7 +140,7 @@ func NewTimeoutReader(reader io.Reader, timeout time.Duration) io.Reader {
 
 // Read implements io.Reader interface.
 func (r *TimeoutReader) Read(buf []byte) (n int, err error) {
-	ch := make(chan bool)
+	ch := make(chan bool, 1)
 	n = 0
 	err = nil
 	go func() {

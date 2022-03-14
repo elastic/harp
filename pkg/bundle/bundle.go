@@ -32,12 +32,12 @@ import (
 
 // Annotate a bundle object.
 func Annotate(obj AnnotationOwner, key, value string) {
-	updateStringMap(obj, obj.GetAnnotations(), "Annotations", key, value)
+	updateAnnotations(obj, obj.GetAnnotations(), key, value)
 }
 
 // Labelize a bundle object.
 func Labelize(obj LabelOwner, key, value string) {
-	updateStringMap(obj, obj.GetLabels(), "Labels", key, value)
+	updateLabels(obj, obj.GetLabels(), key, value)
 }
 
 // Tree returns a merkle tree based on secrets hierarchy
@@ -138,7 +138,7 @@ func SecretReader(b *bundlev1.Bundle) func(path string) (map[string]interface{},
 }
 
 // -----------------------------------------------------------------------------
-func updateStringMap(obj interface{}, m map[string]string, fieldName, key, value string) {
+func updateAnnotations(obj interface{}, m map[string]string, key, value string) {
 	// Check allocation
 	if m == nil {
 		m = map[string]string{}
@@ -154,5 +154,32 @@ func updateStringMap(obj interface{}, m map[string]string, fieldName, key, value
 
 	// Reaffect map to owner
 	// Really not fan of this ... but protobuf doesn't generate setters for go
-	reflect.ValueOf(obj).Elem().FieldByName(fieldName).Set(reflect.ValueOf(m))
+	mv := reflect.ValueOf(m)
+	f := reflect.ValueOf(obj).Elem().FieldByName("Annotations")
+	if f.IsValid() && f.CanSet() && f.Kind() == mv.Kind() {
+		f.Set(mv)
+	}
+}
+
+func updateLabels(obj interface{}, m map[string]string, key, value string) {
+	// Check allocation
+	if m == nil {
+		m = map[string]string{}
+	}
+
+	// Check if map key is already assigned
+	if _, ok := m[key]; ok {
+		return
+	}
+
+	// Assign value
+	m[key] = value
+
+	// Reaffect map to owner
+	// Really not fan of this ... but protobuf doesn't generate setters for go
+	mv := reflect.ValueOf(m)
+	f := reflect.ValueOf(obj).Elem().FieldByName("Labels")
+	if f.IsValid() && f.CanSet() && f.Kind() == mv.Kind() {
+		f.Set(mv)
+	}
 }
