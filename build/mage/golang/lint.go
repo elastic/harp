@@ -27,12 +27,6 @@ import (
 // Lint all source code.
 func Lint(basePath string) func() error {
 	return func() error {
-		// Don't use golangci with go 1.18.
-		if Is("~1.18") {
-			color.Cyan("## Lint go code (temporary disabled - golangci hangs with go 1.18)")
-			return nil
-		}
-
 		color.Cyan("## Lint go code")
 		return sh.RunV("golangci-lint", "run", "-c", filepath.Clean(filepath.Join(basePath, ".golangci.yml")))
 	}

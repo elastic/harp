@@ -195,7 +195,7 @@ linters:
     - funlen
     # - gochecknoinits
     - goconst
-    - gocritic
+    # - gocritic - no go 1.18 support
     - gocyclo
     - gofmt
     - goheader

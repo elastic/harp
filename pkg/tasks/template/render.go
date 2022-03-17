@@ -69,9 +69,7 @@ func (t *RenderTask) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to drain input template reader: %w", err)
 	}
 
-	var (
-		fileRootFS fs.FS
-	)
+	var fileRootFS fs.FS
 	if t.RootPath != "" {
 		var errRootFS error
 		fileRootFS, errRootFS = fsutil.From(t.RootPath)
