@@ -58,8 +58,8 @@ jobs:
       fail-fast: true
       matrix:
         go-version:
+          - "1.17"
           - "1.18"
-          - "1.18.0-rc.1"
     runs-on: ubuntu-latest
     needs: [golangci-lint, go-mod]
     steps:
