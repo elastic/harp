@@ -75,7 +75,7 @@ require (
 	github.com/ulikunitz/xz v0.5.10
 	github.com/zclconf/go-cty v1.10.0
 	gitlab.com/NebulousLabs/merkletree v0.0.0-20200118113624-07fbf710afc4
-	go.etcd.io/etcd/client/v3 v3.5.2
+	go.etcd.io/etcd/client/v3 v3.5.3
 	go.step.sm/crypto v0.16.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
@@ -187,8 +187,8 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.etcd.io/etcd/api/v3 v3.5.2 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.5.2 // indirect
+	go.etcd.io/etcd/api/v3 v3.5.3 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.5.3 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/net v0.0.0-20220107192237-5cfca573fb4d // indirect
