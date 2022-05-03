@@ -40,26 +40,26 @@ class {{ .Formula }} < Formula
   stable do
     on_macos do
       if Hardware::CPU.intel?
-        url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-darwin-amd64-{{ .Release }}.tar.xz"
-        sha256 "{{ sha256file (printf "dist/%s-darwin-amd64-%s.tar.xz" .Bin .Release) }}"
+        url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-darwin-amd64-{{ .Release }}.tar.gz"
+        sha256 "{{ sha256file (printf "dist/%s-darwin-amd64-%s.tar.gz" .Bin .Release) }}"
       elsif Hardware::CPU.arm?
-        url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-darwin-arm64-{{ .Release }}.tar.xz"
-        sha256 "{{ sha256file (printf "dist/%s-darwin-arm64-%s.tar.xz" .Bin .Release) }}"
+        url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-darwin-arm64-{{ .Release }}.tar.gz"
+        sha256 "{{ sha256file (printf "dist/%s-darwin-arm64-%s.tar.gz" .Bin .Release) }}"
       end
     end
     on_linux do
       if Hardware::CPU.intel?
         if Hardware::CPU.is_64_bit?
-          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-amd64-{{ .Release }}.tar.xz"
-          sha256 "{{ sha256file (printf "dist/%s-linux-amd64-%s.tar.xz" .Bin .Release) }}"
+          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-amd64-{{ .Release }}.tar.gz"
+          sha256 "{{ sha256file (printf "dist/%s-linux-amd64-%s.tar.gz" .Bin .Release) }}"
         end
       elsif Hardware::CPU.arm?
         if Hardware::CPU.is_64_bit?
-          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-arm64-{{ .Release }}.tar.xz"
-          sha256 "{{ sha256file (printf "dist/%s-linux-arm64-%s.tar.xz" .Bin .Release) }}"
+          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-arm64-{{ .Release }}.tar.gz"
+          sha256 "{{ sha256file (printf "dist/%s-linux-arm64-%s.tar.gz" .Bin .Release) }}"
         else
-          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-arm7-{{ .Release }}.tar.xz"
-          sha256 "{{ sha256file (printf "dist/%s-linux-arm7-%s.tar.xz" .Bin .Release) }}"
+          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-arm7-{{ .Release }}.tar.gz"
+          sha256 "{{ sha256file (printf "dist/%s-linux-arm7-%s.tar.gz" .Bin .Release) }}"
         end
       end
     end
