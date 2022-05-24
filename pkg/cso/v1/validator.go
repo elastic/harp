@@ -280,7 +280,7 @@ func validateInfra(parts []string) error {
 	}
 
 	// Validate region if not local provider and not global region
-	if parts[0] != reservedLocalProvider && parts[2] != reservedGlobalRegion && !r.Contains(parts[2]) {
+	if parts[0] != reservedLocalProvider && parts[2] != reservedGlobalRegion && !r.ContainsString(parts[2]) {
 		return fmt.Errorf("invalid region (%s) for account (%s) on cloud provider (%s)", parts[2], parts[1], parts[0])
 	}
 
@@ -316,7 +316,7 @@ func validatePlatform(parts []string) error {
 	if r != reservedGlobalRegion {
 		regionFound := false
 		for _, regions := range cloudProviderRegions {
-			if regions.Contains(r) {
+			if regions.Contains(r) || regions.ContainsString(r) {
 				regionFound = true
 				break
 			}
