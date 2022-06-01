@@ -28,7 +28,7 @@ require (
 	github.com/alessio/shellescape v1.4.1
 	github.com/awnumar/memguard v0.22.2
 	github.com/basgys/goxml2json v1.1.0
-	github.com/cloudflare/tableflip v1.2.2
+	github.com/cloudflare/tableflip v1.2.3
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 	github.com/fatih/color v1.13.0
