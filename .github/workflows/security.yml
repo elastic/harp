@@ -70,38 +70,38 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-  snyk:
-    name: Snyk scanner
-    continue-on-error: true
-    if: (github.action != 'dependabot[bot]')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      pull-requests: read
-      actions: write
-
-    steps:
-      -
-        name: Cancel previous workflows
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
-      -
-        uses: actions/checkout@v3
-      -
-        name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/golang@master
-        continue-on-error: true # To make sure that SARIF upload gets called
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --sarif-file-output=snyk-results.sarif
-      -
-        name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk-results.sarif
+#  snyk:
+#    name: Snyk scanner
+#    continue-on-error: true
+#    if: (github.action != 'dependabot[bot]')
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+#      security-events: write
+#      pull-requests: read
+#      actions: write
+#
+#    steps:
+#      -
+#        name: Cancel previous workflows
+#        uses: styfle/cancel-workflow-action@0.9.1
+#        with:
+#          access_token: ${{ secrets.GITHUB_TOKEN }}
+#      -
+#        uses: actions/checkout@v3
+#      -
+#        name: Run Snyk to check for vulnerabilities
+#        uses: snyk/actions/golang@master
+#        continue-on-error: true # To make sure that SARIF upload gets called
+#        env:
+#          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#        with:
+#          args: --sarif-file-output=snyk-results.sarif
+#      -
+#        name: Upload result to GitHub Code Scanning
+#        uses: github/codeql-action/upload-sarif@v2
+#        with:
+#          sarif_file: snyk-results.sarif
 
   semgrep:
     name: Static analysis (semgrep)
