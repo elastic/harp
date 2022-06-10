@@ -24,6 +24,17 @@ type StringArray []string
 
 // -----------------------------------------------------------------------------
 
+// ContainsString checks if a strings is in in StringArray
+func (s StringArray) ContainsString(item string) bool {
+	for _, v := range s {
+		if strings.Contains(item, v) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Contains checks if item is in collection
 func (s StringArray) Contains(item string) bool {
 	for _, v := range s {
