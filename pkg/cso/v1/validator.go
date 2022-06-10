@@ -235,16 +235,33 @@ var cloudProviderRegions = map[string]types.StringArray{
 	},
 	"ibm": {
 		"au-syd",
+		"br-sao",
+		"brazil",
+		"ca-tor",
+		"chennai",
+		"dal",
+		"dallas",
+		"eu-de",
+		"eu-gb",
+		"fra",
+		"frankfurt",
 		"in-che",
 		"jp-osa",
 		"jp-tok",
 		"kr-seo",
-		"eu-de",
-		"eu-gb",
-		"ca-tor",
-		"us-south",
+		"lon",
+		"london",
+		"osaka",
+		"seoul",
+		"syd",
+		"sydney",
+		"tok",
+		"tokyo",
+		"toronto",
 		"us-east",
-		"br-sao",
+		"us-south",
+		"washingtondc",
+		"wdc",
 	},
 }
 
@@ -269,7 +286,7 @@ func validateInfra(parts []string) error {
 	}
 
 	// Validate region if not local provider and not global region
-	if parts[0] != reservedLocalProvider && parts[2] != reservedGlobalRegion && !r.Contains(parts[2]) {
+	if parts[0] != reservedLocalProvider && parts[2] != reservedGlobalRegion && !r.ContainsString(parts[2]) {
 		return fmt.Errorf("invalid region (%s) for account (%s) on cloud provider (%s)", parts[2], parts[1], parts[0])
 	}
 
@@ -305,7 +322,7 @@ func validatePlatform(parts []string) error {
 	if r != reservedGlobalRegion {
 		regionFound := false
 		for _, regions := range cloudProviderRegions {
-			if regions.Contains(r) {
+			if regions.Contains(r) || regions.ContainsString(r) {
 				regionFound = true
 				break
 			}
