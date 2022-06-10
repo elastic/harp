@@ -9,7 +9,7 @@ replace (
 
 // Nancy findings
 require (
-	github.com/containerd/containerd v1.6.0 // indirect
+	github.com/containerd/containerd v1.6.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 )
 
@@ -55,7 +55,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jmespath/go-jmespath v0.4.0
-	github.com/klauspost/compress v1.15.1
+	github.com/klauspost/compress v1.15.6
 	github.com/magefile/mage v1.13.0
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/miscreant/miscreant.go v0.0.0-20200214223636-26d376326b75
@@ -88,7 +88,7 @@ require (
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	oras.land/oras-go v1.1.0
+	oras.land/oras-go v1.1.1
 	sigs.k8s.io/yaml v1.3.0
 	zntr.io/paseto v1.1.0
 )
