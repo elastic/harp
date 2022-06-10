@@ -48,7 +48,6 @@ func loadFromFile(t testing.TB, filename string) []byte {
 }
 
 func FuzzBundleLoader(f *testing.F) {
-	f.Add(loadFromFile(f, "../../fixtures/template/valid/blank.yaml"))
 	f.Add(loadFromFile(f, "../../../samples/customer-bundle/spec.yaml"))
 
 	f.Fuzz(func(t *testing.T, in []byte) {
