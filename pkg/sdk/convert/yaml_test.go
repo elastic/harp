@@ -20,7 +20,39 @@ package convert
 import (
 	"reflect"
 	"testing"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	"github.com/google/go-cmp/cmp"
 )
+
+func Test_PBtoYAML(t *testing.T) {
+	spec := &bundlev1.Patch{
+		ApiVersion: "harp.elastic.co/v1",
+		Kind:       "BundlePatch",
+		Meta: &bundlev1.PatchMeta{
+			Name: "test-patch",
+		},
+		Spec: &bundlev1.PatchSpec{
+			Rules: []*bundlev1.PatchRule{
+				{
+					Package:  &bundlev1.PatchPackage{},
+					Selector: &bundlev1.PatchSelector{},
+				},
+			},
+		},
+	}
+
+	expectedOutput := []byte("apiVersion: harp.elastic.co/v1\nkind: BundlePatch\nmeta:\n  name: test-patch\nspec:\n  rules:\n  - package: {}\n    selector: {}\n")
+
+	out, err := PBtoYAML(spec)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if report := cmp.Diff(string(out), string(expectedOutput)); report != "" {
+		t.Errorf("unexpected conversion output:\n%v", report)
+	}
+}
 
 func Test_convertMapStringInterface(t *testing.T) {
 	type args struct {
