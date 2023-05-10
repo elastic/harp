@@ -25,6 +25,8 @@ import (
 	"io"
 	"reflect"
 
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"sigs.k8s.io/yaml"
 
 	"github.com/elastic/harp/pkg/sdk/types"
@@ -45,6 +47,35 @@ func YAMLtoJSON(r io.Reader) (io.Reader, error) {
 
 	// No error
 	return jsonReader, nil
+}
+
+// PBtoYAML converts a protobuf object to a YAML representation
+func PBtoYAML(msg proto.Message) ([]byte, error) {
+	// Check arguments
+	if types.IsNil(msg) {
+		return nil, fmt.Errorf("msg is nil")
+	}
+
+	// Encode protbuf message as JSON
+	pb, err := protojson.Marshal(msg)
+	if err != nil {
+		return nil, fmt.Errorf("unable to encode protbuf message to JSON: %w", err)
+	}
+
+	// Decode input as JSON
+	var jsonObj interface{}
+	if errDecode := yaml.Unmarshal(pb, &jsonObj); errDecode != nil {
+		return nil, fmt.Errorf("unable to decode JSON input: %w", errDecode)
+	}
+
+	// Marshal as YAML
+	out, errEncode := yaml.Marshal(jsonObj)
+	if errEncode != nil {
+		return nil, fmt.Errorf("unable to produce YAML output: %w", errEncode)
+	}
+
+	// No error
+	return out, nil
 }
 
 // -----------------------------------------------------------------------------
