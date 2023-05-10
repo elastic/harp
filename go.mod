@@ -1,6 +1,6 @@
 module github.com/elastic/harp
 
-go 1.17
+go 1.19
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.0
