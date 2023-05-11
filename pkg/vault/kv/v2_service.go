@@ -43,7 +43,7 @@ func V2(l logical.Logical, mountPath string, customMetadataEnabled bool) Service
 	}
 }
 
-// -----------------------------------------------------------------------------
+//nolint:revive
 func (s *kvv2Backend) List(ctx context.Context, path string) ([]string, error) {
 	// Check arguments
 	secretPath := vpath.SanitizePath(path)

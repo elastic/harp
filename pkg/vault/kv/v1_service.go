@@ -38,7 +38,7 @@ func V1(l logical.Logical, mountPath string) Service {
 	}
 }
 
-// -----------------------------------------------------------------------------
+//nolint:revive
 func (s *kvv1Backend) List(ctx context.Context, path string) ([]string, error) {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
@@ -81,6 +81,7 @@ func (s *kvv1Backend) List(ctx context.Context, path string) ([]string, error) {
 	return out, nil
 }
 
+//nolint:revive
 func (s *kvv1Backend) Read(ctx context.Context, path string) (SecretData, SecretMetadata, error) {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
@@ -104,6 +105,7 @@ func (s *kvv1Backend) Read(ctx context.Context, path string) (SecretData, Secret
 	return secret.Data, nil, err
 }
 
+//nolint:revive
 func (s *kvv1Backend) ReadVersion(ctx context.Context, path string, version uint32) (SecretData, SecretMetadata, error) {
 	return s.Read(ctx, path)
 }

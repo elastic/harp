@@ -1073,6 +1073,7 @@ var (
 		nil,                              // 14: harp.bundle.v1.PatchOperation.ReplaceKeysEntry
 	}
 )
+
 var file_harp_bundle_v1_patch_proto_depIdxs = []int32{
 	1,  // 0: harp.bundle.v1.Patch.meta:type_name -> harp.bundle.v1.PatchMeta
 	2,  // 1: harp.bundle.v1.Patch.spec:type_name -> harp.bundle.v1.PatchSpec

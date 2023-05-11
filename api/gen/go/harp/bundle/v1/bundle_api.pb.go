@@ -217,6 +217,7 @@ var (
 		(*GetSecretResponse)(nil), // 1: harp.bundle.v1.GetSecretResponse
 	}
 )
+
 var file_harp_bundle_v1_bundle_api_proto_depIdxs = []int32{
 	0, // 0: harp.bundle.v1.BundleAPI.GetSecret:input_type -> harp.bundle.v1.GetSecretRequest
 	1, // 1: harp.bundle.v1.BundleAPI.GetSecret:output_type -> harp.bundle.v1.GetSecretResponse

@@ -317,6 +317,7 @@ var (
 		(*Container)(nil), // 2: harp.container.v1.Container
 	}
 )
+
 var file_harp_container_v1_container_proto_depIdxs = []int32{
 	1, // 0: harp.container.v1.Header.recipients:type_name -> harp.container.v1.Recipient
 	0, // 1: harp.container.v1.Container.headers:type_name -> harp.container.v1.Header

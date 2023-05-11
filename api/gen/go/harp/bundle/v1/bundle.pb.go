@@ -620,6 +620,7 @@ var (
 		(*anypb.Any)(nil),              // 17: google.protobuf.Any
 	}
 )
+
 var file_harp_bundle_v1_bundle_proto_depIdxs = []int32{
 	4,  // 0: harp.bundle.v1.Bundle.labels:type_name -> harp.bundle.v1.Bundle.LabelsEntry
 	5,  // 1: harp.bundle.v1.Bundle.annotations:type_name -> harp.bundle.v1.Bundle.AnnotationsEntry

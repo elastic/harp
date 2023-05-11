@@ -1216,6 +1216,7 @@ var (
 		nil,                             // 15: harp.bundle.v1.SecretSuffix.AnnotationsEntry
 	}
 )
+
 var file_harp_bundle_v1_template_proto_depIdxs = []int32{
 	1,  // 0: harp.bundle.v1.Template.meta:type_name -> harp.bundle.v1.TemplateMeta
 	2,  // 1: harp.bundle.v1.Template.spec:type_name -> harp.bundle.v1.TemplateSpec

@@ -20,7 +20,6 @@ package selector
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/gobwas/glob"
 
@@ -75,7 +74,7 @@ func (s *matchPath) IsSatisfiedBy(object interface{}) bool {
 	if p, ok := object.(*bundlev1.Package); ok {
 		switch {
 		case s.strict != "":
-			return strings.Compare(p.Name, s.strict) == 0
+			return p.Name == s.strict
 		case s.regex != nil:
 			return s.regex.MatchString(p.Name)
 		case s.g != nil:

@@ -37,6 +37,8 @@ func ParseFile(filename string) (*Config, error) {
 // does not block forever.
 //
 // format is either "hcl" or "json"
+//
+//nolint:revive
 func Parse(r io.Reader, filename, format string) (*Config, error) {
 	src, err := io.ReadAll(r)
 	if err != nil {

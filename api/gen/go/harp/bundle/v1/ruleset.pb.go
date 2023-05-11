@@ -394,6 +394,7 @@ var (
 		(*Rule)(nil),        // 3: harp.bundle.v1.Rule
 	}
 )
+
 var file_harp_bundle_v1_ruleset_proto_depIdxs = []int32{
 	1, // 0: harp.bundle.v1.RuleSet.meta:type_name -> harp.bundle.v1.RuleSetMeta
 	2, // 1: harp.bundle.v1.RuleSet.spec:type_name -> harp.bundle.v1.RuleSetSpec

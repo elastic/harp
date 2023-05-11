@@ -984,6 +984,7 @@ var (
 		(*Artifact)(nil),       // 9: cso.v1.Artifact
 	}
 )
+
 var file_cso_v1_secret_proto_depIdxs = []int32{
 	0,  // 0: cso.v1.Secret.ring_level:type_name -> cso.v1.RingLevel
 	3,  // 1: cso.v1.Secret.value:type_name -> cso.v1.Value

@@ -28,10 +28,6 @@ import (
 	_ "crypto/sha256"
 	_ "crypto/sha512"
 
-	_ "golang.org/x/crypto/blake2b"
-	_ "golang.org/x/crypto/blake2s"
-	_ "golang.org/x/crypto/sha3"
-
 	// Register encryption transformers
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/age"
@@ -44,4 +40,8 @@ import (
 	_ "github.com/elastic/harp/pkg/sdk/value/signature/paseto"
 	_ "github.com/elastic/harp/pkg/sdk/value/signature/raw"
 	_ "github.com/elastic/harp/pkg/vault"
+
+	_ "golang.org/x/crypto/blake2b"
+	_ "golang.org/x/crypto/blake2s"
+	_ "golang.org/x/crypto/sha3"
 )
