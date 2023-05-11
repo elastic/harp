@@ -49,6 +49,7 @@ type SealTask struct {
 }
 
 // Run the task.
+//
 //nolint:funlen,gocyclo // to refactor
 func (t *SealTask) Run(ctx context.Context) error {
 	// Check arguments

@@ -63,6 +63,7 @@ type exporter struct {
 }
 
 // Run the implemented operation
+//
 //nolint:funlen,gocognit,gocyclo // refactor
 func (op *exporter) Run(ctx context.Context) error {
 	// Initialize sub context

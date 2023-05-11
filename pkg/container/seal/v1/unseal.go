@@ -33,6 +33,7 @@ import (
 )
 
 // Unseal a sealed container with the given identity
+//
 //nolint:gocyclo,funlen // To refactor
 func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (*containerv1.Container, error) {
 	// Check parameters

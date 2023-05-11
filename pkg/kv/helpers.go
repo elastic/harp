@@ -6,7 +6,7 @@
 // not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -28,8 +28,7 @@ func CreateEndpoints(addrs []string, scheme string) (entries []string) {
 
 // Normalize the key for each store to the form:
 //
-//     path/to/key
-//
+//	path/to/key
 func Normalize(key string) string {
 	return "/" + join(SplitKey(key))
 }
@@ -37,8 +36,7 @@ func Normalize(key string) string {
 // GetDirectory gets the full directory part of
 // the key to the form:
 //
-//     path/to/
-//
+//	path/to/
 func GetDirectory(key string) string {
 	parts := SplitKey(key)
 	parts = parts[:len(parts)-1]

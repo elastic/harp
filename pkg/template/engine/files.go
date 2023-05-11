@@ -96,7 +96,8 @@ func (f Files) Glob(pattern string) Files {
 // The output will not be indented, so you will want to pipe this to the
 // 'indent' template function.
 //
-//   data:
+//	data:
+//
 // {{ .Files.Glob("config/**").AsConfig() | toYaml | indent 4 }}
 func (f Files) AsConfig() map[string]string {
 	if f == nil {
@@ -121,7 +122,8 @@ func (f Files) AsConfig() map[string]string {
 // The output will not be indented, so you will want to pipe this to the
 // 'indent' template function.
 //
-//   data:
+//	data:
+//
 // {{ .Files.Glob("secrets/*").AsSecrets() | toYaml }}
 func (f Files) AsSecrets() map[string]string {
 	if f == nil {

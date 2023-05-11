@@ -32,6 +32,7 @@ import (
 )
 
 // BugReport generates a bug report body
+//
 //nolint:godox // Bug not allow in documentation
 func BugReport() string {
 	var buf bytes.Buffer

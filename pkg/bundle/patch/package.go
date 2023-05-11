@@ -80,6 +80,7 @@ func Checksum(spec *bundlev1.Patch) (string, error) {
 }
 
 // Apply given patch to the given bundle.
+//
 //nolint:interfacer,gocyclo,funlen // Explicit type restriction
 func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface{}, o ...OptionFunc) (*bundlev1.Bundle, error) {
 	// Validate spec
