@@ -148,8 +148,7 @@ func (f *tarFile) Sys() interface{} {
 
 // -----------------------------------------------------------------------------
 
-type rootFile struct {
-}
+type rootFile struct{}
 
 var _ fs.File = (*rootFile)(nil)
 

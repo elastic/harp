@@ -968,20 +968,22 @@ func file_cso_v1_secret_proto_rawDescGZIP() []byte {
 	return file_cso_v1_secret_proto_rawDescData
 }
 
-var file_cso_v1_secret_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_cso_v1_secret_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
-var file_cso_v1_secret_proto_goTypes = []interface{}{
-	(RingLevel)(0),         // 0: cso.v1.RingLevel
-	(QualityLevel)(0),      // 1: cso.v1.QualityLevel
-	(*Secret)(nil),         // 2: cso.v1.Secret
-	(*Value)(nil),          // 3: cso.v1.Value
-	(*Meta)(nil),           // 4: cso.v1.Meta
-	(*Infrastructure)(nil), // 5: cso.v1.Infrastructure
-	(*Platform)(nil),       // 6: cso.v1.Platform
-	(*Product)(nil),        // 7: cso.v1.Product
-	(*Application)(nil),    // 8: cso.v1.Application
-	(*Artifact)(nil),       // 9: cso.v1.Artifact
-}
+var (
+	file_cso_v1_secret_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+	file_cso_v1_secret_proto_msgTypes  = make([]protoimpl.MessageInfo, 8)
+	file_cso_v1_secret_proto_goTypes   = []interface{}{
+		(RingLevel)(0),         // 0: cso.v1.RingLevel
+		(QualityLevel)(0),      // 1: cso.v1.QualityLevel
+		(*Secret)(nil),         // 2: cso.v1.Secret
+		(*Value)(nil),          // 3: cso.v1.Value
+		(*Meta)(nil),           // 4: cso.v1.Meta
+		(*Infrastructure)(nil), // 5: cso.v1.Infrastructure
+		(*Platform)(nil),       // 6: cso.v1.Platform
+		(*Product)(nil),        // 7: cso.v1.Product
+		(*Application)(nil),    // 8: cso.v1.Application
+		(*Artifact)(nil),       // 9: cso.v1.Artifact
+	}
+)
 var file_cso_v1_secret_proto_depIdxs = []int32{
 	0,  // 0: cso.v1.Secret.ring_level:type_name -> cso.v1.RingLevel
 	3,  // 1: cso.v1.Secret.value:type_name -> cso.v1.Value

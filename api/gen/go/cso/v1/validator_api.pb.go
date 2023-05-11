@@ -174,12 +174,14 @@ func file_cso_v1_validator_api_proto_rawDescGZIP() []byte {
 	return file_cso_v1_validator_api_proto_rawDescData
 }
 
-var file_cso_v1_validator_api_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_cso_v1_validator_api_proto_goTypes = []interface{}{
-	(*ValidateRequest)(nil),  // 0: cso.v1.ValidateRequest
-	(*ValidateResponse)(nil), // 1: cso.v1.ValidateResponse
-	(*Secret)(nil),           // 2: cso.v1.Secret
-}
+var (
+	file_cso_v1_validator_api_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+	file_cso_v1_validator_api_proto_goTypes  = []interface{}{
+		(*ValidateRequest)(nil),  // 0: cso.v1.ValidateRequest
+		(*ValidateResponse)(nil), // 1: cso.v1.ValidateResponse
+		(*Secret)(nil),           // 2: cso.v1.Secret
+	}
+)
 var file_cso_v1_validator_api_proto_depIdxs = []int32{
 	2, // 0: cso.v1.ValidateResponse.secret:type_name -> cso.v1.Secret
 	0, // 1: cso.v1.ValidatorAPI.Validate:input_type -> cso.v1.ValidateRequest

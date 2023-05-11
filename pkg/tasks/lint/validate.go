@@ -46,17 +46,15 @@ type fileSpec struct {
 	Kind       string `json:"kind"`
 }
 
-var (
-	schemaRegistry = map[string]struct {
-		Definition []byte
-		LintFunc   func(io.Reader) ([]gojsonschema.ResultError, error)
-	}{
-		"Bundle":         {Definition: bundle.JSONSchema(), LintFunc: bundle.Lint},
-		"BundlePatch":    {Definition: patch.JSONSchema(), LintFunc: patch.Lint},
-		"RuleSet":        {Definition: ruleset.JSONSchema(), LintFunc: ruleset.Lint},
-		"BundleTemplate": {Definition: template.JSONSchema(), LintFunc: template.Lint},
-	}
-)
+var schemaRegistry = map[string]struct {
+	Definition []byte
+	LintFunc   func(io.Reader) ([]gojsonschema.ResultError, error)
+}{
+	"Bundle":         {Definition: bundle.JSONSchema(), LintFunc: bundle.Lint},
+	"BundlePatch":    {Definition: patch.JSONSchema(), LintFunc: patch.Lint},
+	"RuleSet":        {Definition: ruleset.JSONSchema(), LintFunc: ruleset.Lint},
+	"BundleTemplate": {Definition: template.JSONSchema(), LintFunc: template.Lint},
+}
 
 // Run the task.
 func (t *ValidateTask) Run(ctx context.Context) error {

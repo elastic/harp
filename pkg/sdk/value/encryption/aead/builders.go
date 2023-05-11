@@ -24,13 +24,13 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/crypto/chacha20poly1305"
-
 	miscreant "github.com/miscreant/miscreant.go"
 
 	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
+
+	"golang.org/x/crypto/chacha20poly1305"
 )
 
 var (

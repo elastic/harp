@@ -1053,24 +1053,26 @@ func file_harp_bundle_v1_patch_proto_rawDescGZIP() []byte {
 	return file_harp_bundle_v1_patch_proto_rawDescData
 }
 
-var file_harp_bundle_v1_patch_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
-var file_harp_bundle_v1_patch_proto_goTypes = []interface{}{
-	(*Patch)(nil),                    // 0: harp.bundle.v1.Patch
-	(*PatchMeta)(nil),                // 1: harp.bundle.v1.PatchMeta
-	(*PatchSpec)(nil),                // 2: harp.bundle.v1.PatchSpec
-	(*PatchExecutor)(nil),            // 3: harp.bundle.v1.PatchExecutor
-	(*PatchRule)(nil),                // 4: harp.bundle.v1.PatchRule
-	(*PatchSelector)(nil),            // 5: harp.bundle.v1.PatchSelector
-	(*PatchSelectorMatchPath)(nil),   // 6: harp.bundle.v1.PatchSelectorMatchPath
-	(*PatchSelectorMatchSecret)(nil), // 7: harp.bundle.v1.PatchSelectorMatchSecret
-	(*PatchPackagePath)(nil),         // 8: harp.bundle.v1.PatchPackagePath
-	(*PatchPackage)(nil),             // 9: harp.bundle.v1.PatchPackage
-	(*PatchSecret)(nil),              // 10: harp.bundle.v1.PatchSecret
-	(*PatchOperation)(nil),           // 11: harp.bundle.v1.PatchOperation
-	nil,                              // 12: harp.bundle.v1.PatchOperation.AddEntry
-	nil,                              // 13: harp.bundle.v1.PatchOperation.UpdateEntry
-	nil,                              // 14: harp.bundle.v1.PatchOperation.ReplaceKeysEntry
-}
+var (
+	file_harp_bundle_v1_patch_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+	file_harp_bundle_v1_patch_proto_goTypes  = []interface{}{
+		(*Patch)(nil),                    // 0: harp.bundle.v1.Patch
+		(*PatchMeta)(nil),                // 1: harp.bundle.v1.PatchMeta
+		(*PatchSpec)(nil),                // 2: harp.bundle.v1.PatchSpec
+		(*PatchExecutor)(nil),            // 3: harp.bundle.v1.PatchExecutor
+		(*PatchRule)(nil),                // 4: harp.bundle.v1.PatchRule
+		(*PatchSelector)(nil),            // 5: harp.bundle.v1.PatchSelector
+		(*PatchSelectorMatchPath)(nil),   // 6: harp.bundle.v1.PatchSelectorMatchPath
+		(*PatchSelectorMatchSecret)(nil), // 7: harp.bundle.v1.PatchSelectorMatchSecret
+		(*PatchPackagePath)(nil),         // 8: harp.bundle.v1.PatchPackagePath
+		(*PatchPackage)(nil),             // 9: harp.bundle.v1.PatchPackage
+		(*PatchSecret)(nil),              // 10: harp.bundle.v1.PatchSecret
+		(*PatchOperation)(nil),           // 11: harp.bundle.v1.PatchOperation
+		nil,                              // 12: harp.bundle.v1.PatchOperation.AddEntry
+		nil,                              // 13: harp.bundle.v1.PatchOperation.UpdateEntry
+		nil,                              // 14: harp.bundle.v1.PatchOperation.ReplaceKeysEntry
+	}
+)
 var file_harp_bundle_v1_patch_proto_depIdxs = []int32{
 	1,  // 0: harp.bundle.v1.Patch.meta:type_name -> harp.bundle.v1.PatchMeta
 	2,  // 1: harp.bundle.v1.Patch.spec:type_name -> harp.bundle.v1.PatchSpec

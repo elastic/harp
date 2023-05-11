@@ -28,9 +28,7 @@ import (
 	"github.com/elastic/harp/pkg/sdk/fsutil/targzfs"
 )
 
-var (
-	ErrNotSupported = errors.New("not supported filesystem path")
-)
+var ErrNotSupported = errors.New("not supported filesystem path")
 
 func From(rootPath string) (fs.FS, error) {
 	// Get absolute path

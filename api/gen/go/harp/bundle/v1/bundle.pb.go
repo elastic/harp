@@ -597,27 +597,29 @@ func file_harp_bundle_v1_bundle_proto_rawDescGZIP() []byte {
 	return file_harp_bundle_v1_bundle_proto_rawDescData
 }
 
-var file_harp_bundle_v1_bundle_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
-var file_harp_bundle_v1_bundle_proto_goTypes = []interface{}{
-	(*Bundle)(nil),                 // 0: harp.bundle.v1.Bundle
-	(*Package)(nil),                // 1: harp.bundle.v1.Package
-	(*SecretChain)(nil),            // 2: harp.bundle.v1.SecretChain
-	(*KV)(nil),                     // 3: harp.bundle.v1.KV
-	nil,                            // 4: harp.bundle.v1.Bundle.LabelsEntry
-	nil,                            // 5: harp.bundle.v1.Bundle.AnnotationsEntry
-	nil,                            // 6: harp.bundle.v1.Bundle.UserDataEntry
-	nil,                            // 7: harp.bundle.v1.Package.LabelsEntry
-	nil,                            // 8: harp.bundle.v1.Package.AnnotationsEntry
-	nil,                            // 9: harp.bundle.v1.Package.VersionsEntry
-	nil,                            // 10: harp.bundle.v1.Package.UserDataEntry
-	nil,                            // 11: harp.bundle.v1.SecretChain.LabelsEntry
-	nil,                            // 12: harp.bundle.v1.SecretChain.AnnotationsEntry
-	nil,                            // 13: harp.bundle.v1.SecretChain.UserDataEntry
-	(*Template)(nil),               // 14: harp.bundle.v1.Template
-	(*wrapperspb.BytesValue)(nil),  // 15: google.protobuf.BytesValue
-	(*wrapperspb.UInt32Value)(nil), // 16: google.protobuf.UInt32Value
-	(*anypb.Any)(nil),              // 17: google.protobuf.Any
-}
+var (
+	file_harp_bundle_v1_bundle_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+	file_harp_bundle_v1_bundle_proto_goTypes  = []interface{}{
+		(*Bundle)(nil),                 // 0: harp.bundle.v1.Bundle
+		(*Package)(nil),                // 1: harp.bundle.v1.Package
+		(*SecretChain)(nil),            // 2: harp.bundle.v1.SecretChain
+		(*KV)(nil),                     // 3: harp.bundle.v1.KV
+		nil,                            // 4: harp.bundle.v1.Bundle.LabelsEntry
+		nil,                            // 5: harp.bundle.v1.Bundle.AnnotationsEntry
+		nil,                            // 6: harp.bundle.v1.Bundle.UserDataEntry
+		nil,                            // 7: harp.bundle.v1.Package.LabelsEntry
+		nil,                            // 8: harp.bundle.v1.Package.AnnotationsEntry
+		nil,                            // 9: harp.bundle.v1.Package.VersionsEntry
+		nil,                            // 10: harp.bundle.v1.Package.UserDataEntry
+		nil,                            // 11: harp.bundle.v1.SecretChain.LabelsEntry
+		nil,                            // 12: harp.bundle.v1.SecretChain.AnnotationsEntry
+		nil,                            // 13: harp.bundle.v1.SecretChain.UserDataEntry
+		(*Template)(nil),               // 14: harp.bundle.v1.Template
+		(*wrapperspb.BytesValue)(nil),  // 15: google.protobuf.BytesValue
+		(*wrapperspb.UInt32Value)(nil), // 16: google.protobuf.UInt32Value
+		(*anypb.Any)(nil),              // 17: google.protobuf.Any
+	}
+)
 var file_harp_bundle_v1_bundle_proto_depIdxs = []int32{
 	4,  // 0: harp.bundle.v1.Bundle.labels:type_name -> harp.bundle.v1.Bundle.LabelsEntry
 	5,  // 1: harp.bundle.v1.Bundle.annotations:type_name -> harp.bundle.v1.Bundle.AnnotationsEntry

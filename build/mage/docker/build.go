@@ -23,13 +23,13 @@ import (
 	"strings"
 	"time"
 
-	exec "golang.org/x/sys/execabs"
-
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 
 	"github.com/elastic/harp/build/artifact"
 	"github.com/elastic/harp/build/mage/git"
+
+	exec "golang.org/x/sys/execabs"
 )
 
 var dockerTemplate = strings.TrimSpace(`

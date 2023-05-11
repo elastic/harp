@@ -1195,25 +1195,27 @@ func file_harp_bundle_v1_template_proto_rawDescGZIP() []byte {
 	return file_harp_bundle_v1_template_proto_rawDescData
 }
 
-var file_harp_bundle_v1_template_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
-var file_harp_bundle_v1_template_proto_goTypes = []interface{}{
-	(*Template)(nil),                // 0: harp.bundle.v1.Template
-	(*TemplateMeta)(nil),            // 1: harp.bundle.v1.TemplateMeta
-	(*TemplateSpec)(nil),            // 2: harp.bundle.v1.TemplateSpec
-	(*Selector)(nil),                // 3: harp.bundle.v1.Selector
-	(*Namespaces)(nil),              // 4: harp.bundle.v1.Namespaces
-	(*InfrastructureNS)(nil),        // 5: harp.bundle.v1.InfrastructureNS
-	(*InfrastructureRegionNS)(nil),  // 6: harp.bundle.v1.InfrastructureRegionNS
-	(*InfrastructureServiceNS)(nil), // 7: harp.bundle.v1.InfrastructureServiceNS
-	(*PlatformRegionNS)(nil),        // 8: harp.bundle.v1.PlatformRegionNS
-	(*PlatformComponentNS)(nil),     // 9: harp.bundle.v1.PlatformComponentNS
-	(*ProductComponentNS)(nil),      // 10: harp.bundle.v1.ProductComponentNS
-	(*ApplicationComponentNS)(nil),  // 11: harp.bundle.v1.ApplicationComponentNS
-	(*SecretSuffix)(nil),            // 12: harp.bundle.v1.SecretSuffix
-	nil,                             // 13: harp.bundle.v1.SecretSuffix.ContentEntry
-	nil,                             // 14: harp.bundle.v1.SecretSuffix.LabelsEntry
-	nil,                             // 15: harp.bundle.v1.SecretSuffix.AnnotationsEntry
-}
+var (
+	file_harp_bundle_v1_template_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+	file_harp_bundle_v1_template_proto_goTypes  = []interface{}{
+		(*Template)(nil),                // 0: harp.bundle.v1.Template
+		(*TemplateMeta)(nil),            // 1: harp.bundle.v1.TemplateMeta
+		(*TemplateSpec)(nil),            // 2: harp.bundle.v1.TemplateSpec
+		(*Selector)(nil),                // 3: harp.bundle.v1.Selector
+		(*Namespaces)(nil),              // 4: harp.bundle.v1.Namespaces
+		(*InfrastructureNS)(nil),        // 5: harp.bundle.v1.InfrastructureNS
+		(*InfrastructureRegionNS)(nil),  // 6: harp.bundle.v1.InfrastructureRegionNS
+		(*InfrastructureServiceNS)(nil), // 7: harp.bundle.v1.InfrastructureServiceNS
+		(*PlatformRegionNS)(nil),        // 8: harp.bundle.v1.PlatformRegionNS
+		(*PlatformComponentNS)(nil),     // 9: harp.bundle.v1.PlatformComponentNS
+		(*ProductComponentNS)(nil),      // 10: harp.bundle.v1.ProductComponentNS
+		(*ApplicationComponentNS)(nil),  // 11: harp.bundle.v1.ApplicationComponentNS
+		(*SecretSuffix)(nil),            // 12: harp.bundle.v1.SecretSuffix
+		nil,                             // 13: harp.bundle.v1.SecretSuffix.ContentEntry
+		nil,                             // 14: harp.bundle.v1.SecretSuffix.LabelsEntry
+		nil,                             // 15: harp.bundle.v1.SecretSuffix.AnnotationsEntry
+	}
+)
 var file_harp_bundle_v1_template_proto_depIdxs = []int32{
 	1,  // 0: harp.bundle.v1.Template.meta:type_name -> harp.bundle.v1.TemplateMeta
 	2,  // 1: harp.bundle.v1.Template.spec:type_name -> harp.bundle.v1.TemplateSpec

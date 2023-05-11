@@ -385,13 +385,15 @@ func file_harp_bundle_v1_ruleset_proto_rawDescGZIP() []byte {
 	return file_harp_bundle_v1_ruleset_proto_rawDescData
 }
 
-var file_harp_bundle_v1_ruleset_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
-var file_harp_bundle_v1_ruleset_proto_goTypes = []interface{}{
-	(*RuleSet)(nil),     // 0: harp.bundle.v1.RuleSet
-	(*RuleSetMeta)(nil), // 1: harp.bundle.v1.RuleSetMeta
-	(*RuleSetSpec)(nil), // 2: harp.bundle.v1.RuleSetSpec
-	(*Rule)(nil),        // 3: harp.bundle.v1.Rule
-}
+var (
+	file_harp_bundle_v1_ruleset_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+	file_harp_bundle_v1_ruleset_proto_goTypes  = []interface{}{
+		(*RuleSet)(nil),     // 0: harp.bundle.v1.RuleSet
+		(*RuleSetMeta)(nil), // 1: harp.bundle.v1.RuleSetMeta
+		(*RuleSetSpec)(nil), // 2: harp.bundle.v1.RuleSetSpec
+		(*Rule)(nil),        // 3: harp.bundle.v1.Rule
+	}
+)
 var file_harp_bundle_v1_ruleset_proto_depIdxs = []int32{
 	1, // 0: harp.bundle.v1.RuleSet.meta:type_name -> harp.bundle.v1.RuleSetMeta
 	2, // 1: harp.bundle.v1.RuleSet.spec:type_name -> harp.bundle.v1.RuleSetSpec

@@ -25,8 +25,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/elastic/harp/pkg/sdk/log"
 	"go.uber.org/zap"
+
+	"github.com/elastic/harp/pkg/sdk/log"
 )
 
 // Dump the given vfs to the outputpath

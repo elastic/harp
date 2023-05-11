@@ -27,11 +27,11 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/crypto/pbkdf2"
-
 	"github.com/awnumar/memguard"
 
 	"github.com/elastic/harp/pkg/container/seal"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
 const (

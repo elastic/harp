@@ -26,9 +26,9 @@ import (
 	"regexp"
 	"runtime"
 
-	exec "golang.org/x/sys/execabs"
-
 	"github.com/elastic/harp/build/version"
+
+	exec "golang.org/x/sys/execabs"
 )
 
 // BugReport generates a bug report body

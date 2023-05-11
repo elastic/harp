@@ -309,12 +309,14 @@ func file_harp_container_v1_container_proto_rawDescGZIP() []byte {
 	return file_harp_container_v1_container_proto_rawDescData
 }
 
-var file_harp_container_v1_container_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_harp_container_v1_container_proto_goTypes = []interface{}{
-	(*Header)(nil),    // 0: harp.container.v1.Header
-	(*Recipient)(nil), // 1: harp.container.v1.Recipient
-	(*Container)(nil), // 2: harp.container.v1.Container
-}
+var (
+	file_harp_container_v1_container_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+	file_harp_container_v1_container_proto_goTypes  = []interface{}{
+		(*Header)(nil),    // 0: harp.container.v1.Header
+		(*Recipient)(nil), // 1: harp.container.v1.Recipient
+		(*Container)(nil), // 2: harp.container.v1.Container
+	}
+)
 var file_harp_container_v1_container_proto_depIdxs = []int32{
 	1, // 0: harp.container.v1.Header.recipients:type_name -> harp.container.v1.Recipient
 	0, // 1: harp.container.v1.Container.headers:type_name -> harp.container.v1.Header
