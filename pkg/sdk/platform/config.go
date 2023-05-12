@@ -25,6 +25,7 @@ import (
 type InstrumentationConfig struct {
 	Network    string `toml:"network" default:"tcp" comment:"Network class used for listen (tcp, tcp4, tcp6, unixsocket)"`
 	Listen     string `toml:"listen" default:":5556" comment:"Listen address for instrumentation server"`
+	TimeOut    int    `toml:"timeout" default:"10" comment:"Instrumentation Server Reader Header TimeOut"`
 	Diagnostic struct {
 		Enabled bool              `toml:"enabled" default:"false" comment:"Enable diagnostic handlers"`
 		Config  diagnostic.Config `toml:"Config" comment:"Diagnostic settings"`

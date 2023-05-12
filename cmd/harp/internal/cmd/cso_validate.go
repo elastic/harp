@@ -63,6 +63,7 @@ type csoValidationResponse struct {
 	Error     string `json:"error,omitempty"`
 }
 
+//nolint:revive // refactor use of args
 func runCSOValidate(cmd *cobra.Command, args []string) {
 	ctx, cancel := cmdutil.Context(cmd.Context(), "harp-cso-validate", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()

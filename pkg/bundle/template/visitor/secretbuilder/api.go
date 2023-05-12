@@ -42,7 +42,7 @@ type secretBuilder struct {
 	err             error
 }
 
-// nolint:gocyclo,gocognit,funlen // refactoring later
+//nolint:gocyclo,gocognit,funlen // refactoring later
 func (sb *secretBuilder) Visit(t *bundlev1.Template) {
 	results := make(chan *bundlev1.Package)
 

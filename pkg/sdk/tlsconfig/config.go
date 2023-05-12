@@ -75,7 +75,7 @@ var DefaultServerAcceptedCiphers = append(clientCipherSuites, acceptedCBCCiphers
 // allTLSVersions lists all the TLS versions and is used by the code that validates
 // a uint16 value as a TLS version.
 var allTLSVersions = map[uint16]struct{}{
-	// nolint:staticcheck // SSL30 disabled
+	//nolint:staticcheck // SSL30 disabled
 	tls.VersionSSL30: {},
 	tls.VersionTLS10: {},
 	tls.VersionTLS11: {},

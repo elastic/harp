@@ -64,7 +64,8 @@ type importer struct {
 }
 
 // Run the implemented operation
-// nolint:gocognit,funlen,gocyclo // To refactor
+//
+//nolint:gocognit,funlen,gocyclo // To refactor
 func (op *importer) Run(ctx context.Context) error {
 	// Initialize sub context
 	g, gctx := errgroup.WithContext(ctx)

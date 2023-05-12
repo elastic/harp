@@ -47,8 +47,7 @@ func New(client *api.Client, mountPath, keyName string) (Service, error) {
 	}, nil
 }
 
-// -----------------------------------------------------------------------------
-
+//nolint:revive // refactor use of ctx
 func (s *service) Encrypt(ctx context.Context, cleartext []byte) ([]byte, error) {
 	// Prepare query
 	encryptPath := vpath.SanitizePath(path.Join(url.PathEscape(s.mountPath), "encrypt", url.PathEscape(s.keyName)))
@@ -80,6 +79,7 @@ func (s *service) Encrypt(ctx context.Context, cleartext []byte) ([]byte, error)
 	return nil, errors.New("could not encrypt given data")
 }
 
+//nolint:revive // refactor use of ctx
 func (s *service) Decrypt(ctx context.Context, ciphertext []byte) ([]byte, error) {
 	// Prepare query
 	decryptPath := vpath.SanitizePath(path.Join(url.PathEscape(s.mountPath), "decrypt", url.PathEscape(s.keyName)))

@@ -97,7 +97,8 @@ func Load(r io.Reader) (*containerv1.Container, error) {
 }
 
 // Dump the marshaled container instance to writer.
-// nolint:interfacer // Tighly coupled to type
+//
+//nolint:interfacer // Tightly coupled to type
 func Dump(w io.Writer, c *containerv1.Container) error {
 	// Check parameters
 	if types.IsNil(w) {
