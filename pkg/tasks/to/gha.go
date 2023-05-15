@@ -25,13 +25,13 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/crypto/nacl/box"
-	"golang.org/x/oauth2"
-
 	"github.com/google/go-github/v42/github"
 
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/tasks"
+
+	"golang.org/x/crypto/nacl/box"
+	"golang.org/x/oauth2"
 )
 
 type GithubActionTask struct {

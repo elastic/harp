@@ -33,10 +33,6 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	// Import Blake2b
-	_ "golang.org/x/crypto/blake2b"
-	"golang.org/x/crypto/ssh"
-
 	"github.com/pkg/errors"
 	"go.step.sm/crypto/pemutil"
 	jose "gopkg.in/square/go-jose.v2"
@@ -45,6 +41,10 @@ import (
 	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"
 	"github.com/elastic/harp/pkg/sdk/types"
+
+	// Import Blake2b
+	_ "golang.org/x/crypto/blake2b"
+	"golang.org/x/crypto/ssh"
 )
 
 // ToJWK encodes given key using JWK.

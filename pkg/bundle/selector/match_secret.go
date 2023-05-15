@@ -19,7 +19,6 @@ package selector
 
 import (
 	"regexp"
-	"strings"
 
 	"github.com/gobwas/glob"
 
@@ -68,7 +67,7 @@ func (s *matchSecret) IsSatisfiedBy(object interface{}) bool {
 		for _, kv := range p.Secrets.Data {
 			switch {
 			case s.strict != "":
-				return strings.Compare(kv.Key, s.strict) == 0
+				return kv.Key == s.strict
 			case s.regex != nil:
 				return s.regex.MatchString(kv.Key)
 			case s.g != nil:

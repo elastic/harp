@@ -41,6 +41,7 @@ var keygenSecretBoxCmd = func() *cobra.Command {
 	return cmd
 }
 
+//nolint:revive // refactor use of args
 func runKeygenSecretbox(cmd *cobra.Command, args []string) {
 	_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-secretbox", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()

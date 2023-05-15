@@ -14,6 +14,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
+
 package v1
 
 import (
@@ -23,14 +24,14 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/crypto/argon2"
-	"golang.org/x/crypto/blake2b"
-	"golang.org/x/crypto/nacl/box"
-
 	"github.com/awnumar/memguard"
 
 	"github.com/elastic/harp/pkg/container/seal"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
+
+	"golang.org/x/crypto/argon2"
+	"golang.org/x/crypto/blake2b"
+	"golang.org/x/crypto/nacl/box"
 )
 
 const (

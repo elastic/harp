@@ -81,7 +81,8 @@ func Serve(ctx context.Context, srv *Server) error {
 		}
 
 		server := &http.Server{
-			Handler: instrumentationRouter,
+			Handler:           instrumentationRouter,
+			ReadHeaderTimeout: time.Duration(srv.Instrumentation.TimeOut) * time.Second,
 		}
 
 		group.Add(

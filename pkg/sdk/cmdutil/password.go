@@ -22,11 +22,11 @@ import (
 	"os"
 	"syscall"
 
-	"golang.org/x/term"
-
 	"github.com/awnumar/memguard"
 
 	"github.com/elastic/harp/pkg/sdk/security"
+
+	"golang.org/x/term"
 )
 
 // ReadSecret reads password from Stdin and returns a lockedbuffer.

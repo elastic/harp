@@ -26,10 +26,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/elastic/harp/pkg/sdk/security"
+
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/chacha20"
-
-	"github.com/elastic/harp/pkg/sdk/security"
 )
 
 const (

@@ -18,7 +18,6 @@
 //go:build fips
 
 // Package tlsconfig provides primitives to retrieve secure-enough TLS configurations for both clients and servers.
-//
 package tlsconfig
 
 import (

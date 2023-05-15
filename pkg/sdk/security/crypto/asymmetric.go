@@ -25,11 +25,11 @@ import (
 	"crypto/rsa"
 	"fmt"
 
-	"golang.org/x/crypto/nacl/box"
-
 	"github.com/pkg/errors"
 
 	"github.com/elastic/harp/build/fips"
+
+	"golang.org/x/crypto/nacl/box"
 )
 
 // Keypair generates crypto keys according to given key type.

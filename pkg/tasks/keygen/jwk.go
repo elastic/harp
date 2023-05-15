@@ -81,6 +81,7 @@ func (t *JWKTask) Run(ctx context.Context) error {
 // -----------------------------------------------------------------------------
 
 // KeygenSig generates keypair for corresponding SignatureAlgorithm.
+//
 //nolint:gocyclo // to refactor
 func (t *JWKTask) keygenSig(alg jose.SignatureAlgorithm, bits int) (crypto.PublicKey, crypto.PrivateKey, error) {
 	switch alg {

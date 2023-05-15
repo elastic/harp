@@ -68,6 +68,7 @@ func (d *jwsTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 	return []byte(out), nil
 }
 
+//nolint:revive // refactor use of ctx
 func (d *jwsTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
 	// Parse the signed object
 	sig, err := jose.ParseSigned(string(input))

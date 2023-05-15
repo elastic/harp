@@ -156,7 +156,7 @@ func runeSet(r []rune) map[rune]bool {
 	return s
 }
 
-// nolint // imported code
+//nolint:gocyclo,errorlint,govet // imported code
 func (t *parser) key(data map[string]interface{}) error {
 	stop := runeSet([]rune{'=', '[', ',', '.'})
 	for {
@@ -255,7 +255,7 @@ func (t *parser) keyIndex() (int, error) {
 	return strconv.Atoi(string(v))
 }
 
-// nolint // imported code
+//nolint:errorlint,govet // imported code
 func (t *parser) listItem(list []interface{}, i int) ([]interface{}, error) {
 	stop := runeSet([]rune{'[', '.', '='})
 	switch k, last, err := runesUntil(t.sc, stop); {
@@ -316,7 +316,7 @@ func (t *parser) val() ([]rune, error) {
 	return v, err
 }
 
-// nolint // imported code
+//nolint:nolintlint // imported code
 func (t *parser) valList() ([]interface{}, error) {
 	r, _, e := t.sc.ReadRune()
 	if e != nil {
@@ -324,7 +324,10 @@ func (t *parser) valList() ([]interface{}, error) {
 	}
 
 	if r != '{' {
-		t.sc.UnreadRune()
+		err := t.sc.UnreadRune()
+		if err != nil {
+			return []interface{}{}, err
+		}
 		return []interface{}{}, ErrNotList
 	}
 
@@ -340,7 +343,10 @@ func (t *parser) valList() ([]interface{}, error) {
 		case last == '}':
 			// If this is followed by ',', consume it.
 			if r, _, e := t.sc.ReadRune(); e == nil && r != ',' {
-				t.sc.UnreadRune()
+				err := t.sc.UnreadRune()
+				if err != nil {
+					return []interface{}{}, err
+				}
 			}
 			v, e := t.reader(rs)
 			list = append(list, v)

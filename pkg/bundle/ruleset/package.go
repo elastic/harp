@@ -33,6 +33,7 @@ import (
 )
 
 // Evaluate given bundl using the loaded ruleset.
+//
 //nolint:gocyclo // to refactor
 func Evaluate(ctx context.Context, b *bundlev1.Bundle, spec *bundlev1.RuleSet) error {
 	// Validate spec

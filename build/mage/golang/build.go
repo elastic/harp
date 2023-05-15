@@ -84,6 +84,7 @@ func GOARM(value string) BuildOption {
 // -----------------------------------------------------------------------------
 
 // Build the given binary using the given package.
+//
 //nolint:funlen // to refactor
 func Build(name, packageName, version string, opts ...BuildOption) func() error {
 	const (
