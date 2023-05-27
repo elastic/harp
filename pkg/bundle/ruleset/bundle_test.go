@@ -142,6 +142,74 @@ func TestFromBundle(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "no packages defined in bundle",
+			args: args{
+				b: &bundlev1.Bundle{
+					Labels: map[string]string{
+						"test": "true",
+					},
+					Annotations: map[string]string{
+						"harp.elastic.co/v1/testing#bundlePurpose": "test",
+					},
+					Packages: []*bundlev1.Package{
+						{
+							Labels: map[string]string{
+								"external": "true",
+							},
+							Annotations: map[string]string{
+								"infosec.elastic.co/v1/SecretPolicy#rotationMethod": "ci",
+								"infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "90d",
+								"infosec.elastic.co/v1/SecretPolicy#serviceType":    "authentication",
+								"infosec.elastic.co/v1/SecretPolicy#severity":       "high",
+								"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
+								"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
+							},
+							Name: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
+							Secrets: &bundlev1.SecretChain{
+								Labels: map[string]string{
+									"vendor": "true",
+								},
+								Data: []*bundlev1.KV{
+									{
+										Key:   "API_KEY",
+										Type:  "string",
+										Value: []byte("3YGVuHwUqYVkjk-c6lQgfVQwFHawPG36TgAm72sPZGE="),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &bundlev1.RuleSet{
+				ApiVersion: "harp.elastic.co/v1",
+				Kind:       "RuleSet",
+				Meta: &bundlev1.RuleSetMeta{
+					Description: "Generated from bundle content",
+					Name:        "D0QMaOw378tey2m_TvEuhBPkHOZQAgG88MUV4g6XiLk616urhu5an_hUf_N-k_-PF0TqslvGPFSpUUgZcxRhpg",
+				},
+				Spec: &bundlev1.RuleSetSpec{
+					Rules: []*bundlev1.Rule{
+						&bundlev1.Rule{
+							Name: "LINT-D0QMaO-1",
+							Path: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
+							Constraints: []string{
+								"p.match_label(\"vendor\")",
+								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#rotationMethod\")",
+								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#rotationPeriod\")",
+								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#serviceType\")",
+								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#severity\")",
+								"p.match_annotation(\"infra.elastic.co/v1/CI#jobName\")",
+								"p.match_annotation(\"harp.elastic.co/v1/package#encryptionKeyAlias\")",
+								"p.has_secret(\"API_KEY\")",
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
