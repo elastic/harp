@@ -51,7 +51,7 @@ func Evaluate(ctx context.Context, b *bundlev1.Bundle, spec *bundlev1.RuleSet) e
 
 	// Process each rule
 	for _, r := range spec.Spec.Rules {
-		// Complie path matcher
+		// Compile path matcher
 		pathMatcher, err := glob.Compile(r.Path)
 		if err != nil {
 			return fmt.Errorf("unable to compile path matcher: %w", err)
