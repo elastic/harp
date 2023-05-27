@@ -73,6 +73,11 @@ func FromBundle(b *bundlev1.Bundle) (*bundlev1.RuleSet, error) {
 			Constraints: []string{},
 		}
 
+		// Process the annotations for each secret
+		for k, _ := range p.Secrets.Annotations {
+			r.Constraints = append(r.Constraints, fmt.Sprintf(`p.match_annotation(%q)`, k))
+		}
+
 		// Process each secret
 		for _, s := range p.Secrets.Data {
 			r.Constraints = append(r.Constraints, fmt.Sprintf(`p.has_secret(%q)`, s.Key))
