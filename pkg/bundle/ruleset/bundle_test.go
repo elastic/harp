@@ -143,7 +143,7 @@ func TestFromBundle(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "no packages defined in bundle",
+			name: "package and secrets define with annotations and labels",
 			args: args{
 				b: &bundlev1.Bundle{
 					Labels: map[string]string{
@@ -195,7 +195,7 @@ func TestFromBundle(t *testing.T) {
 							Name: "LINT-D0QMaO-1",
 							Path: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
 							Constraints: []string{
-								"p.match_label(\"vendor\")",
+								"p.match_label(\"external\")",
 								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#rotationMethod\")",
 								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#rotationPeriod\")",
 								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#serviceType\")",
