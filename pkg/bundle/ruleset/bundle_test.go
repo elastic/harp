@@ -18,10 +18,9 @@
 package ruleset
 
 import (
-	"reflect"
-	"testing"
-
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
+	"github.com/golang/protobuf/proto"
+	"testing"
 )
 
 func TestFromBundle(t *testing.T) {
@@ -158,12 +157,12 @@ func TestFromBundle(t *testing.T) {
 								"external": "true",
 							},
 							Annotations: map[string]string{
+								"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
+								"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
 								"infosec.elastic.co/v1/SecretPolicy#rotationMethod": "ci",
 								"infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "90d",
 								"infosec.elastic.co/v1/SecretPolicy#serviceType":    "authentication",
 								"infosec.elastic.co/v1/SecretPolicy#severity":       "high",
-								"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
-								"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
 							},
 							Name: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
 							Secrets: &bundlev1.SecretChain{
@@ -196,12 +195,12 @@ func TestFromBundle(t *testing.T) {
 							Path: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
 							Constraints: []string{
 								"p.match_label(\"external\")",
+								"p.match_annotation(\"harp.elastic.co/v1/package#encryptionKeyAlias\")",
+								"p.match_annotation(\"infra.elastic.co/v1/CI#jobName\")",
 								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#rotationMethod\")",
 								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#rotationPeriod\")",
 								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#serviceType\")",
 								"p.match_annotation(\"infosec.elastic.co/v1/SecretPolicy#severity\")",
-								"p.match_annotation(\"infra.elastic.co/v1/CI#jobName\")",
-								"p.match_annotation(\"harp.elastic.co/v1/package#encryptionKeyAlias\")",
 								"p.has_secret(\"API_KEY\")",
 							},
 						},
@@ -217,7 +216,8 @@ func TestFromBundle(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+
+			if !proto.Equal(got, tt.want) {
 				t.Errorf("Ruleset not equal = %v, want %v", got, tt.want)
 			}
 		})
