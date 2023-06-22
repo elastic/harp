@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
+	"syscall"
 	"time"
 )
 
@@ -59,9 +59,13 @@ func Reader(name string) (io.Reader, error) {
 		reader = bufio.NewReader(os.Stdin)
 		reader = NewTimeoutReader(reader, ReaderTimeout)
 	default:
-		reader, err = os.Open(filepath.Clean(name))
+		reader, err = os.OpenFile(name, syscall.O_RDONLY, 0o400)
 		if err != nil {
-			return nil, fmt.Errorf("unable to open '%s' for read: %w", name, err)
+			return nil, fmt.Errorf(
+				"failed to build reader for read operations for %s: error: %s",
+				name,
+				err,
+			)
 		}
 	}
 

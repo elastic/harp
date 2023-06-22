@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -85,8 +84,8 @@ func (opts *ValueOptions) MergeValues() (map[string]interface{}, error) {
 	// User specified a value via --set-file
 	for _, value := range opts.FileValues {
 		reader := func(rs []rune) (interface{}, error) {
-			bytes, err := os.ReadFile(string(rs))
-			return string(bytes), err
+			b, err := os.ReadFile(string(rs))
+			return string(b), err
 		}
 		if err := strvals.ParseIntoFile(value, base, reader); err != nil {
 			return nil, fmt.Errorf("failed parsing --set-file data: %w", err)
@@ -138,24 +137,23 @@ func processFilePath(currentDirectory, filePath string, result interface{}) erro
 		return fmt.Errorf("error occurred during parser instance retrieval for type '%s': %w", fileType, err)
 	}
 
-	// Change current directory if filePath is not Stdin
-	if filePath != "-" {
-		// Rebase current working dir to target file to process file inclusions
-		// Split directory and filename
-		var confDir string
-		confDir, filePath = path.Split(filePath)
-		// If confDir is not blank (current path)
-		if confDir != "" {
-			if errChDir := os.Chdir(confDir); errChDir != nil {
-				return fmt.Errorf("unable to change working directory for '%s': %w", confDir, errChDir)
-			}
-		}
+	// Drain file content
+	_, err = os.Stat(filePath)
+	if err != nil {
+		return fmt.Errorf(
+			"unable to os.Stat file name %s before attempting to build reader from current directory %s: error: %q",
+			filePath,
+			currentDirectory,
+			err,
+		)
 	}
 
-	// Drain file content
 	reader, err := cmdutil.Reader(filePath)
 	if err != nil {
-		return fmt.Errorf("unable to build a reader from '%s': %w", filePath, err)
+		return fmt.Errorf("unable to build a reader from '%s' for current directory %s: %w",
+			filePath,
+			currentDirectory,
+			err)
 	}
 
 	// Drain reader
