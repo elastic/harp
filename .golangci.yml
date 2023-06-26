@@ -61,6 +61,75 @@ linters-settings:
   dupl:
     # tokens count to trigger issue, 150 by default
     threshold: 150
+  depguard:
+    rules:
+      main:
+        allow:
+          - $gostd
+          - filippo.io/age
+          - filippo.io/age/armor
+          - filippo.io/edwards25519
+          - github.com/MakeNowJust/heredoc/v2
+          - github.com/Masterminds/semver/v3
+          - github.com/Masterminds/sprig/v3
+          - github.com/alessio/shellescape
+          - github.com/awnumar/memguard
+          - github.com/basgys/goxml2json
+          - github.com/cloudflare/tableflip
+          - github.com/dchest/uniuri
+          - github.com/elastic
+          - github.com/fatih/color
+          - github.com/fatih/structs
+          - github.com/fernet/fernet-go
+          - github.com/go-akka/configuration
+          - github.com/go-akka/configuration
+          - github.com/go-ozzo/ozzo-validation/v4
+          - github.com/go-zookeeper/zk
+          - github.com/gobwas/glob
+          - github.com/golang/mock/mockgen/model
+          - github.com/golang/protobuf
+          - github.com/golang/snappy
+          - github.com/google/cel-go
+          - github.com/google/go-github/v42/github
+          - github.com/google/gops/agent
+          - github.com/gosimple/slug
+          - github.com/hashicorp/consul/api
+          - github.com/hashicorp/hcl
+          - github.com/hashicorp/hcl/v2
+          - github.com/hashicorp/hcl/v2/hclsimple
+          - github.com/hashicorp/hcl/v2/hclsyntax
+          - github.com/hashicorp/vault/api
+          - github.com/iancoleman/strcase
+          - github.com/imdario/mergo
+          - github.com/jmespath/go-jmespath
+          - github.com/klauspost/compress
+          - github.com/magefile/mage
+          - github.com/mcuadros/go-defaults
+          - github.com/miscreant/miscreant.go
+          - github.com/oklog/run
+          - github.com/open-policy-agent/opa/rego
+          - github.com/opencontainers/image-spec
+          - github.com/opencontainers/go-digest
+          - github.com/ory/dockertest/v3
+          - github.com/pelletier/go-toml
+          - github.com/pelletier/go-toml
+          - github.com/pierrec/lz4
+          - github.com/pkg/errors
+          - github.com/psanford/memfs
+          - github.com/sethvargo/go-diceware/diceware
+          - github.com/sethvargo/go-password/password
+          - github.com/skratchdot/open-golang/open
+          - github.com/spf13/cobra
+          - github.com/spf13/viper
+          - github.com/ulikunitz/xz
+          - github.com/xeipuuv/gojsonschema
+          - github.com/zclconf/go-cty/cty
+          - gitlab.com/NebulousLabs/merkletree
+          - oras.land/oras-go
+          - sigs.k8s.io/yaml
+          - zntr.io/paseto/v3
+          - zntr.io/paseto/v4
+
   errcheck:
     # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
     # default is false: such cases aren't reported by default.
