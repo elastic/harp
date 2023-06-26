@@ -62,7 +62,7 @@ func Reader(name string) (io.Reader, error) {
 		reader, err = os.OpenFile(name, syscall.O_RDONLY, 0o400)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"failed to build reader for read operations for %s: error: %s",
+				"failed to build reader for read operations for %s: error: %w",
 				name,
 				err,
 			)

@@ -141,7 +141,7 @@ func processFilePath(currentDirectory, filePath string, result interface{}) erro
 	_, err = os.Stat(filePath)
 	if err != nil {
 		return fmt.Errorf(
-			"unable to os.Stat file name %s before attempting to build reader from current directory %s: error: %q",
+			"unable to os.Stat file name %s before attempting to build reader from current directory %s: error: %w",
 			filePath,
 			currentDirectory,
 			err,
