@@ -183,7 +183,7 @@ linters-settings:
 linters:
   enable:
     - bodyclose
-    - deadcode
+    # - deadcode
     - depguard
     - dogsled
     # - dupl
@@ -214,11 +214,11 @@ linters:
     - revive
     - rowserrcheck
     - staticcheck
-    - structcheck
+    # - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
+    # - varcheck
     - whitespace
