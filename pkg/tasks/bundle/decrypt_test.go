@@ -26,6 +26,7 @@ import (
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
+
 	// Import for tests
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	"github.com/elastic/harp/pkg/sdk/value/identity"
