@@ -18,9 +18,10 @@
 package ruleset
 
 import (
+	"testing"
+
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/golang/protobuf/proto"
-	"testing"
 )
 
 func TestFromBundle(t *testing.T) {

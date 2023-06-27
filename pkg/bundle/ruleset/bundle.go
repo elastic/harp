@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle"
 )
@@ -73,12 +74,12 @@ func FromBundle(b *bundlev1.Bundle) (*bundlev1.RuleSet, error) {
 		}
 
 		// Process the labels for each secret
-		for label, _ := range p.Labels {
+		for label := range p.Labels {
 			r.Constraints = append(r.Constraints, fmt.Sprintf(`p.match_label(%q)`, label))
 		}
 
 		// Process the annotations for each secret
-		for annotation, _ := range p.Annotations {
+		for annotation := range p.Annotations {
 			r.Constraints = append(r.Constraints, fmt.Sprintf(`p.match_annotation(%q)`, annotation))
 		}
 
