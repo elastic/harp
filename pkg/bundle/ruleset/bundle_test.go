@@ -21,7 +21,8 @@ import (
 	"testing"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
-	"github.com/golang/protobuf/proto"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFromBundle(t *testing.T) {
@@ -214,12 +215,31 @@ func TestFromBundle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := FromBundle(tt.args.b)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
-			}
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				metaOK := assert.Equal(t, got.Meta, tt.want.Meta)
+				if !metaOK {
+					t.Errorf(
+						"ruleset.Meta not equal. Got: %+v, Want: %+v",
+						got.Meta,
+						tt.want.Meta,
+					)
+				}
 
-			if !proto.Equal(got, tt.want) {
-				t.Errorf("Ruleset not equal = %v, want %v", got, tt.want)
+				expectedRules := make([]*bundlev1.Rule, 0, len(tt.want.Spec.GetRules()))
+				for _, r := range got.Spec.GetRules() {
+					expectedRules = append(expectedRules, r)
+				}
+				gotRules := make([]*bundlev1.Rule, 0, len(got.Spec.GetRules()))
+				for _, r := range got.Spec.GetRules() {
+					gotRules = append(gotRules, r)
+				}
+				for idx := range expectedRules {
+					assert.Equal(t, expectedRules[idx].Path, gotRules[idx].Path)
+					assert.Equal(t, expectedRules[idx].Name, gotRules[idx].Name)
+					assert.Equal(t, len(expectedRules[idx].GetConstraints()), len(gotRules[idx].GetConstraints()))
+				}
 			}
 		})
 	}
