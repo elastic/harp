@@ -27,7 +27,6 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"
-
 	// Register encryption transformers
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/aead"
 	_ "github.com/elastic/harp/pkg/sdk/value/encryption/age"
