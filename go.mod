@@ -21,7 +21,7 @@ require (
 
 require (
 	filippo.io/age v1.0.0
-	filippo.io/edwards25519 v1.0.0-rc.1
+	filippo.io/edwards25519 v1.0.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/sprig/v3 v3.2.2
