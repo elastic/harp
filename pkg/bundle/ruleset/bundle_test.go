@@ -26,65 +26,56 @@ import (
 )
 
 func TestFromBundle(t *testing.T) {
-	type args struct {
-		b *bundlev1.Bundle
-	}
 	tests := []struct {
 		name    string
-		args    args
+		bundle  *bundlev1.Bundle
 		want    *bundlev1.RuleSet
 		wantErr bool
 	}{
 		{
-			name: "nil",
-			args: args{
-				b: nil,
-			},
+			name:    "nil",
+			bundle:  &bundlev1.Bundle{},
 			want:    nil,
 			wantErr: true,
 		},
 		{
-			name: "packages are nil",
-			args: args{
-				b: &bundlev1.Bundle{
-					Labels: map[string]string{
-						"test": "true",
-					},
-					Annotations: map[string]string{
-						"harp.elastic.co/v1/testing#bundlePurpose": "test",
-					},
-					Packages: nil,
+			name: "empty packages",
+			bundle: &bundlev1.Bundle{
+				Labels: map[string]string{
+					"test": "true",
 				},
+				Annotations: map[string]string{
+					"harp.elastic.co/v1/testing#bundlePurpose": "test",
+				},
+				Packages: nil,
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		{
 			name: "secrets are nil",
-			args: args{
-				b: &bundlev1.Bundle{
-					Labels: map[string]string{
-						"test": "true",
-					},
-					Annotations: map[string]string{
-						"harp.elastic.co/v1/testing#bundlePurpose": "test",
-					},
-					Packages: []*bundlev1.Package{
-						{
-							Labels: map[string]string{
-								"external": "true",
-							},
-							Annotations: map[string]string{
-								"infosec.elastic.co/v1/SecretPolicy#rotationMethod": "ci",
-								"infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "90d",
-								"infosec.elastic.co/v1/SecretPolicy#serviceType":    "authentication",
-								"infosec.elastic.co/v1/SecretPolicy#severity":       "high",
-								"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
-								"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
-							},
-							Name:    "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
-							Secrets: nil,
+			bundle: &bundlev1.Bundle{
+				Labels: map[string]string{
+					"test": "true",
+				},
+				Annotations: map[string]string{
+					"harp.elastic.co/v1/testing#bundlePurpose": "test",
+				},
+				Packages: []*bundlev1.Package{
+					{
+						Labels: map[string]string{
+							"external": "true",
 						},
+						Annotations: map[string]string{
+							"infosec.elastic.co/v1/SecretPolicy#rotationMethod": "ci",
+							"infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "90d",
+							"infosec.elastic.co/v1/SecretPolicy#serviceType":    "authentication",
+							"infosec.elastic.co/v1/SecretPolicy#severity":       "high",
+							"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
+							"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
+						},
+						Name:    "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
+						Secrets: nil,
 					},
 				},
 			},
@@ -102,31 +93,29 @@ func TestFromBundle(t *testing.T) {
 		},
 		{
 			name: "secret data is nil",
-			args: args{
-				b: &bundlev1.Bundle{
-					Labels: map[string]string{
-						"test": "true",
-					},
-					Annotations: map[string]string{
-						"harp.elastic.co/v1/testing#bundlePurpose": "test",
-					},
-					Packages: []*bundlev1.Package{
-						{
-							Labels: map[string]string{
-								"external": "true",
-							},
-							Annotations: map[string]string{
-								"infosec.elastic.co/v1/SecretPolicy#rotationMethod": "ci",
-								"infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "90d",
-								"infosec.elastic.co/v1/SecretPolicy#serviceType":    "authentication",
-								"infosec.elastic.co/v1/SecretPolicy#severity":       "high",
-								"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
-								"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
-							},
-							Name: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
-							Secrets: &bundlev1.SecretChain{
-								Data: nil,
-							},
+			bundle: &bundlev1.Bundle{
+				Labels: map[string]string{
+					"test": "true",
+				},
+				Annotations: map[string]string{
+					"harp.elastic.co/v1/testing#bundlePurpose": "test",
+				},
+				Packages: []*bundlev1.Package{
+					{
+						Labels: map[string]string{
+							"external": "true",
+						},
+						Annotations: map[string]string{
+							"infosec.elastic.co/v1/SecretPolicy#rotationMethod": "ci",
+							"infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "90d",
+							"infosec.elastic.co/v1/SecretPolicy#serviceType":    "authentication",
+							"infosec.elastic.co/v1/SecretPolicy#severity":       "high",
+							"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
+							"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
+						},
+						Name: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
+						Secrets: &bundlev1.SecretChain{
+							Data: nil,
 						},
 					},
 				},
@@ -145,38 +134,36 @@ func TestFromBundle(t *testing.T) {
 		},
 		{
 			name: "package and secrets define with annotations and labels",
-			args: args{
-				b: &bundlev1.Bundle{
-					Labels: map[string]string{
-						"test": "true",
-					},
-					Annotations: map[string]string{
-						"harp.elastic.co/v1/testing#bundlePurpose": "test",
-					},
-					Packages: []*bundlev1.Package{
-						{
+			bundle: &bundlev1.Bundle{
+				Labels: map[string]string{
+					"test": "true",
+				},
+				Annotations: map[string]string{
+					"harp.elastic.co/v1/testing#bundlePurpose": "test",
+				},
+				Packages: []*bundlev1.Package{
+					{
+						Labels: map[string]string{
+							"external": "true",
+						},
+						Annotations: map[string]string{
+							"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
+							"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
+							"infosec.elastic.co/v1/SecretPolicy#rotationMethod": "ci",
+							"infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "90d",
+							"infosec.elastic.co/v1/SecretPolicy#serviceType":    "authentication",
+							"infosec.elastic.co/v1/SecretPolicy#severity":       "high",
+						},
+						Name: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
+						Secrets: &bundlev1.SecretChain{
 							Labels: map[string]string{
-								"external": "true",
+								"vendor": "true",
 							},
-							Annotations: map[string]string{
-								"harp.elastic.co/v1/package#encryptionKeyAlias":     "test",
-								"infra.elastic.co/v1/CI#jobName":                    "rotate-external-api-key",
-								"infosec.elastic.co/v1/SecretPolicy#rotationMethod": "ci",
-								"infosec.elastic.co/v1/SecretPolicy#rotationPeriod": "90d",
-								"infosec.elastic.co/v1/SecretPolicy#serviceType":    "authentication",
-								"infosec.elastic.co/v1/SecretPolicy#severity":       "high",
-							},
-							Name: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
-							Secrets: &bundlev1.SecretChain{
-								Labels: map[string]string{
-									"vendor": "true",
-								},
-								Data: []*bundlev1.KV{
-									{
-										Key:   "API_KEY",
-										Type:  "string",
-										Value: []byte("3YGVuHwUqYVkjk-c6lQgfVQwFHawPG36TgAm72sPZGE="),
-									},
+							Data: []*bundlev1.KV{
+								{
+									Key:   "API_KEY",
+									Type:  "string",
+									Value: []byte("3YGVuHwUqYVkjk-c6lQgfVQwFHawPG36TgAm72sPZGE="),
 								},
 							},
 						},
@@ -214,31 +201,22 @@ func TestFromBundle(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FromBundle(tt.args.b)
+			got, err := FromBundle(tt.bundle)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
-				metaOK := assert.Equal(t, got.Meta, tt.want.Meta)
-				if !metaOK {
-					t.Errorf(
-						"ruleset.Meta not equal. Got: %+v, Want: %+v",
-						got.Meta,
-						tt.want.Meta,
-					)
-				}
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want.ApiVersion, got.ApiVersion)
+				assert.Equal(t, tt.want.Kind, got.Kind)
+				assert.Equal(t, tt.want.Meta, got.Meta)
+				assert.Equal(t, len(tt.want.Spec.Rules), len(got.Spec.Rules))
 
-				expectedRules := make([]*bundlev1.Rule, 0, len(tt.want.Spec.GetRules()))
-				for _, r := range got.Spec.GetRules() {
-					expectedRules = append(expectedRules, r)
-				}
-				gotRules := make([]*bundlev1.Rule, 0, len(got.Spec.GetRules()))
-				for _, r := range got.Spec.GetRules() {
-					gotRules = append(gotRules, r)
-				}
-				for idx := range expectedRules {
-					assert.Equal(t, expectedRules[idx].Path, gotRules[idx].Path)
-					assert.Equal(t, expectedRules[idx].Name, gotRules[idx].Name)
-					assert.Equal(t, len(expectedRules[idx].GetConstraints()), len(gotRules[idx].GetConstraints()))
+				for idx, expectedRule := range tt.want.Spec.Rules {
+					gotRule := got.Spec.Rules[idx]
+					assert.Equal(t, expectedRule.Name, gotRule.Name)
+					assert.Equal(t, expectedRule.Path, gotRule.Path)
+					assert.Equal(t, len(expectedRule.Constraints), len(gotRule.Constraints))
+					assert.ElementsMatch(t, expectedRule.GetConstraints(), gotRule.GetConstraints())
 				}
 			}
 		})
