@@ -45,7 +45,7 @@ jobs:
             ${{ runner.os }}-go-
       -
         name: Download cyclonedx-gomod
-        uses: Zenithar/gh-gomod-generate-sbom@v1.0.1
+        uses: Zenithar/gh-gomod-generate-sbom@v1.0.3
         with:
           version: v1.2.0
         env:
