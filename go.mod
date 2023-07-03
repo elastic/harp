@@ -36,7 +36,7 @@ require (
 	github.com/fernet/fernet-go v0.0.0-20211208181803-9f70042a33ee
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
-	github.com/go-zookeeper/zk v1.0.2
+	github.com/go-zookeeper/zk v1.0.3
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
