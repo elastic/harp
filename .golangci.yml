@@ -1,3 +1,11 @@
+issues:
+  exclude-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.gen\\.go$"
+    - ".*\\_gen\\.go$"
+    - "mock_.*\\.go"
+    - ".*\\.resolvers\\.go$"
+
 run:
   # default concurrency is a available CPU number
   concurrency: 4
@@ -7,13 +15,6 @@ run:
   issues-exit-code: 1
   # include test files or not, default is true
   tests: false
-
-  skip-files:
-    - ".*\\.pb\\.go$"
-    - ".*\\.gen\\.go$"
-    - ".*\\_gen\\.go$"
-    - "mock_.*\\.go"
-    - ".*\\.resolvers\\.go$"
 
   # default is true. Enables skipping of directories:
   #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
@@ -37,7 +38,7 @@ run:
 output:
   # colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
   # default is "colored-line-number"
-  format: colored-line-number
+  formats: colored-line-number
 
   # print lines of code with issue, default is true
   print-issued-lines: true
@@ -142,7 +143,7 @@ linters-settings:
     # [deprecated] comma-separated list of pairs of the form pkg:regex
     # the regex is used to ignore names within pkg. (default "fmt:.*").
     # see https://github.com/kisielk/errcheck#the-deprecated-method for details
-    ignore: fmt:.*,io/ioutil:^Read.*
+    exclude-functions: fmt:.*,io/ioutil:^Read.*
   exhaustive:
     # check switch statements in generated files also
     check-generated: false
@@ -151,8 +152,7 @@ linters-settings:
     # switch
     default-signifies-exhaustive: false
   govet:
-    # report about shadowed variables
-    check-shadowing: true
+    shadow: true
   goimports:
     local: "github.com/elastic"
   golint:
@@ -170,7 +170,8 @@ linters-settings:
     # put imports beginning with prefix after 3rd-party packages;
     # only support one prefix
     # if not set, use goimports.local-prefixes
-    local-prefixes: github.com/elastic
+    sections:
+    - prefix(github.com/elastic)
   gocognit:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 20
@@ -182,11 +183,10 @@ linters-settings:
   nestif:
     # minimal complexity of if statements to report, 5 by default
     min-complexity: 4
-  gomnd:
-    settings:
-      mnd:
-        # don't include the "operation" and "assign"
-        checks: argument,case,condition,return
+  mnd:
+    checks: argument,case,condition,return
+    ignored-numbers: []
+    ignored-files: []
   unused:
     # treat code as a program (not a library) and report unused exported identifiers; default is false.
     # XXX: if you enable this setting, unused will report a lot of false-positives in text editors:
@@ -258,7 +258,7 @@ linters:
     # - dupl
     - errcheck
     - errorlint
-    - exportloopref
+    - copyloopvar
     - exhaustive
     - forbidigo
     - funlen
@@ -269,7 +269,7 @@ linters:
     - gofmt
     - goheader
     - goimports
-    # - gomnd
+    - mnd
     - goprintffuncname
     - gosec
     - gosimple
