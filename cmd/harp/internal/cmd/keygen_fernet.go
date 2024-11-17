@@ -52,5 +52,8 @@ func runKeygenFernet(cmd *cobra.Command, _ []string) {
 	}
 
 	// Print the key
-	fmt.Fprint(os.Stdout, k.Encode())
+	_, err := fmt.Fprint(os.Stdout, k.Encode())
+	if err != nil {
+		log.For(ctx).Fatal("unable to output Fernet key", zap.Error(err))
+	}
 }
