@@ -34,7 +34,7 @@ var keygenXChaChaCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "xchacha",
 		Short: "Generate and print a xchacha20poly1305 key",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-xchacha", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 

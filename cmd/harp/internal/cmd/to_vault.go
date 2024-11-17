@@ -41,7 +41,7 @@ var toVaultCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vault",
 		Short: "Push a secret container in Hashicorp Vault",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-to-vault", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

@@ -41,8 +41,7 @@ var keygenFernetCmd = func() *cobra.Command {
 	return cmd
 }
 
-//nolint:revive // refactor use of args
-func runKeygenFernet(cmd *cobra.Command, args []string) {
+func runKeygenFernet(cmd *cobra.Command, _ []string) {
 	ctx, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-fernet", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
 

@@ -68,7 +68,7 @@ var transformDecompressCmd = func() *cobra.Command {
 		Short:   "Decompress given input",
 		Long:    longDesc,
 		Example: examples,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-decompress", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
