@@ -31,13 +31,12 @@ jobs:
         run: git fetch --prune --unshallow
       -
         name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: '1.19'
-          check-latest: true
+          go-version: '1.23.2'
       -
         name: Cache Go modules
-        uses: actions/cache@v3.0.3
+        uses: actions/cache@v4.2.0
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -52,7 +51,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
         name: Install Cosign
-        uses: sigstore/cosign-installer@v2.3.0
+        uses: sigstore/cosign-installer@v3.7.0
       -
         name: Import Code-Signing Certificates
         uses: Apple-Actions/import-codesign-certs@v1
