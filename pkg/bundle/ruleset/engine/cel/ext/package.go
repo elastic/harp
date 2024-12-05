@@ -116,6 +116,7 @@ func (packageLib) ProgramOptions() []cel.ProgramOption {
 	}
 
 	return []cel.ProgramOption{
+		//nolint:staticcheck // TODO: refactor for deprecations
 		cel.Functions(
 			&functions.Overload{
 				Operator: "package_match_label_string",
