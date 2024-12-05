@@ -71,15 +71,19 @@ LABEL \
 
 {{ if .OverrideGoBoringVersion }}
 # Override goboring version
-RUN wget https://storage.googleapis.com/go-boringcrypto/go{{ .GoBoringVersion }}.linux-amd64.tar.gz \
-    && rm -rf /usr/local/go && tar -C /usr/local -xzf go{{ .GoBoringVersion }}.linux-amd64.tar.gz \
-    && rm go{{ .GoBoringVersion }}.linux-amd64.tar.gz
+RUN wget https://storage.googleapis.com/go-boringcrypto/go{{ .GoBoringVersion }}.linux-{{.GoArchitecture}}.tar.gz \
+    && rm -rf /usr/local/go && tar -C /usr/local -xzf go{{ .GoBoringVersion }}.linux-{{.GoArchitecture}}.tar.gz \
+    && rm go{{ .GoBoringVersion }}.linux-{{.GoArchitecture}}.tar.gz
 {{ end }}
 
 # hadolint ignore=DL3008
 RUN set -eux; \
     apt-get update -y && \
-    apt-get install -y --no-install-recommends apt-utils bzr upx zip unzip;
+    apt-get install -y --no-install-recommends apt-utils bzr zip unzip xz-utils;
+
+RUN wget https://github.com/upx/upx/releases/download/v{{.UpxVersion}}/upx-{{.UpxVersion}}-{{.GoArchitecture}}_linux.tar.xz -o - \
+  && tar -xJf upx-{{.UpxVersion}}-{{.GoArchitecture}}_linux.tar.xz \
+  && mv upx-{{.UpxVersion}}-{{.GoArchitecture}}_linux/upx /usr/local/bin/upx
 
 RUN go version
 
@@ -174,9 +178,11 @@ func Tools() error {
 		"VcsRef":                  git.Revision,
 		"GolangImage":             golangBaseImage,
 		"GolangVersion":           golangVersion,
+		"GoArchitecture":          goArchitecture,
 		"OverrideGoBoringVersion": overrideGoBoringVersion,
 		"GoBoringVersion":         goBoringVersion,
 		"FIPSMode":                fipsMode,
+		"UpxVersion":              upxVersion,
 	})
 	if err != nil {
 		return err
