@@ -32,11 +32,11 @@ type Ring interface {
 
 var (
 	// RingMeta represents R0 secrets
-	RingMeta Ring = &ring{
+	RingMeta = &ring{
 		level:  0,
 		name:   "Meta",
 		prefix: ringMeta,
-		pathBuilderFunc: func(ring Ring, values ...string) (string, error) {
+		pathBuilderFunc: func(_ Ring, values ...string) (string, error) {
 			return csoPath("meta/%s", 1, values...)
 		},
 	}
@@ -45,16 +45,16 @@ var (
 		level:  1,
 		name:   "Infrastructure",
 		prefix: ringInfra,
-		pathBuilderFunc: func(ring Ring, values ...string) (string, error) {
+		pathBuilderFunc: func(_ Ring, values ...string) (string, error) {
 			return csoPath("infra/%s/%s/%s/%s/%s", 5, values...)
 		},
 	}
-	// RingPlatform repsents R2 secrets
+	// RingPlatform represents R2 secrets
 	RingPlatform = &ring{
 		level:  2,
 		name:   "Platform",
 		prefix: ringPlatform,
-		pathBuilderFunc: func(ring Ring, values ...string) (string, error) {
+		pathBuilderFunc: func(_ Ring, values ...string) (string, error) {
 			return csoPath("platform/%s/%s/%s/%s/%s", 5, values...)
 		},
 	}
@@ -63,7 +63,7 @@ var (
 		level:  3,
 		name:   "Product",
 		prefix: ringProduct,
-		pathBuilderFunc: func(ring Ring, values ...string) (string, error) {
+		pathBuilderFunc: func(_ Ring, values ...string) (string, error) {
 			return csoPath("product/%s/%s/%s/%s", 4, values...)
 		},
 	}
@@ -72,7 +72,7 @@ var (
 		level:  4,
 		name:   "Application",
 		prefix: ringApp,
-		pathBuilderFunc: func(ring Ring, values ...string) (string, error) {
+		pathBuilderFunc: func(_ Ring, values ...string) (string, error) {
 			return csoPath("app/%s/%s/%s/%s/%s/%s", 6, values...)
 		},
 	}
@@ -81,7 +81,7 @@ var (
 		level:  5,
 		name:   "Artifact",
 		prefix: ringArtifact,
-		pathBuilderFunc: func(ring Ring, values ...string) (string, error) {
+		pathBuilderFunc: func(_ Ring, values ...string) (string, error) {
 			return csoPath("artifact/%s/%s/%s", 3, values...)
 		},
 	}
