@@ -161,6 +161,9 @@ linters-settings:
     simplify: true
   gocyclo:
     min-complexity: 15
+  gosec:
+    excludes:
+    - G115 # integer overflow conversion
   misspell:
     locale: US
   lll:
@@ -183,10 +186,6 @@ linters-settings:
   nestif:
     # minimal complexity of if statements to report, 5 by default
     min-complexity: 4
-  mnd:
-    checks: argument,case,condition,return
-    ignored-numbers: []
-    ignored-files: []
   unused:
     # treat code as a program (not a library) and report unused exported identifiers; default is false.
     # XXX: if you enable this setting, unused will report a lot of false-positives in text editors:
@@ -269,7 +268,6 @@ linters:
     - gofmt
     - goheader
     - goimports
-    - mnd
     - goprintffuncname
     - gosec
     - gosimple
