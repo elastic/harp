@@ -90,9 +90,6 @@ func (op *importer) Run(ctx context.Context) error {
 
 		// Listen for message
 		for secretPackage := range packageChan {
-			// Assign local reference
-			secretPackage := secretPackage
-
 			if err := gWriterCtx.Err(); err != nil {
 				// Stop processing
 				break
