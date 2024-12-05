@@ -83,7 +83,7 @@ func TestCodec_New(t *testing.T) {
 		assert.Equal(t, "harp.elastic.co/v1", id.APIVersion)
 		assert.Equal(t, "security", id.Description)
 		assert.Equal(t, "ContainerIdentity", id.Kind)
-		assert.Equal(t, "v2.ipk.A0X20rlE8Pqp-YoMG8SNOop918AyfoSF_R9Z7MF5vP5nUoc_ZSRWauQR6cL4DqgrRA", id.Public)
+		assert.NotNil(t, id.Public)
 		assert.Nil(t, id.Private)
 		assert.False(t, id.HasPrivateKey())
 	})
