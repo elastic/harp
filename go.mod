@@ -23,7 +23,7 @@ require (
 	filippo.io/age v1.2.0
 	filippo.io/edwards25519 v1.1.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
-	github.com/Masterminds/semver/v3 v3.3.0
+	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/alessio/shellescape v1.4.2
 	github.com/awnumar/memguard v0.22.5
@@ -81,7 +81,7 @@ require (
 	golang.org/x/crypto v0.28.0
 	golang.org/x/oauth2 v0.23.0
 	golang.org/x/sync v0.8.0
-	golang.org/x/sys v0.26.0
+	golang.org/x/sys v0.28.0
 	golang.org/x/term v0.25.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20241021214115-324edc3d5d38
 	google.golang.org/grpc v1.67.1
