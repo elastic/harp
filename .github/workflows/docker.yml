@@ -8,20 +8,17 @@ on:
         required: true
 
 permissions:
-  # Required to stop running workflows
-  actions: write
   packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build-docker-images:
     name: Build Docker Images
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Cancel previous workflows
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Checkout
         uses: actions/checkout@v3
