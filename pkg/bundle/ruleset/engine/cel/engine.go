@@ -64,6 +64,7 @@ func New(expressions []string) (engine.PackageLinter, error) {
 
 		// request matching is a boolean operation, so we don't really know
 		// what to do if the expression returns a non-boolean type
+		//nolint:staticcheck // TODO: refactor for deprecations
 		if !proto.Equal(ast.ResultType(), decls.Bool) {
 			return nil, fmt.Errorf("CEL rule engine expects return type of bool, not %s", ast.ResultType())
 		}

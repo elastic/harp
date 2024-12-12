@@ -48,7 +48,7 @@ var toZookeeperCmd = func() *cobra.Command {
 		Use:     "zookeeper",
 		Aliases: []string{"zk"},
 		Short:   "Publish bundle data into Apache Zookeeper",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-kv-to-zookeeper", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

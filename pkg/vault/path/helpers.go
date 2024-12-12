@@ -47,7 +47,7 @@ func ensureNoTrailingSlash(s string) string {
 		return ""
 	}
 
-	for len(s) > 0 && s[len(s)-1] == '/' {
+	for s != "" && s[len(s)-1] == '/' {
 		s = s[:len(s)-1]
 	}
 	return s
@@ -60,7 +60,7 @@ func ensureNoLeadingSlash(s string) string {
 		return ""
 	}
 
-	for len(s) > 0 && s[0] == '/' {
+	for s != "" && s[0] == '/' {
 		s = s[1:]
 	}
 	return s

@@ -43,7 +43,7 @@ var transformEncryptionCmd = func() *cobra.Command {
 		Short:      "Encryption value transformer",
 		Aliases:    []string{"enc"},
 		Deprecated: "Use encrypt/decrypt commands.",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-encryption", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

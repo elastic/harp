@@ -55,7 +55,7 @@ var bundleDiffCmd = func() *cobra.Command {
 		Short:   "Display bundle differences",
 		Long:    longDesc,
 		Example: examples,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-bundle-diff", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

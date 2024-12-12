@@ -49,7 +49,7 @@ var pluginListCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List discovered cmd plugins",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			if err := o.Complete(cmd); err != nil {
 				fmt.Fprintf(os.Stderr, "%v", err)
 				os.Exit(-1)

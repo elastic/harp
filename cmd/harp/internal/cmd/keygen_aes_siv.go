@@ -34,7 +34,7 @@ var keygenAESSIVCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "aes-siv",
 		Short: "Generate and print an AES-SIV key",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-aessiv", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 

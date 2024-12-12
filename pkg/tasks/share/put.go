@@ -59,6 +59,7 @@ func (t *PutTask) Run(ctx context.Context) error {
 	}
 
 	// Set expiration
+	//nolint:revive // used by vault client for function
 	client.SetWrappingLookupFunc(func(operation, path string) string {
 		return t.TTL.String()
 	})

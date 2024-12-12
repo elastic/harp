@@ -36,7 +36,7 @@ func Command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Display service version",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			bi := NewInfo()
 			if displayAsJSON {
 				fmt.Fprintf(os.Stdout, "%s", bi.JSON())

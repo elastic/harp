@@ -17,10 +17,14 @@
 
 package docker
 
+import "runtime"
+
 const (
 	// Standard build mode
-	golangImage     = "golang:1.17"
-	golangVersion   = "1.17.5"
+	golangImage     = "golang:1.23.2"
+	golangVersion   = "1.23.2"
 	goBoringVersion = "1.17.5b7"
 	toolImage       = "elastic/harp-tools:latest"
+	goArchitecture  = runtime.GOARCH
+	upxVersion      = "4.2.4"
 )

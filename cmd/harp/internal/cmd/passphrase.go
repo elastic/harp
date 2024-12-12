@@ -46,8 +46,7 @@ var passphraseCmd = func() *cobra.Command {
 	return cmd
 }
 
-//nolint:revive // refactor use of args
-func runPassphrase(cmd *cobra.Command, args []string) {
+func runPassphrase(cmd *cobra.Command, _ []string) {
 	ctx, cancel := cmdutil.Context(cmd.Context(), "harp-passphrase", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
 

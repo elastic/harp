@@ -48,7 +48,7 @@ var fromZookeeperCmd = func() *cobra.Command {
 		Use:     "zookeeper",
 		Aliases: []string{"zk"},
 		Short:   "Extract KV pairs from Apache Zookeeper KV Store",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-kv-from-zookeeper", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

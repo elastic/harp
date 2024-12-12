@@ -44,7 +44,7 @@ var toGithubActionCmd = func() *cobra.Command {
 		Short:   "Export all secrets to Github Actions as repository secrets.",
 		Example: `$ export GITHUB_TOKEN=ghp_###############
 $ harp to gha --in secret.container --owner elastic --owner harp --secret-filter "COSIGN_*"`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-to-gha", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

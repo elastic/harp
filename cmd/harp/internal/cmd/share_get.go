@@ -39,7 +39,7 @@ var shareGetCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "Get wrapped secret from Vault",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "share-get", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

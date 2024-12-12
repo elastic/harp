@@ -39,7 +39,7 @@ var toObjectCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "object",
 		Short: "Export all data of a secret container as JSON / YAML / TOML.",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-to-object", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

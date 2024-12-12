@@ -40,7 +40,7 @@ var containerUnsealCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unseal",
 		Short: "Unseal a secret container",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-container-unseal", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

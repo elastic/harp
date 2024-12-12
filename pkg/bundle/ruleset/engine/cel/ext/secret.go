@@ -87,6 +87,7 @@ func (secretLib) CompileOptions() []cel.EnvOption {
 
 func (secretLib) ProgramOptions() []cel.ProgramOption {
 	return []cel.ProgramOption{
+		//nolint:staticcheck // TODO: refactor for deprecations
 		cel.Functions(
 			&functions.Overload{
 				Operator: "kv_is_base64",

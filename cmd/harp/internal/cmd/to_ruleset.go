@@ -37,7 +37,7 @@ var toRulesetCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ruleset",
 		Short: "Genereate a RuleSet descriptor from a Bundle",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-ruleset-from-bundle", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

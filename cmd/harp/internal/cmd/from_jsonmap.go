@@ -36,7 +36,7 @@ var fromJSONCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "jsonmap",
 		Short: "Convert a JSON map to a secret-container",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-from-jsonmap", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

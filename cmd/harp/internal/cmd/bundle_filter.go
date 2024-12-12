@@ -91,7 +91,7 @@ var bundleFilterCmd = func() *cobra.Command {
 		Short:   "Filter package names",
 		Long:    longDesc,
 		Example: examples,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-bundle-filter", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

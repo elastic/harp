@@ -25,9 +25,9 @@ import (
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 )
 
-// Streategy describes the sealing/unsealing contract.
+// Strategy describes the sealing/unsealing contract.
 type Strategy interface {
-	// CenerateKey create an key pair used as container identifier.
+	// GenerateKey create a key pair used as container identifier.
 	GenerateKey(...GenerateOption) (publicKey, privateKey string, err error)
 	// Seal the given container using the implemented algorithm.
 	Seal(io.Reader, *containerv1.Container, ...string) (*containerv1.Container, error)
