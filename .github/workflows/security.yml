@@ -9,9 +9,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-permissions:
-  # Required to stop running workflows
-  actions: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   vulns:
@@ -19,11 +19,6 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Cancel previous workflows
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
       -
         uses: actions/checkout@v3
       -
@@ -47,11 +42,6 @@ jobs:
       pull-requests: read
 
     steps:
-      -
-        name: Cancel previous workflows
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
       -
         uses: actions/checkout@v3
       -
@@ -79,14 +69,8 @@ jobs:
 #      contents: read
 #      security-events: write
 #      pull-requests: read
-#      actions: write
 #
 #    steps:
-#      -
-#        name: Cancel previous workflows
-#        uses: styfle/cancel-workflow-action@0.9.1
-#        with:
-#          access_token: ${{ secrets.GITHUB_TOKEN }}
 #      -
 #        uses: actions/checkout@v3
 #      -
@@ -114,11 +98,6 @@ jobs:
       pull-requests: read
 
     steps:
-      -
-        name: Cancel previous workflows
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
       -
         uses: actions/checkout@v3
       -
