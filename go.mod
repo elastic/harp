@@ -150,6 +150,7 @@ require (
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/tools v0.29.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250122153221-138b5a5a4fd4 // indirect
+	k8s.io/apiserver v0.32.1 // indirect
 )
 
 require (
