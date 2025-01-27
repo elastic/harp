@@ -211,7 +211,7 @@ func (c *converter) convertTemplateConditional(expr *hclsyntax.ConditionalExpr) 
 	if err != nil {
 		return "", nil
 	}
-	if len(falseResult) > 0 {
+	if falseResult != "" {
 		builder.WriteString("%{else}")
 		builder.WriteString(falseResult)
 	}
@@ -223,7 +223,7 @@ func (c *converter) convertTemplateConditional(expr *hclsyntax.ConditionalExpr) 
 func (c *converter) convertTemplateFor(expr *hclsyntax.ForExpr) (string, error) {
 	var builder strings.Builder
 	builder.WriteString("%{for ")
-	if len(expr.KeyVar) > 0 {
+	if expr.KeyVar != "" {
 		builder.WriteString(expr.KeyVar)
 		builder.WriteString(", ")
 	}

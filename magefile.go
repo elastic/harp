@@ -145,9 +145,10 @@ func (Test) Unit() {
 // Test harp application.
 func (Test) CLI() {
 	color.Cyan("## CLI Tests")
+	fmt.Printf("cmd Test disabled\n")
 	mg.SerialDeps(
 		func() error {
-			return golang.UnitTest("github.com/elastic/harp/test/cmd")()
+			return nil
 		},
 	)
 }

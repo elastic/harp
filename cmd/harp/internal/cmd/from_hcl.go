@@ -36,7 +36,7 @@ var fromHCLCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "hcl",
 		Short: "Convert a HCL based bundle DSL to a secret-container",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-from-hcl", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

@@ -36,7 +36,7 @@ import (
 
 // Seal a secret container
 //
-//nolint:funlen,gocyclo // To refactor
+//nolint:gocyclo // To refactor
 func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, encodedPeerPublicKeys ...string) (*containerv1.Container, error) {
 	// Check parameters
 	if types.IsNil(container) {

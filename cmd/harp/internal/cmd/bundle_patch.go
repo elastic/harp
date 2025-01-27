@@ -49,7 +49,7 @@ var bundlePatchCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "patch",
 		Short: "Apply patch to the given bundle",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-bundle-patch", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
