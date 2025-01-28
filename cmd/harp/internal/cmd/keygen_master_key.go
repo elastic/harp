@@ -41,8 +41,7 @@ var keygenMasterKeyCmd = func() *cobra.Command {
 	return cmd
 }
 
-//nolint:revive // refactor use of args
-func runKeygenMasterKey(cmd *cobra.Command, args []string) {
+func runKeygenMasterKey(cmd *cobra.Command, _ []string) {
 	_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-masterkey", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
 

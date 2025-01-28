@@ -51,7 +51,7 @@ var bundleLintCmd = func() *cobra.Command {
 		Short:   "Lint the bundle using the given RuleSet spec",
 		Long:    longDesc,
 		Example: examples,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-bundle-lint", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

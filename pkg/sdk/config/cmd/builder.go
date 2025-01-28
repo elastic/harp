@@ -49,7 +49,7 @@ func NewConfigCommand(conf interface{}, envPrefix string) *cobra.Command {
 	configNewCmd := &cobra.Command{
 		Use:   "new",
 		Short: "Initialize a default configuration",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			defaults.SetDefaults(conf)
 
 			if !configNewAsEnvFlag {

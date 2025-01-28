@@ -42,7 +42,7 @@ var sharePutCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "put",
 		Short: "Put secret in Vault Cubbyhole and return a wrapped token",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "share-put", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

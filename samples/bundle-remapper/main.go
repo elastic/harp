@@ -37,7 +37,6 @@ func main() {
 
 	// Run the pipeline
 	if err := pipeline.Run(ctx,
-		"secret-remapper",                          // Job name
 		pipeline.PackageProcessor(packageRemapper), // Package processor
 	); err != nil {
 		log.For(ctx).Fatal("unable to process bundle", zap.Error(err))
