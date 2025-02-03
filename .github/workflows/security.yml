@@ -30,7 +30,7 @@ jobs:
         run: go list -json -m all > go.list
       -
         name: Nancy
-        uses: sonatype-nexus-community/nancy-github-action@v1.0.2
+        uses: sonatype-nexus-community/nancy-github-action@v1.0.3
 
   trivy:
     name: Trivy scanner
