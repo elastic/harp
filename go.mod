@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	filippo.io/age v1.2.0
+	filippo.io/age v1.2.1
 	filippo.io/edwards25519 v1.1.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Masterminds/semver/v3 v3.3.1
