@@ -732,5 +732,5 @@ oras.land/oras-go v1.2.6 h1:z8cmxQXBU8yZ4mkytWqXfo6tZcamPwjsuxYU81xJ8Lk=
 oras.land/oras-go v1.2.6/go.mod h1:OVPc1PegSEe/K8YiLfosrlqlqTN9PUyFvOw5Y9gwrT8=
 sigs.k8s.io/yaml v1.4.0 h1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=
 sigs.k8s.io/yaml v1.4.0/go.mod h1:Ejl7/uTz7PSA4eKMyQCUTnhZYNmLIl+5c2lQPGR2BPY=
-zntr.io/paseto v1.3.0 h1:nQ0A3CpZ/+ocNH+vm2zxXHldZGqbsQvMEgIb6Wo8B0M=
-zntr.io/paseto v1.3.0/go.mod h1:FkfPh6ea6vpW84ZaG2sxJeWSXwEKkJZCzGKp3VwJ0Gs=
+zntr.io/paseto v1.4.0 h1:bwk6orLmyrgCD9OKjtny3e0PSIaoTZiihdVHa6DidkY=
+zntr.io/paseto v1.4.0/go.mod h1:puEzjHDCzQ99c+j0mLs1+CVpD1somX9jmAmCdOwG9qY=
