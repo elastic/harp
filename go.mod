@@ -14,7 +14,7 @@ require (
 
 // GHSA
 require (
-	github.com/opencontainers/image-spec v1.1.0
+	github.com/opencontainers/image-spec v1.1.1
 	github.com/opencontainers/runc v1.2.4 // indirect
 )
 
