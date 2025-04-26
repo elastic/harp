@@ -92,7 +92,7 @@ jobs:
           go-version-file: go.mod
       -
         name: Lint code
-        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd  # v7.0.0
+        uses: golangci/golangci-lint-action@8b37f14162043f908949f1b363d061dc9ba713c0 # v1.64.8
         with:
           version: latest
           args: --timeout=10m
