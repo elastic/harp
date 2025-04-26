@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 
+	//nolint:staticcheck // TODO: deprecated usage. Requires an update.
 	"github.com/open-policy-agent/opa/rego"
 	"go.uber.org/zap"
 
