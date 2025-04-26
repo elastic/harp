@@ -26,7 +26,7 @@ jobs:
         run: git fetch --prune --unshallow
       -
         name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
       -
@@ -39,17 +39,17 @@ jobs:
             ${{ runner.os }}-go-
       -
         name: Download cyclonedx-gomod
-        uses: Zenithar/gh-gomod-generate-sbom@cd97098f01c993f4aa90ccb8aaf6d795d6194898  # v1.0.1
+        uses: Zenithar/gh-gomod-generate-sbom@2cdc82f8e362b12fdec116b716ce0130baec8be2  # v1.0.3
         with:
           version: v1.2.0
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
         name: Install Cosign
-        uses: sigstore/cosign-installer@v3.8.1
+        uses: sigstore/cosign-installer@v3.8.2
       -
         name: Import Code-Signing Certificates
-        uses: Apple-Actions/import-codesign-certs@63fff01cd422d4b7b855d40ca1e9d34d2de9427d  # v3
+        uses: Apple-Actions/import-codesign-certs@cfd6eb39a2c848ead8836bda6b56813585404ba7  # v5.0.0
         with:
           p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
           p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
@@ -61,7 +61,7 @@ jobs:
           brew install coreutils
       -
         name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200  # v6.0.0
+        uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552  # v6.3.0
         with:
           version: latest
           args: release --rm-dist --skip-publish
@@ -183,7 +183,7 @@ jobs:
           done
       -
         name: Upload to release
-        uses: AButler/upload-release-assets@ec6d3263266dc57eb6645b5f75e827987f7c217d  # v2.0
+        uses: AButler/upload-release-assets@3d6774fae0ed91407dc5ae29d576b166536d1777  # v3.0
         with:
           files: '.dist/*'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
