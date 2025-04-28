@@ -50,7 +50,6 @@ linters:
     - goprintffuncname
     - gosec
     - gosimple
-    - govet
     - ineffassign
     # - lll
     - misspell
@@ -165,9 +164,9 @@ linters-settings:
     check-generated: false
     default-signifies-exhaustive: false
   govet:
-    shadow:
-      strict: true
-  goimports:
+    settings:
+      shadow:
+        strict: true
     local-prefixes: "github.com/elastic"
   gofmt:
     simplify: true
@@ -192,7 +191,7 @@ linters-settings:
   nestif:
     min-complexity: 4
   unused:
-    check-exported: false
+    exported-fields-are-used: false
   unparam:
     check-exported: false
   nakedret:
@@ -209,7 +208,7 @@ linters-settings:
     blocked:
       modules:
         - github.com/BurntSushi/toml:
-            recommandations:
+            recommendations:
               - github.com/pelletier/go-toml
   goheader:
     template: |-
