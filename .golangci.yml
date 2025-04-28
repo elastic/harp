@@ -9,32 +9,15 @@ issues:
     - ".*\\.resolvers\\.go$"
 
 run:
-  # default concurrency is a available CPU number
   concurrency: 4
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
   timeout: 20m
-  # exit code when at least one issue was found, default is 1
   issues-exit-code: 1
-  # include test files or not, default is true
   tests: false
-
-  # by default isn't set. If set we pass it to "go list -mod={option}". From "go help modules":
-  # If invoked with -mod=readonly, the go command is disallowed from the implicit
-  # automatic updating of go.mod described above. Instead, it fails when any changes
-  # to go.mod are needed. This setting is most useful to check that go.mod does
-  # not need updates, such as in a continuous integration and testing system.
-  # If invoked with -mod=vendor, the go command assumes that the vendor
-  # directory holds the correct copies of dependencies and ignores
-  # the dependency descriptions in go.mod.
   modules-download-mode: readonly
-
-  # Allow multiple parallel golangci-lint instances running.
-  # If false (default) - golangci-lint acquires file lock on start.
   allow-parallel-runners: false
 
 # output configuration options
 output:
-  formats: colored-line-number
   print-issued-lines: true
   print-linter-name: true
   sort-results: true
@@ -44,18 +27,52 @@ output:
     - file
   show-stats: true
 
-  # add a prefix to the output file references; default is no prefix
-  path-prefix: ""
-
-  # sorts results by: filepath, line and column
-  sort-results: false
+linters:
+  enable:
+    - bodyclose
+    # - deadcode
+    - depguard
+    - dogsled
+    # - dupl
+    - errcheck
+    - errorlint
+    - copyloopvar
+    - exhaustive
+    - forbidigo
+    - funlen
+    # - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goheader
+    - goimports
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    # - lll
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - revive
+    - rowserrcheck
+    - staticcheck
+    # - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    # - varcheck
+    - whitespace
 
 linters-settings:
   dogsled:
-    # checks assignments with too many blank identifiers; default is 2
     max-blank-identifiers: 2
   dupl:
-    # tokens count to trigger issue, 150 by default
     threshold: 150
   depguard:
     rules:
@@ -139,31 +156,19 @@ linters-settings:
           - zntr.io/paseto/v4
 
   errcheck:
-    # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
-    # default is false: such cases aren't reported by default.
     check-type-assertions: false
-
-    # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`;
-    # default is false: such cases aren't reported by default.
     check-blank: false
-
-    # [deprecated] comma-separated list of pairs of the form pkg:regex
-    # the regex is used to ignore names within pkg. (default "fmt:.*").
-    # see https://github.com/kisielk/errcheck#the-deprecated-method for details
-    exclude-functions: fmt:.*,io/ioutil:^Read.*
+    exclude-functions:
+      - fmt:.*
+      - io/ioutil.Read.*
   exhaustive:
-    # check switch statements in generated files also
     check-generated: false
-    # indicates that switch statements are to be considered exhaustive if a
-    # 'default' case is present, even if all enum members aren't listed in the
-    # switch
     default-signifies-exhaustive: false
   govet:
-    shadow: true
+    shadow:
+      strict: true
   goimports:
-    local: "github.com/elastic"
-  golint:
-    min-confidence: 0.8
+    local-prefixes: "github.com/elastic"
   gofmt:
     simplify: true
   gocyclo:
@@ -177,47 +182,26 @@ linters-settings:
     line-length: 140
     tab-width: 1
   gci:
-    # put imports beginning with prefix after 3rd-party packages;
-    # only support one prefix
-    # if not set, use goimports.local-prefixes
     sections:
     - prefix(github.com/elastic)
   gocognit:
-    # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 20
   goconst:
-    # minimal length of string constant, 3 by default
     min-len: 3
-    # minimal occurrences count to trigger, 3 by default
     min-occurrences: 3
   nestif:
-    # minimal complexity of if statements to report, 5 by default
     min-complexity: 4
   unused:
-    # treat code as a program (not a library) and report unused exported identifiers; default is false.
-    # XXX: if you enable this setting, unused will report a lot of false-positives in text editors:
-    # if it's called for subdir of a project it can't find funcs usages. All text editor integrations
-    # with golangci-lint call it on a directory with the changed file.
     check-exported: false
   unparam:
-    # call graph construction algorithm (cha, rta). In general, use cha for libraries,
-    # and rta for programs with main packages. Default is cha.
-    algo: cha
-
-    # Inspect exported functions, default is false. Set to true if no external program/library imports your code.
-    # XXX: if you enable this setting, unparam will report a lot of false-positives in text editors:
-    # if it's called for subdir of a project it can't find external interfaces. All text editor integrations
-    # with golangci-lint call it on a directory with the changed file.
     check-exported: false
   nakedret:
     # make an issue if func has more lines of code than this setting and it has naked returns; default is 30
     max-func-lines: 30
   prealloc:
-    # Report preallocation suggestions only on simple loops that have no returns/breaks/continues/gotos in them.
-    # True by default.
     simple: true
-    range-loops: true # Report preallocation suggestions on range loops, true by default
-    for-loops: false # Report preallocation suggestions on for loops, false by default
+    range-loops: true
+    for-loops: false
   funlen:
     lines: 100
     statements: 50
@@ -246,53 +230,9 @@ linters-settings:
       specific language governing permissions and limitations
       under the License.
   gocritic:
-    # Enable multiple checks by tags, run `GL_DEBUG=gocritic golangci-lint run` to see all tags and checks.
-    # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".
     enabled-tags:
       - diagnostic
       - performance
       - style
       - opinionated
       - experimental
-
-linters:
-  enable:
-    - bodyclose
-    # - deadcode
-    - depguard
-    - dogsled
-    # - dupl
-    - errcheck
-    - errorlint
-    - copyloopvar
-    - exhaustive
-    - forbidigo
-    - funlen
-    # - gochecknoinits
-    - goconst
-    - gocritic
-    - gocyclo
-    - gofmt
-    - goheader
-    - goimports
-    - goprintffuncname
-    - gosec
-    - gosimple
-    - govet
-    - ineffassign
-    # - lll
-    - misspell
-    - nakedret
-    - noctx
-    - nolintlint
-    - revive
-    - rowserrcheck
-    - staticcheck
-    # - structcheck
-    - stylecheck
-    - typecheck
-    - unconvert
-    - unparam
-    - unused
-    # - varcheck
-    - whitespace
