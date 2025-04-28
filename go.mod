@@ -1,8 +1,6 @@
 module github.com/elastic/harp
 
-go 1.23.0
-
-toolchain go1.23.4
+go 1.23.8
 
 replace github.com/satori/go.uuid => github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 

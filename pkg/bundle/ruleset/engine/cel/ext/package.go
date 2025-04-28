@@ -44,6 +44,7 @@ type packageLib struct{}
 
 func (packageLib) CompileOptions() []cel.EnvOption {
 	return []cel.EnvOption{
+		//nolint:staticcheck // TODO: deprecated usage. Requires an update.
 		cel.Declarations(
 			decls.NewVar("p", harpPackageObjectType),
 			decls.NewFunction("match_label",

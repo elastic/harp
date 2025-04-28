@@ -32,13 +32,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Checkout code
+        uses: actions/checkout@v4
+      -
         name: Install Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      -
-        name: Checkout code
-        uses: actions/checkout@v4
       -
         name: Check go mod and go.sum
         run: |
@@ -83,15 +83,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
         name: Install Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
       -
-        uses: actions/checkout@v4
-      -
         name: Lint code
-        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd  # v7.0.0
+        uses: golangci/golangci-lint-action@4696ba8babb6127d732c3c6dde519db15edab9ea  # v6.5.1
         with:
           version: latest
           args: --timeout=10m
