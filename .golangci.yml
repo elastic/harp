@@ -108,7 +108,6 @@ linters-settings:
           - github.com/opencontainers/image-spec
           - github.com/ory/dockertest/v3
           - github.com/pelletier/go-toml
-          - github.com/pelletier/go-toml
           - github.com/pierrec/lz4
           - github.com/pkg/errors
           - github.com/psanford/memfs
