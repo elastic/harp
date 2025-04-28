@@ -167,6 +167,7 @@ linters-settings:
     settings:
       shadow:
         strict: true
+  goimports:
     local-prefixes: "github.com/elastic"
   gofmt:
     simplify: true
