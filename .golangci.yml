@@ -164,10 +164,6 @@ linters-settings:
   exhaustive:
     check-generated: false
     default-signifies-exhaustive: false
-  govet:
-    settings:
-      shadow:
-        strict: true
   goimports:
     local-prefixes: "github.com/elastic"
   gofmt:
