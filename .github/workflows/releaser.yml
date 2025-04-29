@@ -39,9 +39,9 @@ jobs:
             ${{ runner.os }}-go-
       -
         name: Download cyclonedx-gomod
-        uses: Zenithar/gh-gomod-generate-sbom@2cdc82f8e362b12fdec116b716ce0130baec8be2  # v1.0.3
+        uses: CycloneDX/gh-gomod-generate-sbom@v2
         with:
-          version: v1.2.0
+          version: v1.8.0
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
