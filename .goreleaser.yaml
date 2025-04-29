@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
 project_name: harp
 
 before:
@@ -6,7 +8,7 @@ before:
     - go mod vendor
 
 gomod:
-  proxy: true
+  proxy: false
 
 builds:
   - id: harp
@@ -45,11 +47,11 @@ builds:
     no_unique_dist_dir: true
 
 archives:
-  - format: binary
+  - formats: ["binary"]
     name_template: '{{ .Binary }}'
 
 snapshot:
-  name_template: "{{.Tag}}-next"
+  version_template: "{{.Tag}}-next"
 
 checksum:
   name_template: 'checksums.txt'
@@ -58,4 +60,4 @@ release:
   disable: true
 
 changelog:
-  skip: true
+  disable: true
