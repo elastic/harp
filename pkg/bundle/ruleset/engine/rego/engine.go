@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 
+	//nolint:staticcheck // deprecated package requires refactor
 	"github.com/open-policy-agent/opa/rego"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
