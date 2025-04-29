@@ -23,13 +23,13 @@ import (
 	"strings"
 	"time"
 
-	exec "golang.org/x/sys/execabs"
-
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 
 	"github.com/elastic/harp/build/artifact"
 	"github.com/elastic/harp/build/mage/git"
+
+	exec "golang.org/x/sys/execabs"
 )
 
 var dockerTemplate = strings.TrimSpace(`
@@ -78,8 +78,8 @@ RUN set -eux; \
 
 # Compress binaries
 RUN set -eux; \
-    upx -9 bin/* && \
-    chmod +x bin/*
+    upx -9 bin/{{.Cmd.Kebab}}-linux-{{.GoArchitecture}} && \
+    chmod +x bin/{{.Cmd.Kebab}}-linux-{{.GoArchitecture}}
 
 ## -------------------------------------------------------------------------------------------------
 
@@ -104,9 +104,9 @@ LABEL \
 	org.opencontainers.image.licences="ASL2"
 
 {{ if .Cmd.HasModule }}
-COPY --from=compiler /go/src/workspace/{{.Cmd.Module}}/bin/{{.Cmd.Kebab}}-linux-amd64 /usr/bin/{{.Cmd.Kebab}}
+COPY --from=compiler /go/src/workspace/{{.Cmd.Module}}/bin/{{.Cmd.Kebab}}-linux-{{.GoArchitecture}} usr/bin/{{.Cmd.Kebab}}
 {{ else }}
-COPY --from=compiler /go/src/workspace/bin/{{.Cmd.Kebab}}-linux-amd64 /usr/bin/{{.Cmd.Kebab}}
+COPY --from=compiler /go/src/workspace/bin/{{.Cmd.Kebab}}-linux-{{.GoArchitecture}} /usr/bin/{{.Cmd.Kebab}}
 {{ end }}
 
 COPY --from=compiler /tmp/group /tmp/passwd /etc/
@@ -131,11 +131,12 @@ func Build(cmd *artifact.Command) func() error {
 		}
 
 		buf, err := merge(dockerTemplate, map[string]interface{}{
-			"ToolImageName": toolImageName,
-			"BuildDate":     time.Now().Format(time.RFC3339),
-			"Version":       git.Tag,
-			"VcsRef":        git.Revision,
-			"Cmd":           cmd,
+			"ToolImageName":  toolImageName,
+			"GoArchitecture": goArchitecture,
+			"BuildDate":      time.Now().Format(time.RFC3339),
+			"Version":        git.Tag,
+			"VcsRef":         git.Revision,
+			"Cmd":            cmd,
 		})
 		if err != nil {
 			return err

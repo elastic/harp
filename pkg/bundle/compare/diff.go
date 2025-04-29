@@ -50,6 +50,7 @@ type DiffItem struct {
 // -----------------------------------------------------------------------------
 
 // Diff calculates bundle differences.
+//
 //nolint:funlen,gocognit,gocyclo // To refactor
 func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 	// Check arguments

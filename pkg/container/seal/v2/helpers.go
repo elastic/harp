@@ -31,13 +31,13 @@ import (
 	"fmt"
 	"io"
 
-	"golang.org/x/crypto/hkdf"
-
 	"github.com/awnumar/memguard"
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 	"github.com/elastic/harp/pkg/sdk/security"
+
+	"golang.org/x/crypto/hkdf"
 )
 
 func tryRecipientKeys(derivedKey *[32]byte, recipients []*containerv1.Recipient) (*[32]byte, error) {

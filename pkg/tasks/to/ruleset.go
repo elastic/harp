@@ -21,10 +21,9 @@ import (
 	"context"
 	"fmt"
 
-	"sigs.k8s.io/yaml"
-
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/bundle/ruleset"
+	"github.com/elastic/harp/pkg/sdk/convert"
 	"github.com/elastic/harp/pkg/tasks"
 )
 
@@ -55,9 +54,9 @@ func (t *RuleSetTask) Run(ctx context.Context) error {
 	}
 
 	// Marshal as YAML
-	ruleSetSpec, err := yaml.Marshal(rs)
+	out, err := convert.PBtoYAML(rs)
 	if err != nil {
-		return fmt.Errorf("unable to generate YAML descriptor: %w", err)
+		return fmt.Errorf("unable to marshal as YAML: %w", err)
 	}
 
 	// Create output writer
@@ -67,7 +66,7 @@ func (t *RuleSetTask) Run(ctx context.Context) error {
 	}
 
 	// Write output
-	fmt.Fprintln(writer, string(ruleSetSpec))
+	fmt.Fprintln(writer, string(out))
 
 	// No error
 	return nil

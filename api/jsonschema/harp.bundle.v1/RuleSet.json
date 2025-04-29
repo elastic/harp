@@ -80,7 +80,7 @@
           "description": "RuleSet name."
         },
         "owner": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "RuleSet owner."
         },
         "description": {
@@ -88,7 +88,7 @@
           "description": "Short description for ruleset."
         }
       },
-      "required": ["name", "owner", "description"],
+      "required": ["name", "description"],
       "additionalProperties": false,
       "type": "object",
       "title": "Rule Set Meta",

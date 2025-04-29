@@ -42,21 +42,25 @@ func (d *pasetoTransformer) To(_ context.Context, input []byte) ([]byte, error) 
 	}
 
 	var (
-		out []byte
-		err error
+		out     []byte
+		payload string
+		err     error
+		f, s    []byte
 	)
 
 	switch sk := d.key.(type) {
 	case ed25519.PrivateKey:
-		out, err = pasetov4.Sign(input, sk, "", "")
+		payload, err = pasetov4.Sign(input, sk, f, s)
 	case *ecdsa.PrivateKey:
-		out, err = pasetov3.Sign(input, sk, "", "")
+		payload, err = pasetov3.Sign(input, sk, f, s)
 	default:
 		return nil, errors.New("paseto: key is not supported")
 	}
 	if err != nil {
 		return nil, fmt.Errorf("paseto: unable so sign input: %w", err)
 	}
+
+	out = []byte(payload)
 
 	// No error
 	return out, nil
@@ -66,13 +70,14 @@ func (d *pasetoTransformer) From(_ context.Context, input []byte) ([]byte, error
 	var (
 		payload []byte
 		err     error
+		f, i    []byte
 	)
 
 	switch sk := d.key.(type) {
 	case ed25519.PublicKey:
-		payload, err = pasetov4.Verify(input, sk, "", "")
+		payload, err = pasetov4.Verify(string(input), sk, f, i)
 	case *ecdsa.PublicKey:
-		payload, err = pasetov3.Verify(input, sk, "", "")
+		payload, err = pasetov3.Verify(string(input), sk, f, i)
 	default:
 		return nil, errors.New("paseto: key is not supported")
 	}

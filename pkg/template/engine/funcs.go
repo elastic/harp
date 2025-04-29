@@ -40,7 +40,6 @@ import (
 )
 
 // FuncMap returns a mapping of all of the functions that Temmplate has.
-//nolint:funlen // To refactor
 func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 	f := sprig.TxtFuncMap()
 

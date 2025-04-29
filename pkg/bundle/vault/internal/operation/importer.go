@@ -24,9 +24,6 @@ import (
 	"strings"
 	"sync"
 
-	"golang.org/x/sync/errgroup"
-	"golang.org/x/sync/semaphore"
-
 	"github.com/hashicorp/vault/api"
 	"go.uber.org/zap"
 
@@ -35,6 +32,9 @@ import (
 	"github.com/elastic/harp/pkg/sdk/log"
 	"github.com/elastic/harp/pkg/vault/kv"
 	vpath "github.com/elastic/harp/pkg/vault/path"
+
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 // Importer initialize a secret importer operation
@@ -64,7 +64,8 @@ type importer struct {
 }
 
 // Run the implemented operation
-// nolint:gocognit,funlen,gocyclo // To refactor
+//
+//nolint:gocognit,funlen,gocyclo // To refactor
 func (op *importer) Run(ctx context.Context) error {
 	// Initialize sub context
 	g, gctx := errgroup.WithContext(ctx)
@@ -89,9 +90,6 @@ func (op *importer) Run(ctx context.Context) error {
 
 		// Listen for message
 		for secretPackage := range packageChan {
-			// Assign local reference
-			secretPackage := secretPackage
-
 			if err := gWriterCtx.Err(); err != nil {
 				// Stop processing
 				break

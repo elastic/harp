@@ -21,13 +21,13 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"golang.org/x/crypto/blake2b"
-
 	"google.golang.org/protobuf/proto"
 
 	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/elastic/harp/pkg/bundle/template/visitor"
 	"github.com/elastic/harp/pkg/sdk/types"
+
+	"golang.org/x/crypto/blake2b"
 )
 
 // Validate bundle template.

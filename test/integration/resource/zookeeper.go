@@ -29,6 +29,8 @@ import (
 )
 
 // Zookeeper creates a test zookeeper server inside a Docker container.
+//
+//nolint:revive // refactor use of ctx
 func Zookeeper(ctx context.Context, tb testing.TB) string {
 	pool, err := dockertest.NewPool("")
 	if err != nil {

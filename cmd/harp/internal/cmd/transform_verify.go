@@ -41,7 +41,7 @@ var transformVerifyCmd = func() *cobra.Command {
 		Use:     "verify",
 		Short:   "Verify and unpack the given value with a transformer",
 		Aliases: []string{"s"},
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-transform-verify", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

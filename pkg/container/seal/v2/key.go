@@ -14,6 +14,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
+
 package v2
 
 import (
@@ -27,11 +28,11 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/crypto/pbkdf2"
-
 	"github.com/awnumar/memguard"
 
 	"github.com/elastic/harp/pkg/container/seal"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
 const (

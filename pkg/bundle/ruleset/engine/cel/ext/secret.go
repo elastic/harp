@@ -44,6 +44,7 @@ type secretLib struct{}
 
 func (secretLib) CompileOptions() []cel.EnvOption {
 	return []cel.EnvOption{
+		//nolint:staticcheck // TODO: deprecated usage. Requires an update.
 		cel.Declarations(
 			decls.NewFunction("is_base64",
 				decls.NewInstanceOverload("kv_is_base64",
@@ -87,6 +88,7 @@ func (secretLib) CompileOptions() []cel.EnvOption {
 
 func (secretLib) ProgramOptions() []cel.ProgramOption {
 	return []cel.ProgramOption{
+		//nolint:staticcheck // TODO: refactor for deprecations
 		cel.Functions(
 			&functions.Overload{
 				Operator: "kv_is_base64",

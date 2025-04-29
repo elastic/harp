@@ -81,7 +81,8 @@ func Serve(ctx context.Context, srv *Server) error {
 		}
 
 		server := &http.Server{
-			Handler: instrumentationRouter,
+			Handler:           instrumentationRouter,
+			ReadHeaderTimeout: time.Duration(srv.Instrumentation.TimeOut) * time.Second,
 		}
 
 		group.Add(
@@ -89,7 +90,7 @@ func Serve(ctx context.Context, srv *Server) error {
 				log.For(ctx).Info("Starting instrumentation server", zap.String("address", ln.Addr().String()))
 				return server.Serve(ln)
 			},
-			func(e error) {
+			func(_ error) {
 				log.For(ctx).Info("Shutting instrumentation server down")
 
 				ctxShutdown, cancel := context.WithTimeout(ctx, 60*time.Second)
@@ -130,7 +131,7 @@ func Serve(ctx context.Context, srv *Server) error {
 
 				return nil
 			},
-			func(e error) {
+			func(_ error) {
 				close(cancelInterrupt)
 				signal.Stop(ch)
 			},

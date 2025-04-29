@@ -23,16 +23,17 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/crypto/nacl/secretbox"
-
 	"github.com/awnumar/memguard"
 	"google.golang.org/protobuf/proto"
 
 	containerv1 "github.com/elastic/harp/api/gen/go/harp/container/v1"
 	"github.com/elastic/harp/pkg/sdk/types"
+
+	"golang.org/x/crypto/nacl/secretbox"
 )
 
 // Unseal a sealed container with the given identity
+//
 //nolint:gocyclo,funlen // To refactor
 func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.LockedBuffer) (*containerv1.Container, error) {
 	// Check parameters

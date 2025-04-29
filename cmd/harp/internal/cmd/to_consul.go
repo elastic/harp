@@ -42,7 +42,7 @@ var toConsulCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "consul",
 		Short: "Publish bundle data into HashiCorp Consul",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-kv-to-consul", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

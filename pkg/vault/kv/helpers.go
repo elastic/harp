@@ -45,6 +45,7 @@ func kvPreflightVersionRequest(client *api.Client, secretPath string) (mountPath
 	defer client.SetOutputCurlString(currentOutputCurlString)
 
 	r := client.NewRequest("GET", "/v1/sys/internal/ui/mounts/"+secretPath)
+	//nolint:staticcheck // TODO: refactor for use of client.Logical().ReadRaw
 	resp, err := client.RawRequest(r)
 	if resp != nil {
 		defer resp.Body.Close()

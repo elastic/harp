@@ -46,6 +46,7 @@ type FilterTask struct {
 }
 
 // Run the task.
+//
 //nolint:gocyclo // to refactor
 func (t *FilterTask) Run(ctx context.Context) error {
 	// Check arguments

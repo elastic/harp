@@ -36,7 +36,7 @@ var fromDumpCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dump",
 		Short: "Import from bundle dump output as a secret container",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context
 			ctx, cancel := cmdutil.Context(cmd.Context(), "harp-from-dump", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()

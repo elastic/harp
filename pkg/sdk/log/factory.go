@@ -48,6 +48,8 @@ func (b factory) Bg() Logger {
 }
 
 // For returns a context-aware Logger.
+//
+//nolint:revive // refactor use of ctx
 func (b factory) For(ctx context.Context) Logger {
 	return b.Bg()
 }

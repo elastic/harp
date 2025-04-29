@@ -41,7 +41,7 @@ var keygenFernetCmd = func() *cobra.Command {
 	return cmd
 }
 
-func runKeygenFernet(cmd *cobra.Command, args []string) {
+func runKeygenFernet(cmd *cobra.Command, _ []string) {
 	ctx, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-fernet", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
 
@@ -52,5 +52,8 @@ func runKeygenFernet(cmd *cobra.Command, args []string) {
 	}
 
 	// Print the key
-	fmt.Fprint(os.Stdout, k.Encode())
+	_, err := fmt.Fprint(os.Stdout, k.Encode())
+	if err != nil {
+		log.For(ctx).Fatal("unable to output Fernet key", zap.Error(err))
+	}
 }

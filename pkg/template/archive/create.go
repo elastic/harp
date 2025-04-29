@@ -33,6 +33,7 @@ import (
 )
 
 // Create an archive from given options to the given writer.
+//
 //nolint:gocyclo,funlen // to refactor
 func Create(fileSystem fs.FS, w io.Writer, opts ...CreateOption) error {
 	// Check arguments

@@ -7,9 +7,9 @@ on:
         description: 'Release version'
         required: true
 
-permissions:
-  # Required to stop running workflows
-  actions: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   release:
@@ -19,25 +19,19 @@ jobs:
       contents: write
     steps:
       -
-        name: Cancel previous workflows
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
-      -
         name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: Unshallow
         run: git fetch --prune --unshallow
       -
         name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.17'
-          check-latest: true
+          go-version-file: go.mod
       -
         name: Cache Go modules
-        uses: actions/cache@v3.0.3
+        uses: actions/cache@v4.2.0
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -45,17 +39,17 @@ jobs:
             ${{ runner.os }}-go-
       -
         name: Download cyclonedx-gomod
-        uses: Zenithar/gh-gomod-generate-sbom@v1.0.1
+        uses: Zenithar/gh-gomod-generate-sbom@2cdc82f8e362b12fdec116b716ce0130baec8be2  # v1.0.3
         with:
           version: v1.2.0
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
         name: Install Cosign
-        uses: sigstore/cosign-installer@v2.3.0
+        uses: sigstore/cosign-installer@v3.8.2
       -
         name: Import Code-Signing Certificates
-        uses: Apple-Actions/import-codesign-certs@v1
+        uses: Apple-Actions/import-codesign-certs@cfd6eb39a2c848ead8836bda6b56813585404ba7  # v5.0.0
         with:
           p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
           p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
@@ -67,7 +61,7 @@ jobs:
           brew install coreutils
       -
         name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v3
+        uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552  # v6.3.0
         with:
           version: latest
           args: release --rm-dist --skip-publish
@@ -189,7 +183,7 @@ jobs:
           done
       -
         name: Upload to release
-        uses: AButler/upload-release-assets@v2.0
+        uses: AButler/upload-release-assets@3d6774fae0ed91407dc5ae29d576b166536d1777  # v3.0
         with:
           files: '.dist/*'
           repo-token: ${{ secrets.GITHUB_TOKEN }}

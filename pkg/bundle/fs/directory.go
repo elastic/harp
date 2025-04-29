@@ -15,9 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//go:build go1.16
-// +build go1.16
-
 package fs
 
 import (
@@ -52,6 +49,7 @@ func (d *directory) Stat() (fs.FileInfo, error) {
 	}, nil
 }
 
+//nolint:revive // refactor use of byte
 func (d *directory) Read(b []byte) (int, error) {
 	return 0, errors.New("is a directory")
 }

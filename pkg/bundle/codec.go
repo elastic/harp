@@ -145,6 +145,7 @@ func Read(b *bundlev1.Bundle, secretPath string) (map[string]interface{}, error)
 }
 
 // AsProtoJSON export given bundle as a JSON representation.
+//
 //nolint:interfacer // Tighly coupled with type
 func AsProtoJSON(w io.Writer, b *bundlev1.Bundle) error {
 	// Check parameters

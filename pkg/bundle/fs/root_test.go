@@ -15,8 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// +build go1.16
-
 package fs
 
 import (
@@ -30,7 +28,7 @@ import (
 
 func TestFromBundle(t *testing.T) {
 	type args struct {
-		b     *bundlev1.Bundle
+		b *bundlev1.Bundle
 	}
 	tests := []struct {
 		name    string

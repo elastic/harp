@@ -9,6 +9,10 @@ on:
   schedule:
     - cron: '0 11 * * 6'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   analyze:
     name: Analyze
@@ -17,18 +21,11 @@ jobs:
     permissions:
       # required for all workflows
       security-events: write
-      # only required for workflows in private repositories
-      actions: write
       contents: read
 
     steps:
-    -
-      name: Cancel previous workflows
-      uses: styfle/cancel-workflow-action@0.9.1
-      with:
-        access_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         # We must fetch at least the immediate parents so that if this is
         # a pull request then we can checkout the head.
@@ -36,14 +33,14 @@ jobs:
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: go
     -
       name: Set up Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v5
       with:
-        go-version: 1.17
+        go-version-file: go.mod
     -
       name: Build Harp
       run: |
@@ -56,4 +53,4 @@ jobs:
         RELEASE: ${{ github.event.inputs.release }}
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3

@@ -44,6 +44,7 @@ type packageLib struct{}
 
 func (packageLib) CompileOptions() []cel.EnvOption {
 	return []cel.EnvOption{
+		//nolint:staticcheck // TODO: deprecated usage. Requires an update.
 		cel.Declarations(
 			decls.NewVar("p", harpPackageObjectType),
 			decls.NewFunction("match_label",
@@ -116,6 +117,7 @@ func (packageLib) ProgramOptions() []cel.ProgramOption {
 	}
 
 	return []cel.ProgramOption{
+		//nolint:staticcheck // TODO: refactor for deprecations
 		cel.Functions(
 			&functions.Overload{
 				Operator: "package_match_label_string",
@@ -443,7 +445,7 @@ func celPackageIsCSOCompliant(lhs ref.Val) ref.Val {
 	return types.Bool(true)
 }
 
-func celPackageGetSecret(reg ref.TypeAdapter) func(lhs, rhs ref.Val) ref.Val {
+func celPackageGetSecret(reg types.Adapter) func(lhs, rhs ref.Val) ref.Val {
 	return func(lhs, rhs ref.Val) ref.Val {
 		x, _ := lhs.ConvertToNative(reflect.TypeOf(&bundlev1.Package{}))
 		p, ok := x.(*bundlev1.Package)

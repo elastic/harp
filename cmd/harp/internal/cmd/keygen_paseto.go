@@ -34,7 +34,7 @@ var keygenPasetoCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "paseto",
 		Short: "Generate and print an v4.local paseto key",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-paseto", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 

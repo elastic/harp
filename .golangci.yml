@@ -1,148 +1,204 @@
-run:
-  # default concurrency is a available CPU number
-  concurrency: 4
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
-  deadline: 20m
-  # exit code when at least one issue was found, default is 1
-  issues-exit-code: 1
-  # include test files or not, default is true
-  tests: false
-
-  skip-files:
+issues:
+  exclude-dirs-use-default: true
+  uniq-by-line: true
+  exclude-files:
     - ".*\\.pb\\.go$"
     - ".*\\.gen\\.go$"
     - ".*\\_gen\\.go$"
     - "mock_.*\\.go"
     - ".*\\.resolvers\\.go$"
 
-  # default is true. Enables skipping of directories:
-  #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
-  skip-dirs-use-default: true
-
-  # by default isn't set. If set we pass it to "go list -mod={option}". From "go help modules":
-  # If invoked with -mod=readonly, the go command is disallowed from the implicit
-  # automatic updating of go.mod described above. Instead, it fails when any changes
-  # to go.mod are needed. This setting is most useful to check that go.mod does
-  # not need updates, such as in a continuous integration and testing system.
-  # If invoked with -mod=vendor, the go command assumes that the vendor
-  # directory holds the correct copies of dependencies and ignores
-  # the dependency descriptions in go.mod.
+run:
+  concurrency: 4
+  timeout: 20m
+  issues-exit-code: 1
+  tests: false
   modules-download-mode: readonly
-
-  # Allow multiple parallel golangci-lint instances running.
-  # If false (default) - golangci-lint acquires file lock on start.
   allow-parallel-runners: false
 
 # output configuration options
 output:
-  # colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
-  # default is "colored-line-number"
-  format: colored-line-number
-
-  # print lines of code with issue, default is true
   print-issued-lines: true
-
-  # print linter name in the end of issue text, default is true
   print-linter-name: true
+  sort-results: true
+  sort-order:
+    - linter
+    - severity
+    - file
+  show-stats: true
 
-  # make issues output unique by line, default is true
-  uniq-by-line: true
-
-  # add a prefix to the output file references; default is no prefix
-  path-prefix: ""
-
-  # sorts results by: filepath, line and column
-  sort-results: false
+linters:
+  enable:
+    - bodyclose
+    # - deadcode
+    - depguard
+    - dogsled
+    # - dupl
+    - errcheck
+    - errorlint
+    - copyloopvar
+    - exhaustive
+    - forbidigo
+    - funlen
+    # - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - govet
+    - goheader
+    - goimports
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - ineffassign
+    # - lll
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - revive
+    - rowserrcheck
+    - staticcheck
+    # - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    # - varcheck
+    - whitespace
 
 linters-settings:
   dogsled:
-    # checks assignments with too many blank identifiers; default is 2
     max-blank-identifiers: 2
   dupl:
-    # tokens count to trigger issue, 150 by default
     threshold: 150
+  depguard:
+    rules:
+      main:
+        allow:
+          - $gostd
+          - filippo.io/age
+          - filippo.io/age/armor
+          - filippo.io/edwards25519
+          - github.com/MakeNowJust/heredoc/v2
+          - github.com/Masterminds/semver/v3
+          - github.com/Masterminds/sprig/v3
+          - github.com/alessio/shellescape
+          - github.com/awnumar/memguard
+          - github.com/basgys/goxml2json
+          - github.com/cloudflare/tableflip
+          - github.com/dchest/uniuri
+          - github.com/elastic
+          - github.com/fatih/color
+          - github.com/fatih/structs
+          - github.com/fernet/fernet-go
+          - github.com/go-akka/configuration
+          - github.com/go-akka/configuration
+          - github.com/go-ozzo/ozzo-validation/v4
+          - github.com/go-zookeeper/zk
+          - github.com/gobwas/glob
+          - github.com/golang/mock/mockgen/model
+          - github.com/golang/protobuf
+          - github.com/golang/snappy
+          - github.com/google/cel-go
+          - github.com/google/go-github/v42/github
+          - github.com/google/gops/agent
+          - github.com/gosimple/slug
+          - github.com/hashicorp/consul/api
+          - github.com/hashicorp/hcl
+          - github.com/hashicorp/hcl/v2
+          - github.com/hashicorp/hcl/v2/hclsimple
+          - github.com/hashicorp/hcl/v2/hclsyntax
+          - github.com/hashicorp/vault/api
+          - github.com/iancoleman/strcase
+          - github.com/imdario/mergo
+          - github.com/jmespath/go-jmespath
+          - github.com/klauspost/compress
+          - github.com/magefile/mage
+          - github.com/mcuadros/go-defaults
+          - github.com/miscreant/miscreant.go
+          - github.com/oklog/run
+          - github.com/open-policy-agent/opa/rego
+          - github.com/opencontainers/go-digest
+          - github.com/opencontainers/image-spec
+          - github.com/ory/dockertest/v3
+          - github.com/pelletier/go-toml
+          - github.com/pierrec/lz4
+          - github.com/pkg/errors
+          - github.com/psanford/memfs
+          - github.com/sethvargo/go-diceware/diceware
+          - github.com/sethvargo/go-password/password
+          - github.com/skratchdot/open-golang/open
+          - github.com/spf13/cobra
+          - github.com/spf13/viper
+          - github.com/ulikunitz/xz
+          - github.com/xeipuuv/gojsonschema
+          - github.com/zclconf/go-cty/cty
+          - gitlab.com/NebulousLabs/merkletree
+          - go.etcd.io/etcd
+          - go.step.sm/crypto
+          - go.uber.org/zap
+          - golang.org/x/crypto
+          - golang.org/x/oauth2
+          - golang.org/x/ssh
+          - golang.org/x/sync
+          - golang.org/x/sys
+          - golang.org/x/term
+          - google.golang.org/genproto
+          - google.golang.org/protobuf
+          - gopkg.in/square/go-jose.v2
+          - gopkg.in/yaml.v3
+          - oras.land/oras-go
+          - sigs.k8s.io/yaml
+          - zntr.io/paseto/v3
+          - zntr.io/paseto/v4
+
   errcheck:
-    # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
-    # default is false: such cases aren't reported by default.
     check-type-assertions: false
-
-    # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`;
-    # default is false: such cases aren't reported by default.
     check-blank: false
-
-    # [deprecated] comma-separated list of pairs of the form pkg:regex
-    # the regex is used to ignore names within pkg. (default "fmt:.*").
-    # see https://github.com/kisielk/errcheck#the-deprecated-method for details
-    ignore: fmt:.*,io/ioutil:^Read.*
+    exclude-functions:
+      - fmt:.*
+      - io/ioutil.Read.*
   exhaustive:
-    # check switch statements in generated files also
     check-generated: false
-    # indicates that switch statements are to be considered exhaustive if a
-    # 'default' case is present, even if all enum members aren't listed in the
-    # switch
     default-signifies-exhaustive: false
-  govet:
-    # report about shadowed variables
-    check-shadowing: true
   goimports:
-    local: "github.com/elastic"
-  golint:
-    min-confidence: 0.8
+    local-prefixes: "github.com/elastic"
   gofmt:
     simplify: true
   gocyclo:
     min-complexity: 15
+  gosec:
+    excludes:
+    - G115 # integer overflow conversion
   misspell:
     locale: US
   lll:
     line-length: 140
     tab-width: 1
   gci:
-    # put imports beginning with prefix after 3rd-party packages;
-    # only support one prefix
-    # if not set, use goimports.local-prefixes
-    local-prefixes: github.com/elastic
+    sections:
+    - prefix(github.com/elastic)
   gocognit:
-    # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 20
   goconst:
-    # minimal length of string constant, 3 by default
     min-len: 3
-    # minimal occurrences count to trigger, 3 by default
     min-occurrences: 3
   nestif:
-    # minimal complexity of if statements to report, 5 by default
     min-complexity: 4
-  gomnd:
-    settings:
-      mnd:
-        # don't include the "operation" and "assign"
-        checks: argument,case,condition,return
   unused:
-    # treat code as a program (not a library) and report unused exported identifiers; default is false.
-    # XXX: if you enable this setting, unused will report a lot of false-positives in text editors:
-    # if it's called for subdir of a project it can't find funcs usages. All text editor integrations
-    # with golangci-lint call it on a directory with the changed file.
-    check-exported: false
+    exported-fields-are-used: false
   unparam:
-    # call graph construction algorithm (cha, rta). In general, use cha for libraries,
-    # and rta for programs with main packages. Default is cha.
-    algo: cha
-
-    # Inspect exported functions, default is false. Set to true if no external program/library imports your code.
-    # XXX: if you enable this setting, unparam will report a lot of false-positives in text editors:
-    # if it's called for subdir of a project it can't find external interfaces. All text editor integrations
-    # with golangci-lint call it on a directory with the changed file.
     check-exported: false
   nakedret:
     # make an issue if func has more lines of code than this setting and it has naked returns; default is 30
     max-func-lines: 30
   prealloc:
-    # Report preallocation suggestions only on simple loops that have no returns/breaks/continues/gotos in them.
-    # True by default.
     simple: true
-    range-loops: true # Report preallocation suggestions on range loops, true by default
-    for-loops: false # Report preallocation suggestions on for loops, false by default
+    range-loops: true
+    for-loops: false
   funlen:
     lines: 100
     statements: 50
@@ -150,7 +206,7 @@ linters-settings:
     blocked:
       modules:
         - github.com/BurntSushi/toml:
-            recommandations:
+            recommendations:
               - github.com/pelletier/go-toml
   goheader:
     template: |-
@@ -171,54 +227,9 @@ linters-settings:
       specific language governing permissions and limitations
       under the License.
   gocritic:
-    # Enable multiple checks by tags, run `GL_DEBUG=gocritic golangci-lint run` to see all tags and checks.
-    # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".
     enabled-tags:
       - diagnostic
       - performance
       - style
       - opinionated
       - experimental
-
-linters:
-  enable:
-    - bodyclose
-    - deadcode
-    - depguard
-    - dogsled
-    # - dupl
-    - errcheck
-    - errorlint
-    - exportloopref
-    - exhaustive
-    - forbidigo
-    - funlen
-    # - gochecknoinits
-    - goconst
-    - gocritic
-    - gocyclo
-    - gofmt
-    - goheader
-    - goimports
-    # - gomnd
-    - goprintffuncname
-    - gosec
-    - gosimple
-    - govet
-    - ineffassign
-    # - lll
-    - misspell
-    - nakedret
-    - noctx
-    - nolintlint
-    - revive
-    - rowserrcheck
-    - staticcheck
-    - structcheck
-    - stylecheck
-    - typecheck
-    - unconvert
-    - unparam
-    - unused
-    - varcheck
-    - whitespace
