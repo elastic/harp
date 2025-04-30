@@ -53,12 +53,10 @@ jobs:
       #  with:
       #    p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
       #    p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
-      # -
-      #   name: Install gon via HomeBrew for code signing and app notarization
-      #   run: |
-      #     brew tap mitchellh/gon
-      #     brew install mitchellh/gon/gon
-      #     brew install coreutils
+      -
+         name: Install coreutils
+         run: |
+           brew install coreutils
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552  # v6.3.0
@@ -146,7 +144,7 @@ jobs:
           #!/bin/bash
           shopt -s expand_aliases
           cd .dist
-          sha256 *.tar.gz > checksums.txt
+          sha256sum *.tar.gz > checksums.txt
           FILES="*"
           for f in $FILES;
           do
@@ -155,7 +153,7 @@ jobs:
                 cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
             *.tar.gz)
-                sha256 "$f" | cut -d " " -f 4 > "$f.sha256"
+                sha256sum "$f" | cut -d " " -f 1 > "$f.sha256"
                 cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
             esac
