@@ -47,18 +47,18 @@ jobs:
       -
         name: Install Cosign
         uses: sigstore/cosign-installer@v3.8.2
-      -
-        name: Import Code-Signing Certificates
-        uses: Apple-Actions/import-codesign-certs@cfd6eb39a2c848ead8836bda6b56813585404ba7  # v5.0.0
-        with:
-          p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
-          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
-      -
-        name: Install gon via HomeBrew for code signing and app notarization
-        run: |
-          brew tap mitchellh/gon
-          brew install mitchellh/gon/gon
-          brew install coreutils
+      #-
+      #  name: Import Code-Signing Certificates
+      #  uses: Apple-Actions/import-codesign-certs@cfd6eb39a2c848ead8836bda6b56813585404ba7  # v5.0.0
+      #  with:
+      #    p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+      #    p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+      # -
+      #   name: Install gon via HomeBrew for code signing and app notarization
+      #   run: |
+      #     brew tap mitchellh/gon
+      #     brew install mitchellh/gon/gon
+      #     brew install coreutils
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552  # v6.3.0
@@ -74,48 +74,46 @@ jobs:
           shopt -s expand_aliases
           mkdir .dist
           cp dist/harp-* .dist/
-      -
-        name: Sign and notarize MacOS AMD64 cli
-        env:
-          AC_USERNAME: "${{ secrets.AC_USERNAME }}"
-          AC_PASSWORD: "${{ secrets.AC_PASSWORD }}"
-        run: |
-          echo '{
-            "source": ["./dist/harp-darwin-amd64-v1"],
-            "bundle_id":"co.elastic.harp",
-            "apple_id": {},
-            "sign": { "application_identity": "9FAEEDF0301EA562A47EC8A473309407DD99CD7C" },
-            "zip": {
-              "output_path": "./dist/harp-darwin-amd64-v1.zip"
-            }
-          }' | jq . > gon.amd64.json
-          gon -log-level=debug -log-json ./gon.amd64.json
-          rm -f .dist/harp-darwin-amd64-v1
-      -
-        name: Sign and notarize MacOS ARM64 cli
-        env:
-          AC_USERNAME: "${{ secrets.AC_USERNAME }}"
-          AC_PASSWORD: "${{ secrets.AC_PASSWORD }}"
-        run: |
-          echo '{
-            "source": ["./dist/harp-darwin-arm64-v8.0"],
-            "bundle_id":"co.elastic.harp",
-            "apple_id": {},
-            "sign": { "application_identity": "9FAEEDF0301EA562A47EC8A473309407DD99CD7C" },
-            "zip": {
-              "output_path": "./dist/harp-darwin-arm64-v8.0.zip"
-            }
-          }' | jq . > gon.arm64.json
-          gon -log-level=debug -log-json ./gon.arm64.json
-          rm -f .dist/harp-darwin-arm64-v8.0
+      #-
+      #   name: Sign and notarize MacOS AMD64 cli
+      #   env:
+      #     AC_USERNAME: "${{ secrets.AC_USERNAME }}"
+      #     AC_PASSWORD: "${{ secrets.AC_PASSWORD }}"
+      #   run: |
+      #     echo '{
+      #       "source": ["./dist/harp-darwin-amd64-v1"],
+      #       "bundle_id":"co.elastic.harp",
+      #       "apple_id": {},
+      #       "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
+      #       "zip": {
+      #         "output_path": "./dist/harp-darwin-amd64-v1.zip"
+      #       }
+      #     }' | jq . > gon.amd64.json
+      #     gon -log-level=debug -log-json ./gon.amd64.json
+      #     rm -f .dist/harp-darwin-amd64-v1
+      # -
+      #   name: Sign and notarize MacOS ARM64 cli
+      #   env:
+      #     AC_USERNAME: "${{ secrets.AC_USERNAME }}"
+      #     AC_PASSWORD: "${{ secrets.AC_PASSWORD }}"
+      #   run: |
+      #     echo '{
+      #       "source": ["./dist/harp-darwin-arm64-v8.0"],
+      #       "bundle_id":"co.elastic.harp",
+      #       "apple_id": {},
+      #       "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
+      #       "zip": {
+      #         "output_path": "./dist/harp-darwin-arm64-v8.0.zip"
+      #       }
+      #     }' | jq . > gon.arm64.json
+      #     gon -log-level=debug -log-json ./gon.arm64.json
+      #     rm -f .dist/harp-darwin-arm64-v8.0
       -
         name: Prepare archives
         run: |
           #!/bin/bash
           shopt -s expand_aliases
           cd .dist/
-          unzip ../dist/harp-darwin-amd64-v1.zip
-          unzip ../dist/harp-darwin-arm64-v8.0.zip
           FILES="*"
           for f in $FILES;
           do
