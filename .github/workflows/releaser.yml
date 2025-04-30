@@ -81,16 +81,16 @@ jobs:
           AC_PASSWORD: "${{ secrets.AC_PASSWORD }}"
         run: |
           echo '{
-            "source": ["./dist/harp-darwin-amd64"],
+            "source": ["./dist/harp-darwin-amd64-v1"],
             "bundle_id":"co.elastic.harp",
             "apple_id": {},
             "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
             "zip": {
-              "output_path": "./dist/harp-darwin-amd64.zip"
+              "output_path": "./dist/harp-darwin-amd64-v1.zip"
             }
           }' | jq . > gon.amd64.json
           gon -log-level=debug -log-json ./gon.amd64.json
-          rm -f .dist/harp-darwin-amd64
+          rm -f .dist/harp-darwin-amd64-v1
       -
         name: Sign and notarize MacOS ARM64 cli
         env:
@@ -98,24 +98,24 @@ jobs:
           AC_PASSWORD: "${{ secrets.AC_PASSWORD }}"
         run: |
           echo '{
-            "source": ["./dist/harp-darwin-arm64"],
+            "source": ["./dist/harp-darwin-arm64-v8.0"],
             "bundle_id":"co.elastic.harp",
             "apple_id": {},
             "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
             "zip": {
-              "output_path": "./dist/harp-darwin-arm64.zip"
+              "output_path": "./dist/harp-darwin-arm64-v8.0.zip"
             }
           }' | jq . > gon.arm64.json
           gon -log-level=debug -log-json ./gon.arm64.json
-          rm -f .dist/harp-darwin-arm64
+          rm -f .dist/harp-darwin-arm64-v8.0
       -
         name: Prepare archives
         run: |
           #!/bin/bash
           shopt -s expand_aliases
           cd .dist/
-          unzip ../dist/harp-darwin-amd64.zip
-          unzip ../dist/harp-darwin-arm64.zip
+          unzip ../dist/harp-darwin-amd64-v1.zip
+          unzip ../dist/harp-darwin-arm64-v8.0.zip
           FILES="*"
           for f in $FILES;
           do
