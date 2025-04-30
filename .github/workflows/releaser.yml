@@ -150,11 +150,11 @@ jobs:
           do
             case $f in
             provenance.json|checksums.txt)
-                cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
+                cosign sign-blob --yes=true --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
             *.tar.gz)
                 sha256sum "$f" | cut -d " " -f 1 > "$f.sha256"
-                cosign sign-blob --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
+                cosign sign-blob --yes=true --key <(echo -n "${COSIGN_KEY}") "$f" > "$f.sig"
                 ;;
             esac
           done
