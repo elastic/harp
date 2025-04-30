@@ -84,7 +84,7 @@ jobs:
             "source": ["./dist/harp-darwin-amd64-v1"],
             "bundle_id":"co.elastic.harp",
             "apple_id": {},
-            "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
+            "sign": { "application_identity": "9FAEEDF0301EA562A47EC8A473309407DD99CD7C" },
             "zip": {
               "output_path": "./dist/harp-darwin-amd64-v1.zip"
             }
@@ -101,7 +101,7 @@ jobs:
             "source": ["./dist/harp-darwin-arm64-v8.0"],
             "bundle_id":"co.elastic.harp",
             "apple_id": {},
-            "sign": { "application_identity": "9470D0A7B70090A8EF31C3B33AB3868B38B27A3D" },
+            "sign": { "application_identity": "9FAEEDF0301EA562A47EC8A473309407DD99CD7C" },
             "zip": {
               "output_path": "./dist/harp-darwin-arm64-v8.0.zip"
             }
