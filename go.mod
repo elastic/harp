@@ -73,7 +73,7 @@ require (
 	github.com/zclconf/go-cty v1.16.2
 	gitlab.com/NebulousLabs/merkletree v0.0.0-20200118113624-07fbf710afc4
 	go.etcd.io/etcd/client/v3 v3.5.21
-	go.step.sm/crypto v0.62.0
+	go.step.sm/crypto v0.63.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.37.0
 	golang.org/x/oauth2 v0.29.0
