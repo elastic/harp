@@ -46,7 +46,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       -
         name: Install Cosign
-        uses: sigstore/cosign-installer@v3.8.2
+        uses: sigstore/cosign-installer@v3.9.0
       #-
       #  name: Import Code-Signing Certificates
       #  uses: Apple-Actions/import-codesign-certs@cfd6eb39a2c848ead8836bda6b56813585404ba7  # v5.0.0
