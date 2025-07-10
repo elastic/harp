@@ -78,8 +78,8 @@ require (
 	golang.org/x/crypto v0.37.0
 	golang.org/x/oauth2 v0.29.0
 	golang.org/x/sync v0.13.0
-	golang.org/x/sys v0.32.0
-	golang.org/x/term v0.31.0
+	golang.org/x/sys v0.34.0
+	golang.org/x/term v0.33.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250414145226-207652e42e2e
 	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.6
