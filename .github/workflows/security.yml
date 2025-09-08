@@ -20,9 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       -
@@ -43,10 +43,10 @@ jobs:
 
     steps:
       -
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5  # v0.30.0
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
         with:
           scan-type: 'fs'
           ignore-unfixed: true
@@ -72,7 +72,7 @@ jobs:
 #
 #    steps:
 #      -
-#        uses: actions/checkout@v4
+#        uses: actions/checkout@v5
 #      -
 #        name: Run Snyk to check for vulnerabilities
 #        uses: snyk/actions/golang@master
@@ -99,7 +99,7 @@ jobs:
 
     steps:
       -
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         uses: returntocorp/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
         with:
