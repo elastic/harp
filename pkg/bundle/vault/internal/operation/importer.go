@@ -23,6 +23,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/hashicorp/vault/api"
 	"go.uber.org/zap"
@@ -63,12 +64,69 @@ type importer struct {
 	maxWorkerCount    int64
 }
 
+func (op *importer) logBundleAnalysis(ctx context.Context) {
+	var (
+		totalSecrets   int
+		totalPackages  = len(op.bundle.Packages)
+		emptyPackages  int
+		largestPackage string
+		maxSecrets     int
+		backendPaths   = make(map[string]int)
+	)
+
+	for _, pkg := range op.bundle.Packages {
+		if pkg.Secrets == nil || len(pkg.Secrets.Data) == 0 {
+			emptyPackages++
+			continue
+		}
+
+		secretCount := len(pkg.Secrets.Data)
+		totalSecrets += secretCount
+
+		if secretCount > maxSecrets {
+			maxSecrets = secretCount
+			largestPackage = pkg.Name
+		}
+
+		// Count backend distribution
+		secretPath := pkg.Name
+		if op.prefix != "" {
+			secretPath = path.Join(op.prefix, secretPath)
+		}
+		rootPath := strings.Split(vpath.SanitizePath(secretPath), "/")[0]
+		backendPaths[rootPath]++
+	}
+
+	log.For(ctx).Info("Bundle analysis",
+		zap.Int("total_packages", totalPackages),
+		zap.Int("empty_packages", emptyPackages),
+		zap.Int("packages_with_secrets", totalPackages-emptyPackages),
+		zap.Int("total_secrets", totalSecrets),
+		zap.Float64("avg_secrets_per_package", float64(totalSecrets)/float64(totalPackages-emptyPackages)),
+		zap.String("largest_package", largestPackage),
+		zap.Int("max_secrets_in_package", maxSecrets),
+		zap.Int("unique_backends", len(backendPaths)),
+		zap.Any("backend_distribution", backendPaths),
+	)
+}
+
 // Run the implemented operation
 //
 //nolint:gocognit,funlen,gocyclo // To refactor
 func (op *importer) Run(ctx context.Context) error {
+	startTime := time.Now()
+
+	log.For(ctx).Info("Starting vault import operation",
+		zap.String("prefix", op.prefix),
+		zap.Int("total_packages", len(op.bundle.Packages)),
+		zap.Int64("max_workers", op.maxWorkerCount),
+		zap.Bool("with_metadata", op.withMetadata),
+		zap.Bool("with_vault_metadata", op.withVaultMetadata),
+	)
 	// Initialize sub context
 	g, gctx := errgroup.WithContext(ctx)
+
+	op.logBundleAnalysis(gctx)
 
 	// Prepare channels
 	packageChan := make(chan *bundlev1.Package)
@@ -88,15 +146,46 @@ func (op *importer) Run(ctx context.Context) error {
 		// Writer errGroup
 		gWriter, gWriterCtx := errgroup.WithContext(gctx)
 
+		processedCount := 0
 		// Listen for message
 		for secretPackage := range packageChan {
 			if err := gWriterCtx.Err(); err != nil {
-				// Stop processing
+				log.For(gWriterCtx).Error("Context error detected, stopping processing",
+					zap.Error(err),
+					zap.Int("processed_count", processedCount),
+				)
 				break
 			}
 
+			log.For(gWriterCtx).Debug("Attempting semaphore acquisition",
+				zap.String("package_path", secretPackage.Name),
+				zap.Int64("max_workers", op.maxWorkerCount),
+				zap.Bool("context_done", gWriterCtx.Done() != nil),
+				zap.String("context_error", func() string {
+					if err := gWriterCtx.Err(); err != nil {
+						return err.Error()
+					}
+					return "none"
+				}()),
+			)
+
 			// Acquire a token
 			if err := sem.Acquire(gWriterCtx, 1); err != nil {
+				log.For(gWriterCtx).Error("Semaphore acquisition failed",
+					zap.Error(err),
+					zap.String("package_path", secretPackage.Name),
+					zap.String("prefix", op.prefix),
+					zap.Int64("max_workers", op.maxWorkerCount),
+					zap.String("context_error", func() string {
+						if ctxErr := gWriterCtx.Err(); ctxErr != nil {
+							return ctxErr.Error()
+						}
+						return "none"
+					}()),
+					zap.Bool("is_context_canceled", gWriterCtx.Err() == context.Canceled),
+					zap.Bool("is_deadline_exceeded", gWriterCtx.Err() == context.DeadlineExceeded),
+				)
+
 				return fmt.Errorf("unable to acquire a semaphore token: %w", err)
 			}
 
@@ -159,10 +248,24 @@ func (op *importer) Run(ctx context.Context) error {
 				// Check backend initialization
 				if _, ok := op.backends[rootPath]; !ok {
 					// Initialize new service for backend
+					log.For(gWriterCtx).Info("Initializing new KV backend",
+						zap.String("root_path", rootPath),
+						zap.String("full_secret_path", secretPath),
+						zap.Bool("with_vault_metadata", op.withVaultMetadata),
+					)
 					service, err := kv.New(op.client, rootPath, kv.WithVaultMetatadata(op.withVaultMetadata))
 					if err != nil {
+						log.For(gWriterCtx).Error("Failed to initialize KV backend",
+							zap.String("root_path", rootPath),
+							zap.Error(err),
+						)
 						return fmt.Errorf("unable to initialize Vault service for '%s' KV backend: %w", op.prefix, err)
 					}
+
+					log.For(gWriterCtx).Debug("Successfully initialized KV backend",
+						zap.String("root_path", rootPath),
+						zap.Int("total_backends", len(op.backends)+1),
+					)
 
 					// All queries will be handled by same backend service
 					op.backendsMutex.Lock()
@@ -172,6 +275,24 @@ func (op *importer) Run(ctx context.Context) error {
 
 				// Write secret to Vault
 				if err := op.backends[rootPath].WriteWithMeta(gWriterCtx, secretPath, data, metadata); err != nil {
+					// Classify error types for better debugging
+					errorType := "unknown"
+					if strings.Contains(err.Error(), "connection") {
+						errorType = "connection"
+					} else if strings.Contains(err.Error(), "permission") {
+						errorType = "permission"
+					} else if strings.Contains(err.Error(), "timeout") {
+						errorType = "timeout"
+					}
+
+					log.For(gWriterCtx).Error("Failed to write secret to Vault",
+						zap.String("secret_path", secretPath),
+						zap.String("root_path", rootPath),
+						zap.String("error_type", errorType),
+						zap.Int("secret_count", len(data)),
+						zap.Int("metadata_count", len(metadata)),
+						zap.Error(err),
+					)
 					return fmt.Errorf("unable to write secret data for path '%s': %w", secretPath, err)
 				}
 
@@ -190,13 +311,42 @@ func (op *importer) Run(ctx context.Context) error {
 	g.Go(func() error {
 		defer close(packageChan)
 
+		log.For(gctx).Info("Starting package producer",
+			zap.Int("total_packages", len(op.bundle.Packages)),
+		)
+
+		published := 0
+		startTime := time.Now()
+
 		for _, p := range op.bundle.Packages {
 			select {
 			case <-gctx.Done():
+				log.For(gctx).Warn("Producer context canceled",
+					zap.Error(gctx.Err()),
+					zap.Int("published_count", published),
+					zap.Int("remaining_packages", len(op.bundle.Packages)-published),
+				)
 				return gctx.Err()
 			case packageChan <- p:
+				published++
+
+				// Log every 50 packages or at specific percentiles
+				if published%50 == 0 || published == len(op.bundle.Packages)/4 ||
+					published == len(op.bundle.Packages)/2 || published == len(op.bundle.Packages) {
+					log.For(gctx).Debug("Producer progress",
+						zap.Int("published", published),
+						zap.Int("total", len(op.bundle.Packages)),
+						zap.Float64("rate_per_sec", float64(published)/time.Since(startTime).Seconds()),
+					)
+				}
 			}
 		}
+
+		log.For(gctx).Info("Package producer completed",
+			zap.Int("total_published", published),
+			zap.Duration("total_time", time.Since(startTime)),
+			zap.Float64("avg_rate_per_sec", float64(published)/time.Since(startTime).Seconds()),
+		)
 
 		// No error
 		return nil
@@ -207,6 +357,11 @@ func (op *importer) Run(ctx context.Context) error {
 		return fmt.Errorf("vault operation error: %w", err)
 	}
 
+	log.For(ctx).Info("Vault import operation completed",
+		zap.Duration("total_duration", time.Since(startTime)),
+		zap.String("prefix", op.prefix),
+		zap.Int("total_packages", len(op.bundle.Packages)),
+	)
 	// No error
 	return nil
 }
