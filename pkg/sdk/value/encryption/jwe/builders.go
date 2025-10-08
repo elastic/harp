@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gopkg.in/square/go-jose.v2"
+	"github.com/go-jose/go-jose/v3"
 
 	"github.com/elastic/harp/pkg/sdk/value"
 	"github.com/elastic/harp/pkg/sdk/value/encryption"

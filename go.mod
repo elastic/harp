@@ -32,6 +32,7 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/fernet/fernet-go v0.0.0-20240119011108-303da6aec611
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665
+	github.com/go-jose/go-jose/v3 v3.0.4
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/go-zookeeper/zk v1.0.4
 	github.com/gobwas/glob v0.2.3
@@ -83,7 +84,6 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20250414145226-207652e42e2e
 	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.6
-	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v3 v3.0.1
 	oras.land/oras-go v1.2.6
 	sigs.k8s.io/yaml v1.4.0

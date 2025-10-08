@@ -33,10 +33,10 @@ import (
 	"encoding/pem"
 	"fmt"
 
+	jose "github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/pkg/errors"
 	"go.step.sm/crypto/pemutil"
-	jose "gopkg.in/square/go-jose.v2"
-	"gopkg.in/square/go-jose.v2/jwt"
 
 	"github.com/elastic/harp/build/fips"
 	"github.com/elastic/harp/pkg/sdk/security/crypto/bech32"

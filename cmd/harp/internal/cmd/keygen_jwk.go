@@ -18,9 +18,9 @@
 package cmd
 
 import (
+	"github.com/go-jose/go-jose/v3"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"gopkg.in/square/go-jose.v2"
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"

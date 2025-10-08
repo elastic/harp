@@ -21,7 +21,7 @@ import (
 	"context"
 	"fmt"
 
-	"gopkg.in/square/go-jose.v2"
+	"github.com/go-jose/go-jose/v3"
 
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value"
