@@ -62,7 +62,7 @@ var transformVerifyCmd = func() *cobra.Command {
 			}
 
 			// Read input
-			writer, err := cmdutil.Writer(inputPath)
+			writer, err := cmdutil.Writer(outputPath)
 			if err != nil {
 				log.For(ctx).Fatal("unable to initialize output writer", zap.Error(err))
 			}
