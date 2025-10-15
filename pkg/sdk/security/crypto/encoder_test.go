@@ -18,11 +18,122 @@
 package crypto
 
 import (
+	"crypto/ecdsa"
+	"crypto/ed25519"
+	"crypto/elliptic"
+	cryptorand "crypto/rand"
+	"crypto/rsa"
+	"encoding/json"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	_ "golang.org/x/crypto/blake2b"
 )
+
+func TestAlgorithmForECDSACurve(t *testing.T) {
+	tests := []struct {
+		name  string
+		curve elliptic.Curve
+		want  string
+	}{
+		{
+			name:  "P-256",
+			curve: elliptic.P256(),
+			want:  "ES256",
+		},
+		{
+			name:  "P-384",
+			curve: elliptic.P384(),
+			want:  "ES384",
+		},
+		{
+			name:  "P-521",
+			curve: elliptic.P521(),
+			want:  "ES512",
+		},
+		{
+			name:  "unsupported curve",
+			curve: nil,
+			want:  "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := algorithmForECDSACurve(tt.curve)
+			if got != tt.want {
+				t.Errorf("algorithmForECDSACurve() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAlgorithmForKey(t *testing.T) {
+	// Generate test keys
+	rsaPriv, rsaPub, err := generateKeyPair("rsa")
+	if err != nil {
+		t.Fatalf("unable to generate rsa key: %v", err)
+	}
+
+	ecPriv, ecPub, err := generateKeyPair("ec")
+	if err != nil {
+		t.Fatalf("unable to generate ec key: %v", err)
+	}
+
+	edPriv, edPub, err := generateKeyPair("ssh")
+	if err != nil {
+		t.Fatalf("unable to generate ed25519 key: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		key  interface{}
+		want string
+	}{
+		{
+			name: "RSA private key",
+			key:  rsaPriv,
+			want: "RS256",
+		},
+		{
+			name: "RSA public key",
+			key:  rsaPub,
+			want: "RS256",
+		},
+		{
+			name: "ECDSA private key (P-256)",
+			key:  ecPriv,
+			want: "ES256",
+		},
+		{
+			name: "ECDSA public key (P-256)",
+			key:  ecPub,
+			want: "ES256",
+		},
+		{
+			name: "Ed25519 private key",
+			key:  edPriv,
+			want: "EdDSA",
+		},
+		{
+			name: "Ed25519 public key",
+			key:  edPub,
+			want: "EdDSA",
+		},
+		{
+			name: "unsupported key type",
+			key:  "invalid",
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := algorithmForKey(tt.key)
+			if got != tt.want {
+				t.Errorf("algorithmForKey() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 func TestToJWK(t *testing.T) {
 	priv, pub, err := generateKeyPair("rsa")
@@ -59,6 +170,280 @@ func TestToJWK(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ToJWK() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func TestToJWK_AlgorithmField(t *testing.T) {
+	tests := []struct {
+		name        string
+		keyType     string
+		wantAlg     string
+		keyModifier func(interface{}, interface{}) interface{} // Optional: modify generated key
+	}{
+		{
+			name:    "RSA private key includes alg=RS256",
+			keyType: "rsa",
+			wantAlg: "RS256",
+			keyModifier: func(priv, pub interface{}) interface{} {
+				return priv
+			},
+		},
+		{
+			name:    "RSA public key includes alg=RS256",
+			keyType: "rsa",
+			wantAlg: "RS256",
+			keyModifier: func(priv, pub interface{}) interface{} {
+				return pub
+			},
+		},
+		{
+			name:    "ECDSA P-256 private key includes alg=ES256",
+			keyType: "ec",
+			wantAlg: "ES256",
+			keyModifier: func(priv, pub interface{}) interface{} {
+				return priv
+			},
+		},
+		{
+			name:    "ECDSA P-256 public key includes alg=ES256",
+			keyType: "ec",
+			wantAlg: "ES256",
+			keyModifier: func(priv, pub interface{}) interface{} {
+				return pub
+			},
+		},
+		{
+			name:    "Ed25519 private key includes alg=EdDSA",
+			keyType: "ssh",
+			wantAlg: "EdDSA",
+			keyModifier: func(priv, pub interface{}) interface{} {
+				return priv
+			},
+		},
+		{
+			name:    "Ed25519 public key includes alg=EdDSA",
+			keyType: "ssh",
+			wantAlg: "EdDSA",
+			keyModifier: func(priv, pub interface{}) interface{} {
+				return pub
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Generate key pair
+			pub, priv, err := generateKeyPair(tt.keyType)
+			if err != nil {
+				t.Fatalf("unable to generate %s key: %v", tt.keyType, err)
+			}
+
+			// Select the key to test
+			var testKey interface{}
+			if tt.keyModifier != nil {
+				testKey = tt.keyModifier(priv, pub)
+			} else {
+				testKey = priv
+			}
+
+			// Convert to JWK
+			jwkJSON, err := ToJWK(testKey)
+			if err != nil {
+				t.Fatalf("ToJWK() failed: %v", err)
+			}
+
+			// Parse JWK JSON to validate alg field
+			var jwk map[string]interface{}
+			if err := json.Unmarshal([]byte(jwkJSON), &jwk); err != nil {
+				t.Fatalf("Failed to parse JWK JSON: %v", err)
+			}
+
+			// Verify alg field exists
+			alg, ok := jwk["alg"]
+			if !ok {
+				t.Errorf("JWK missing 'alg' field. Got JWK: %s", jwkJSON)
+				return
+			}
+
+			// Verify alg field has correct value
+			algStr, ok := alg.(string)
+			if !ok {
+				t.Errorf("'alg' field is not a string. Got type: %T, value: %v", alg, alg)
+				return
+			}
+
+			if algStr != tt.wantAlg {
+				t.Errorf("ToJWK() alg = %v, want %v", algStr, tt.wantAlg)
+			}
+
+			// Additional validation: verify expected JWK fields
+			if _, ok := jwk["kty"]; !ok {
+				t.Errorf("JWK missing 'kty' field")
+			}
+			if _, ok := jwk["kid"]; !ok {
+				t.Errorf("JWK missing 'kid' field")
+			}
+		})
+	}
+}
+
+func TestToJWK_ECDSACurveVariants(t *testing.T) {
+	tests := []struct {
+		name    string
+		curve   elliptic.Curve
+		wantAlg string
+	}{
+		{
+			name:    "P-256 curve produces ES256",
+			curve:   elliptic.P256(),
+			wantAlg: "ES256",
+		},
+		{
+			name:    "P-384 curve produces ES384",
+			curve:   elliptic.P384(),
+			wantAlg: "ES384",
+		},
+		{
+			name:    "P-521 curve produces ES512",
+			curve:   elliptic.P521(),
+			wantAlg: "ES512",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Generate ECDSA key with specific curve using crypto/rand
+			privKey, err := ecdsa.GenerateKey(tt.curve, cryptorand.Reader)
+			if err != nil {
+				t.Fatalf("Failed to generate ECDSA key: %v", err)
+			}
+
+			// Test private key
+			jwkJSON, err := ToJWK(privKey)
+			if err != nil {
+				t.Fatalf("ToJWK() failed for private key: %v", err)
+			}
+
+			var jwk map[string]interface{}
+			if err := json.Unmarshal([]byte(jwkJSON), &jwk); err != nil {
+				t.Fatalf("Failed to parse JWK JSON: %v", err)
+			}
+
+			if alg, ok := jwk["alg"].(string); !ok || alg != tt.wantAlg {
+				t.Errorf("Private key: ToJWK() alg = %v, want %v", jwk["alg"], tt.wantAlg)
+			}
+
+			// Test public key
+			jwkJSON, err = ToJWK(&privKey.PublicKey)
+			if err != nil {
+				t.Fatalf("ToJWK() failed for public key: %v", err)
+			}
+
+			if err := json.Unmarshal([]byte(jwkJSON), &jwk); err != nil {
+				t.Fatalf("Failed to parse JWK JSON: %v", err)
+			}
+
+			if alg, ok := jwk["alg"].(string); !ok || alg != tt.wantAlg {
+				t.Errorf("Public key: ToJWK() alg = %v, want %v", jwk["alg"], tt.wantAlg)
+			}
+		})
+	}
+}
+
+func TestToJWK_RSAKeyTypes(t *testing.T) {
+	// Generate RSA key
+	privKey, err := rsa.GenerateKey(cryptorand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("Failed to generate RSA key: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		key  interface{}
+	}{
+		{
+			name: "RSA private key",
+			key:  privKey,
+		},
+		{
+			name: "RSA public key",
+			key:  &privKey.PublicKey,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jwkJSON, err := ToJWK(tt.key)
+			if err != nil {
+				t.Fatalf("ToJWK() failed: %v", err)
+			}
+
+			var jwk map[string]interface{}
+			if err := json.Unmarshal([]byte(jwkJSON), &jwk); err != nil {
+				t.Fatalf("Failed to parse JWK JSON: %v", err)
+			}
+
+			// Verify alg field
+			if alg, ok := jwk["alg"].(string); !ok || alg != "RS256" {
+				t.Errorf("ToJWK() alg = %v, want RS256", jwk["alg"])
+			}
+
+			// Verify kty field
+			if kty, ok := jwk["kty"].(string); !ok || kty != "RSA" {
+				t.Errorf("ToJWK() kty = %v, want RSA", jwk["kty"])
+			}
+		})
+	}
+}
+
+func TestToJWK_Ed25519KeyTypes(t *testing.T) {
+	// Generate Ed25519 key
+	pubKey, privKey, err := ed25519.GenerateKey(cryptorand.Reader)
+	if err != nil {
+		t.Fatalf("Failed to generate Ed25519 key: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		key  interface{}
+	}{
+		{
+			name: "Ed25519 private key",
+			key:  privKey,
+		},
+		{
+			name: "Ed25519 public key",
+			key:  pubKey,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jwkJSON, err := ToJWK(tt.key)
+			if err != nil {
+				t.Fatalf("ToJWK() failed: %v", err)
+			}
+
+			var jwk map[string]interface{}
+			if err := json.Unmarshal([]byte(jwkJSON), &jwk); err != nil {
+				t.Fatalf("Failed to parse JWK JSON: %v", err)
+			}
+
+			// Verify alg field
+			if alg, ok := jwk["alg"].(string); !ok || alg != "EdDSA" {
+				t.Errorf("ToJWK() alg = %v, want EdDSA", jwk["alg"])
+			}
+
+			// Verify kty field
+			if kty, ok := jwk["kty"].(string); !ok || kty != "OKP" {
+				t.Errorf("ToJWK() kty = %v, want OKP", jwk["kty"])
+			}
+
+			// Verify crv field
+			if crv, ok := jwk["crv"].(string); !ok || crv != "Ed25519" {
+				t.Errorf("ToJWK() crv = %v, want Ed25519", jwk["crv"])
 			}
 		})
 	}

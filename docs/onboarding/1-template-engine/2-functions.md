@@ -53,14 +53,14 @@ specialized functions.
 
 Apply BASE64 URL encoding to given input.
 
-```ruby
+```gotemplate
 {{ paranoidPassword | b64urlenc }}
 fjYySGJoa00iQkdTaXRUQ2d-RVgwfHMwI2tvcG5Yc0xne3RfQV9HZU5YQ3ZTT243XWUyeDVqNjVNQnRMJEdzNA==
 ```
 
 Decode a BASE64 URL encoded string.
 
-```ruby
+```gotemplate
 {{ "fjYySGJoa00iQkdTaXRUQ2d-RVgwfHMwI2tvcG5Yc0xne3RfQV9HZU5YQ3ZTT243XWUyeDVqNjVNQnRMJEdzNA==" | b64urldec }}
 ~62HbhkM"BGSitTCg~EX0|s0#kopnXsLg{t_A_GeNXCvSOn7]e2x5j65MBtL$Gs4
 ```
@@ -74,13 +74,13 @@ encode crypto-material and keep ownership visible to humans.
 
 > This is the encoding used by container sealing identities.
 
-```ruby
+```gotemplate
 {{ bech32enc <HRP> <[]BYTE> }}
 ```
 
 For example with an Ed25519 Public key:
 
-```ruby
+```gotemplate
 {{ $key := cryptoPair "ed25519" }}
 {{ bech32enc "security" $key.Public }}
 security19f29qq5vq73tdrhspdzkqcdf2exewg2g6xcxe5h74y72qsv7c00sx57ny0
@@ -90,7 +90,7 @@ security19f29qq5vq73tdrhspdzkqcdf2exewg2g6xcxe5h74y72qsv7c00sx57ny0
 
 Apply Shell escaping strategy to allow a string to be safely used in a shell script.
 
-```ruby
+```gotemplate
 {{ paranoidPassword | shellescape }}
 'tGO48jRkfOiXv8=p?eV^wi7tqJz`ABeQy1ZXk2WE(E1XWuS6%$j+X>QVx93W*WEY'
 ```
@@ -99,7 +99,7 @@ Apply Shell escaping strategy to allow a string to be safely used in a shell scr
 
 Apply url character escaping strategy for components used in path
 
-```ruby
+```gotemplate
 https://ingester.es.cloud/{{ tenant | urlPathEscape }}/api/v1
 ```
 
@@ -107,7 +107,7 @@ https://ingester.es.cloud/{{ tenant | urlPathEscape }}/api/v1
 
 Apply url character escaping strategy for components used in query
 
-```ruby
+```gotemplate
 https://logstash:{{ paranoidPassword | urlQueryEscape }}@ingester.es.cloud:1234
 https://logstash:K3iDayow9%5Cav67HawD6%210k~8lhcm8oLVUBt2wE%3E%5DLBJQJVj%3AfIx%2Fuo%40%7B%3D6kvgXHK@ingester.es.cloud:1234%
 ```
@@ -116,7 +116,7 @@ https://logstash:K3iDayow9%5Cav67HawD6%210k~8lhcm8oLVUBt2wE%3E%5DLBJQJVj%3AfIx%2
 
 Apply JSON ecaping strategy to a string
 
-```ruby
+```gotemplate
 {{ "backslash: \, A: & <" | jsonEscape }}
 backslash: \\, A: \u0026 \u003c
 ```
@@ -125,7 +125,7 @@ backslash: \\, A: \u0026 \u003c
 
 #### secret
 
-```ruby
+```gotemplate
 {{ with secret "secrets/application" }}
 {{ .foo }}
 {{ end }}
@@ -180,7 +180,7 @@ NVQ3VjFsTlFKIzAtd25MMWtqYURWT1dJZzBkdERVLVdEOmxMY3NvJHRsWnZ8JVhRcDNZMU92OTJQSmB3
 
 #### customPassword
 
-```ruby
+```gotemplate
 {{ customPassword <length int> <numDigits int> <numSymbol int> <noUpper bool> <allowRepeat bool> }}
 # 128 chars with 16 digits, 16 symbols with repetition
 {{ customPassword 128 16 16 false true }}
@@ -194,7 +194,7 @@ o)BDz#J|PDyI!+tBKmNSE1lMqh9gfSvVG%juxf9XonBl*N:sb#tgevct9.cDcdAhpt22/MpcbEtM@yM2
 
 #### paranoidPassword
 
-```ruby
+```gotemplate
 {{ paranoidPassword }}
 # 64 chars with 10 digits, 10 symbols with upper and lower case and repetition allowed
 {{ customPassword 64 10 10 false true }}
@@ -208,7 +208,7 @@ n4[(1[CL6HlNuK95F[qSJd5kUiK.AwV7t)WjKKttgVgn=p9(=0UbrT7vgAhy.VzZ
 
 #### noSymbolPassword
 
-```ruby
+```gotemplate
 {{ noSymbolPassword }}
 # Same as : 32 chars with 10 digits, no symbol with upper and lower case and repetition allowed
 {{ customPassword 32 10 0 false true }}
@@ -222,7 +222,7 @@ V4xQxl7h6QWUr3do70ER5m377cmQaSGX
 
 #### strongPassword
 
-```ruby
+```gotemplate
 {{ strongPassword }}
 # Same as : 32 chars with 10 digits, 10 symbols with upper and lower case and repetition allowed
 {{ customPassword 32 10 10 false true }}
@@ -238,7 +238,7 @@ Output :
 
 #### customDiceware
 
-```ruby
+```gotemplate
 {{ customDiceware <wordCount> }}
 # Generate diceware passphrase
 {{ customDiceware 6 }}
@@ -252,7 +252,7 @@ brunch-starch-germinate-retool-huntsman-entourage
 
 #### basicDiceware
 
-```ruby
+```gotemplate
 {{ basicDiceware }}
 # Same as
 {{ customDiceware 4 }}
@@ -266,7 +266,7 @@ grill-zit-grading-hamlet
 
 #### strongDiceware
 
-```ruby
+```gotemplate
 {{ strongDiceware }}
 # Same as
 {{ customDiceware 8 }}
@@ -280,7 +280,7 @@ camper-unfilled-moonbeam-veal-vitality-snowdrop-doorman-tinsmith
 
 #### paranoidDiceware
 
-```ruby
+```gotemplate
 {{ paranoidDiceware }}
 # Same as
 {{ customDiceware 12 }}
@@ -298,7 +298,7 @@ sweat-dismantle-county-unlucky-shrank-reaffirm-drainable-mustiness-appendix-scra
 
 Generate a symmetic encryption/decryption key.
 
-```ruby
+```gotemplate
 {{ cryptoKey <type> }}
 # For AES key
 {{ cryptoKey "aes:256" }}
@@ -326,7 +326,7 @@ Generate asymmetic key pairs.
 > profile is planned for dynamically generate keypair according to targeted
 > requirements (fips140).
 
-```ruby
+```gotemplate
 {{ cryptoPair <type> }}
 # For RSA recommended (actually RSA2048)
 {{ $key := cryptoPair "rsa" }}
@@ -348,9 +348,16 @@ Where `type` could be :
 
 #### toJwk
 
-Encode the given cryptoKey as JWK.
+Encode the given cryptoKey as JWK with automatic algorithm detection.
 
-```ruby
+> **Note**: The `alg` (algorithm) field is automatically included based on key type:
+> - RSA keys → `RS256`
+> - ECDSA P-256 → `ES256`, P-384 → `ES384`, P-521 → `ES512`
+> - Ed25519 → `EdDSA`
+>
+> This makes template-generated keys directly compatible with `harp transform sign` without additional processing.
+
+```gotemplate
 {{ $key := cryptoPair "ec:p384" }}
 # Get the private key and encode it as JWK
 {{ $key.Private | toJwk }}
@@ -360,12 +367,13 @@ Encode the given cryptoKey as JWK.
 
 Output :
 
-```ruby
+```gotemplate
 # Get the private key and encode it as JWK
 {{ $key.Private | toJwk }}
 {
     "kty":"EC",
     "kid":"8rvz08-Aq05Vq-a40dpJFt5VwvAgdfJPGt9TKkchNUM=",
+    "alg":"ES384",
     "crv":"P-384",
     "x":"KfTYa3f9WKgg5npBsBfw6ivTJgQS0xP2KbvQHU4WtEzllvjOsz1D2WZCPq9X-aUq","y":"88SZwdKWNb3GONuO0C8LqI3aCtTBf2SCOiKgLNLinWSH_Dval0_euuCv8WRTVYcL","d":"jIcdBVkUfXs1U5SbtcmH2aqL6vXJTMmBtK9SFaoi9HDmSb7VeQSvMQZmUzDTgn9N"
 }
@@ -374,16 +382,163 @@ Output :
 {
     "kty":"EC",
     "kid":"8rvz08-Aq05Vq-a40dpJFt5VwvAgdfJPGt9TKkchNUM=",
+    "alg":"ES384",
     "crv":"P-384",
     "x":"KfTYa3f9WKgg5npBsBfw6ivTJgQS0xP2KbvQHU4WtEzllvjOsz1D2WZCPq9X-aUq","y":"88SZwdKWNb3GONuO0C8LqI3aCtTBf2SCOiKgLNLinWSH_Dval0_euuCv8WRTVYcL"
 }
+```
+
+##### Template Keys for Vault Storage
+
+Template-generated keys can be stored directly in Hashicorp Vault using Harp bundle templates.
+
+**Method 1: Using Bundle Template (Recommended)**
+
+Create a bundle template `signing-keys.yaml`:
+
+```yaml
+# yaml-language-server: $schema=api/jsonschema/harp.bundle.v1/Template.json
+apiVersion: harp.elastic.co/v1
+kind: BundleTemplate
+meta:
+  name: "signing-keys"
+  owner: "security-team@example.com"
+  description: "Signing keys for example services"
+spec:
+  selector:
+    platform: "examplePlatform"
+    product: "platform"
+    quality: "dev"
+    version: "v1.0.0"
+  namespaces:
+    application:
+      - name: "security/signing/api"
+        description: "test signature"
+        secrets:
+          - suffix: "credentials"
+            template: |
+              {{- $key := cryptoPair "ed25519" -}}
+              {
+                "private_key": {{ $key.Private | toJwk | toJson }},
+                "public_key": {{ $key.Public | toJwk | toJson }},
+                "algorithm": "EdDSA",
+                "created_at": "{{ now | date "2006-01-02T15:04:05Z07:00" }}"
+              }
+      - name: "security/signing/worker"
+        description: "test signing"
+        secrets:
+          - suffix: "credentials"
+            description: "example signing secret for workers"
+            template: |
+              {{- $key := cryptoPair "rsa" -}}
+              {
+                "private_key": {{ $key.Private | toJwk | toJson }},
+                "public_key": {{ $key.Public | toJwk | toJson }},
+                "algorithm": "RS256",
+                "created_at": "{{ now | date "2006-01-02T15:04:05Z07:00" }}"
+              }
+```
+
+**Generate and push to Vault:**
+
+```bash
+# Render the bundle template and push directly to Vault
+harp from template --in signing-keys.yaml | harp to vault
+
+# Or save bundle first (recommended for audit trail)
+harp from template --in signing-keys.yaml --out signing-keys.bundle
+harp to vault --in signing-keys.bundle
+
+# View what was generated (optional)
+harp bundle dump --in signing-keys.bundle --data-only | jq .
+```
+
+**Retrieve and use for signing:**
+
+```bash
+# Extract private key using piped workflow
+PRIVATE_KEY=$(harp from vault --path "app/dev/examplePlatform/platform/v1.0.0/security/signing/api/credentials" \
+| harp bundle read --path "app/dev/examplePlatform/platform/v1.0.0/security/signing/api/credentials" --field private_key \
+| jq .)
+
+# Encode for signing using Harp-native encoding
+PRIVATE_B64=$(echo "$PRIVATE_KEY" | harp transform encode --encoding base64url --in -)
+
+# Sign a message
+echo -n "message" | harp transform sign --key "jws:$PRIVATE_B64"
+```
+
+**Method 2: Direct JSON Template**
+
+For simple one-off key generation:
+
+```bash
+# Create inline template
+cat > keygen.tmpl <<'EOF'
+{{- $key := cryptoPair "ed25519" -}}
+{{- $jwk := $key.Private | toJwk | fromJson -}}
+{
+  "app/production/security/signing/default/credentials": {
+    "private_key": {{ $key.Private | toJwk | toJson }},
+    "public_key": {{ $key.Public | toJwk | toJson }},
+    "algorithm": {{ $jwk.alg | toJson }}
+  }
+}
+EOF
+
+# Generate keys as JSON
+harp template --in keygen.tmpl | harp from jsonmap | harp bundle dump --data-only | jq .
+
+# Push to vault
+harp template --in keygen.tmpl | harp from jsonmap | harp to vault
+```
+
+##### Key Generation Best Practices
+
+**Key Generation**
+
+The following methods exist to generate JWK keys.
+
+| Method | Command | Output Includes `alg` |
+|--------|---------|----------------------|
+| CLI | `harp keygen jwk --algorithm EdDSA` | ✅ Yes |
+| Template | `{{ cryptoPair "ed25519" \| toJwk }}` | ✅ Yes |
+
+**When to use each:**
+
+- **CLI (`harp keygen jwk`)**:
+  - One-time key generation
+  - Interactive workflows
+  - Specifying exact algorithm (ES256, ES384, RS256, etc.)
+
+- **Template (`cryptoPair`)**:
+  - Batch key generation
+  - Integrated secret bundles
+  - Vault seeding workflows
+  - Reproducible infrastructure-as-code
+
+**Algorithm Selection Guide**
+
+```gotemplate
+# Ed25519 (Recommended for most use cases)
+{{ $key := cryptoPair "ed25519" }}
+# Produces: alg="EdDSA", fastest, smallest keys
+
+# RSA (For legacy compatibility)
+{{ $key := cryptoPair "rsa" }}        # 2048-bit, alg="RS256"
+{{ $key := cryptoPair "rsa:4096" }}   # 4096-bit, alg="RS256"
+
+# ECDSA (For NIST compliance)
+{{ $key := cryptoPair "ec:p256" }}    # P-256, alg="ES256"
+{{ $key := cryptoPair "ec:p384" }}    # P-384, alg="ES384"
+{{ $key := cryptoPair "ec:p521" }}    # P-521, alg="ES512"
 ```
 
 #### fromJwk
 
 Decode a JWK encoded key.
 
-```ruby
+```gotemplate
 {{ $key := fromJwk .Values.jwk }}
 # Convert JWK encoded key to native one
 {{ $key.Private | toJwk }}
@@ -395,7 +550,7 @@ Decode a JWK encoded key.
 
 Encode the given cryptoKey as PEM.
 
-```ruby
+```gotemplate
 {{ $key := cryptoPair "rsa" }}
 # Get the private key and encode it as PEM
 {{ $key.Private | toPem }}
@@ -405,7 +560,7 @@ Encode the given cryptoKey as PEM.
 
 Output :
 
-```ruby
+```gotemplate
 # Get the private key and encode it as PEM
 # {{ $key.Private | toPem }}
 "-----BEGIN RSA PRIVATE KEY-----
@@ -453,7 +608,7 @@ FwIDAQAB
 
 Encrypt the given PEM with a passphrase.
 
-```ruby
+```gotemplate
 {{ $key := cryptoPair "rsa" }}
 # Generate a passphrase
 {{ $passphrase := paranoidDiceware }}
@@ -465,7 +620,7 @@ Encrypt the given PEM with a passphrase.
 
 Output :
 
-```ruby
+```gotemplate
 # {{ $key := cryptoPair "rsa" }}{{ $passphrase := paranoidDiceware }}{{ $privPem := $key.Private | toPem }}{{ $passphrase }}\n{{ encryptPem $privPem $passphrase }}
 "helmet-flashcard-context-tidiness-osmosis-sled-shimmer-jeeringly-exhale-aloof-defuse-pranker
 -----BEGIN ENCRYPTED PRIVATE KEY-----
@@ -504,7 +659,7 @@ JFS6EYe2rXuOqxSTzurUTPC4U3bBwtCwTpG/YVAzIkiL7BDfhxB0X5aG
 
 Encrypt input using JWE.
 
-```ruby
+```gotemplate
 {{ $key := cryptoPair "rsa" }}
 # Get the private key and encode it as PEM
 {{ $pk := toPem $key.Private }}
@@ -516,7 +671,7 @@ Encrypt input using JWE.
 
 Decrypt input encoded as JWE.
 
-```ruby
+```gotemplate
 {{ $key := cryptoPair "rsa" }}
 # Get the private key and encode it as PEM
 {{ $pk := toPem $key.Private }}
@@ -530,7 +685,7 @@ Decrypt input encoded as JWE.
 
 Extract claims _WITHOUT_ signature validation.
 
-```ruby
+```gotemplate
 {{ $token = "..." }}
 # Parse the JWT
 {{ $t := parseJwt $token }}
@@ -544,7 +699,7 @@ Extract claims _WITHOUT_ signature validation.
 
 Extract claims _WITH_ signature validation.
 
-```ruby
+```gotemplate
 {{ $token = "..." }}
 {{ $key = "..." }}
 # Parse the JWT
@@ -559,7 +714,7 @@ Extract claims _WITH_ signature validation.
 
 Encode the given key for OpenSSH usages.
 
-```ruby
+```gotemplate
 {{ $key := cryptoPair "ssh" }}
 # Get the private key and encode it as OpenSSH private key
 {{ $key.Private | toSSH }}
@@ -569,7 +724,7 @@ Encode the given key for OpenSSH usages.
 
 Output :
 
-```ruby
+```gotemplate
 # {{ $key := cryptoPair "ssh" }}{{ $key.Private | toSSH }}\n{{ $key.Public | toPem }}\n{{ $key.Public | toSSH }}
 "-----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz
@@ -590,7 +745,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDNglXzKENVQqbJymMYEK47ys729tmV4GES9O4uYBXGQ
 
 Create a JWT.
 
-```ruby
+```gotemplate
 {{ $key := cryptoPair "ec" }}
 {{ $claims := fromJson "{\"sub\":\"test\"}" }}
 {{ toJws $claims $key.Private }}
@@ -600,7 +755,7 @@ Create a JWT.
 
 Read a PEM encoded string and decode as `*x509.Certificate` - https://pkg.go.dev/crypto/x509#Certificate.
 
-```ruby
+```gotemplate
 {{ $cert := parsePemCertificate .Values.cert }}
 {{ $cert.Issuer.ToRDNSequence }}
 {{ $cert.NotBefore }}
@@ -610,7 +765,7 @@ Read a PEM encoded string and decode as `*x509.Certificate` - https://pkg.go.dev
 
 Read all PEM encoded string and decode as a collection of `*x509.Certificate` - https://pkg.go.dev/crypto/x509#Certificate.
 
-```ruby
+```gotemplate
 {{ $certs := parsePemCertificateBundle .Values.certs }}
 {{ range $i, $cert := $certs }}
 {{ $cert.Issuer.ToRDNSequence }}
@@ -622,7 +777,7 @@ Read all PEM encoded string and decode as a collection of `*x509.Certificate` - 
 
 Read a PEM encoded string and decode as a collection of `*x509.CertificateRequest` - https://pkg.go.dev/crypto/x509#CertificateRequest.
 
-```ruby
+```gotemplate
 {{ $csr := parsePemCertificateRequest .Values.csr }}
 {{ $csr.PublicKey | toJwk }}
 ```
@@ -636,7 +791,7 @@ Read a PEM encoded string and decode as a collection of `*x509.CertificateReques
 
 Encode the given `*x509.Certificate` for [DANE-TLSA](https://datatracker.ietf.org/doc/html/rfc6698) validation.
 
-```ruby
+```gotemplate
 {{ $cert := parsePemCertificate .Values.cert }}
 _dane.example.com. IN TLSA 2 1 1 {{ toTLSA 1 1 $cert | upper }}
 ```

@@ -75,6 +75,13 @@ vault secrets enable -version=2 -path=legacy kv
 3. [BundleTemplate](3-secret-bundle/3-template.md)
 4. [BundlePatch](3-secret-bundle/4-patch.md)
 
+### Value Transformers
+
+1. [Introduction](4-value-transformers/1-introduction.md)
+2. [Encryption](4-value-transformers/2-encryption.md)
+3. [Signature](4-value-transformers/3-signature.md)
+4. [Signing Workflows](4-value-transformers/4-signing-workflows.md)
+
 ### Secret Workflow
 
 > Section in development
