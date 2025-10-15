@@ -148,7 +148,7 @@ linters-settings:
           - golang.org/x/term
           - google.golang.org/genproto
           - google.golang.org/protobuf
-          - gopkg.in/square/go-jose.v2
+          - github.com/go-jose/go-jose/v3
           - gopkg.in/yaml.v3
           - oras.land/oras-go
           - sigs.k8s.io/yaml
