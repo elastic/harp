@@ -47,6 +47,36 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// algorithmForKey determines the appropriate JWS algorithm for a given key.
+func algorithmForKey(key interface{}) string {
+	switch k := key.(type) {
+	case *rsa.PrivateKey, *rsa.PublicKey:
+		return string(jose.RS256)
+	case *ecdsa.PrivateKey:
+		return algorithmForECDSACurve(k.Curve)
+	case *ecdsa.PublicKey:
+		return algorithmForECDSACurve(k.Curve)
+	case ed25519.PrivateKey, ed25519.PublicKey:
+		return string(jose.EdDSA)
+	default:
+		return ""
+	}
+}
+
+// algorithmForECDSACurve returns the JWS algorithm for an ECDSA curve.
+func algorithmForECDSACurve(curve elliptic.Curve) string {
+	switch curve {
+	case elliptic.P256():
+		return string(jose.ES256)
+	case elliptic.P384():
+		return string(jose.ES384)
+	case elliptic.P521():
+		return string(jose.ES512)
+	default:
+		return ""
+	}
+}
+
 // ToJWK encodes given key using JWK.
 func ToJWK(key interface{}) (string, error) {
 	// Check key
@@ -54,15 +84,19 @@ func ToJWK(key interface{}) (string, error) {
 		return "", fmt.Errorf("unable to encode nil key")
 	}
 
-	// Wrap key
-	keyWrapper := jose.JSONWebKey{Key: key, KeyID: ""}
-
 	// Don't process Ed25519 keys
 	if fips.Enabled() {
 		switch key.(type) {
 		case ed25519.PrivateKey, ed25519.PublicKey:
 			return "", errors.New("ed25519 key processing is disabled in FIPS Mode")
 		}
+	}
+
+	// Wrap key with algorithm
+	keyWrapper := jose.JSONWebKey{
+		Key:       key,
+		Algorithm: algorithmForKey(key),
+		KeyID:     "",
 	}
 
 	// Generate thumbprint
@@ -74,7 +108,7 @@ func ToJWK(key interface{}) (string, error) {
 	// Assign thumbprint
 	keyWrapper.KeyID = base64.URLEncoding.EncodeToString(thumb)
 
-	// Marshal private as JSON
+	// Marshal as JSON
 	payload, err := keyWrapper.MarshalJSON()
 	if err != nil {
 		return "", err
