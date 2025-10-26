@@ -19,6 +19,7 @@ package operation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path"
 	"strings"
@@ -165,7 +166,7 @@ func (op *importer) Run(ctx context.Context) error {
 					if err := gWriterCtx.Err(); err != nil {
 						return err.Error()
 					}
-					return "none"
+					return contextErrorNone
 				}()),
 			)
 
@@ -180,10 +181,10 @@ func (op *importer) Run(ctx context.Context) error {
 						if ctxErr := gWriterCtx.Err(); ctxErr != nil {
 							return ctxErr.Error()
 						}
-						return "none"
+						return contextErrorNone
 					}()),
-					zap.Bool("is_context_canceled", gWriterCtx.Err() == context.Canceled),
-					zap.Bool("is_deadline_exceeded", gWriterCtx.Err() == context.DeadlineExceeded),
+					zap.Bool("is_context_canceled", errors.Is(gWriterCtx.Err(), context.Canceled)),
+					zap.Bool("is_deadline_exceeded", errors.Is(gWriterCtx.Err(), context.DeadlineExceeded)),
 				)
 
 				return fmt.Errorf("unable to acquire a semaphore token: %w", err)
@@ -276,14 +277,7 @@ func (op *importer) Run(ctx context.Context) error {
 				// Write secret to Vault
 				if err := op.backends[rootPath].WriteWithMeta(gWriterCtx, secretPath, data, metadata); err != nil {
 					// Classify error types for better debugging
-					errorType := "unknown"
-					if strings.Contains(err.Error(), "connection") {
-						errorType = "connection"
-					} else if strings.Contains(err.Error(), "permission") {
-						errorType = "permission"
-					} else if strings.Contains(err.Error(), "timeout") {
-						errorType = "timeout"
-					}
+					errorType := ClassifyVaultError(err)
 
 					log.For(gWriterCtx).Error("Failed to write secret to Vault",
 						zap.String("secret_path", secretPath),
