@@ -26,6 +26,9 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/imdario/mergo"
 	"go.uber.org/zap"
@@ -39,6 +42,10 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+)
+
+const (
+	contextErrorNone = "none"
 )
 
 // Exporter initialize a secret exporter operation
@@ -60,12 +67,22 @@ type exporter struct {
 	withMetadata   bool
 	output         chan *bundlev1.Package
 	maxWorkerCount int64
+	pathCount      int
+	pathCountMutex sync.RWMutex
 }
 
 // Run the implemented operation
 //
 //nolint:funlen,gocognit,gocyclo // refactor
 func (op *exporter) Run(ctx context.Context) error {
+	startTime := time.Now()
+
+	log.For(ctx).Info("Starting vault export operation",
+		zap.String("path", op.path),
+		zap.Int64("max_workers", op.maxWorkerCount),
+		zap.Bool("with_metadata", op.withMetadata),
+	)
+
 	// Initialize sub context
 	g, gctx := errgroup.WithContext(ctx)
 
@@ -87,17 +104,48 @@ func (op *exporter) Run(ctx context.Context) error {
 		// Reader errGroup
 		gReader, gReaderCtx := errgroup.WithContext(gctx)
 
+		var processedCount atomic.Int64
 		// Listen for message
 		for secretPath := range pathChan {
 			secPath := secretPath
 
 			if err := gReaderCtx.Err(); err != nil {
-				// Stop processing
+				log.For(gReaderCtx).Error("Context error detected, stopping processing",
+					zap.Error(err),
+					zap.Int64("processed_count", processedCount.Load()),
+				)
 				break
 			}
 
+			log.For(gReaderCtx).Debug("Attempting semaphore acquisition",
+				zap.String("secret_path", secretPath),
+				zap.Int64("max_workers", op.maxWorkerCount),
+				zap.Bool("context_done", gReaderCtx.Done() != nil),
+				zap.String("context_error", func() string {
+					if err := gReaderCtx.Err(); err != nil {
+						return err.Error()
+					}
+					return contextErrorNone
+				}()),
+			)
+
 			// Acquire a token
 			if err := sem.Acquire(gReaderCtx, 1); err != nil {
+				log.For(gReaderCtx).Error("Semaphore acquisition failed",
+					zap.Error(err),
+					zap.String("secret_path", secretPath),
+					zap.String("path", op.path),
+					zap.Int64("max_workers", op.maxWorkerCount),
+					zap.String("context_error", func() string {
+						if ctxErr := gReaderCtx.Err(); ctxErr != nil {
+							return ctxErr.Error()
+						}
+						return contextErrorNone
+					}()),
+					zap.Bool("is_context_canceled", errors.Is(gReaderCtx.Err(), context.Canceled)),
+					zap.Bool("is_deadline_exceeded", errors.Is(gReaderCtx.Err(), context.DeadlineExceeded)),
+				)
+
 				return fmt.Errorf("unable to acquire a semaphore token: %w", err)
 			}
 
@@ -107,6 +155,7 @@ func (op *exporter) Run(ctx context.Context) error {
 			gReader.Go(func() error {
 				// Release token on finish
 				defer sem.Release(1)
+				defer processedCount.Add(1)
 
 				if err := gReaderCtx.Err(); err != nil {
 					// Context has already an error
@@ -127,6 +176,17 @@ func (op *exporter) Run(ctx context.Context) error {
 						log.For(gReaderCtx).Debug("No data / path found for given path", zap.String("path", secPath))
 						return nil
 					}
+
+					// Classify error types for better debugging
+					errorType := ClassifyVaultError(errRead)
+
+					log.For(gReaderCtx).Error("Failed to read secret from Vault",
+						zap.String("secret_path", vaultPackagePath),
+						zap.Uint32("version", vaultVersion),
+						zap.String("error_type", errorType),
+						zap.Error(errRead),
+					)
+
 					return fmt.Errorf("unexpected vault error: %w", errRead)
 				}
 
@@ -266,7 +326,16 @@ func (op *exporter) Run(ctx context.Context) error {
 			})
 		}
 
-		return gReader.Wait()
+		// Wait for all readers to complete
+		if err := gReader.Wait(); err != nil {
+			return err
+		}
+
+		log.For(gctx).Info("Secret reader consumer completed",
+			zap.Int64("total_processed", processedCount.Load()),
+		)
+
+		return nil
 	})
 
 	// Producers ---------------------------------------------------------------
@@ -274,13 +343,40 @@ func (op *exporter) Run(ctx context.Context) error {
 	// Vault crawler
 	g.Go(func() error {
 		defer close(pathChan)
-		return op.walk(gctx, op.path, op.path, pathChan)
+
+		log.For(gctx).Info("Starting path producer (vault crawler)",
+			zap.String("base_path", op.path),
+		)
+
+		producerStartTime := time.Now()
+
+		// Walk the vault path tree
+		if err := op.walk(gctx, op.path, op.path, pathChan); err != nil {
+			return err
+		}
+
+		op.pathCountMutex.RLock()
+		totalPaths := op.pathCount
+		op.pathCountMutex.RUnlock()
+
+		log.For(gctx).Info("Path producer completed",
+			zap.Int("total_paths_published", totalPaths),
+			zap.Duration("total_time", time.Since(producerStartTime)),
+			zap.Float64("avg_rate_per_sec", float64(totalPaths)/time.Since(producerStartTime).Seconds()),
+		)
+
+		return nil
 	})
 
 	// Wait for all goroutime to complete
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("vault operation error: %w", err)
 	}
+
+	log.For(ctx).Info("Vault export operation completed",
+		zap.Duration("total_duration", time.Since(startTime)),
+		zap.String("path", op.path),
+	)
 
 	// No error
 	return nil
@@ -299,8 +395,24 @@ func (op *exporter) walk(ctx context.Context, basePath, currPath string, keys ch
 	if res == nil {
 		select {
 		case <-ctx.Done():
+			log.For(ctx).Warn("Path producer context canceled",
+				zap.Error(ctx.Err()),
+				zap.Int("published_count", op.pathCount),
+			)
 			return ctx.Err()
 		case keys <- currPath:
+			op.pathCountMutex.Lock()
+			op.pathCount++
+			currentCount := op.pathCount
+			op.pathCountMutex.Unlock()
+
+			// Log progress periodically
+			if currentCount%50 == 0 {
+				log.For(ctx).Debug("Path producer progress",
+					zap.Int("paths_published", currentCount),
+					zap.String("latest_path", currPath),
+				)
+			}
 		}
 		return nil
 	}
