@@ -80,8 +80,15 @@ func printEnvDetails(w io.Writer) {
 }
 
 func printGoDetails(w io.Writer) {
-	printCmdOut(w, "GOROOT/bin/go version: ", filepath.Join(runtime.GOROOT(), "bin", "go"), "version")
-	printCmdOut(w, "GOROOT/bin/go tool compile -V: ", filepath.Join(runtime.GOROOT(), "bin", "go"), "tool", "compile", "-V")
+	// Get GOROOT from `go env GOROOT` instead of deprecated runtime.GOROOT()
+	cmd := exec.Command("go", "env", "GOROOT")
+	out, err := cmd.Output()
+	if err != nil {
+		return
+	}
+	goroot := string(bytes.TrimSpace(out))
+	printCmdOut(w, "GOROOT/bin/go version: ", filepath.Join(goroot, "bin", "go"), "version")
+	printCmdOut(w, "GOROOT/bin/go tool compile -V: ", filepath.Join(goroot, "bin", "go"), "tool", "compile", "-V")
 }
 
 func printOSDetails(w io.Writer) {
