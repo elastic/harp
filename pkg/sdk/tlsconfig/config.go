@@ -115,6 +115,7 @@ func certPool(caFile string, exclusivePool bool) (*x509.CertPool, error) {
 			return nil, fmt.Errorf("failed to read system certificates: %w", err)
 		}
 	}
+	//nolint:gosec // G304: caFile is a TLS configuration parameter
 	content, err := os.ReadFile(caFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read CA certificate %q: %w", caFile, err)

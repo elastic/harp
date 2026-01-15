@@ -104,9 +104,9 @@ func (t *PushTask) Run(ctx context.Context) error {
 			return fmt.Errorf("unable to encode manifest as JSON: %w", err)
 		}
 	} else {
-		fmt.Fprintf(writer, "Container successfully pushed !\n")
-		fmt.Fprintf(writer, "Digest: %s\n", m.Digest.Hex())
-		fmt.Fprintf(writer, "Size: %d\n", m.Size)
+		_, _ = fmt.Fprintf(writer, "Container successfully pushed !\n")
+		_, _ = fmt.Fprintf(writer, "Digest: %s\n", m.Digest.Hex())
+		_, _ = fmt.Fprintf(writer, "Size: %d\n", m.Size)
 	}
 
 	// No error

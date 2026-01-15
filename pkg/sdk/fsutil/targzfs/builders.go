@@ -32,6 +32,7 @@ import (
 // FromFile creates an archive filesystem from a filename.
 func FromFile(name string) (fs.FS, error) {
 	// Open the target file
+	//nolint:gosec // G304: name is provided by caller for archive processing
 	fn, err := os.Open(name)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open archive %q: %w", name, err)

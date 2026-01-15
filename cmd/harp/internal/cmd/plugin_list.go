@@ -124,7 +124,7 @@ func (o *pluginListOptions) Run(cmd *cobra.Command) error {
 
 			// First file identified
 			if isFirstFile {
-				fmt.Fprintf(os.Stdout, "The following compatible plugins are available:\n\n")
+				_, _ = fmt.Fprintf(os.Stdout, "The following compatible plugins are available:\n\n")
 				pluginsFound = true
 				isFirstFile = false
 			}
@@ -135,10 +135,10 @@ func (o *pluginListOptions) Run(cmd *cobra.Command) error {
 				pluginPath = filepath.Join(dir, pluginPath)
 			}
 
-			fmt.Fprintf(os.Stdout, "%s\n", pluginPath)
+			_, _ = fmt.Fprintf(os.Stdout, "%s\n", pluginPath)
 			if errs := o.Verifier.Verify(filepath.Join(dir, f.Name())); len(errs) != 0 {
 				for _, err := range errs {
-					fmt.Fprintf(os.Stderr, "  - %s\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "  - %s\n", err)
 					pluginWarnings++
 				}
 			}

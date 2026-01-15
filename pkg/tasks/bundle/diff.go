@@ -106,7 +106,7 @@ func (t *DiffTask) Run(ctx context.Context) error {
 		}
 
 		// Write output
-		fmt.Fprintln(writer, string(out))
+		_, _ = fmt.Fprintln(writer, string(out))
 	}
 
 	// No error

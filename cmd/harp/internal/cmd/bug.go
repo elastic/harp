@@ -58,8 +58,8 @@ func runBug(cmd *cobra.Command, args []string) {
 	// Open the browser to issue creation form
 	reportURL := "https://github.com/elastic/harp/issues/new?body=" + url.QueryEscape(body)
 	if err := open.Run(reportURL); err != nil {
-		fmt.Fprint(os.Stdout, "Please file a new issue at github.com/elastic/harp/issues/new using this template:\n\n")
-		fmt.Fprint(os.Stdout, body)
+		_, _ = fmt.Fprint(os.Stdout, "Please file a new issue at github.com/elastic/harp/issues/new using this template:\n\n")
+		_, _ = fmt.Fprint(os.Stdout, body)
 	}
 }
 

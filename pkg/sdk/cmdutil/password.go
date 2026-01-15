@@ -40,14 +40,14 @@ func ReadSecret(prompt string, confirmation bool) (*memguard.LockedBuffer, error
 	defer memguard.WipeBytes(passwordConfirm)
 
 	// Ask to password
-	fmt.Fprintf(os.Stdout, "%s: ", prompt)
+	_, _ = fmt.Fprintf(os.Stdout, "%s: ", prompt)
 	//nolint:unconvert // stdin doesn't share same type on each platform
 	password, err = term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
 		return nil, fmt.Errorf("unable to read secret")
 	}
 
-	fmt.Fprint(os.Stdout, "\n")
+	_, _ = fmt.Fprint(os.Stdout, "\n")
 
 	// Check if confirmation is requested
 	if !confirmation {
@@ -55,14 +55,14 @@ func ReadSecret(prompt string, confirmation bool) (*memguard.LockedBuffer, error
 		return memguard.NewBufferFromBytes(password), nil
 	}
 
-	fmt.Fprintf(os.Stdout, "%s (confirmation): ", prompt)
+	_, _ = fmt.Fprintf(os.Stdout, "%s (confirmation): ", prompt)
 	//nolint:unconvert // stdin doesn't share same type on each platform
 	passwordConfirm, err = term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
 		return nil, fmt.Errorf("unable to read secret confirmation")
 	}
 
-	fmt.Fprint(os.Stdout, "\n")
+	_, _ = fmt.Fprint(os.Stdout, "\n")
 
 	// Compare if equal
 	if !security.SecureCompare(password, passwordConfirm) {

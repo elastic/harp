@@ -43,7 +43,6 @@ func V2(l logical.Logical, mountPath string, customMetadataEnabled bool) Service
 	}
 }
 
-//nolint:revive // refactor use of ctx
 func (s *kvv2Backend) List(ctx context.Context, path string) ([]string, error) {
 	// Check arguments
 	secretPath := vpath.SanitizePath(path)
@@ -90,7 +89,6 @@ func (s *kvv2Backend) Read(ctx context.Context, path string) (SecretData, Secret
 	return s.ReadVersion(ctx, path, 0)
 }
 
-//nolint:revive // refactor use of ctx
 func (s *kvv2Backend) ReadVersion(ctx context.Context, path string, version uint32) (SecretData, SecretMetadata, error) {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)
@@ -168,7 +166,6 @@ func (s *kvv2Backend) Write(ctx context.Context, path string, data SecretData) e
 	return s.WriteWithMeta(ctx, path, data, nil)
 }
 
-//nolint:revive // refactor use of ctx
 func (s *kvv2Backend) WriteWithMeta(ctx context.Context, path string, data SecretData, meta SecretMetadata) error {
 	// Clean path first
 	secretPath := vpath.SanitizePath(path)

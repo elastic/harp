@@ -31,7 +31,6 @@ import (
 
 type KeyAlgorithm string
 
-//nolint:revive,stylecheck // Accepted case
 var (
 	AES128_KW          KeyAlgorithm = "a128kw"
 	AES192_KW          KeyAlgorithm = "a192kw"

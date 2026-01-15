@@ -59,6 +59,7 @@ func Reader(name string) (io.Reader, error) {
 		reader = bufio.NewReader(os.Stdin)
 		reader = NewTimeoutReader(reader, ReaderTimeout)
 	default:
+		//nolint:gosec // G304: name is provided by caller for file reading
 		reader, err = os.OpenFile(name, syscall.O_RDONLY, 0o400)
 		if err != nil {
 			return nil, fmt.Errorf(
@@ -116,6 +117,7 @@ func Writer(name string) (io.Writer, error) {
 		writer = os.Stdout
 	default:
 		// Open output file
+		//nolint:gosec // G304: name is provided by caller for file writing
 		writer, err = os.OpenFile(name, os.O_CREATE|os.O_WRONLY, 0o400)
 		if err != nil {
 			return nil, fmt.Errorf("unable to open '%s' for write: %w", name, err)

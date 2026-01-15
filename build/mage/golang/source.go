@@ -62,6 +62,7 @@ func CollectGoFiles() error {
 	var sourceOut bytes.Buffer
 	var testOut bytes.Buffer
 
+	//nolint:gosec // G204: Arguments are package constants, not user input
 	cmdSource := exec.Command(
 		"go",
 		"list",
@@ -85,6 +86,7 @@ func CollectGoFiles() error {
 		CollectedGoSourceFiles[pth] = true
 	}
 
+	//nolint:gosec // G204: Arguments are package constants, not user input
 	cmdTest := exec.Command(
 		"go",
 		"list",

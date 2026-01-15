@@ -201,3 +201,20 @@ linters:
         - style
         - opinionated
         - experimental
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: var-naming
+          disabled: true
+    staticcheck:
+      checks:
+        - "all"
+        - "-QF1003"
+        - "-QF1008"
+        - "-ST1000"
+        - "-ST1003"
+        - "-ST1020"
+        - "-ST1021"

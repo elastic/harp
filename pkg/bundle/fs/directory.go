@@ -49,7 +49,6 @@ func (d *directory) Stat() (fs.FileInfo, error) {
 	}, nil
 }
 
-//nolint:revive // refactor use of byte
 func (d *directory) Read(b []byte) (int, error) {
 	return 0, errors.New("is a directory")
 }

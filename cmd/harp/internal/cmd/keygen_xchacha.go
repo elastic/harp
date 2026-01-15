@@ -38,7 +38,7 @@ var keygenXChaChaCmd = func() *cobra.Command {
 			_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-xchacha", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
-			fmt.Fprintf(os.Stdout, "xchacha:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
+			_, _ = fmt.Fprintf(os.Stdout, "xchacha:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
 		},
 	}
 

@@ -45,5 +45,5 @@ func runKeygenSecretbox(cmd *cobra.Command, _ []string) {
 	_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-secretbox", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
 
-	fmt.Fprintf(os.Stdout, "secretbox:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
+	_, _ = fmt.Fprintf(os.Stdout, "secretbox:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
 }

@@ -45,8 +45,6 @@ type FileSystemTask struct {
 }
 
 // Run the task.
-//
-//nolint:revive // refactor use of ctx
 func (t *FileSystemTask) Run(ctx context.Context) error {
 	// Prepare input filesystem
 	inFS, err := fsutil.From(t.InputPath)

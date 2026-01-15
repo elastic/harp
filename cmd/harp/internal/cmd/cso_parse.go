@@ -52,7 +52,6 @@ var csoParseCmd = func() *cobra.Command {
 	return cmd
 }
 
-//nolint:revive // refactor use of args
 func runCSOParse(cmd *cobra.Command, args []string) {
 	ctx, cancel := cmdutil.Context(cmd.Context(), "harp-cso-parse", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 	defer cancel()
@@ -78,6 +77,6 @@ func runCSOParse(cmd *cobra.Command, args []string) {
 		}
 
 		// Dump in stdout
-		fmt.Fprintf(os.Stdout, "%s", string(out))
+		_, _ = fmt.Fprintf(os.Stdout, "%s", string(out))
 	}
 }

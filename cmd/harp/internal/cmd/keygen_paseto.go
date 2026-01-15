@@ -38,7 +38,7 @@ var keygenPasetoCmd = func() *cobra.Command {
 			_, cancel := cmdutil.Context(cmd.Context(), "harp-keygen-paseto", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
-			fmt.Fprintf(os.Stdout, "paseto:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
+			_, _ = fmt.Fprintf(os.Stdout, "paseto:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(32).Bytes()))
 		},
 	}
 

@@ -27,7 +27,7 @@ import (
 // Generate invoke the go:generate task on given package
 func Generate(name, packageName string) func() error {
 	return func() error {
-		fmt.Fprintf(os.Stdout, " > %s [%s]\n", name, packageName)
+		_, _ = fmt.Fprintf(os.Stdout, " > %s [%s]\n", name, packageName)
 		return sh.RunV("go", "generate", packageName)
 	}
 }

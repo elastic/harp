@@ -182,7 +182,7 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 		}
 
 		// Create output directory
-		if errMkDir := os.Mkdir("bin", 0o744); errMkDir != nil {
+		if errMkDir := os.Mkdir("bin", 0o750); errMkDir != nil {
 			if !errors.Is(errMkDir, os.ErrExist) {
 				return fmt.Errorf("unable to create output directory: %w", errMkDir)
 			}
@@ -194,14 +194,14 @@ func Build(name, packageName, version string, opts ...BuildOption) func() error 
 			filename = fmt.Sprintf("%s.exe", filename)
 		}
 
-		fmt.Fprintf(os.Stdout, " > Generating SBOM %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
+		_, _ = fmt.Fprintf(os.Stdout, " > Generating SBOM %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
 
 		// Generate SBOM
 		if err := sh.RunWith(env, "cyclonedx-gomod", "app", "-json", "-output", fmt.Sprintf("%s.sbom.json", filename), "-files", "-licenses", "-main", fmt.Sprintf("cmd/%s", defaultOpts.binaryName), "-packages"); err != nil {
 			return fmt.Errorf("unable to generate SBOM for artifact: %w", err)
 		}
 
-		fmt.Fprintf(os.Stdout, " > Building %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
+		_, _ = fmt.Fprintf(os.Stdout, " > Building %s [%s] [os:%s arch:%s%s flags:%v tag:%v]\n", defaultOpts.binaryName, defaultOpts.packageName, defaultOpts.goOS, defaultOpts.goArch, defaultOpts.goArm, strCompilationFlags, version)
 
 		// Compile
 		return sh.RunWith(env, "go", "build", buildMode, buildTags, "-trimpath", "-mod=readonly", "-ldflags", ldflagsValue, "-o", filename, packageName)

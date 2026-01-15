@@ -29,8 +29,6 @@ import (
 )
 
 // Etcd creates a test etcd server inside a Docker container.
-//
-//nolint:revive // refactor use of ctx
 func Etcd(ctx context.Context, tb testing.TB) string {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
