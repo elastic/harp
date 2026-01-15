@@ -223,6 +223,7 @@ func (t *FilterTask) regoFilter(ctx context.Context, in []*bundlev1.Package, pol
 	}
 
 	// Read policy file
+	//nolint:gosec // G304: policyFile is a task configuration parameter
 	policy, err := os.ReadFile(policyFile)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read the filter policy file: %w", err)

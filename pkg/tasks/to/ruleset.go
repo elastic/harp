@@ -66,7 +66,7 @@ func (t *RuleSetTask) Run(ctx context.Context) error {
 	}
 
 	// Write output
-	fmt.Fprintln(writer, string(out))
+	_, _ = fmt.Fprintln(writer, string(out))
 
 	// No error
 	return nil

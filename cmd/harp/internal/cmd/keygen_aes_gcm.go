@@ -50,7 +50,7 @@ var keygenAESCmd = func() *cobra.Command {
 				log.For(ctx).Fatal("invalid specificed key size, only 128, 192 and 256 are supported.")
 			}
 
-			fmt.Fprintf(os.Stdout, "aes-gcm:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(int(keySize/8)).Bytes()))
+			_, _ = fmt.Fprintf(os.Stdout, "aes-gcm:%s", base64.URLEncoding.EncodeToString(memguard.NewBufferRandom(int(keySize/8)).Bytes()))
 		},
 	}
 

@@ -39,13 +39,13 @@ func Command() *cobra.Command {
 		Run: func(_ *cobra.Command, _ []string) {
 			bi := NewInfo()
 			if displayAsJSON {
-				fmt.Fprintf(os.Stdout, "%s", bi.JSON())
+				_, _ = fmt.Fprintf(os.Stdout, "%s", bi.JSON())
 			} else {
-				fmt.Fprintf(os.Stdout, "%s", bi.String())
+				_, _ = fmt.Fprintf(os.Stdout, "%s", bi.String())
 				if withModules {
-					fmt.Fprintln(os.Stdout, "\nDependencies:")
+					_, _ = fmt.Fprintln(os.Stdout, "\nDependencies:")
 					for _, dep := range bi.BuildDeps {
-						fmt.Fprintf(os.Stdout, "- %s\n", dep)
+						_, _ = fmt.Fprintf(os.Stdout, "- %s\n", dep)
 					}
 				}
 			}

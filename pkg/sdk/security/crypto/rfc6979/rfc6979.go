@@ -37,7 +37,7 @@ func generateSecret(q, x *big.Int, alg func() hash.Hash, digest []byte, test fun
 	v := bytes.Repeat([]byte{0x01}, holen)
 
 	// Step C
-	k := bytes.Repeat([]byte{0x00}, holen)
+	k := make([]byte, holen)
 
 	// Step D
 	k = mac(alg, k, append(append(v, 0x00), bx...), k)

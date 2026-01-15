@@ -106,7 +106,7 @@ func (t *ValidateTask) Run(ctx context.Context) error {
 
 	// Display jsonschema
 	if t.SchemaOnly {
-		fmt.Fprintln(writer, string(s.Definition))
+		_, _ = fmt.Fprintln(writer, string(s.Definition))
 		return nil
 	}
 
@@ -115,7 +115,7 @@ func (t *ValidateTask) Run(ctx context.Context) error {
 	switch {
 	case len(validationErrors) > 0:
 		for _, e := range validationErrors {
-			fmt.Fprintf(writer, " - %s\n", e.String())
+			_, _ = fmt.Fprintf(writer, " - %s\n", e.String())
 		}
 		return err
 	case err != nil:

@@ -136,6 +136,7 @@ type formulaModel struct {
 func HomebrewFormula(cmd *artifact.Command) func() error {
 	sha256sum := func(filename string) (string, error) {
 		// Open file
+		//nolint:gosec // G304: filename is from build artifacts, not user input
 		f, err := os.Open(filename)
 		if err != nil {
 			return "", err

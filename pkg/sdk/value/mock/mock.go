@@ -33,12 +33,10 @@ type mockedTransformer struct {
 	err error
 }
 
-//nolint:revive // refactor use of ctx
 func (m *mockedTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 	return input, m.err
 }
 
-//nolint:revive // refactor use of ctx
 func (m *mockedTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
 	return input, m.err
 }

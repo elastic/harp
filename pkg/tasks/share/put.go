@@ -59,7 +59,6 @@ func (t *PutTask) Run(ctx context.Context) error {
 	}
 
 	// Set expiration
-	//nolint:revive // used by vault client for function
 	client.SetWrappingLookupFunc(func(operation, path string) string {
 		return t.TTL.String()
 	})
@@ -101,7 +100,7 @@ func (t *PutTask) Run(ctx context.Context) error {
 		}
 	} else {
 		// Display container key
-		fmt.Fprintf(outputWriter, "Token : %s (Expires in %d seconds)\n", token, int64(t.TTL.Seconds()))
+		_, _ = fmt.Fprintf(outputWriter, "Token : %s (Expires in %d seconds)\n", token, int64(t.TTL.Seconds()))
 	}
 
 	// No error

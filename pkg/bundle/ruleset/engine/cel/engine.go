@@ -93,7 +93,6 @@ type ruleEngine struct {
 	ruleset []cel.Program
 }
 
-//nolint:revive // refactor use of ctx
 func (re *ruleEngine) EvaluatePackage(ctx context.Context, p *bundlev1.Package) error {
 	// Check arguments
 	if p == nil {

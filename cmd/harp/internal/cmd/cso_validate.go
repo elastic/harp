@@ -118,7 +118,7 @@ func runCSOValidate(cmd *cobra.Command, _ []string) {
 		}
 	} else {
 		for k := range res {
-			fmt.Fprintf(os.Stdout, "%s\n", k)
+			_, _ = fmt.Fprintf(os.Stdout, "%s\n", k)
 		}
 	}
 }

@@ -48,7 +48,7 @@ func kvPreflightVersionRequest(client *api.Client, secretPath string) (mountPath
 	//nolint:staticcheck // TODO: refactor for use of client.Logical().ReadRaw
 	resp, err := client.RawRequest(r)
 	if resp != nil {
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 	}
 	if err != nil {
 		// If we get a 404 we are using an older version of vault, default to

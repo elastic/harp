@@ -105,6 +105,7 @@ func hoconIncludeCallback(filename string) *hocon.HoconRoot {
 	default:
 		root := hocon.Parse("", nil)
 		for _, f := range files {
+			//nolint:gosec // G304: f is from glob pattern matching, not direct user input
 			data, err := os.ReadFile(f)
 			if err != nil {
 				log.Bg().Error("hocon: unable to load file glob", zap.Error(err))

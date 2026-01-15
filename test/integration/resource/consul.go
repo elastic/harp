@@ -30,8 +30,6 @@ import (
 )
 
 // Consul creates a test consul server inside a Docker container.
-//
-//nolint:revive // refactor use of ctx
 func Consul(ctx context.Context, tb testing.TB) string {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
