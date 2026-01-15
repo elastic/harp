@@ -36,79 +36,72 @@ var formulaTemplate = strings.TrimSpace(`# typed: false
 class {{ .Formula }} < Formula
   desc "{{ .Description }}"
   homepage "https://{{ .Repository }}"
+  version "{{ .Version }}"
   license "Apache-2.0"
-  stable do
-    on_macos do
-      if Hardware::CPU.intel?
-        url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-darwin-amd64-{{ .Release }}.tar.gz"
-        sha256 "{{ sha256file (printf "dist/%s-darwin-amd64-%s.tar.gz" .Bin .Release) }}"
-      elsif Hardware::CPU.arm?
-        url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-darwin-arm64-{{ .Release }}.tar.gz"
-        sha256 "{{ sha256file (printf "dist/%s-darwin-arm64-%s.tar.gz" .Bin .Release) }}"
-      end
+
+  on_macos do
+    if Hardware::CPU.intel?
+      url "https://{{ .Repository }}/releases/download/{{ .Release }}/{{ .Bin }}-darwin-amd64-v1.tar.gz"
+      sha256 "{{ sha256file (printf "dist/%s-darwin-amd64-v1.tar.gz" .Bin) }}"
+    elsif Hardware::CPU.arm?
+      url "https://{{ .Repository }}/releases/download/{{ .Release }}/{{ .Bin }}-darwin-arm64-v8.0.tar.gz"
+      sha256 "{{ sha256file (printf "dist/%s-darwin-arm64-v8.0.tar.gz" .Bin) }}"
     end
-    on_linux do
-      if Hardware::CPU.intel?
-        if Hardware::CPU.is_64_bit?
-          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-amd64-{{ .Release }}.tar.gz"
-          sha256 "{{ sha256file (printf "dist/%s-linux-amd64-%s.tar.gz" .Bin .Release) }}"
-        end
-      elsif Hardware::CPU.arm?
-        if Hardware::CPU.is_64_bit?
-          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-arm64-{{ .Release }}.tar.gz"
-          sha256 "{{ sha256file (printf "dist/%s-linux-arm64-%s.tar.gz" .Bin .Release) }}"
-        else
-          url "https://{{ .Repository }}/releases/download/cmd%2F{{ .Bin }}%2F{{ .Release }}/{{ .Bin }}-linux-arm7-{{ .Release }}.tar.gz"
-          sha256 "{{ sha256file (printf "dist/%s-linux-arm7-%s.tar.gz" .Bin .Release) }}"
-        end
+  end
+
+  on_linux do
+    if Hardware::CPU.intel?
+      if Hardware::CPU.is_64_bit?
+        url "https://{{ .Repository }}/releases/download/{{ .Release }}/{{ .Bin }}-linux-amd64-v1.tar.gz"
+        sha256 "{{ sha256file (printf "dist/%s-linux-amd64-v1.tar.gz" .Bin) }}"
+      end
+    elsif Hardware::CPU.arm?
+      if Hardware::CPU.is_64_bit?
+        url "https://{{ .Repository }}/releases/download/{{ .Release }}/{{ .Bin }}-linux-arm64-v8.0.tar.gz"
+        sha256 "{{ sha256file (printf "dist/%s-linux-arm64-v8.0.tar.gz" .Bin) }}"
+      else
+        url "https://{{ .Repository }}/releases/download/{{ .Release }}/{{ .Bin }}-linux-arm-6.tar.gz"
+        sha256 "{{ sha256file (printf "dist/%s-linux-arm-6.tar.gz" .Bin) }}"
       end
     end
   end
 
-  # Source definition
-  head do
-    url "https://{{ .Repository }}.git", :branch => "main"
-
-    # build dependencies
-    depends_on "go" => :build
-    depends_on "mage" => :build
-  end
+  conflicts_with "{{ .Bin }}-fips", because: "{{ .Bin }}-fips also ships a '{{ .Bin }}' binary"
 
   def install
     ENV.deparallelize
 
-    if build.head?
-      # Prepare build environment
-      ENV["GOPATH"] = buildpath
-      (buildpath/"src/{{ .Repository }}").install Dir["{*,.git,.gitignore}"]
-
-      # Mage tools
-      ENV.prepend_path "PATH", buildpath/"tools/bin"
-
-      # In {{ .Repository }} command
-      cd "src/{{ .Repository }}/cmd/{{ .Bin }}" do
-        system "go", "mod", "vendor"
-        system "mage", "compile"
+    # Install binaries
+    if OS.mac?
+      if Hardware::CPU.arm?
+        bin.install "{{ .Bin }}-darwin-arm64-v8.0" => "{{ .Bin }}"
+      else
+        bin.install "{{ .Bin }}-darwin-amd64-v1" => "{{ .Bin }}"
       end
-
-      # Install builded command
-      cd "src/{{ .Repository }}/cmd/{{ .Bin }}/bin" do
-        # Install binaries
-        if OS.mac? && Hardware::CPU.arm?
-          bin.install "{{ .Bin }}-darwin-arm64" => "{{ .Bin }}"
-        elsif OS.mac?
-          bin.install "{{ .Bin }}-darwin-amd64" => "{{ .Bin }}"
-        elsif OS.linux?
-          bin.install "{{ .Bin }}-linux-amd64" => "{{ .Bin }}"
+    elsif OS.linux?
+      if Hardware::CPU.arm?
+        if Hardware::CPU.is_64_bit?
+          bin.install "{{ .Bin }}-linux-arm64-v8.0" => "{{ .Bin }}"
+        else
+          bin.install "{{ .Bin }}-linux-arm-6" => "{{ .Bin }}"
+        end
+      else
+        if Hardware::CPU.is_64_bit?
+          bin.install "{{ .Bin }}-linux-amd64-v1" => "{{ .Bin }}"
         end
       end
-    elsif OS.mac? && Hardware::CPU.arm?
-      # Install binaries
-      bin.install "{{ .Bin }}-darwin-arm64" => "{{ .Bin }}"
-    elsif OS.mac?
-      bin.install "{{ .Bin }}-darwin-amd64" => "{{ .Bin }}"
-    elsif OS.linux?
-      bin.install "{{ .Bin }}-linux-amd64" => "{{ .Bin }}"
+    end
+
+    # Exclude from Gatekeeper quarantine on macOS Catalina+
+    if OS.mac? && MacOS.version >= :catalina && /com.apple.quarantine/.match?(Utils.safe_popen_read("xattr", "#{bin}/{{ .Bin }}"))
+      (bin/"{{ .Bin }}").chmod 0755
+      begin
+        system "xattr", "-d",
+                        "com.apple.quarantine",
+                        bin/"{{ .Bin }}"
+      ensure
+        (bin/"{{ .Bin }}").chmod 0555
+      end
     end
 
     # Final message
@@ -124,6 +117,7 @@ class {{ .Formula }} < Formula
   end
 
   test do
+    assert_predicate bin/"{{ .Bin }}", :exist?
     assert_match version.to_s, shell_output("#{bin}/{{ .Bin }} version")
   end
 end
@@ -135,6 +129,7 @@ type formulaModel struct {
 	Formula     string
 	Description string
 	Release     string
+	Version     string
 }
 
 // HomebrewFormula generates HomeBrew formula for given command.
@@ -145,6 +140,7 @@ func HomebrewFormula(cmd *artifact.Command) func() error {
 		if err != nil {
 			return "", err
 		}
+		defer f.Close()
 
 		// Prepare hasher
 		h := sha256.New()
@@ -157,7 +153,7 @@ func HomebrewFormula(cmd *artifact.Command) func() error {
 	}
 	return func() error {
 		// Compile template
-		formulaTpl, err := template.New("Formula").Funcs(map[string]interface{}{
+		formulaTpl, err := template.New("Formula").Funcs(map[string]any{
 			"sha256file": sha256sum,
 		}).Parse(formulaTemplate)
 		if err != nil {
@@ -166,12 +162,15 @@ func HomebrewFormula(cmd *artifact.Command) func() error {
 
 		// Merge data
 		var buf bytes.Buffer
+		release := os.Getenv("RELEASE")
+		version := strings.TrimPrefix(release, "v")
 		if errTmpl := formulaTpl.Execute(&buf, &formulaModel{
 			Repository:  cmd.Package,
 			Bin:         cmd.Kebab(),
 			Formula:     cmd.Camel(),
 			Description: cmd.Description,
-			Release:     os.Getenv("RELEASE"),
+			Release:     release,
+			Version:     version,
 		}); errTmpl != nil {
 			return errTmpl
 		}
