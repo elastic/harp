@@ -36,6 +36,7 @@ import (
 	"github.com/elastic/harp/build/mage/git"
 	"github.com/elastic/harp/build/mage/golang"
 	"github.com/elastic/harp/build/mage/release"
+	"github.com/elastic/harp/build/mage/tools"
 )
 
 // -----------------------------------------------------------------------------
@@ -52,12 +53,14 @@ func (Code) Lint() {
 
 // Format source code and process imports.
 func (Code) Format() {
+	mg.Deps(tools.Env)
 	color.Red("## Formatting all sources")
 	mg.SerialDeps(golang.Format, golang.Import)
 }
 
 // Licenser apply copyright banner to source code.
 func (Code) Licenser() error {
+	mg.Deps(tools.Env)
 	mg.SerialDeps(golang.Format, golang.Import)
 
 	color.Red("## Add license banner")
@@ -66,6 +69,7 @@ func (Code) Licenser() error {
 
 // Generate SDK code (mocks, tests, etc.)
 func (Code) Generate() {
+	mg.Deps(tools.Env)
 	color.Cyan("## Generate code")
 	mg.SerialDeps(
 		func() error {
@@ -103,6 +107,8 @@ var (
 
 // Build harp executable.
 func Build() error {
+	mg.Deps(tools.Env)
+
 	banner := figure.NewFigure("Harpocrates", "", true)
 	banner.Print()
 
