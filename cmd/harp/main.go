@@ -18,6 +18,7 @@
 package main
 
 import (
+	"os"
 	"time"
 
 	"github.com/elastic/harp/cmd/harp/internal/cmd"
@@ -32,5 +33,6 @@ func init() {
 func main() {
 	if err := cmd.Execute(); err != nil {
 		log.CheckErr("Unable to complete command execution", err)
+		os.Exit(1)
 	}
 }
