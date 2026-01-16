@@ -79,6 +79,9 @@ func CheckErrCtx(ctx context.Context, msg string, err error, fields ...zapcore.F
 
 // SafeClose handles the closer error
 func SafeClose(c io.Closer, msg string, fields ...zapcore.Field) {
+	if c == nil {
+		return
+	}
 	if cerr := c.Close(); cerr != nil {
 		fields = append(fields, zap.Error(errors.WithStack(cerr)))
 		Default().Bg().Error(msg, fields...)
@@ -87,6 +90,9 @@ func SafeClose(c io.Closer, msg string, fields ...zapcore.Field) {
 
 // SafeCloseCtx handles the closer error
 func SafeCloseCtx(ctx context.Context, c io.Closer, msg string, fields ...zapcore.Field) {
+	if c == nil {
+		return
+	}
 	if cerr := c.Close(); cerr != nil {
 		fields = append(fields, zap.Error(errors.WithStack(cerr)))
 		Default().For(ctx).Error(msg, fields...)
