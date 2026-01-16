@@ -118,8 +118,8 @@ var bundleFilterCmd = func() *cobra.Command {
 	// Parameters
 	cmd.Flags().StringVar(&params.inputPath, "in", "", "Container input ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.outputPath, "out", "", "Container path ('-' for stdout or filename)")
-	cmd.Flags().StringArrayVar(&params.excludePaths, "exclude", []string{}, "Exclude path")
-	cmd.Flags().StringArrayVar(&params.keepPaths, "keep", []string{}, "Keep path")
+	cmd.Flags().StringArrayVar(&params.excludePaths, "exclude", []string{}, "Exclude path (regex pattern)")
+	cmd.Flags().StringArrayVar(&params.keepPaths, "keep", []string{}, "Keep path (regex pattern)")
 	cmd.Flags().StringVar(&params.jmesPath, "query", "", "JMESPath query used as package filter")
 	cmd.Flags().StringVar(&params.regoPolicy, "policy", "", "OPA Rego policy file as package filter")
 	cmd.Flags().StringArrayVar(&params.celExpressions, "cel", []string{}, "CEL expression as package filter (multiple)")
