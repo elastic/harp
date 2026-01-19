@@ -75,7 +75,7 @@ func (t *ReadTask) Run(ctx context.Context) error {
 
 	if t.SecretKey != "" {
 		if v, ok := s[t.SecretKey]; ok {
-			fmt.Fprintf(writer, "%s", v)
+			_, _ = fmt.Fprintf(writer, "%s", v)
 		} else {
 			return fmt.Errorf("requested field does not exist '%s': %w", t.SecretKey, err)
 		}

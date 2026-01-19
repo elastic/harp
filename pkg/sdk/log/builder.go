@@ -53,8 +53,6 @@ var DefaultOptions = &Options{
 // -----------------------------------------------------------------------------
 
 // Setup the logger
-//
-//nolint:revive // refactor use of ctx
 func Setup(ctx context.Context, opts *Options) {
 	// Initialize logs
 	var config zap.Config

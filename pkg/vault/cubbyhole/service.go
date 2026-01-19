@@ -55,8 +55,6 @@ const (
 )
 
 // Put a secret in cubbyhole to retrieve a wrapping token.
-//
-//nolint:interfacer // -- wants to replace time.Duration by fmt.Stringer
 func (s *service) Put(_ context.Context, r io.Reader) (string, error) {
 	// Encode secret
 	payload, err := io.ReadAll(io.LimitReader(r, secretSizeLimit))

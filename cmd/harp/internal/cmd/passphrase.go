@@ -63,5 +63,5 @@ func runPassphrase(cmd *cobra.Command, _ []string) {
 
 	// Print the key
 	// lgtm [go/clear-text-logging]
-	fmt.Fprintln(os.Stdout, passPhrase)
+	_, _ = fmt.Fprintln(os.Stdout, passPhrase)
 }

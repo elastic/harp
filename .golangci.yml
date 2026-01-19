@@ -1,58 +1,44 @@
-issues:
-  exclude-dirs-use-default: true
-  uniq-by-line: true
-  exclude-files:
-    - ".*\\.pb\\.go$"
-    - ".*\\.gen\\.go$"
-    - ".*\\_gen\\.go$"
-    - "mock_.*\\.go"
-    - ".*\\.resolvers\\.go$"
+version: "2"
 
 run:
   concurrency: 4
   timeout: 20m
-  issues-exit-code: 1
   tests: false
   modules-download-mode: readonly
-  allow-parallel-runners: false
 
-# output configuration options
 output:
-  print-issued-lines: true
-  print-linter-name: true
-  sort-results: true
   sort-order:
     - linter
     - severity
     - file
   show-stats: true
 
+issues:
+  uniq-by-line: true
+  exclude-generated: strict
+  exclude-dirs:
+    - vendor
+    - third_party
+
 linters:
   enable:
     - bodyclose
-    # - deadcode
     - depguard
     - dogsled
-    # - dupl
     - errcheck
     - errorlint
     - copyloopvar
     - exhaustive
     - forbidigo
     - funlen
-    # - gochecknoinits
     - goconst
     - gocritic
     - gocyclo
-    - gofmt
     - govet
     - goheader
-    - goimports
     - goprintffuncname
     - gosec
-    - gosimple
     - ineffassign
-    # - lll
     - misspell
     - nakedret
     - noctx
@@ -60,176 +46,175 @@ linters:
     - revive
     - rowserrcheck
     - staticcheck
-    # - structcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
-    # - varcheck
     - whitespace
 
-linters-settings:
-  dogsled:
-    max-blank-identifiers: 2
-  dupl:
-    threshold: 150
-  depguard:
-    rules:
-      main:
-        allow:
-          - $gostd
-          - filippo.io/age
-          - filippo.io/age/armor
-          - filippo.io/edwards25519
-          - github.com/MakeNowJust/heredoc/v2
-          - github.com/Masterminds/semver/v3
-          - github.com/Masterminds/sprig/v3
-          - github.com/alessio/shellescape
-          - github.com/awnumar/memguard
-          - github.com/basgys/goxml2json
-          - github.com/cloudflare/tableflip
-          - github.com/dchest/uniuri
-          - github.com/elastic
-          - github.com/fatih/color
-          - github.com/fatih/structs
-          - github.com/fernet/fernet-go
-          - github.com/go-akka/configuration
-          - github.com/go-akka/configuration
-          - github.com/go-ozzo/ozzo-validation/v4
-          - github.com/go-zookeeper/zk
-          - github.com/gobwas/glob
-          - github.com/golang/mock/mockgen/model
-          - github.com/golang/protobuf
-          - github.com/golang/snappy
-          - github.com/google/cel-go
-          - github.com/google/go-github/v42/github
-          - github.com/google/gops/agent
-          - github.com/gosimple/slug
-          - github.com/hashicorp/consul/api
-          - github.com/hashicorp/hcl
-          - github.com/hashicorp/hcl/v2
-          - github.com/hashicorp/hcl/v2/hclsimple
-          - github.com/hashicorp/hcl/v2/hclsyntax
-          - github.com/hashicorp/vault/api
-          - github.com/iancoleman/strcase
-          - github.com/imdario/mergo
-          - github.com/jmespath/go-jmespath
-          - github.com/klauspost/compress
-          - github.com/magefile/mage
-          - github.com/mcuadros/go-defaults
-          - github.com/miscreant/miscreant.go
-          - github.com/oklog/run
-          - github.com/open-policy-agent/opa/rego
-          - github.com/opencontainers/go-digest
-          - github.com/opencontainers/image-spec
-          - github.com/ory/dockertest/v3
-          - github.com/pelletier/go-toml
-          - github.com/pierrec/lz4
-          - github.com/pkg/errors
-          - github.com/psanford/memfs
-          - github.com/sethvargo/go-diceware/diceware
-          - github.com/sethvargo/go-password/password
-          - github.com/skratchdot/open-golang/open
-          - github.com/spf13/cobra
-          - github.com/spf13/viper
-          - github.com/ulikunitz/xz
-          - github.com/xeipuuv/gojsonschema
-          - github.com/zclconf/go-cty/cty
-          - gitlab.com/NebulousLabs/merkletree
-          - go.etcd.io/etcd
-          - go.step.sm/crypto
-          - go.uber.org/zap
-          - golang.org/x/crypto
-          - golang.org/x/oauth2
-          - golang.org/x/ssh
-          - golang.org/x/sync
-          - golang.org/x/sys
-          - golang.org/x/term
-          - google.golang.org/genproto
-          - google.golang.org/protobuf
-          - github.com/go-jose/go-jose/v3
-          - gopkg.in/yaml.v3
-          - oras.land/oras-go
-          - sigs.k8s.io/yaml
-          - zntr.io/paseto/v3
-          - zntr.io/paseto/v4
+  settings:
+    dogsled:
+      max-blank-identifiers: 2
+    dupl:
+      threshold: 150
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - filippo.io/age
+            - filippo.io/edwards25519
+            - github.com/MakeNowJust/heredoc
+            - github.com/Masterminds/semver
+            - github.com/Masterminds/sprig
+            - github.com/alessio/shellescape
+            - github.com/awnumar/memguard
+            - github.com/basgys/goxml2json
+            - github.com/cloudflare/tableflip
+            - github.com/dchest/uniuri
+            - github.com/elastic
+            - github.com/fatih/color
+            - github.com/fatih/structs
+            - github.com/fernet/fernet-go
+            - github.com/go-akka/configuration
+            - github.com/go-jose/go-jose
+            - github.com/go-ozzo/ozzo-validation
+            - github.com/go-zookeeper/zk
+            - github.com/gobwas/glob
+            - github.com/golang/mock
+            - github.com/golang/protobuf
+            - github.com/golang/snappy
+            - github.com/google/cel-go
+            - github.com/google/go-github
+            - github.com/google/gops
+            - github.com/gosimple/slug
+            - github.com/hashicorp/consul
+            - github.com/hashicorp/hcl
+            - github.com/hashicorp/vault
+            - github.com/iancoleman/strcase
+            - github.com/imdario/mergo
+            - github.com/jmespath/go-jmespath
+            - github.com/klauspost/compress
+            - github.com/magefile/mage
+            - github.com/mcuadros/go-defaults
+            - github.com/miscreant/miscreant.go
+            - github.com/oklog/run
+            - github.com/open-policy-agent/opa
+            - github.com/opencontainers/go-digest
+            - github.com/opencontainers/image-spec
+            - github.com/ory/dockertest
+            - github.com/pelletier/go-toml
+            - github.com/pierrec/lz4
+            - github.com/pkg/errors
+            - github.com/psanford/memfs
+            - github.com/sethvargo/go-diceware
+            - github.com/sethvargo/go-password
+            - github.com/skratchdot/open-golang
+            - github.com/spf13/cobra
+            - github.com/spf13/viper
+            - github.com/ulikunitz/xz
+            - github.com/xeipuuv/gojsonschema
+            - github.com/zclconf/go-cty
+            - gitlab.com/NebulousLabs/merkletree
+            - go.etcd.io/etcd
+            - go.step.sm/crypto
+            - go.uber.org/zap
+            - golang.org/x/crypto
+            - golang.org/x/oauth2
+            - golang.org/x/ssh
+            - golang.org/x/sync
+            - golang.org/x/sys
+            - golang.org/x/term
+            - google.golang.org/genproto
+            - google.golang.org/grpc
+            - google.golang.org/protobuf
+            - gopkg.in/yaml.v3
+            - oras.land/oras-go
+            - sigs.k8s.io/yaml
+            - zntr.io/paseto
+    errcheck:
+      check-type-assertions: false
+      check-blank: false
+      exclude-functions:
+        - fmt:.*
+        - io/ioutil.Read.*
+    exhaustive:
+      check-generated: false
+      default-signifies-exhaustive: false
+    gocyclo:
+      min-complexity: 15
+    gosec:
+      excludes:
+        - G115
+    misspell:
+      locale: US
+    lll:
+      line-length: 140
+      tab-width: 1
+    gocognit:
+      min-complexity: 20
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    nestif:
+      min-complexity: 4
+    unused:
+      exported-fields-are-used: false
+    unparam:
+      check-exported: false
+    nakedret:
+      max-func-lines: 30
+    prealloc:
+      simple: true
+      range-loops: true
+      for-loops: false
+    funlen:
+      lines: 100
+      statements: 50
+    gomodguard:
+      blocked:
+        modules:
+          - github.com/BurntSushi/toml:
+              recommendations:
+                - github.com/pelletier/go-toml
+    goheader:
+      template: |-
+        Licensed to Elasticsearch B.V. under one or more contributor
+        license agreements. See the NOTICE file distributed with
+        this work for additional information regarding copyright
+        ownership. Elasticsearch B.V. licenses this file to you under
+        the Apache License, Version 2.0 (the "License"); you may
+        not use this file except in compliance with the License.
+        You may obtain a copy of the License at
 
-  errcheck:
-    check-type-assertions: false
-    check-blank: false
-    exclude-functions:
-      - fmt:.*
-      - io/ioutil.Read.*
-  exhaustive:
-    check-generated: false
-    default-signifies-exhaustive: false
-  goimports:
-    local-prefixes: "github.com/elastic"
-  gofmt:
-    simplify: true
-  gocyclo:
-    min-complexity: 15
-  gosec:
-    excludes:
-    - G115 # integer overflow conversion
-  misspell:
-    locale: US
-  lll:
-    line-length: 140
-    tab-width: 1
-  gci:
-    sections:
-    - prefix(github.com/elastic)
-  gocognit:
-    min-complexity: 20
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-  nestif:
-    min-complexity: 4
-  unused:
-    exported-fields-are-used: false
-  unparam:
-    check-exported: false
-  nakedret:
-    # make an issue if func has more lines of code than this setting and it has naked returns; default is 30
-    max-func-lines: 30
-  prealloc:
-    simple: true
-    range-loops: true
-    for-loops: false
-  funlen:
-    lines: 100
-    statements: 50
-  gomodguard:
-    blocked:
-      modules:
-        - github.com/BurntSushi/toml:
-            recommendations:
-              - github.com/pelletier/go-toml
-  goheader:
-    template: |-
-      Licensed to Elasticsearch B.V. under one or more contributor
-      license agreements. See the NOTICE file distributed with
-      this work for additional information regarding copyright
-      ownership. Elasticsearch B.V. licenses this file to you under
-      the Apache License, Version 2.0 (the "License"); you may
-      not use this file except in compliance with the License.
-      You may obtain a copy of the License at
+            http://www.apache.org/licenses/LICENSE-2.0
 
-          http://www.apache.org/licenses/LICENSE-2.0
-
-      Unless required by applicable law or agreed to in writing,
-      software distributed under the License is distributed on an
-      "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-      KIND, either express or implied.  See the License for the
-      specific language governing permissions and limitations
-      under the License.
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - performance
-      - style
-      - opinionated
-      - experimental
+        Unless required by applicable law or agreed to in writing,
+        software distributed under the License is distributed on an
+        "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+        KIND, either express or implied.  See the License for the
+        specific language governing permissions and limitations
+        under the License.
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+        - style
+        - opinionated
+        - experimental
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: var-naming
+          disabled: true
+    staticcheck:
+      checks:
+        - "all"
+        - "-QF1003"
+        - "-QF1008"
+        - "-ST1000"
+        - "-ST1003"
+        - "-ST1020"
+        - "-ST1021"

@@ -21,8 +21,8 @@ import "runtime"
 
 const (
 	// Standard build mode
-	golangImage     = "golang:1.23.2"
-	golangVersion   = "1.23.2"
+	golangImage     = "golang:1.25.5"
+	golangVersion   = "1.25.5"
 	goBoringVersion = "1.17.5b7"
 	toolImage       = "elastic/harp-tools:latest"
 	goArchitecture  = runtime.GOARCH

@@ -60,28 +60,35 @@ A complete runnable program is good.
 `
 
 func printGoVersion(w io.Writer) {
-	fmt.Fprintf(w, "### What version of Go are you using (`go version`)?\n\n")
-	fmt.Fprintf(w, "<pre>\n")
-	fmt.Fprintf(w, "$ go version\n")
+	_, _ = fmt.Fprintf(w, "### What version of Go are you using (`go version`)?\n\n")
+	_, _ = fmt.Fprintf(w, "<pre>\n")
+	_, _ = fmt.Fprintf(w, "$ go version\n")
 	printCmdOut(w, "", "go", "version")
-	fmt.Fprintf(w, "</pre>\n")
-	fmt.Fprintf(w, "\n")
+	_, _ = fmt.Fprintf(w, "</pre>\n")
+	_, _ = fmt.Fprintf(w, "\n")
 }
 
 func printEnvDetails(w io.Writer) {
-	fmt.Fprintf(w, "### What operating system and processor architecture are you using (`go env`)?\n\n")
-	fmt.Fprintf(w, "<details><summary><code>go env</code> Output</summary><br><pre>\n")
-	fmt.Fprintf(w, "$ go env\n")
+	_, _ = fmt.Fprintf(w, "### What operating system and processor architecture are you using (`go env`)?\n\n")
+	_, _ = fmt.Fprintf(w, "<details><summary><code>go env</code> Output</summary><br><pre>\n")
+	_, _ = fmt.Fprintf(w, "$ go env\n")
 	printCmdOut(w, "", "go", "env")
 	printGoDetails(w)
 	printOSDetails(w)
 	printCDetails(w)
-	fmt.Fprintf(w, "</pre></details>\n\n")
+	_, _ = fmt.Fprintf(w, "</pre></details>\n\n")
 }
 
 func printGoDetails(w io.Writer) {
-	printCmdOut(w, "GOROOT/bin/go version: ", filepath.Join(runtime.GOROOT(), "bin", "go"), "version")
-	printCmdOut(w, "GOROOT/bin/go tool compile -V: ", filepath.Join(runtime.GOROOT(), "bin", "go"), "tool", "compile", "-V")
+	// Get GOROOT from `go env GOROOT` instead of deprecated runtime.GOROOT()
+	cmd := exec.Command("go", "env", "GOROOT")
+	out, err := cmd.Output()
+	if err != nil {
+		return
+	}
+	goroot := string(bytes.TrimSpace(out))
+	printCmdOut(w, "GOROOT/bin/go version: ", filepath.Join(goroot, "bin", "go"), "version")
+	printCmdOut(w, "GOROOT/bin/go tool compile -V: ", filepath.Join(goroot, "bin", "go"), "tool", "compile", "-V")
 }
 
 func printOSDetails(w io.Writer) {
@@ -100,19 +107,19 @@ func printOSDetails(w io.Writer) {
 		printCmdOut(w, "uname -srv: ", "/usr/bin/uname", "-srv")
 		out, err := os.ReadFile("/etc/release")
 		if err == nil {
-			fmt.Fprintf(w, "/etc/release: %s\n", out)
+			_, _ = fmt.Fprintf(w, "/etc/release: %s\n", out)
 		}
 	}
 }
 
 func printAppDetails(w io.Writer) {
 	bi := version.NewInfo()
-	fmt.Fprintf(w, "### What version of Secret are you using (`harp version`)?\n\n")
-	fmt.Fprintf(w, "<pre>\n")
-	fmt.Fprintf(w, "$ harp version\n")
-	fmt.Fprintf(w, "%s\n", bi.String())
-	fmt.Fprintf(w, "</pre>\n")
-	fmt.Fprintf(w, "\n")
+	_, _ = fmt.Fprintf(w, "### What version of Secret are you using (`harp version`)?\n\n")
+	_, _ = fmt.Fprintf(w, "<pre>\n")
+	_, _ = fmt.Fprintf(w, "$ harp version\n")
+	_, _ = fmt.Fprintf(w, "%s\n", bi.String())
+	_, _ = fmt.Fprintf(w, "</pre>\n")
+	_, _ = fmt.Fprintf(w, "\n")
 }
 
 func printCDetails(w io.Writer) {
@@ -123,7 +130,7 @@ func printCDetails(w io.Writer) {
 		// There's apparently no combination of command line flags
 		// to get gdb to spit out its version without the license and warranty.
 		// Print up to the first newline.
-		fmt.Fprintf(w, "gdb --version: %s\n", firstLine(out))
+		_, _ = fmt.Fprintf(w, "gdb --version: %s\n", firstLine(out))
 	}
 }
 
@@ -135,7 +142,7 @@ func printCmdOut(w io.Writer, prefix, path string, args ...string) {
 	if err != nil {
 		return
 	}
-	fmt.Fprintf(w, "%s%s\n", prefix, bytes.TrimSpace(out))
+	_, _ = fmt.Fprintf(w, "%s%s\n", prefix, bytes.TrimSpace(out))
 }
 
 // firstLine returns the first line of a given byte slice.
@@ -161,13 +168,15 @@ func printGlibcVersion(w io.Writer) {
 	if err != nil {
 		return
 	}
-	defer os.Remove(srcfile)
+	defer func() { _ = os.Remove(srcfile) }()
+	//nolint:gosec // G204: srcfile/outfile are generated temp paths, not user input
 	cmd := exec.Command("gcc", "-o", outfile, srcfile)
 	if _, err = cmd.CombinedOutput(); err != nil {
 		return
 	}
-	defer os.Remove(outfile)
+	defer func() { _ = os.Remove(outfile) }()
 
+	//nolint:gosec // G204: outfile is a generated temp path, not user input
 	cmd = exec.Command("ldd", outfile)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -184,10 +193,10 @@ func printGlibcVersion(w io.Writer) {
 	if err != nil {
 		return
 	}
-	fmt.Fprintf(w, "%s: %s\n", m[1], firstLine(out))
+	_, _ = fmt.Fprintf(w, "%s: %s\n", m[1], firstLine(out))
 
 	// print another line (the one containing version string) in case of musl libc
 	if idx := bytes.IndexByte(out, '\n'); bytes.Contains(out, []byte("musl")) {
-		fmt.Fprintf(w, "%s\n", firstLine(out[idx+1:]))
+		_, _ = fmt.Fprintf(w, "%s\n", firstLine(out[idx+1:]))
 	}
 }

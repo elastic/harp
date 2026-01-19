@@ -70,12 +70,27 @@ func P384(random io.Reader) (*JSONWebKey, string, error) {
 	// Marshall as compressed point
 	pub := elliptic.MarshalCompressed(priv.Curve, priv.PublicKey.X, priv.PublicKey.Y)
 
+	// P-384 key components are 48 bytes (384 bits)
+	// big.Int.Bytes() strips leading zeros, so we need to pad to fixed size
+	const p384KeySize = 48
+	dBytes := priv.D.Bytes()
+	dPadded := make([]byte, p384KeySize)
+	copy(dPadded[p384KeySize-len(dBytes):], dBytes)
+
+	xBytes := priv.PublicKey.X.Bytes()
+	xPadded := make([]byte, p384KeySize)
+	copy(xPadded[p384KeySize-len(xBytes):], xBytes)
+
+	yBytes := priv.PublicKey.Y.Bytes()
+	yPadded := make([]byte, p384KeySize)
+	copy(yPadded[p384KeySize-len(yBytes):], yBytes)
+
 	// Wrap as JWK
 	return &JSONWebKey{
 		Kty: "EC",
 		Crv: "P-384",
-		X:   base64.RawURLEncoding.EncodeToString(priv.PublicKey.X.Bytes()),
-		Y:   base64.RawURLEncoding.EncodeToString(priv.PublicKey.Y.Bytes()),
-		D:   base64.RawURLEncoding.EncodeToString(priv.D.Bytes()),
+		X:   base64.RawURLEncoding.EncodeToString(xPadded),
+		Y:   base64.RawURLEncoding.EncodeToString(yPadded),
+		D:   base64.RawURLEncoding.EncodeToString(dPadded),
 	}, fmt.Sprintf("v2.ipk.%s", base64.RawURLEncoding.EncodeToString(pub)), err
 }

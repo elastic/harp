@@ -62,13 +62,20 @@ func (k *JSONWebKey) Sign(message []byte) (string, error) {
 			return "", errors.New("invalid private key size")
 		}
 
-		// Rebuild the private key
-		var sk ecdsa.PrivateKey
-		sk.Curve = elliptic.P384()
-		sk.D = new(big.Int).SetBytes(d)
+		// Rebuild the private key with full public key computation
+		// Go 1.24+ requires the public key (X, Y) to be set
+		curve := elliptic.P384()
+		sk := &ecdsa.PrivateKey{
+			PublicKey: ecdsa.PublicKey{
+				Curve: curve,
+			},
+			D: new(big.Int).SetBytes(d),
+		}
+		// Compute public key from private scalar
+		sk.PublicKey.X, sk.PublicKey.Y = curve.ScalarBaseMult(d)
 
 		digest := sha512.Sum384(message)
-		r, s, err := ecdsa.Sign(rand.Reader, &sk, digest[:])
+		r, s, err := ecdsa.Sign(rand.Reader, sk, digest[:])
 		if err != nil {
 			return "", fmt.Errorf("unable to sign the identity: %w", err)
 		}

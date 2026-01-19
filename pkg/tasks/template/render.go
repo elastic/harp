@@ -107,7 +107,7 @@ func (t *RenderTask) Run(ctx context.Context) error {
 	}
 
 	// Write rendered content
-	fmt.Fprintf(writer, "%s", out)
+	_, _ = fmt.Fprintf(writer, "%s", out)
 
 	// No error
 	return nil
