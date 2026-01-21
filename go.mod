@@ -23,7 +23,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/alessio/shellescape v1.4.2
-	github.com/awnumar/memguard v0.22.5
+	github.com/awnumar/memguard v0.23.0
 	github.com/basgys/goxml2json v1.1.0
 	github.com/cloudflare/tableflip v1.2.3
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
