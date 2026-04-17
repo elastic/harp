@@ -220,3 +220,14 @@ linters:
         - "-ST1003"
         - "-ST1020"
         - "-ST1021"
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - github.com/elastic

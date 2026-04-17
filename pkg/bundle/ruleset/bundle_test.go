@@ -179,7 +179,7 @@ func TestFromBundle(t *testing.T) {
 				},
 				Spec: &bundlev1.RuleSetSpec{
 					Rules: []*bundlev1.Rule{
-						&bundlev1.Rule{
+						{
 							Name: "LINT-D0QMaO-1",
 							Path: "app/production/testAccount/testService/v1.0.0/internalTestComponent/authentication/api_key",
 							Constraints: []string{

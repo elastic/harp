@@ -21,8 +21,9 @@ import (
 	"reflect"
 	"testing"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	"github.com/google/go-cmp/cmp"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
 func Test_PBtoYAML(t *testing.T) {

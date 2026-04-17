@@ -23,9 +23,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 	fuzz "github.com/google/gofuzz"
 	"github.com/stretchr/testify/assert"
+
+	bundlev1 "github.com/elastic/harp/api/gen/go/harp/bundle/v1"
 )
 
 func mustLoadRuleSet(filePath string) *bundlev1.RuleSet {

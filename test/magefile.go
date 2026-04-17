@@ -15,7 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//+build mage
+//go:build mage
+// +build mage
 
 package main
 
