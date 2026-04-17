@@ -1,6 +1,6 @@
 module github.com/elastic/harp/tools
 
-go 1.25.5
+go 1.25.8
 
 // Repository renamed
 replace github.com/denis-tingajkin/go-header => github.com/denis-tingaikin/go-header v0.4.2
