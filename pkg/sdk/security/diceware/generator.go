@@ -55,6 +55,15 @@ func Diceware(count int) (string, error) {
 		return "", fmt.Errorf("unable to generate daceware passphrase: %w", err)
 	}
 
+	// The EFF word list contains a handful of hyphenated entries
+	// (e.g. "t-shirt"). Strip internal hyphens so the "-" separator
+	// remains an unambiguous word boundary for consumers.
+	for i, w := range list {
+		if strings.ContainsRune(w, '-') {
+			list[i] = strings.ReplaceAll(w, "-", "")
+		}
+	}
+
 	// Assemble result
 	return strings.Join(list, "-"), nil
 }
