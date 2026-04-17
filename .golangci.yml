@@ -15,12 +15,13 @@ output:
 
 issues:
   uniq-by-line: true
-  exclude-generated: strict
-  exclude-dirs:
-    - vendor
-    - third_party
 
 linters:
+  exclusions:
+    generated: strict
+    paths:
+      - vendor
+      - third_party
   enable:
     - bodyclose
     - depguard
@@ -138,7 +139,6 @@ linters:
         - fmt:.*
         - io/ioutil.Read.*
     exhaustive:
-      check-generated: false
       default-signifies-exhaustive: false
     gocyclo:
       min-complexity: 15
