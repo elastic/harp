@@ -22,6 +22,8 @@ linters:
     paths:
       - vendor
       - third_party
+      - build
+      - tools
   enable:
     - bodyclose
     - depguard
