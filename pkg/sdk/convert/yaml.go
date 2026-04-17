@@ -63,6 +63,7 @@ func PBtoYAML(msg proto.Message) ([]byte, error) {
 	}
 
 	// Decode input as JSON
+	// nosemgrep: go.lang.security.deserialization.unsafe-deserialization-interface.go-unsafe-deserialization-interface -- generic protobuf->JSON->YAML converter; structure is caller-defined
 	var jsonObj interface{}
 	if errDecode := yaml.Unmarshal(pb, &jsonObj); errDecode != nil {
 		return nil, fmt.Errorf("unable to decode JSON input: %w", errDecode)
@@ -98,6 +99,7 @@ func loadFromYAML(r io.Reader) (io.Reader, error) {
 	}
 
 	// Decode as YAML any object
+	// nosemgrep: go.lang.security.deserialization.unsafe-deserialization-interface.go-unsafe-deserialization-interface -- generic YAML->JSON converter must accept arbitrary structure
 	var specBody interface{}
 	if errYaml := yaml.Unmarshal(in, &specBody); errYaml != nil {
 		return nil, fmt.Errorf("unable to decode spec as YAML: %w", err)

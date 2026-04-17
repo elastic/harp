@@ -322,6 +322,7 @@ func DecryptJWE(key, token string) (interface{}, error) {
 	}
 
 	// Decode payload
+	// nosemgrep: go.lang.security.deserialization.unsafe-deserialization-interface.go-unsafe-deserialization-interface -- DecryptJWE returns decoded payload as interface{} to caller; payload shape is caller-defined
 	var data interface{}
 	if err := json.Unmarshal(payloadBytes, &data); err != nil {
 		return "", fmt.Errorf("unable to decode payload: %w", err)

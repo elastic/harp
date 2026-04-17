@@ -131,6 +131,32 @@ func TestPredefined(t *testing.T) {
 	}
 }
 
+// TestDiceware_TokenCountStable exercises the hyphen-stripping branch added to
+// guard against EFF word-list entries that contain an internal hyphen (e.g.
+// "t-shirt"). The upstream library picks such words at a per-word probability
+// of roughly 4/7776, so a single call rarely reproduces the flake; a
+// high-iteration loop at MaxWordCount makes the assertion reliable while
+// remaining fast. Regression for the "splitting on '-' yields more tokens than
+// requested" flake.
+func TestDiceware_TokenCountStable(t *testing.T) {
+	const iterations = 500
+	for i := range iterations {
+		got, err := Diceware(MaxWordCount)
+		if err != nil {
+			t.Fatalf("Diceware(%d) unexpected error on iteration %d: %v", MaxWordCount, i, err)
+		}
+		gotWordCount := len(strings.Split(got, "-"))
+		if gotWordCount != MaxWordCount {
+			t.Fatalf("Diceware(%d) iteration %d: token count = %d, want %d (output=%q)",
+				MaxWordCount, i, gotWordCount, MaxWordCount, got)
+		}
+		if strings.Contains(got, "--") {
+			t.Fatalf("Diceware(%d) iteration %d: output has empty token (output=%q)",
+				MaxWordCount, i, got)
+		}
+	}
+}
+
 // -----------------------------------------------------------------------------
 
 func TestDiceware_Fuzz(t *testing.T) {
