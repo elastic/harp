@@ -56,6 +56,7 @@ func FromDump(r io.Reader) (*bundlev1.Bundle, error) {
 	for _, p := range b.Packages {
 		for _, s := range p.Secrets.Data {
 			// Decode json encoded value
+			// nosemgrep: go.lang.security.deserialization.unsafe-deserialization-interface.go-unsafe-deserialization-interface -- secret values are user-defined arbitrary JSON by design
 			var data interface{}
 			if errJSON := json.Unmarshal(s.Value, &data); errJSON != nil {
 				return nil, fmt.Errorf("unable to decode '%s' - '%s' secret value as json: %w", p.Name, s.Key, errJSON)
