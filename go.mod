@@ -85,7 +85,7 @@ require (
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.9
 	gopkg.in/yaml.v3 v3.0.1
-	oras.land/oras-go v1.2.6
+	oras.land/oras-go v1.2.7
 	sigs.k8s.io/yaml v1.6.0
 	zntr.io/paseto v1.4.0
 )
@@ -179,9 +179,9 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
-	github.com/docker/cli v27.4.1+incompatible // indirect
-	github.com/docker/docker v27.5.0+incompatible // indirect
-	github.com/docker/go-connections v0.5.0 // indirect
+	github.com/docker/cli v28.5.1+incompatible // indirect
+	github.com/docker/docker v28.5.1+incompatible // indirect
+	github.com/docker/go-connections v0.6.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
@@ -230,5 +230,4 @@ require (
 	golang.org/x/net v0.45.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
 	golang.org/x/time v0.13.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
