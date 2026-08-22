@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../../../api/jsonschema/harp.bundle.v1/Patch.json
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "regex-package-remover"
+  owner: security@elastic.co
+  description: "Remove multiple packages matched by a regex selector"
+spec:
+  rules:
+    - selector:
+        matchPath:
+          regex: "^app/(aaa|bbb)$"
+      package:
+        remove: true

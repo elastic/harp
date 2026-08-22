@@ -395,6 +395,46 @@ func TestApply(t *testing.T) {
 			},
 		},
 		{
+			name: "remove multiple adjacent packages with regex",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-packages-by-regex.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{Name: "app/aaa"},
+						{Name: "app/bbb"},
+						{Name: "app/ccc"},
+						{Name: "app/zzz"},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{Name: "app/ccc"},
+					{Name: "app/zzz"},
+				},
+			},
+		},
+		{
+			name: "remove all packages",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-all-packages.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{Name: "pkg-a"},
+						{Name: "pkg-b"},
+						{Name: "pkg-c"},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{},
+			},
+		},
+		{
 			name: "remove secrets with secret matcher",
 			args: args{
 				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-secrets.yaml"),

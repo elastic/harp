@@ -163,7 +163,8 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 		}
 
 		// Process all packages
-		for i, p := range bCopy.Packages {
+		keptPackages := make([]*bundlev1.Package, 0, len(bCopy.Packages))
+		for _, p := range bCopy.Packages {
 			action, err := executeRule(r, p, values)
 			if err != nil {
 				return nil, fmt.Errorf("unable to execute rule index %d: %w", ri, err)
@@ -171,19 +172,21 @@ func Apply(spec *bundlev1.Patch, b *bundlev1.Bundle, values map[string]interface
 
 			switch action {
 			case packagedRemoved:
-				bCopy.Packages = append(bCopy.Packages[:i], bCopy.Packages[i+1:]...)
+				continue
 			case packageUpdated:
 				if WithAnnotations(spec) {
 					// Add annotations to mark package as patched.
 					bundle.Annotate(p, "patched", "true")
 					bundle.Annotate(p, spec.Meta.Name, "true")
 				}
-				bCopy.Packages[i] = p
 			case packageUnchanged:
 				// No changes
 			default:
 			}
+
+			keptPackages = append(keptPackages, p)
 		}
+		bCopy.Packages = keptPackages
 	}
 
 	// Sort packages
