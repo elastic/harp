@@ -15,22 +15,15 @@ concurrency:
 
 jobs:
   vulns:
-    name: Nancy scanner
+    name: govulncheck
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       -
-        uses: actions/checkout@v4
-      -
-        uses: actions/setup-go@v5
+        name: Run govulncheck
+        uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f  # v1.1.0
         with:
           go-version-file: go.mod
-      -
-        name: Run go list
-        run: go list -json -m all > go.list
-      -
-        name: Nancy
-        uses: sonatype-nexus-community/nancy-github-action@726e338312e68ecdd4b4195765f174d3b3ce1533  # v1.0.3
 
   trivy:
     name: Trivy scanner
