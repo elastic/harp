@@ -678,6 +678,99 @@ func TestApply(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "keep secrets with an empty kv operation",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/empty-kv-operation.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "app/target",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{Key: "k", Value: []byte("v")},
+								},
+							},
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Name: "app/target",
+						Annotations: map[string]string{
+							"patched":  "true",
+							"empty-kv": "true",
+						},
+						Secrets: &bundlev1.SecretChain{
+							Data: []*bundlev1.KV{
+								{Key: "k", Value: []byte("v")},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "keep secrets when removeKeys matches no key",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-keys-by-prefix.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "app/aaa",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{Key: "real_key", Value: []byte("should-survive")},
+								},
+							},
+						},
+						{
+							Name: "app/bbb",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{Key: "tmp_key", Value: []byte("v1")},
+									{Key: "keep", Value: []byte("keep-this")},
+								},
+							},
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Name: "app/aaa",
+						Annotations: map[string]string{
+							"patched":              "true",
+							"prefixed-key-remover": "true",
+						},
+						Secrets: &bundlev1.SecretChain{
+							Data: []*bundlev1.KV{
+								{Key: "real_key", Value: []byte("should-survive")},
+							},
+						},
+					},
+					{
+						Name: "app/bbb",
+						Annotations: map[string]string{
+							"patched":              "true",
+							"prefixed-key-remover": "true",
+						},
+						Secrets: &bundlev1.SecretChain{
+							Data: []*bundlev1.KV{
+								{Key: "keep", Value: []byte("keep-this")},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

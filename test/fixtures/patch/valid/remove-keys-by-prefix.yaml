@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../../../api/jsonschema/harp.bundle.v1/Patch.json
+apiVersion: harp.elastic.co/v1
+kind: BundlePatch
+meta:
+  name: "prefixed-key-remover"
+  owner: security@elastic.co
+  description: "Remove secret keys matching a name prefix"
+spec:
+  rules:
+    - selector:
+        matchPath:
+          regex: "^app/"
+      package:
+        data:
+          kv:
+            removeKeys:
+              - "^tmp_"
