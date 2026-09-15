@@ -356,7 +356,7 @@ func applySecretKVPatch(kv []*bundlev1.KV, op *bundlev1.PatchOperation, values m
 		return nil, fmt.Errorf("cannot process nil operation")
 	}
 
-	var out []*bundlev1.KV
+	out := kv
 
 	// Remove all keys
 	if len(op.RemoveKeys) > 0 {
