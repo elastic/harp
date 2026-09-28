@@ -1,6 +1,6 @@
 module github.com/elastic/harp
 
-go 1.25.8
+go 1.26.0
 
 replace github.com/satori/go.uuid => github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 
@@ -79,8 +79,8 @@ require (
 	golang.org/x/crypto v0.55.0
 	golang.org/x/oauth2 v0.34.0
 	golang.org/x/sync v0.22.0
-	golang.org/x/sys v0.47.0
-	golang.org/x/term v0.45.0
+	golang.org/x/sys v0.48.0
+	golang.org/x/term v0.46.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20260120221211-b8f7ae30c516
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.12
