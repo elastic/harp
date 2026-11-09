@@ -67,6 +67,8 @@ func (Code) Licenser() error {
 	return sh.RunV("go-licenser",
 		"-exclude", "pkg/kv/consul/mock",
 		"-exclude", "pkg/vault/logical/mock",
+		"-exclude", "pkg/sdk/value/test/mock",
+		"-exclude", "pkg/sdk/value/encryption/envelope/test/mock",
 	)
 }
 
