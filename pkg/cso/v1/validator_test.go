@@ -58,6 +58,10 @@ var tests = []struct {
 	{"infra/azure/security/azure-eastus2-p1012/db/postgres/admin_creds", false},
 	{"infra/azure/security/azure-eastus2/db/postgres/admin_creds", false},
 	{"infra/local/security/global/dns/registrar/admin_creds", false},
+	{"infra/azure/test-account/global/service_principals/credentials", false},
+	{"infra/aws/test-account/universal/compute/ssh/rsa_keys", false},
+	{"infra/aws/test-account/local/compute/ssh/rsa_keys", false},
+	{"infra/aws/test-account/nowhere/compute/ssh/rsa_keys", true},
 	{"infra/unsupported/security/global/dns/registrar/admin_creds", true},
 	// Platform
 	{"platform", true},
