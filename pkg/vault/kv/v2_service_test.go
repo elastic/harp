@@ -27,7 +27,7 @@ import (
 	"github.com/golang/mock/gomock"
 	vaultApi "github.com/hashicorp/vault/api"
 
-	"github.com/elastic/harp/pkg/vault/logical"
+	"github.com/elastic/harp/pkg/vault/logical/mock"
 )
 
 func Test_KVV2_List(t *testing.T) {
@@ -37,7 +37,7 @@ func Test_KVV2_List(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		prepare func(*logical.MockLogical)
+		prepare func(*mock.MockLogical)
 		args    args
 		want    []string
 		wantErr bool
@@ -56,7 +56,7 @@ func Test_KVV2_List(t *testing.T) {
 				ctx:  context.Background(),
 				path: "secrets/application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{}, fmt.Errorf("foo"))
 			},
 			wantErr: true,
@@ -67,7 +67,7 @@ func Test_KVV2_List(t *testing.T) {
 				ctx:  context.Background(),
 				path: "secrets/application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(nil, nil)
 			},
 			wantErr: false,
@@ -78,7 +78,7 @@ func Test_KVV2_List(t *testing.T) {
 				ctx:  context.Background(),
 				path: "secrets/application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
 					Data: nil,
 				}, nil)
@@ -91,7 +91,7 @@ func Test_KVV2_List(t *testing.T) {
 				ctx:  context.Background(),
 				path: "secrets/application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
 					Data: SecretData{},
 				}, nil)
@@ -104,7 +104,7 @@ func Test_KVV2_List(t *testing.T) {
 				ctx:  context.Background(),
 				path: "secrets/application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
 					Data: SecretData{
 						"keys": 1,
@@ -119,7 +119,7 @@ func Test_KVV2_List(t *testing.T) {
 				ctx:  context.Background(),
 				path: "    /secrets/application/foo/   ",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
 					Data: SecretData{
 						"keys": []interface{}{},
@@ -135,7 +135,7 @@ func Test_KVV2_List(t *testing.T) {
 				ctx:  context.Background(),
 				path: "secrets/application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().List("secrets/metadata/application/foo").Return(&vaultApi.Secret{
 					Data: SecretData{
 						"keys": []interface{}{"secrets/application/foo/secret-1", "secrets/application/foo/secret-2"},
@@ -155,7 +155,7 @@ func Test_KVV2_List(t *testing.T) {
 			defer ctrl.Finish()
 
 			// Arm mocks
-			logicalMock := logical.NewMockLogical(ctrl)
+			logicalMock := mock.NewMockLogical(ctrl)
 
 			// Prepare mocks
 			if tt.prepare != nil {
@@ -183,7 +183,7 @@ func Test_KVV2_Read(t *testing.T) {
 	}
 	tests := []struct {
 		name     string
-		prepare  func(*logical.MockLogical)
+		prepare  func(*mock.MockLogical)
 		args     args
 		wantData SecretData
 		wantMeta SecretMetadata
@@ -203,7 +203,7 @@ func Test_KVV2_Read(t *testing.T) {
 				ctx:  context.Background(),
 				path: "application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Read("secrets/data/application/foo").Return(&vaultApi.Secret{}, fmt.Errorf("foo"))
 			},
 			wantErr: true,
@@ -214,7 +214,7 @@ func Test_KVV2_Read(t *testing.T) {
 				ctx:  context.Background(),
 				path: "application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Read("secrets/data/application/foo").Return(nil, nil)
 			},
 			wantErr: true,
@@ -225,7 +225,7 @@ func Test_KVV2_Read(t *testing.T) {
 				ctx:  context.Background(),
 				path: "application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Read("secrets/data/application/foo").Return(&vaultApi.Secret{
 					Data: nil,
 				}, nil)
@@ -238,7 +238,7 @@ func Test_KVV2_Read(t *testing.T) {
 				ctx:  context.Background(),
 				path: "application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Read("secrets/data/application/foo").Return(&vaultApi.Secret{
 					Data: map[string]interface{}{},
 				}, nil)
@@ -251,7 +251,7 @@ func Test_KVV2_Read(t *testing.T) {
 				ctx:  context.Background(),
 				path: "application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Read("secrets/data/application/foo").Return(&vaultApi.Secret{
 					Data: map[string]interface{}{
 						"data": nil,
@@ -266,7 +266,7 @@ func Test_KVV2_Read(t *testing.T) {
 				ctx:  context.Background(),
 				path: "application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Read("secrets/data/application/foo").Return(&vaultApi.Secret{
 					Data: map[string]interface{}{
 						"data": map[string]interface{}{
@@ -289,7 +289,7 @@ func Test_KVV2_Read(t *testing.T) {
 			defer ctrl.Finish()
 
 			// Arm mocks
-			logicalMock := logical.NewMockLogical(ctrl)
+			logicalMock := mock.NewMockLogical(ctrl)
 
 			// Prepare mocks
 			if tt.prepare != nil {
@@ -321,7 +321,7 @@ func Test_KVV2_WriteData(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		prepare func(*logical.MockLogical)
+		prepare func(*mock.MockLogical)
 		args    args
 		wantErr bool
 	}{
@@ -339,7 +339,7 @@ func Test_KVV2_WriteData(t *testing.T) {
 				ctx:  context.Background(),
 				path: "application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{}, fmt.Errorf("foo"))
 			},
 			wantErr: true,
@@ -350,7 +350,7 @@ func Test_KVV2_WriteData(t *testing.T) {
 				ctx:  context.Background(),
 				path: "application/foo",
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{
 					Data: SecretData{
 						"key": "value",
@@ -366,7 +366,7 @@ func Test_KVV2_WriteData(t *testing.T) {
 			defer ctrl.Finish()
 
 			// Arm mocks
-			logicalMock := logical.NewMockLogical(ctrl)
+			logicalMock := mock.NewMockLogical(ctrl)
 
 			// Prepare mocks
 			if tt.prepare != nil {
@@ -399,7 +399,7 @@ func Test_KVV2_WriteWithMeta(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		prepare func(*logical.MockLogical)
+		prepare func(*mock.MockLogical)
 		args    args
 		wantErr bool
 	}{
@@ -462,7 +462,7 @@ func Test_KVV2_WriteWithMeta(t *testing.T) {
 					"environment": "test",
 				},
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{}, fmt.Errorf("foo"))
 			},
 			wantErr: true,
@@ -476,7 +476,7 @@ func Test_KVV2_WriteWithMeta(t *testing.T) {
 					"environment": "test",
 				},
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				dataWrite := logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{
 					Data: SecretData{
 						"key": "value",
@@ -495,7 +495,7 @@ func Test_KVV2_WriteWithMeta(t *testing.T) {
 					"environment": "test",
 				},
 			},
-			prepare: func(logical *logical.MockLogical) {
+			prepare: func(logical *mock.MockLogical) {
 				dataWrite := logical.EXPECT().Write("secrets/data/application/foo", gomock.Any()).Return(&vaultApi.Secret{
 					Data: SecretData{
 						"key": "value",
@@ -516,7 +516,7 @@ func Test_KVV2_WriteWithMeta(t *testing.T) {
 			defer ctrl.Finish()
 
 			// Arm mocks
-			logicalMock := logical.NewMockLogical(ctrl)
+			logicalMock := mock.NewMockLogical(ctrl)
 
 			// Prepare mocks
 			if tt.prepare != nil {
