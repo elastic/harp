@@ -77,16 +77,10 @@ func FuncMap(secretReaders []SecretReaderFunc, joseOpts ...crypto.JOSEOption) te
 		"secret": SecretReaders(secretReaders),
 		// JWT/JWE
 		"encryptJwe": crypto.EncryptJWE,
-		"decryptJwe": func(key, token string) (interface{}, error) {
-			return crypto.DecryptJWE(key, token, joseOpts...)
-		},
-		"toJws": crypto.ToJWS,
-		"parseJwt": func(token string) (interface{}, error) {
-			return crypto.ParseJWT(token, joseOpts...)
-		},
-		"verifyJwt": func(token string, key interface{}) (interface{}, error) {
-			return crypto.VerifyJWT(token, key, joseOpts...)
-		},
+		"decryptJwe": JWEDecrypter(joseOpts),
+		"toJws":      crypto.ToJWS,
+		"parseJwt":   JWTParser(joseOpts),
+		"verifyJwt":  JWTVerifier(joseOpts),
 		// Hex
 		"hexenc": hex.EncodeToString,
 		"hexdec": hex.DecodeString,
