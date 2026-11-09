@@ -75,7 +75,7 @@ func RenderContextWithData(templateContext Context, input string, data interface
 	// Prepare the template
 	t, err := template.New(templateContext.Name()).
 		Delims(leftDelim, rightDelim).
-		Funcs(FuncMap(templateContext.SecretReaders())).
+		Funcs(FuncMap(templateContext.SecretReaders(), templateContext.JOSEOptions()...)).
 		Parse(input)
 	if err != nil {
 		return "", fmt.Errorf("unable to compile attribute template '%s': %w", input, err)

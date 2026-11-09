@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	jose "github.com/go-jose/go-jose/v4"
 	"github.com/google/go-cmp/cmp"
 	_ "golang.org/x/crypto/blake2b"
 )
@@ -752,7 +753,7 @@ func Test_EncryptDecryptJWE(t *testing.T) {
 		t.Fatalf("unable to encrypt claims: %v", err)
 	}
 
-	got, err := DecryptJWE("test", jwe)
+	got, err := DecryptJWE("test", jwe, testJWEKeyAlgs, testJWEContent)
 	if err != nil {
 		t.Fatalf("unable to decrypt claims: %v", err)
 	}
@@ -806,5 +807,71 @@ func TestToJWS(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+var (
+	testJWEKeyAlgs = WithKeyAlgorithms(jose.PBES2_HS256_A128KW)
+	testJWEContent = WithContentEncryptions(jose.A128GCM)
+	testJWTSigAlgs = WithSignatureAlgorithms(jose.EdDSA, jose.HS256, jose.RS256, jose.ES256)
+)
+
+func TestDecryptJWE_Options(t *testing.T) {
+	jwe, err := EncryptJWE("test", map[string]interface{}{"foo": "bar"})
+	if err != nil {
+		t.Fatalf("unable to encrypt: %v", err)
+	}
+
+	// No allow-list configured must fail.
+	if _, err := DecryptJWE("test", jwe); err == nil {
+		t.Fatal("expected failure without configured allow-lists")
+	}
+	if _, err := DecryptJWE("test", jwe, testJWEKeyAlgs); err == nil {
+		t.Fatal("expected failure without content encryption allow-list")
+	}
+
+	// Matching allow-lists succeed.
+	if _, err := DecryptJWE("test", jwe, testJWEKeyAlgs, testJWEContent, nil); err != nil {
+		t.Fatalf("matching allow-lists should succeed: %v", err)
+	}
+
+	// A key algorithm allow-list excluding the token's algorithm is rejected.
+	if _, err := DecryptJWE("test", jwe, WithKeyAlgorithms(jose.A128KW), testJWEContent); err == nil {
+		t.Fatal("expected failure when key algorithm is not allowed")
+	}
+
+	// A content encryption allow-list excluding the token's encryption is rejected.
+	if _, err := DecryptJWE("test", jwe, testJWEKeyAlgs, WithContentEncryptions(jose.A256GCM)); err == nil {
+		t.Fatal("expected failure when content encryption is not allowed")
+	}
+}
+
+func TestParseVerifyJWT_SignatureAlgorithmOptions(t *testing.T) {
+	_, priv, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatalf("unable to generate key: %v", err)
+	}
+	token, err := ToJWS(map[string]interface{}{"sub": "x"}, priv)
+	if err != nil {
+		t.Fatalf("unable to sign: %v", err)
+	}
+
+	if _, err := ParseJWT(token); err == nil {
+		t.Fatal("expected parse failure without configured allow-list")
+	}
+	if _, err := VerifyJWT(token, priv.Public()); err == nil {
+		t.Fatal("expected verify failure without configured allow-list")
+	}
+	if _, err := ParseJWT(token, testJWTSigAlgs); err != nil {
+		t.Fatalf("parse with EdDSA allowed should succeed: %v", err)
+	}
+	if _, err := ParseJWT(token, WithSignatureAlgorithms(jose.RS256)); err == nil {
+		t.Fatal("expected parse failure when EdDSA is not allowed")
+	}
+	if _, err := VerifyJWT(token, priv.Public(), WithSignatureAlgorithms(jose.ES256)); err == nil {
+		t.Fatal("expected verify failure when EdDSA is not allowed")
+	}
+	if _, err := VerifyJWT(token, priv.Public(), WithSignatureAlgorithms(jose.EdDSA)); err != nil {
+		t.Fatalf("verify with EdDSA allowed should succeed: %v", err)
 	}
 }

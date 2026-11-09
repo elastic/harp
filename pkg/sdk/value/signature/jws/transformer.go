@@ -21,7 +21,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/sdk/value/signature"
@@ -70,7 +70,7 @@ func (d *jwsTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 
 func (d *jwsTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
 	// Parse the signed object
-	sig, err := jose.ParseSigned(string(input))
+	sig, err := jose.ParseSigned(string(input), []jose.SignatureAlgorithm{d.key.Algorithm})
 	if err != nil {
 		return nil, fmt.Errorf("jws: unable to parse input: %w", err)
 	}

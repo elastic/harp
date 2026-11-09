@@ -28,6 +28,7 @@ import (
 	"github.com/elastic/harp/pkg/bundle"
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/fsutil"
+	"github.com/elastic/harp/pkg/sdk/security/crypto"
 	"github.com/elastic/harp/pkg/sdk/types"
 	"github.com/elastic/harp/pkg/tasks"
 	tplcmdutil "github.com/elastic/harp/pkg/template/cmdutil"
@@ -48,6 +49,7 @@ type RenderTask struct {
 	RightDelims   string
 	AltDelims     bool
 	RootPath      string
+	JOSEOptions   []crypto.JOSEOption
 }
 
 // Run the task.
@@ -89,6 +91,7 @@ func (t *RenderTask) Run(ctx context.Context) error {
 		RightDelims:   t.RightDelims,
 		AltDelims:     t.AltDelims,
 		FileRootPath:  fileRootFS,
+		JOSEOptions:   t.JOSEOptions,
 	})
 	if err != nil {
 		return fmt.Errorf("unable to prepare rendering context: %w", err)
@@ -125,6 +128,7 @@ type renderContextConfig struct {
 	RightDelims   string
 	AltDelims     bool
 	FileRootPath  fs.FS
+	JOSEOptions   []crypto.JOSEOption
 }
 
 func prepareRenderContext(cfg *renderContextConfig) (engine.Context, error) {
@@ -193,6 +197,7 @@ func prepareRenderContext(cfg *renderContextConfig) (engine.Context, error) {
 		engine.WithValues(values),
 		engine.WithFiles(files),
 		engine.WithSecretReaders(secretReaders...),
+		engine.WithJOSEOptions(cfg.JOSEOptions...),
 	)
 
 	// No error

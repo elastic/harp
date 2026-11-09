@@ -27,18 +27,21 @@ import (
 )
 
 type renderParams struct {
-	InputPath     string
-	OutputPath    string
-	ValueFiles    []string
-	SecretLoaders []string
-	Values        []string
-	StringValues  []string
-	FileValues    []string
-	LeftDelims    string
-	RightDelims   string
-	AltDelims     bool
-	RootPath      string
-	DryRun        bool
+	InputPath              string
+	OutputPath             string
+	ValueFiles             []string
+	SecretLoaders          []string
+	Values                 []string
+	StringValues           []string
+	FileValues             []string
+	LeftDelims             string
+	RightDelims            string
+	AltDelims              bool
+	RootPath               string
+	DryRun                 bool
+	JWEKeyAlgorithms       []string
+	JWEContentEncryptions  []string
+	JWTSignatureAlgorithms []string
 }
 
 // -----------------------------------------------------------------------------
@@ -71,6 +74,12 @@ var renderCmd = func() *cobra.Command {
 			ctx, cancel := cmdutil.Context(cmd.Context(), "template-render", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
+			// Validate JOSE allow-lists
+			joseOpts, err := joseOptions(params.JWEKeyAlgorithms, params.JWEContentEncryptions, params.JWTSignatureAlgorithms)
+			if err != nil {
+				log.For(ctx).Fatal("invalid JOSE options", zap.Error(err))
+			}
+
 			// Prepare task
 			t := &template.FileSystemTask{
 				InputPath:          params.InputPath,
@@ -85,6 +94,7 @@ var renderCmd = func() *cobra.Command {
 				RightDelims:        params.RightDelims,
 				AltDelims:          params.AltDelims,
 				DryRun:             params.DryRun,
+				JOSEOptions:        joseOpts,
 			}
 
 			// Run the task
@@ -108,6 +118,9 @@ var renderCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&params.RightDelims, "right-delimiter", "}}", "Template right delimiter (default to '}}')")
 	cmd.Flags().BoolVar(&params.AltDelims, "alt-delims", false, "Define '[[' and ']]' as template delimiters.")
 	cmd.Flags().BoolVar(&params.DryRun, "dry-run", false, "Generate in-memory only.")
+	cmd.Flags().StringArrayVar(&params.JWEKeyAlgorithms, "jwe-key-algorithms", defaultJWEKeyAlgorithms, "JWE key management algorithms accepted by 'decryptJwe' template function")
+	cmd.Flags().StringArrayVar(&params.JWEContentEncryptions, "jwe-content-encryptions", defaultJWEContentEncryptions, "JWE content encryption algorithms accepted by 'decryptJwe' template function")
+	cmd.Flags().StringArrayVar(&params.JWTSignatureAlgorithms, "jwt-signature-algorithms", defaultJWTSignatureAlgorithms, "JWT signature algorithms accepted by 'parseJwt' and 'verifyJwt' template functions")
 
 	return cmd
 }

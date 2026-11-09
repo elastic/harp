@@ -5,6 +5,8 @@ go 1.27
 replace github.com/satori/go.uuid => github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 
 // GHSA
+//
+// Nancy findings
 require (
 	filippo.io/age v1.3.2
 	filippo.io/edwards25519 v1.2.0
@@ -22,7 +24,7 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/fernet/fernet-go v0.0.0-20240119011108-303da6aec611
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665
-	github.com/go-jose/go-jose/v3 v3.0.5
+	github.com/go-jose/go-jose/v4 v4.1.9
 	github.com/go-ozzo/ozzo-validation/v4 v4.5.0
 	github.com/go-zookeeper/zk v1.0.4
 	github.com/gobwas/glob v1.1.0
@@ -84,7 +86,6 @@ require (
 	zntr.io/paseto v1.4.0
 )
 
-// Nancy findings
 require (
 	cel.dev/expr v0.25.3 // indirect
 	dario.cat/mergo v1.0.1 // indirect
@@ -129,7 +130,6 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.9 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-test/deep v1.1.0 // indirect

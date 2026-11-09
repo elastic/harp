@@ -22,7 +22,10 @@ import (
 	"testing"
 	"text/template"
 
+	jose "github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/elastic/harp/pkg/sdk/security/crypto"
 )
 
 func TestFuncs(t *testing.T) {
@@ -117,7 +120,7 @@ func TestFuncs(t *testing.T) {
 
 	for _, tt := range tests {
 		var b strings.Builder
-		err := template.Must(template.New("test").Funcs(FuncMap(nil)).Parse(tt.tpl)).Execute(&b, tt.vars)
+		err := template.Must(template.New("test").Funcs(FuncMap(nil, crypto.WithSignatureAlgorithms(jose.HS256))).Parse(tt.tpl)).Execute(&b, tt.vars)
 		assert.NoError(t, err)
 		assert.Equal(t, tt.expect, b.String(), tt.tpl)
 	}

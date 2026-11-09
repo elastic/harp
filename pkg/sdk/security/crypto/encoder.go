@@ -33,8 +33,8 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	jose "github.com/go-jose/go-jose/v3"
-	"github.com/go-jose/go-jose/v3/jwt"
+	jose "github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 	"github.com/pkg/errors"
 	"go.step.sm/crypto/pemutil"
 
@@ -308,9 +308,17 @@ func EncryptJWE(key string, payload interface{}) (string, error) {
 }
 
 // DecryptJWE decrypt a JWE token.
-func DecryptJWE(key, token string) (interface{}, error) {
+//
+// The accepted algorithms must be provided using WithKeyAlgorithms and
+// WithContentEncryptions, there is no implicit default.
+func DecryptJWE(key, token string, opts ...JOSEOption) (interface{}, error) {
+	o := newJOSEOptions(opts)
+	if len(o.keyAlgorithms) == 0 || len(o.contentEncryptions) == 0 {
+		return "", errors.New("JWE key algorithms and content encryptions allow-lists must be configured")
+	}
+
 	// Parse JWE token
-	object, err := jose.ParseEncrypted(token)
+	object, err := jose.ParseEncrypted(token, o.keyAlgorithms, o.contentEncryptions)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse JWE assertion: %w", err)
 	}
@@ -387,9 +395,17 @@ func ToJWS(payload, privkey interface{}) (string, error) {
 }
 
 // ParseJWT unpack a JWT without signature verification.
-func ParseJWT(token string) (interface{}, error) {
+//
+// The accepted signature algorithms must be provided using
+// WithSignatureAlgorithms, there is no implicit default.
+func ParseJWT(token string, opts ...JOSEOption) (interface{}, error) {
+	o := newJOSEOptions(opts)
+	if len(o.signatureAlgorithms) == 0 {
+		return nil, errors.New("JWT signature algorithms allow-list must be configured")
+	}
+
 	// Parse token
-	t, err := jwt.ParseSigned(token)
+	t, err := jwt.ParseSigned(token, o.signatureAlgorithms)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse input token: %w", err)
 	}
@@ -409,9 +425,15 @@ func ParseJWT(token string) (interface{}, error) {
 	}, nil
 }
 
-func VerifyJWT(token string, key interface{}) (interface{}, error) {
+// VerifyJWT parses a JWT and verifies its signature using the given key.
+func VerifyJWT(token string, key interface{}, opts ...JOSEOption) (interface{}, error) {
+	o := newJOSEOptions(opts)
+	if len(o.signatureAlgorithms) == 0 {
+		return nil, errors.New("JWT signature algorithms allow-list must be configured")
+	}
+
 	// Parse token
-	t, err := jwt.ParseSigned(token)
+	t, err := jwt.ParseSigned(token, o.signatureAlgorithms)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse input token: %w", err)
 	}
@@ -482,4 +504,57 @@ func ToTLSA(selector, mtype uint8, cert *x509.Certificate) (string, error) {
 
 	// No error
 	return hex.EncodeToString(output), nil
+}
+
+// JOSEOption configures the algorithm allow-lists used when parsing JWE and
+// JWT tokens.
+type JOSEOption func(*joseOptions)
+
+type joseOptions struct {
+	keyAlgorithms       []jose.KeyAlgorithm
+	contentEncryptions  []jose.ContentEncryption
+	signatureAlgorithms []jose.SignatureAlgorithm
+}
+
+// newJOSEOptions applies the given options. No default is provided at this
+// level, the caller (the CLI) owns the policy.
+func newJOSEOptions(opts []JOSEOption) *joseOptions {
+	o := &joseOptions{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(o)
+		}
+	}
+
+	return o
+}
+
+// WithKeyAlgorithms sets the JWE key management algorithms accepted on
+// decryption.
+func WithKeyAlgorithms(algs ...jose.KeyAlgorithm) JOSEOption {
+	return func(o *joseOptions) {
+		if len(algs) > 0 {
+			o.keyAlgorithms = algs
+		}
+	}
+}
+
+// WithContentEncryptions sets the JWE content encryption algorithms accepted on
+// decryption.
+func WithContentEncryptions(encs ...jose.ContentEncryption) JOSEOption {
+	return func(o *joseOptions) {
+		if len(encs) > 0 {
+			o.contentEncryptions = encs
+		}
+	}
+}
+
+// WithSignatureAlgorithms sets the signature algorithms accepted when parsing
+// or verifying JWT tokens.
+func WithSignatureAlgorithms(algs ...jose.SignatureAlgorithm) JOSEOption {
+	return func(o *joseOptions) {
+		if len(algs) > 0 {
+			o.signatureAlgorithms = algs
+		}
+	}
 }
