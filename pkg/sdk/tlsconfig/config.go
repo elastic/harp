@@ -211,7 +211,7 @@ func getCert(options *Options) ([]tls.Certificate, error) {
 // Client returns a TLS configuration meant to be used by a client.
 func Client(options *Options) (*tls.Config, error) {
 	tlsConfig := ClientDefault()
-	tlsConfig.InsecureSkipVerify = options.InsecureSkipVerify //nolint:gosec // G402: explicit opt-in through client options
+	tlsConfig.InsecureSkipVerify = options.InsecureSkipVerify // #nosec G402 -- explicit opt-in through client options
 	if !options.InsecureSkipVerify && options.CAFile != "" {
 		CAs, err := certPool(options.CAFile, options.ExclusiveRootPools)
 		if err != nil {
