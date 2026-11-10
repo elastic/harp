@@ -32,7 +32,7 @@ import (
 
 // ValidPluginFilenamePrefixes defines harp plugin prefix to discover
 // cli plugin.
-var validPluginFilenamePrefixes = []string{"harp", "harp"}
+var validPluginFilenamePrefixes = []string{harpCmdName, harpCmdName}
 
 // -----------------------------------------------------------------------------
 

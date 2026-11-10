@@ -37,9 +37,9 @@ func SignECDSA(priv *ecdsa.PrivateKey, digest []byte, alg func() hash.Hash) (r, 
 	c := priv.PublicKey.Curve
 	N := c.Params().N
 
-	generateSecret(N, priv.D, alg, digest, func(k *big.Int) bool {
+	generateSecret(N, priv.D, alg, digest, func(k *big.Int) bool { //nolint:staticcheck // SA1019: RFC 6979 requires the raw private scalar
 		inv := new(big.Int).ModInverse(k, N)
-		r, _ = priv.Curve.ScalarBaseMult(k.Bytes())
+		r, _ = priv.Curve.ScalarBaseMult(k.Bytes()) //nolint:staticcheck // SA1019: RFC 6979 deterministic nonce requires raw point multiplication
 		r.Mod(r, N)
 
 		if r.Sign() == 0 {
@@ -47,7 +47,7 @@ func SignECDSA(priv *ecdsa.PrivateKey, digest []byte, alg func() hash.Hash) (r, 
 		}
 
 		e := hashToInt(digest, c)
-		s = new(big.Int).Mul(priv.D, r)
+		s = new(big.Int).Mul(priv.D, r) //nolint:staticcheck // SA1019: RFC 6979 requires the raw private scalar
 		s.Add(s, e)
 		s.Mul(s, inv)
 		s.Mod(s, N)

@@ -208,7 +208,7 @@ func KeyToBytes(key interface{}) ([]byte, error) {
 			return nil, err
 		}
 	case *ecdsa.PublicKey:
-		out = elliptic.MarshalCompressed(k.Curve, k.X, k.Y)
+		out = elliptic.MarshalCompressed(k.Curve, k.X, k.Y) //nolint:staticcheck // SA1019: raw ECDSA coordinates are part of the key encoding
 	case ed25519.PublicKey:
 		if fips.Enabled() {
 			return nil, errors.New("ed25519 private key processing is disabled in FIPS Mode")

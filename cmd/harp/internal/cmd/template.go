@@ -80,7 +80,7 @@ var templateCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&params.InputPath, "in", "-", "Template input path ('-' for stdin or filename)")
 	cmd.Flags().StringVar(&params.OutputPath, "out", "", "Output file ('-' for stdout or a filename)")
 	cmd.Flags().StringVar(&params.RootPath, "root", "", "Defines file loader root base path")
-	cmd.Flags().StringArrayVarP(&params.SecretLoaders, "secrets-from", "s", []string{"vault"}, "Specifies secret containers to load ('vault' for Vault loader or '-' for stdin or filename)")
+	cmd.Flags().StringArrayVarP(&params.SecretLoaders, "secrets-from", "s", []string{vaultCmdName}, "Specifies secret containers to load ('vault' for Vault loader or '-' for stdin or filename)")
 	cmd.Flags().StringArrayVarP(&params.ValueFiles, "values", "f", []string{}, "Specifies value files to load")
 	cmd.Flags().StringArrayVar(&params.Values, "set", []string{}, "Specifies value (k=v)")
 	cmd.Flags().StringArrayVar(&params.StringValues, "set-string", []string{}, "Specifies value (k=string)")

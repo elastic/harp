@@ -32,6 +32,13 @@ import (
 	"github.com/elastic/harp/pkg/sdk/log"
 )
 
+const (
+	// vaultCmdName is the name of the vault command and secret loader.
+	vaultCmdName = "vault"
+	// harpCmdName is the name of the root command.
+	harpCmdName = "harp"
+)
+
 // -----------------------------------------------------------------------------
 
 var (
@@ -44,7 +51,7 @@ var (
 // RootCmd describes root command of the tool
 var mainCmd = func() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "harp",
+		Use:   harpCmdName,
 		Short: "Extensible secret management tool",
 	}
 

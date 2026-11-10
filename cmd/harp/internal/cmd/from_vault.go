@@ -40,7 +40,7 @@ var fromVaultCmd = func() *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "vault",
+		Use:   vaultCmdName,
 		Short: "Pull a list of Vault K/V paths as a secret container",
 		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context

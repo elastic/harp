@@ -137,7 +137,7 @@ func printCDetails(w io.Writer) {
 // printCmdOut prints the output of running the given command.
 // It ignores failures; 'go bug' is best effort.
 func printCmdOut(w io.Writer, prefix, path string, args ...string) {
-	cmd := exec.Command(path, args...)
+	cmd := exec.Command(path, args...) //nolint:gosec // G204: path and args are fixed by the caller (go bug helpers)
 	out, err := cmd.Output()
 	if err != nil {
 		return

@@ -84,8 +84,8 @@ func (a *adapter) GenerateKey(fopts ...seal.GenerateOption) (publicKey, privateK
 	}
 
 	// Encode keys
-	encodedPub := append([]byte(PublicKeyPrefix), base64.RawURLEncoding.EncodeToString(elliptic.MarshalCompressed(priv.Curve, priv.PublicKey.X, priv.PublicKey.Y))...)
-	encodedPriv := append([]byte(PrivateKeyPrefix), base64.RawURLEncoding.EncodeToString(priv.D.Bytes())...)
+	encodedPub := append([]byte(PublicKeyPrefix), base64.RawURLEncoding.EncodeToString(elliptic.MarshalCompressed(priv.Curve, priv.PublicKey.X, priv.PublicKey.Y))...) //nolint:staticcheck // SA1019: raw ECDSA coordinates are part of the key encoding
+	encodedPriv := append([]byte(PrivateKeyPrefix), base64.RawURLEncoding.EncodeToString(priv.D.Bytes())...)                                                           //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 
 	// No error
 	return string(encodedPub), string(encodedPriv), nil
@@ -125,8 +125,8 @@ func (a *adapter) publicKeys(keys ...string) ([]*ecdsa.PublicKey, error) {
 		// Reassemble the public key
 		pub := ecdsa.PublicKey{
 			Curve: elliptic.P384(),
-			X:     x,
-			Y:     y,
+			X:     x, //nolint:staticcheck // SA1019: raw ECDSA coordinates are part of the key encoding
+			Y:     y, //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 		}
 
 		// Append it to sealing keys

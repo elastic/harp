@@ -47,7 +47,7 @@ func ToPatch(oplog []DiffItem) (*bundlev1.Patch, error) {
 
 	// Generate patch rules
 	for _, op := range oplog {
-		if op.Type == "package" {
+		if op.Type == typePackage {
 			if op.Operation == Remove {
 				res.Spec.Rules = append(res.Spec.Rules, &bundlev1.PatchRule{
 					Selector: &bundlev1.PatchSelector{
@@ -62,7 +62,7 @@ func ToPatch(oplog []DiffItem) (*bundlev1.Patch, error) {
 			}
 			continue
 		}
-		if op.Type == "secret" {
+		if op.Type == typeSecret {
 			pathParts := strings.SplitN(op.Path, "#", 2)
 			pkgRule, ok := secretMap[pathParts[0]]
 			if !ok {
