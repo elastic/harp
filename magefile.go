@@ -64,7 +64,12 @@ func (Code) Licenser() error {
 	mg.SerialDeps(golang.Format, golang.Import)
 
 	color.Red("## Add license banner")
-	return sh.RunV("go-licenser")
+	return sh.RunV("go-licenser",
+		"-exclude", "pkg/kv/consul/mock",
+		"-exclude", "pkg/vault/logical/mock",
+		"-exclude", "pkg/sdk/value/test/mock",
+		"-exclude", "pkg/sdk/value/encryption/envelope/test/mock",
+	)
 }
 
 // Generate SDK code (mocks, tests, etc.)

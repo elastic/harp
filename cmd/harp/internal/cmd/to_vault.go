@@ -39,7 +39,7 @@ var toVaultCmd = func() *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "vault",
+		Use:   vaultCmdName,
 		Short: "Push a secret container in Hashicorp Vault",
 		Run: func(cmd *cobra.Command, _ []string) {
 			// Initialize logger and context

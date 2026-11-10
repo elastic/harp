@@ -395,6 +395,46 @@ func TestApply(t *testing.T) {
 			},
 		},
 		{
+			name: "remove multiple adjacent packages with regex",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-packages-by-regex.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{Name: "app/aaa"},
+						{Name: "app/bbb"},
+						{Name: "app/ccc"},
+						{Name: "app/zzz"},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{Name: "app/ccc"},
+					{Name: "app/zzz"},
+				},
+			},
+		},
+		{
+			name: "remove all packages",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-all-packages.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{Name: "pkg-a"},
+						{Name: "pkg-b"},
+						{Name: "pkg-c"},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{},
+			},
+		},
+		{
 			name: "remove secrets with secret matcher",
 			args: args{
 				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-secrets.yaml"),
@@ -674,6 +714,99 @@ func TestApply(t *testing.T) {
 					},
 					{
 						Name: "secrets/application/component-2.yaml",
+					},
+				},
+			},
+		},
+		{
+			name: "keep secrets with an empty kv operation",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/empty-kv-operation.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "app/target",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{Key: "k", Value: []byte("v")},
+								},
+							},
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Name: "app/target",
+						Annotations: map[string]string{
+							"patched":  "true",
+							"empty-kv": "true",
+						},
+						Secrets: &bundlev1.SecretChain{
+							Data: []*bundlev1.KV{
+								{Key: "k", Value: []byte("v")},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "keep secrets when removeKeys matches no key",
+			args: args{
+				spec: mustLoadPatch("../../../test/fixtures/patch/valid/remove-keys-by-prefix.yaml"),
+				b: &bundlev1.Bundle{
+					Packages: []*bundlev1.Package{
+						{
+							Name: "app/aaa",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{Key: "real_key", Value: []byte("should-survive")},
+								},
+							},
+						},
+						{
+							Name: "app/bbb",
+							Secrets: &bundlev1.SecretChain{
+								Data: []*bundlev1.KV{
+									{Key: "tmp_key", Value: []byte("v1")},
+									{Key: "keep", Value: []byte("keep-this")},
+								},
+							},
+						},
+					},
+				},
+				values: map[string]interface{}{},
+			},
+			wantErr: false,
+			want: &bundlev1.Bundle{
+				Packages: []*bundlev1.Package{
+					{
+						Name: "app/aaa",
+						Annotations: map[string]string{
+							"patched":              "true",
+							"prefixed-key-remover": "true",
+						},
+						Secrets: &bundlev1.SecretChain{
+							Data: []*bundlev1.KV{
+								{Key: "real_key", Value: []byte("should-survive")},
+							},
+						},
+					},
+					{
+						Name: "app/bbb",
+						Annotations: map[string]string{
+							"patched":              "true",
+							"prefixed-key-remover": "true",
+						},
+						Secrets: &bundlev1.SecretChain{
+							Data: []*bundlev1.KV{
+								{Key: "keep", Value: []byte("keep-this")},
+							},
+						},
 					},
 				},
 			},

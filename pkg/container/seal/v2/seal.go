@@ -68,7 +68,7 @@ func (a *adapter) Seal(rand io.Reader, container *containerv1.Container, encoded
 	// Prepare sealed container
 	containerHeaders := &containerv1.Header{
 		ContentType:         containerSealedContentType,
-		EncryptionPublicKey: elliptic.MarshalCompressed(encPriv.Curve, encPriv.PublicKey.X, encPriv.PublicKey.Y),
+		EncryptionPublicKey: elliptic.MarshalCompressed(encPriv.Curve, encPriv.PublicKey.X, encPriv.PublicKey.Y), //nolint:staticcheck // SA1019: raw ECDSA coordinates are part of the key encoding
 		ContainerBox:        encryptedPubSig,
 		Recipients:          []*containerv1.Recipient{},
 		SealVersion:         SealVersion,
