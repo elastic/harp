@@ -33,7 +33,22 @@ const (
 	reservedLocalProvider = "local"
 	// Global is used to replace region component to indicate non-region bound secret suffix.
 	reservedGlobalRegion = "global"
+	// Local is used as region component for secrets bound to local infrastructure.
+	reservedLocalRegion = "local"
+	// Universal is used as region component for secrets valid for every region.
+	reservedUniversalRegion = "universal"
 )
+
+// isReservedRegion returns true if the region component is a reserved value
+// that is not part of any cloud provider region catalog.
+func isReservedRegion(region string) bool {
+	switch region {
+	case reservedGlobalRegion, reservedLocalRegion, reservedUniversalRegion:
+		return true
+	default:
+		return false
+	}
+}
 
 var validators = map[string]func([]string) error{
 	"meta":     validateMeta,
@@ -291,7 +306,7 @@ func validateInfra(parts []string) error {
 	// Validate cloud provider
 	r, ok := cloudProviderRegions[parts[0]]
 	if !ok {
-		return fmt.Errorf("cloud provider (%s) not supported", r)
+		return fmt.Errorf("cloud provider (%s) not supported", parts[0])
 	}
 
 	// Validate accounts
@@ -302,8 +317,8 @@ func validateInfra(parts []string) error {
 		return fmt.Errorf("unable to validate infrastructure cloud provider account (%s): %w", parts[1], err)
 	}
 
-	// Validate region if not local provider and not global region
-	if parts[0] != reservedLocalProvider && parts[2] != reservedGlobalRegion && !r.ContainsString(parts[2]) {
+	// Validate region if not local provider and not a reserved region
+	if parts[0] != reservedLocalProvider && !isReservedRegion(parts[2]) && !r.ContainsString(parts[2]) {
 		return fmt.Errorf("invalid region (%s) for account (%s) on cloud provider (%s)", parts[2], parts[1], parts[0])
 	}
 
@@ -336,7 +351,7 @@ func validatePlatform(parts []string) error {
 
 	// Validate platform region
 	r := parts[2]
-	if r != reservedGlobalRegion {
+	if !isReservedRegion(r) {
 		regionFound := false
 		for _, regions := range cloudProviderRegions {
 			if regions.Contains(r) || regions.ContainsString(r) {
