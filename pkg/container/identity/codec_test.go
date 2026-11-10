@@ -48,11 +48,14 @@ func TestCodec_New(t *testing.T) {
 		assert.Nil(t, id)
 	})
 
-	t.Run("p384 - invalid random source", func(t *testing.T) {
+	t.Run("p384 - random source is ignored by crypto/ecdsa", func(t *testing.T) {
+		// Since Go 1.26, ecdsa.GenerateKey always uses a secure random source and
+		// ignores the given reader (unless GODEBUG=cryptocustomrand=1), so an
+		// empty reader can no longer make key generation fail.
 		id, pub, err := New(bytes.NewBuffer(nil), "test", key.P384)
-		assert.Error(t, err)
-		assert.Nil(t, pub)
-		assert.Nil(t, id)
+		assert.NoError(t, err)
+		assert.NotNil(t, pub)
+		assert.NotNil(t, id)
 	})
 
 	t.Run("legacy - invalid random source", func(t *testing.T) {

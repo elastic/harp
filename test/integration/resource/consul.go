@@ -29,6 +29,9 @@ import (
 	"github.com/ory/dockertest/v3/docker"
 )
 
+// consulTestValue is used for the datacenter and tokens of the test server.
+const consulTestValue = "test"
+
 // Consul creates a test consul server inside a Docker container.
 func Consul(ctx context.Context, tb testing.TB) string {
 	pool, err := dockertest.NewPool("")
@@ -45,10 +48,10 @@ func Consul(ctx context.Context, tb testing.TB) string {
 		ACLDefaultPolicy string `json:"acl_default_policy,omitempty"`
 		ACLMasterToken   string `json:"acl_master_token,omitempty"`
 	}{
-		Datacenter:       "test",
-		ACLDatacenter:    "test",
+		Datacenter:       consulTestValue,
+		ACLDatacenter:    consulTestValue,
 		ACLDefaultPolicy: "deny",
-		ACLMasterToken:   "test",
+		ACLMasterToken:   consulTestValue,
 	}
 
 	// Encode configuration as JSON
@@ -94,7 +97,7 @@ func Consul(ctx context.Context, tb testing.TB) string {
 	if err := pool.Retry(func() (err error) {
 		config := api.DefaultConfig()
 		config.Address = consulURI
-		config.Token = "test"
+		config.Token = consulTestValue
 
 		// Create client instance.
 		client, err := api.NewClient(config)

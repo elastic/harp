@@ -72,7 +72,7 @@ func (h *DefaultPluginHandler) Lookup(filename string) (string, bool) {
 func (h *DefaultPluginHandler) Execute(executablePath string, cmdArgs, environment []string) error {
 	// Windows does not support exec syscall.
 	if runtime.GOOS == "windows" {
-		cmd := exec.Command(executablePath, cmdArgs...)
+		cmd := exec.Command(executablePath, cmdArgs...) //nolint:gosec // G204: executing the resolved plugin binary is the purpose of this handler
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
