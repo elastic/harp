@@ -65,7 +65,7 @@ func MatchPathGlob(pattern string) (Specification, error) {
 type matchPath struct {
 	strict string
 	regex  *regexp.Regexp
-	g      glob.Glob
+	g      *glob.Pattern
 }
 
 // IsSatisfiedBy returns specification satisfaction status

@@ -50,7 +50,7 @@ func MatchSecretGlob(pattern string) Specification {
 type matchSecret struct {
 	strict string
 	regex  *regexp.Regexp
-	g      glob.Glob
+	g      *glob.Pattern
 }
 
 // IsSatisfiedBy returns specification satisfaction status
