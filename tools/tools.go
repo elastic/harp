@@ -30,6 +30,7 @@ import (
 	_ "github.com/golang/mock/mockgen"
 	_ "github.com/golangci/golangci-lint/v2/cmd/golangci-lint"
 	_ "github.com/google/wire/cmd/wire"
+	_ "golang.org/x/vuln/cmd/govulncheck"
 	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
 	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
 	_ "gotest.tools/gotestsum"
@@ -47,6 +48,7 @@ import (
 //go:generate go build -v -o=./bin/mockgen github.com/golang/mock/mockgen
 //go:generate go build -v -o=./bin/golangci-lint github.com/golangci/golangci-lint/v2/cmd/golangci-lint
 //go:generate go build -v -o=./bin/wire github.com/google/wire/cmd/wire
+//go:generate go build -v -o=./bin/govulncheck golang.org/x/vuln/cmd/govulncheck
 //go:generate go build -v -o=./bin/protoc-gen-go-grpc google.golang.org/grpc/cmd/protoc-gen-go-grpc
 //go:generate go build -v -o=./bin/protoc-gen-go google.golang.org/protobuf/cmd/protoc-gen-go
 //go:generate go build -v -o=./bin/gotestsum gotest.tools/gotestsum
