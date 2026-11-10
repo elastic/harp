@@ -31,7 +31,7 @@ func Test_matchSecret_IsSatisfiedBy(t *testing.T) {
 	type fields struct {
 		strict string
 		regex  *regexp.Regexp
-		g      glob.Glob
+		g      *glob.Pattern
 	}
 	type args struct {
 		object interface{}
