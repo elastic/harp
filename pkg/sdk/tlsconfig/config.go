@@ -85,9 +85,8 @@ var allTLSVersions = map[uint16]struct{}{
 func ServerDefault() *tls.Config {
 	return &tls.Config{
 		// Avoid fallback to SSL protocols < TLS1.0
-		MinVersion:               tls.VersionTLS12,
-		PreferServerCipherSuites: true,
-		CipherSuites:             DefaultServerAcceptedCiphers,
+		MinVersion:   tls.VersionTLS12,
+		CipherSuites: DefaultServerAcceptedCiphers,
 	}
 }
 
@@ -212,7 +211,7 @@ func getCert(options *Options) ([]tls.Certificate, error) {
 // Client returns a TLS configuration meant to be used by a client.
 func Client(options *Options) (*tls.Config, error) {
 	tlsConfig := ClientDefault()
-	tlsConfig.InsecureSkipVerify = options.InsecureSkipVerify
+	tlsConfig.InsecureSkipVerify = options.InsecureSkipVerify //nolint:gosec // G402: explicit opt-in through client options
 	if !options.InsecureSkipVerify && options.CAFile != "" {
 		CAs, err := certPool(options.CAFile, options.ExclusiveRootPools)
 		if err != nil {

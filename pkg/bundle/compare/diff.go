@@ -36,6 +36,13 @@ const (
 	Replace string = "replace"
 )
 
+const (
+	// typePackage is the operation type for package level operations.
+	typePackage = "package"
+	// typeSecret is the operation type for secret level operations.
+	typeSecret = "secret"
+)
+
 // OpLog represents operation log calculate from bundle differences.
 type OpLog []DiffItem
 
@@ -85,7 +92,7 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 			// Package has been added
 			diffs = append(diffs, DiffItem{
 				Operation: Add,
-				Type:      "package",
+				Type:      typePackage,
 				Path:      dstPkg.Name,
 			})
 
@@ -103,7 +110,7 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 
 				diffs = append(diffs, DiffItem{
 					Operation: Add,
-					Type:      "secret",
+					Type:      typeSecret,
 					Path:      fmt.Sprintf("%s#%s", dstPkg.Name, s.Key),
 					Value:     data,
 				})
@@ -118,7 +125,7 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 			// Not exist in destination bundle
 			diffs = append(diffs, DiffItem{
 				Operation: Remove,
-				Type:      "package",
+				Type:      typePackage,
 				Path:      sp.Name,
 			})
 			continue
@@ -149,7 +156,7 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 
 				diffs = append(diffs, DiffItem{
 					Operation: Add,
-					Type:      "secret",
+					Type:      typeSecret,
 					Path:      fmt.Sprintf("%s#%s", dp.Name, ds.Key),
 					Value:     data,
 				})
@@ -171,7 +178,7 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 
 				diffs = append(diffs, DiffItem{
 					Operation: Replace,
-					Type:      "secret",
+					Type:      typeSecret,
 					Path:      fmt.Sprintf("%s#%s", dp.Name, ds.Key),
 					Value:     data,
 				})
@@ -183,7 +190,7 @@ func Diff(src, dst *bundlev1.Bundle) ([]DiffItem, error) {
 			if _, ok := dstSecretIndex[k]; !ok {
 				diffs = append(diffs, DiffItem{
 					Operation: Remove,
-					Type:      "secret",
+					Type:      typeSecret,
 					Path:      fmt.Sprintf("%s#%s", dp.Name, k),
 				})
 			}

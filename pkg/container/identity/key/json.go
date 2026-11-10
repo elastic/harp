@@ -31,6 +31,11 @@ import (
 	"github.com/elastic/harp/pkg/sdk/security/crypto/extra25519"
 )
 
+const (
+	curveEd25519 = "Ed25519"
+	curveP384    = "P-384"
+)
+
 // JSONWebKey holds internal container key attributes.
 type JSONWebKey struct {
 	Kty string `json:"kty"`
@@ -50,14 +55,14 @@ func (k *JSONWebKey) Sign(message []byte) (string, error) {
 	}
 
 	switch k.Crv {
-	case "Ed25519":
+	case curveEd25519:
 		if len(d) != ed25519.PrivateKeySize {
 			return "", errors.New("invalid private key size")
 		}
 
 		// Sign the message
 		sig = ed25519.Sign(ed25519.PrivateKey(d), message)
-	case "P-384":
+	case curveP384:
 		if len(d) != 48 {
 			return "", errors.New("invalid private key size")
 		}
@@ -69,10 +74,10 @@ func (k *JSONWebKey) Sign(message []byte) (string, error) {
 			PublicKey: ecdsa.PublicKey{
 				Curve: curve,
 			},
-			D: new(big.Int).SetBytes(d),
+			D: new(big.Int).SetBytes(d), //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 		}
 		// Compute public key from private scalar
-		sk.PublicKey.X, sk.PublicKey.Y = curve.ScalarBaseMult(d)
+		sk.PublicKey.X, sk.PublicKey.Y = curve.ScalarBaseMult(d) //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 
 		digest := sha512.Sum384(message)
 		r, s, err := ecdsa.Sign(rand.Reader, sk, digest[:])
@@ -99,12 +104,12 @@ func (k *JSONWebKey) RecoveryKey() (string, error) {
 	switch k.Crv {
 	case "X25519": // Legacy keys
 		return base64.RawURLEncoding.EncodeToString(privKeyRaw), nil
-	case "Ed25519":
+	case curveEd25519:
 		// Convert Ed25519 private key to x25519 key.
 		var sk [32]byte
 		extra25519.PrivateKeyToCurve25519(&sk, privKeyRaw)
 		return fmt.Sprintf("v1.ck.%s", base64.RawURLEncoding.EncodeToString(sk[:])), nil
-	case "P-384":
+	case curveP384:
 		// FIPS compliant sealing process use ECDSA P-384 key.
 		return fmt.Sprintf("v2.ck.%s", base64.RawURLEncoding.EncodeToString(privKeyRaw)), nil
 	default:

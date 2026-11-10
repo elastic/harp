@@ -79,7 +79,7 @@ func prepareSignature(rand io.Reader, encryptionKey *[32]byte) (*ecdsa.PrivateKe
 	}
 
 	// Compress public key point
-	sigPub := elliptic.MarshalCompressed(sigPriv.Curve, sigPriv.PublicKey.X, sigPriv.PublicKey.Y)
+	sigPub := elliptic.MarshalCompressed(sigPriv.Curve, sigPriv.PublicKey.X, sigPriv.PublicKey.Y) //nolint:staticcheck // SA1019: raw ECDSA coordinates are part of the key encoding
 
 	// Encrypt public signing key
 	encryptedPubSig, err := encrypt(rand, sigPub, encryptionKey)
@@ -296,7 +296,7 @@ func packRecipient(rand io.Reader, payloadKey *[32]byte, ephPrivKey *ecdsa.Priva
 
 func deriveSharedKeyFromRecipient(publicKey *ecdsa.PublicKey, privateKey *ecdsa.PrivateKey) (*[32]byte, error) {
 	// Compute Z - ECDH(localPrivate, remotePublic)
-	Z, _ := privateKey.Curve.ScalarMult(publicKey.X, publicKey.Y, privateKey.D.Bytes())
+	Z, _ := privateKey.Curve.ScalarMult(publicKey.X, publicKey.Y, privateKey.D.Bytes()) //nolint:staticcheck // SA1019: ECDH derivation is part of the seal v2 format
 
 	// Prepare info: ( AlgorithmID || PartyInfo || KeyLength )
 	fixedInfo := []byte{}

@@ -88,7 +88,7 @@ func flatten(result map[string]string, prefix string, v reflect.Value) {
 		result[prefix] = v.String()
 	case reflect.Chan, reflect.Complex128, reflect.Complex64, reflect.Func, reflect.Interface:
 		// ignore
-	case reflect.Invalid, reflect.Ptr, reflect.Struct, reflect.Uintptr, reflect.UnsafePointer:
+	case reflect.Invalid, reflect.Pointer, reflect.Struct, reflect.Uintptr, reflect.UnsafePointer:
 		// ignore
 	default:
 		panic(fmt.Sprintf("Unknown: %s", v))

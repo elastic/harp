@@ -42,6 +42,9 @@ const (
 	packagedRemoved
 )
 
+// valuesKey is the template context key used to expose values to rules.
+const valuesKey = "Values"
+
 // -----------------------------------------------------------------------------
 
 func executeRule(r *bundlev1.PatchRule, p *bundlev1.Package, values map[string]interface{}) (ruleAction, error) {
@@ -95,7 +98,7 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 		case s.MatchPath.Strict != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchPath.Strict, map[string]interface{}{
-				"Values": values,
+				valuesKey: values,
 			})
 			if err != nil {
 				return nil, fmt.Errorf("unable to evaluate template before matchPath build: %w", err)
@@ -106,7 +109,7 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 		case s.MatchPath.Glob != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchPath.Glob, map[string]interface{}{
-				"Values": values,
+				valuesKey: values,
 			})
 			if err != nil {
 				return nil, fmt.Errorf("unable to evaluate template before matchPath build: %w", err)
@@ -117,7 +120,7 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 		case s.MatchPath.Regex != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchPath.Regex, map[string]interface{}{
-				"Values": values,
+				valuesKey: values,
 			})
 			if err != nil {
 				return nil, fmt.Errorf("unable to evaluate template before matchPath build: %w", err)
@@ -148,7 +151,7 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 		case s.MatchSecret.Strict != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchSecret.Strict, map[string]interface{}{
-				"Values": values,
+				valuesKey: values,
 			})
 			if err != nil {
 				return nil, fmt.Errorf("unable to evaluate template before matchSecret build: %w", err)
@@ -159,7 +162,7 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 		case s.MatchSecret.Glob != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchSecret.Glob, map[string]interface{}{
-				"Values": values,
+				valuesKey: values,
 			})
 			if err != nil {
 				return nil, fmt.Errorf("unable to evaluate template before matchSecret build: %w", err)
@@ -170,7 +173,7 @@ func compileSelector(s *bundlev1.PatchSelector, values map[string]interface{}) (
 		case s.MatchSecret.Regex != "":
 			// Evaluation with template engine first
 			value, err := engine.Render(s.MatchSecret.Regex, map[string]interface{}{
-				"Values": values,
+				valuesKey: values,
 			})
 			if err != nil {
 				return nil, fmt.Errorf("unable to evaluate template before matchSecret build: %w", err)
@@ -303,7 +306,7 @@ func applySecretPatch(secrets *bundlev1.SecretChain, op *bundlev1.PatchSecret, v
 	if op.Template != "" {
 		// Compile template
 		rendered, err := engine.Render(op.Template, map[string]interface{}{
-			"Values": values,
+			valuesKey: values,
 		})
 		if err != nil {
 			return fmt.Errorf("unable to compile secret template: %w", err)
@@ -626,7 +629,7 @@ func precompileMap(input map[string]string, values map[string]interface{}) (map[
 	for k, v := range input {
 		// Compile key
 		key, err := engine.Render(k, map[string]interface{}{
-			"Values": values,
+			valuesKey: values,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("unable to compile key template `%s`: %w", k, err)
@@ -634,7 +637,7 @@ func precompileMap(input map[string]string, values map[string]interface{}) (map[
 
 		// Compile value
 		val, err := engine.Render(v, map[string]interface{}{
-			"Values": values,
+			valuesKey: values,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("unable to compile value template `%s`: %w", v, err)
@@ -658,8 +661,8 @@ func applyPackagePathPatch(path string, op *bundlev1.PatchPackagePath, values ma
 
 	// Apply template transformation
 	out, err := engine.Render(op.Template, map[string]interface{}{
-		"Values": values,
-		"Path":   path,
+		valuesKey: values,
+		"Path":    path,
 	})
 	if err != nil {
 		return "", fmt.Errorf("unable to execute package name template of `%s`: %w", path, err)

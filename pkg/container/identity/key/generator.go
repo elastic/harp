@@ -54,7 +54,7 @@ func Ed25519(random io.Reader) (*JSONWebKey, string, error) {
 	// Wrap as JWK
 	return &JSONWebKey{
 		Kty: "OKP",
-		Crv: "Ed25519",
+		Crv: curveEd25519,
 		X:   base64.RawURLEncoding.EncodeToString(pub[:]),
 		D:   base64.RawURLEncoding.EncodeToString(priv[:]),
 	}, fmt.Sprintf("v1.ipk.%s", base64.RawURLEncoding.EncodeToString(pub[:])), err
@@ -68,27 +68,27 @@ func P384(random io.Reader) (*JSONWebKey, string, error) {
 	}
 
 	// Marshall as compressed point
-	pub := elliptic.MarshalCompressed(priv.Curve, priv.PublicKey.X, priv.PublicKey.Y)
+	pub := elliptic.MarshalCompressed(priv.Curve, priv.PublicKey.X, priv.PublicKey.Y) //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 
 	// P-384 key components are 48 bytes (384 bits)
 	// big.Int.Bytes() strips leading zeros, so we need to pad to fixed size
 	const p384KeySize = 48
-	dBytes := priv.D.Bytes()
+	dBytes := priv.D.Bytes() //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 	dPadded := make([]byte, p384KeySize)
 	copy(dPadded[p384KeySize-len(dBytes):], dBytes)
 
-	xBytes := priv.PublicKey.X.Bytes()
+	xBytes := priv.PublicKey.X.Bytes() //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 	xPadded := make([]byte, p384KeySize)
 	copy(xPadded[p384KeySize-len(xBytes):], xBytes)
 
-	yBytes := priv.PublicKey.Y.Bytes()
+	yBytes := priv.PublicKey.Y.Bytes() //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 	yPadded := make([]byte, p384KeySize)
 	copy(yPadded[p384KeySize-len(yBytes):], yBytes)
 
 	// Wrap as JWK
 	return &JSONWebKey{
 		Kty: "EC",
-		Crv: "P-384",
+		Crv: curveP384,
 		X:   base64.RawURLEncoding.EncodeToString(xPadded),
 		Y:   base64.RawURLEncoding.EncodeToString(yPadded),
 		D:   base64.RawURLEncoding.EncodeToString(dPadded),

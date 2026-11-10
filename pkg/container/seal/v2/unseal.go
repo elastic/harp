@@ -62,8 +62,8 @@ func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.Lo
 	// Decode public key
 	var publicKey ecdsa.PublicKey
 	publicKey.Curve = elliptic.P384()
-	publicKey.X, publicKey.Y = elliptic.UnmarshalCompressed(elliptic.P384(), container.Headers.EncryptionPublicKey)
-	if publicKey.X == nil {
+	publicKey.X, publicKey.Y = elliptic.UnmarshalCompressed(elliptic.P384(), container.Headers.EncryptionPublicKey) //nolint:staticcheck // SA1019: raw ECDSA coordinates are part of the key encoding
+	if publicKey.X == nil {                                                                                         //nolint:staticcheck // SA1019: raw ECDSA coordinates are part of the key encoding
 		return nil, errors.New("invalid container signing public key")
 	}
 
@@ -77,7 +77,7 @@ func (a *adapter) Unseal(container *containerv1.Container, identity *memguard.Lo
 	}
 	var pk ecdsa.PrivateKey
 	pk.PublicKey.Curve = elliptic.P384()
-	pk.D = big.NewInt(0).SetBytes(privRaw)
+	pk.D = big.NewInt(0).SetBytes(privRaw) //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 
 	// Precompute identifier
 	derivedKey, err := deriveSharedKeyFromRecipient(&publicKey, &pk)

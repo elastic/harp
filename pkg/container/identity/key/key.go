@@ -81,8 +81,8 @@ func FromString(input string) (*Key, error) {
 		// Rebuild the public key
 		var pk ecdsa.PublicKey
 		pk.Curve = elliptic.P384()
-		pk.X = x
-		pk.Y = y
+		pk.X = x //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
+		pk.Y = y //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 
 		// Return wrapped key
 		return &Key{
@@ -127,7 +127,7 @@ func (k *Key) String() string {
 	var payload []byte
 	switch keyRaw := k.key.(type) {
 	case *ecdsa.PublicKey:
-		payload = elliptic.MarshalCompressed(keyRaw.Curve, keyRaw.X, keyRaw.Y)
+		payload = elliptic.MarshalCompressed(keyRaw.Curve, keyRaw.X, keyRaw.Y) //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 	case ed25519.PublicKey:
 		payload = keyRaw
 	default:
@@ -141,7 +141,7 @@ func (k *Key) SealingKey() string {
 	var payload []byte
 	switch keyRaw := k.key.(type) {
 	case *ecdsa.PublicKey:
-		payload = elliptic.MarshalCompressed(keyRaw.Curve, keyRaw.X, keyRaw.Y)
+		payload = elliptic.MarshalCompressed(keyRaw.Curve, keyRaw.X, keyRaw.Y) //nolint:staticcheck // SA1019: raw ECDSA/JWK coordinates are part of the key encoding
 	case ed25519.PublicKey:
 		// Convert Ed25519 to X25519
 		var pkRaw [32]byte
