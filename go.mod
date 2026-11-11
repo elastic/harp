@@ -25,7 +25,7 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.5
 	github.com/go-ozzo/ozzo-validation/v4 v4.5.0
 	github.com/go-zookeeper/zk v1.0.4
-	github.com/gobwas/glob v1.0.0
+	github.com/gobwas/glob v1.1.0
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.4
 	github.com/golang/snappy v1.0.0
