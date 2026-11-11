@@ -13,7 +13,7 @@ Storing secrets (see below) is hard. Not from a purely technical standpoint - th
  - `bundle` is a file-based `secret store`. It can be used stand-alone, or as an intermediate step before populating a server-based `secret store`
  - `component` is a piece of software or a add-on to a piece of software
  - `provider` is a cloud provider - one of `aws`, `azure`, `gcp`, `ibm`, or `local`
- - `region` is a region as defined by a `provider`, or `global` to refer to all regions for that `provider`. The `local` provider only supports the `global` region.
+ - `region` is a region as defined by a `provider`, or one of the reserved values `global`, `universal` or `local` for secrets not bound to a single cloud region. `global` and `universal` refer to all regions; `local` refers to local infrastructure. The region is not validated for the `local` provider.
  - `version` is a software version using semver notation - that is `vX.Y.Z` where `X` is the major release, `Y` is the minor release, and `Z` is the "patch" or "build" version.
  - `service` is an online service as defined by a cloud provider or SaaS company.
  - `quality` refers to either `dev`, `staging`, `qa`, or `production`

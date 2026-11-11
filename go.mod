@@ -23,9 +23,9 @@ require (
 	github.com/fernet/fernet-go v0.0.0-20240119011108-303da6aec611
 	github.com/go-akka/configuration v0.0.0-20200606091224-a002c0330665
 	github.com/go-jose/go-jose/v3 v3.0.5
-	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
+	github.com/go-ozzo/ozzo-validation/v4 v4.5.0
 	github.com/go-zookeeper/zk v1.0.4
-	github.com/gobwas/glob v1.0.0
+	github.com/gobwas/glob v1.1.0
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.4
 	github.com/golang/snappy v1.0.0
@@ -38,7 +38,7 @@ require (
 	github.com/hashicorp/consul/api v1.35.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/hcl v1.0.1-vault-7
-	github.com/hashicorp/hcl/v2 v2.23.0
+	github.com/hashicorp/hcl/v2 v2.25.0
 	github.com/hashicorp/vault/api v1.16.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/imdario/mergo v0.3.16
@@ -47,7 +47,7 @@ require (
 	github.com/magefile/mage v1.17.2
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/miscreant/miscreant.go v0.0.0-20200214223636-26d376326b75
-	github.com/oklog/run v1.1.0
+	github.com/oklog/run v1.2.0
 	github.com/open-policy-agent/opa v1.22.2
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.1
@@ -58,16 +58,16 @@ require (
 	github.com/psanford/memfs v0.0.0-20241019191636-4ef911798f9b
 	github.com/sebdah/goldie v1.0.0
 	github.com/sethvargo/go-diceware v0.6.0
-	github.com/sethvargo/go-password v0.3.1
+	github.com/sethvargo/go-password v0.4.0
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
 	github.com/ulikunitz/xz v0.5.17
 	github.com/xeipuuv/gojsonschema v1.2.0
-	github.com/zclconf/go-cty v1.19.0
+	github.com/zclconf/go-cty v1.20.0
 	gitlab.com/NebulousLabs/merkletree v0.0.0-20200118113624-07fbf710afc4
-	go.etcd.io/etcd/client/v3 v3.6.5
+	go.etcd.io/etcd/client/v3 v3.7.3
 	go.step.sm/crypto v0.92.0
 	go.uber.org/zap v1.28.0
 	golang.org/x/crypto v0.58.0
@@ -76,7 +76,7 @@ require (
 	golang.org/x/sys v0.50.0
 	golang.org/x/term v0.47.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20261012220534-4341edf3f941
-	google.golang.org/grpc v1.84.0
+	google.golang.org/grpc v1.85.0
 	google.golang.org/protobuf v1.36.12
 	gopkg.in/yaml.v3 v3.0.1
 	oras.land/oras-go v1.2.7
@@ -86,7 +86,7 @@ require (
 
 // Nancy findings
 require (
-	cel.dev/expr v0.25.2 // indirect
+	cel.dev/expr v0.25.3 // indirect
 	dario.cat/mergo v1.0.1 // indirect
 	filippo.io/hpke v0.4.0 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 // indirect
@@ -114,7 +114,7 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v1.0.0-rc.1 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
-	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
+	github.com/coreos/go-systemd/v22 v22.7.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/creack/pty v1.1.24 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
@@ -135,7 +135,6 @@ require (
 	github.com/go-test/deep v1.1.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
@@ -198,8 +197,8 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.2.0 // indirect
-	go.etcd.io/etcd/api/v3 v3.6.5 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.6.5 // indirect
+	go.etcd.io/etcd/api/v3 v3.7.3 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.7.3 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.71.0 // indirect
 	go.opentelemetry.io/otel v1.47.0 // indirect
