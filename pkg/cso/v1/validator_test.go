@@ -84,6 +84,10 @@ var tests = []struct {
 	{"platform/production/foo/eu-central-1/db/admin_account", false},
 	{"platform/production/foo/aws-eu-central-1/db/admin_account", false},
 	{"platform/production/foo/ibm-syd-p1012/db/admin_account", false},
+	{"platform/production/foo/global/db/admin_account", false},
+	{"platform/production/foo/universal/db/admin_account", false},
+	{"platform/production/foo/local/db/admin_account", false},
+	{"platform/production/foo/nowhere/db/admin_account", true},
 	// Product
 	{"product", true},
 	{"product/", true},
