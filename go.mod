@@ -58,7 +58,7 @@ require (
 	github.com/psanford/memfs v0.0.0-20241019191636-4ef911798f9b
 	github.com/sebdah/goldie v1.0.0
 	github.com/sethvargo/go-diceware v0.6.0
-	github.com/sethvargo/go-password v0.3.1
+	github.com/sethvargo/go-password v0.4.0
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
