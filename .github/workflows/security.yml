@@ -15,22 +15,28 @@ concurrency:
 
 jobs:
   vulns:
-    name: Nancy scanner
+    name: govulncheck
+    # Advisory only: SARIF output makes govulncheck exit 0 even when
+    # vulnerabilities are found, so the check stays green. Findings are
+    # surfaced in the GitHub Security tab instead.
     continue-on-error: true
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       -
-        uses: actions/checkout@v7
-      -
-        uses: actions/setup-go@v7
+        name: Run govulncheck
+        uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f  # v1.1.0
         with:
-          go-version-file: go.mod
+          output-format: sarif
+          output-file: govulncheck.sarif
       -
-        name: Run go list
-        run: go list -json -m all > go.list
-      -
-        name: Nancy
-        uses: sonatype-nexus-community/nancy-github-action@726e338312e68ecdd4b4195765f174d3b3ce1533  # v1.0.3
+        name: Upload govulncheck results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: govulncheck.sarif
+          category: govulncheck
 
   trivy:
     name: Trivy scanner
