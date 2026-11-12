@@ -22,10 +22,7 @@ import (
 	"testing"
 	"text/template"
 
-	jose "github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/elastic/harp/pkg/sdk/security/crypto"
 )
 
 func TestFuncs(t *testing.T) {
@@ -114,14 +111,42 @@ func TestFuncs(t *testing.T) {
 		expect: `{[{ <nil> HS256  [] map[typ:JWT]}] map[iat:1.516239022e+09 name:John Doe sub:1234567890]}`,
 		vars:   `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`,
 	}, {
+		tpl:    `{{ parseJwt . "HS256" }}`,
+		expect: `{[{ <nil> HS256  [] map[typ:JWT]}] map[iat:1.516239022e+09 name:John Doe sub:1234567890]}`,
+		vars:   `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`,
+	}, {
 		tpl:    `{{ isodate 0 }}`,
 		expect: `1970-01-01T00:00:00Z`,
 	}}
 
 	for _, tt := range tests {
 		var b strings.Builder
-		err := template.Must(template.New("test").Funcs(FuncMap(nil, crypto.WithSignatureAlgorithms(jose.HS256))).Parse(tt.tpl)).Execute(&b, tt.vars)
+		err := template.Must(template.New("test").Funcs(FuncMap(nil)).Parse(tt.tpl)).Execute(&b, tt.vars)
 		assert.NoError(t, err)
 		assert.Equal(t, tt.expect, b.String(), tt.tpl)
 	}
+}
+
+func TestFuncMap_JOSEAlgorithmArguments(t *testing.T) {
+	const hs256 = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`
+
+	render := func(tpl string, vars interface{}) error {
+		var b strings.Builder
+
+		return template.Must(template.New("test").Funcs(FuncMap(nil)).Parse(tpl)).Execute(&b, vars)
+	}
+
+	// Token algorithm not in the expected list.
+	assert.Error(t, render(`{{ parseJwt . "ES256" }}`, hs256))
+	// Unsupported or insecure names are rejected.
+	assert.Error(t, render(`{{ parseJwt . "none" }}`, hs256))
+	assert.Error(t, render(`{{ parseJwt . "bogus" }}`, hs256))
+
+	// JWE round trip with defaults, explicit matching, and non matching algorithms.
+	const enc = `{{ $e := encryptJwe "pass" "hello" }}`
+	assert.NoError(t, render(enc+`{{ decryptJwe "pass" $e }}`, nil))
+	assert.NoError(t, render(enc+`{{ decryptJwe "pass" $e "PBES2-HS256+A128KW" "A128GCM" }}`, nil))
+	assert.Error(t, render(enc+`{{ decryptJwe "pass" $e "A128KW" }}`, nil))
+	assert.Error(t, render(enc+`{{ decryptJwe "pass" $e "A256GCM" }}`, nil))
+	assert.Error(t, render(enc+`{{ decryptJwe "pass" $e "RSA1_5" }}`, nil))
 }

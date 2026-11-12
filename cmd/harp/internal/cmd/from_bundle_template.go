@@ -26,7 +26,6 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/sdk/security/crypto"
 	"github.com/elastic/harp/pkg/tasks/from"
 	tplcmdutil "github.com/elastic/harp/pkg/template/cmdutil"
 	"github.com/elastic/harp/pkg/template/engine"
@@ -36,16 +35,13 @@ import (
 
 var fromTemplateCmd = func() *cobra.Command {
 	var (
-		inputPath              string
-		outputPath             string
-		rootPath               string
-		valueFiles             []string
-		values                 []string
-		stringValues           []string
-		fileValues             []string
-		jweKeyAlgorithms       []string
-		jweContentEncryptions  []string
-		jwtSignatureAlgorithms []string
+		inputPath    string
+		outputPath   string
+		rootPath     string
+		valueFiles   []string
+		values       []string
+		stringValues []string
+		fileValues   []string
 	)
 
 	cmd := &cobra.Command{
@@ -83,12 +79,6 @@ var fromTemplateCmd = func() *cobra.Command {
 				}
 			}
 
-			// Validate JOSE allow-lists
-			joseOpts, err := crypto.ParseJOSEOptions(jweKeyAlgorithms, jweContentEncryptions, jwtSignatureAlgorithms)
-			if err != nil {
-				log.For(ctx).Fatal("invalid JOSE options", zap.Error(err))
-			}
-
 			// Prepare task
 			t := &from.BundleTemplateTask{
 				TemplateReader: cmdutil.FileReader(inputPath),
@@ -97,7 +87,6 @@ var fromTemplateCmd = func() *cobra.Command {
 					engine.WithName(inputPath),
 					engine.WithValues(values),
 					engine.WithFiles(files),
-					engine.WithJOSEOptions(joseOpts...),
 				),
 			}
 
@@ -116,9 +105,6 @@ var fromTemplateCmd = func() *cobra.Command {
 	cmd.Flags().StringArrayVar(&values, "set", []string{}, "Specifies value (k=v)")
 	cmd.Flags().StringArrayVar(&stringValues, "set-string", []string{}, "Specifies value (k=string)")
 	cmd.Flags().StringArrayVar(&fileValues, "set-file", []string{}, "Specifies value (k=filepath)")
-	cmd.Flags().StringArrayVar(&jweKeyAlgorithms, "jwe-key-algorithms", defaultJWEKeyAlgorithms, "JWE key management algorithms accepted by 'decryptJwe' template function")
-	cmd.Flags().StringArrayVar(&jweContentEncryptions, "jwe-content-encryptions", defaultJWEContentEncryptions, "JWE content encryption algorithms accepted by 'decryptJwe' template function")
-	cmd.Flags().StringArrayVar(&jwtSignatureAlgorithms, "jwt-signature-algorithms", defaultJWTSignatureAlgorithms, "JWT signature algorithms accepted by 'parseJwt' and 'verifyJwt' template functions")
 
 	return cmd
 }

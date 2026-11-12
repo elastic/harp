@@ -888,40 +888,6 @@ func TestParseVerifyJWT_SignatureAlgorithmOptions(t *testing.T) {
 	}
 }
 
-func TestParseJOSEOptions(t *testing.T) {
-	// Empty lists keep defaults.
-	opts, err := ParseJOSEOptions(nil, nil, nil)
-	if err != nil {
-		t.Fatalf("empty lists should be accepted: %v", err)
-	}
-	o := newJOSEOptions(opts)
-	if len(o.keyAlgorithms) != len(DefaultJWEKeyAlgorithms()) || len(o.signatureAlgorithms) != len(DefaultJWTSignatureAlgorithms()) {
-		t.Fatal("empty lists must keep defaults")
-	}
-
-	// Valid selection overrides defaults.
-	opts, err = ParseJOSEOptions([]string{"A256KW"}, []string{"A256GCM"}, []string{"ES256"})
-	if err != nil {
-		t.Fatalf("valid lists should be accepted: %v", err)
-	}
-	o = newJOSEOptions(opts)
-	if len(o.keyAlgorithms) != 1 || o.keyAlgorithms[0] != jose.A256KW || o.signatureAlgorithms[0] != jose.ES256 {
-		t.Fatalf("unexpected options: %+v", o)
-	}
-
-	// Rejected values.
-	for _, tc := range [][3][]string{
-		{{"RSA1_5"}, nil, nil},
-		{{"ED25519"}, nil, nil},
-		{nil, {"A128GCM", "bogus"}, nil},
-		{nil, nil, {"none"}},
-	} {
-		if _, err := ParseJOSEOptions(tc[0], tc[1], tc[2]); err == nil {
-			t.Errorf("expected error for %v", tc)
-		}
-	}
-}
-
 func TestWithAlgorithms_CopiesInput(t *testing.T) {
 	algs := []jose.SignatureAlgorithm{jose.ES256}
 	opt := WithSignatureAlgorithms(algs...)
@@ -930,5 +896,70 @@ func TestWithAlgorithms_CopiesInput(t *testing.T) {
 	o := newJOSEOptions([]JOSEOption{opt})
 	if len(o.signatureAlgorithms) != 1 || o.signatureAlgorithms[0] != jose.ES256 {
 		t.Fatalf("allow-list was mutated through caller slice: %v", o.signatureAlgorithms)
+	}
+}
+
+func TestParseJWEAlgorithms(t *testing.T) {
+	// No names keeps defaults.
+	opts, err := ParseJWEAlgorithms()
+	if err != nil {
+		t.Fatalf("no names should be accepted: %v", err)
+	}
+	o := newJOSEOptions(opts)
+	if len(o.keyAlgorithms) != len(DefaultJWEKeyAlgorithms()) || len(o.contentEncryptions) != len(DefaultJWEContentEncryptions()) {
+		t.Fatal("no names must keep defaults")
+	}
+
+	// Names are classified as key algorithm or content encryption.
+	opts, err = ParseJWEAlgorithms("A256KW", "A256GCM", "A128KW")
+	if err != nil {
+		t.Fatalf("valid names should be accepted: %v", err)
+	}
+	o = newJOSEOptions(opts)
+	if len(o.keyAlgorithms) != 2 || o.keyAlgorithms[0] != jose.A256KW || o.keyAlgorithms[1] != jose.A128KW {
+		t.Fatalf("unexpected key algorithms: %v", o.keyAlgorithms)
+	}
+	if len(o.contentEncryptions) != 1 || o.contentEncryptions[0] != jose.A256GCM {
+		t.Fatalf("unexpected content encryptions: %v", o.contentEncryptions)
+	}
+
+	// Only one family given, the other keeps its default.
+	opts, err = ParseJWEAlgorithms("A256GCM")
+	if err != nil {
+		t.Fatal(err)
+	}
+	o = newJOSEOptions(opts)
+	if len(o.keyAlgorithms) != len(DefaultJWEKeyAlgorithms()) {
+		t.Fatal("key algorithms must keep defaults")
+	}
+
+	for _, bad := range []string{"RSA1_5", "ED25519", "none", "bogus", "a128kw", ""} {
+		if _, err := ParseJWEAlgorithms(bad); err == nil {
+			t.Errorf("expected error for %q", bad)
+		}
+	}
+}
+
+func TestParseJWTAlgorithms(t *testing.T) {
+	opts, err := ParseJWTAlgorithms()
+	if err != nil {
+		t.Fatalf("no names should be accepted: %v", err)
+	}
+	if len(newJOSEOptions(opts).signatureAlgorithms) != len(DefaultJWTSignatureAlgorithms()) {
+		t.Fatal("no names must keep defaults")
+	}
+
+	opts, err = ParseJWTAlgorithms("ES256", "RS256")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := newJOSEOptions(opts).signatureAlgorithms; len(got) != 2 || got[0] != jose.ES256 {
+		t.Fatalf("unexpected signature algorithms: %v", got)
+	}
+
+	for _, bad := range []string{"none", "bogus", "es256", ""} {
+		if _, err := ParseJWTAlgorithms(bad); err == nil {
+			t.Errorf("expected error for %q", bad)
+		}
 	}
 }

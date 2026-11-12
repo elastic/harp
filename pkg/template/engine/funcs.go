@@ -41,9 +41,9 @@ import (
 
 // FuncMap returns a mapping of all of the functions that Temmplate has.
 //
-// joseOpts configures the algorithm allow-lists used by the JWE/JWT functions,
-// when not provided the safe defaults from the crypto package are used.
-func FuncMap(secretReaders []SecretReaderFunc, joseOpts ...crypto.JOSEOption) template.FuncMap {
+// The JWE/JWT functions accept the expected algorithms as trailing arguments,
+// when omitted the safe defaults from the crypto package are used.
+func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 	f := sprig.TxtFuncMap()
 
 	// Add some extra functionality
@@ -77,10 +77,10 @@ func FuncMap(secretReaders []SecretReaderFunc, joseOpts ...crypto.JOSEOption) te
 		"secret": SecretReaders(secretReaders),
 		// JWT/JWE
 		"encryptJwe": crypto.EncryptJWE,
-		"decryptJwe": JWEDecrypter(joseOpts),
+		"decryptJwe": decryptJWE,
 		"toJws":      crypto.ToJWS,
-		"parseJwt":   JWTParser(joseOpts),
-		"verifyJwt":  JWTVerifier(joseOpts),
+		"parseJwt":   parseJWT,
+		"verifyJwt":  verifyJWT,
 		// Hex
 		"hexenc": hex.EncodeToString,
 		"hexdec": hex.DecodeString,

@@ -23,25 +23,21 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
-	"github.com/elastic/harp/pkg/sdk/security/crypto"
 	"github.com/elastic/harp/pkg/tasks/template"
 )
 
 type templateParams struct {
-	InputPath              string
-	OutputPath             string
-	ValueFiles             []string
-	SecretLoaders          []string
-	Values                 []string
-	StringValues           []string
-	FileValues             []string
-	LeftDelims             string
-	RightDelims            string
-	AltDelims              bool
-	RootPath               string
-	JWEKeyAlgorithms       []string
-	JWEContentEncryptions  []string
-	JWTSignatureAlgorithms []string
+	InputPath     string
+	OutputPath    string
+	ValueFiles    []string
+	SecretLoaders []string
+	Values        []string
+	StringValues  []string
+	FileValues    []string
+	LeftDelims    string
+	RightDelims   string
+	AltDelims     bool
+	RootPath      string
 }
 
 // -----------------------------------------------------------------------------
@@ -58,12 +54,6 @@ var templateCmd = func() *cobra.Command {
 			ctx, cancel := cmdutil.Context(cmd.Context(), "template-render", conf.Debug.Enable, conf.Instrumentation.Logs.Level)
 			defer cancel()
 
-			// Validate JOSE allow-lists
-			joseOpts, err := crypto.ParseJOSEOptions(params.JWEKeyAlgorithms, params.JWEContentEncryptions, params.JWTSignatureAlgorithms)
-			if err != nil {
-				log.For(ctx).Fatal("invalid JOSE options", zap.Error(err))
-			}
-
 			// Prepare task
 			t := &template.RenderTask{
 				InputReader:   cmdutil.FileReader(params.InputPath),
@@ -77,7 +67,6 @@ var templateCmd = func() *cobra.Command {
 				LeftDelims:    params.LeftDelims,
 				RightDelims:   params.RightDelims,
 				AltDelims:     params.AltDelims,
-				JOSEOptions:   joseOpts,
 			}
 
 			// Run the task
@@ -99,9 +88,6 @@ var templateCmd = func() *cobra.Command {
 	cmd.Flags().StringVar(&params.LeftDelims, "left-delimiter", "{{", "Template left delimiter (default to '{{')")
 	cmd.Flags().StringVar(&params.RightDelims, "right-delimiter", "}}", "Template right delimiter (default to '}}')")
 	cmd.Flags().BoolVar(&params.AltDelims, "alt-delims", false, "Define '[[' and ']]' as template delimiters.")
-	cmd.Flags().StringArrayVar(&params.JWEKeyAlgorithms, "jwe-key-algorithms", defaultJWEKeyAlgorithms, "JWE key management algorithms accepted by 'decryptJwe' template function")
-	cmd.Flags().StringArrayVar(&params.JWEContentEncryptions, "jwe-content-encryptions", defaultJWEContentEncryptions, "JWE content encryption algorithms accepted by 'decryptJwe' template function")
-	cmd.Flags().StringArrayVar(&params.JWTSignatureAlgorithms, "jwt-signature-algorithms", defaultJWTSignatureAlgorithms, "JWT signature algorithms accepted by 'parseJwt' and 'verifyJwt' template functions")
 
 	return cmd
 }

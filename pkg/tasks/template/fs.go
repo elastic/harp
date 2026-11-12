@@ -25,7 +25,6 @@ import (
 	"github.com/psanford/memfs"
 
 	"github.com/elastic/harp/pkg/sdk/fsutil"
-	"github.com/elastic/harp/pkg/sdk/security/crypto"
 	"github.com/elastic/harp/pkg/template/engine"
 )
 
@@ -43,7 +42,6 @@ type FileSystemTask struct {
 	AltDelims          bool
 	FileLoaderRootPath string
 	DryRun             bool
-	JOSEOptions        []crypto.JOSEOption
 }
 
 // Run the task.
@@ -77,7 +75,6 @@ func (t *FileSystemTask) Run(ctx context.Context) error {
 		RightDelims:   t.RightDelims,
 		AltDelims:     t.AltDelims,
 		FileRootPath:  fileRootFS,
-		JOSEOptions:   t.JOSEOptions,
 	})
 	if err != nil {
 		return fmt.Errorf("unable to prepare rendering context: %w", err)

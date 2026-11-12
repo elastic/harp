@@ -21,26 +21,47 @@ import (
 	"github.com/elastic/harp/pkg/sdk/security/crypto"
 )
 
-// JWEDecrypter returns a JWE decryption function restricted to the given
-// algorithm allow-lists.
-func JWEDecrypter(opts []crypto.JOSEOption) func(key, token string) (interface{}, error) {
-	return func(key, token string) (interface{}, error) {
-		return crypto.DecryptJWE(key, token, opts...)
+// decryptJWE decrypts a JWE token. The expected key management algorithm and
+// content encryption can be given as trailing arguments, otherwise the crypto
+// package defaults apply.
+//
+//	{{ decryptJwe $key $token }}
+//	{{ decryptJwe $key $token "A256KW" "A256GCM" }}
+func decryptJWE(key, token string, algs ...string) (interface{}, error) {
+	opts, err := crypto.ParseJWEAlgorithms(algs...)
+	if err != nil {
+		return nil, err
 	}
+
+	return crypto.DecryptJWE(key, token, opts...)
 }
 
-// JWTParser returns a JWT parsing function restricted to the given algorithm
-// allow-lists.
-func JWTParser(opts []crypto.JOSEOption) func(token string) (interface{}, error) {
-	return func(token string) (interface{}, error) {
-		return crypto.ParseJWT(token, opts...)
+// parseJWT parses a JWT without signature verification. The accepted signature
+// algorithms can be given as trailing arguments, otherwise the crypto package
+// defaults apply.
+//
+//	{{ parseJwt $token }}
+//	{{ parseJwt $token "ES256" }}
+func parseJWT(token string, algs ...string) (interface{}, error) {
+	opts, err := crypto.ParseJWTAlgorithms(algs...)
+	if err != nil {
+		return nil, err
 	}
+
+	return crypto.ParseJWT(token, opts...)
 }
 
-// JWTVerifier returns a JWT verification function restricted to the given
-// algorithm allow-lists.
-func JWTVerifier(opts []crypto.JOSEOption) func(token string, key interface{}) (interface{}, error) {
-	return func(token string, key interface{}) (interface{}, error) {
-		return crypto.VerifyJWT(token, key, opts...)
+// verifyJWT parses a JWT and verifies its signature. The accepted signature
+// algorithms can be given as trailing arguments, otherwise the crypto package
+// defaults apply.
+//
+//	{{ verifyJwt $token $key }}
+//	{{ verifyJwt $token $key "ES256" }}
+func verifyJWT(token string, key interface{}, algs ...string) (interface{}, error) {
+	opts, err := crypto.ParseJWTAlgorithms(algs...)
+	if err != nil {
+		return nil, err
 	}
+
+	return crypto.VerifyJWT(token, key, opts...)
 }

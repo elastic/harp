@@ -138,27 +138,68 @@ func SupportedJWTSignatureAlgorithms() []jose.SignatureAlgorithm {
 	return DefaultJWTSignatureAlgorithms()
 }
 
-// ParseJOSEOptions validates the given algorithm names against the supported
-// lists and returns the matching options. An empty list leaves the corresponding default in place.
-func ParseJOSEOptions(keyAlgorithms, contentEncryptions, signatureAlgorithms []string) ([]JOSEOption, error) {
-	keyAlgs, err := parseAlgorithms("JWE key algorithms", keyAlgorithms, SupportedJWEKeyAlgorithms())
+// ParseJWEAlgorithms validates the given JWE algorithm names and returns the
+// matching options. Each name is classified as a key management algorithm or a
+// content encryption algorithm, the two name sets are disjoint. No names keeps
+// the defaults.
+func ParseJWEAlgorithms(names ...string) ([]JOSEOption, error) {
+	var (
+		keyAlgs     []string
+		contentEncs []string
+	)
+	for _, n := range names {
+		n = strings.TrimSpace(n)
+		switch {
+		case contains(SupportedJWEKeyAlgorithms(), n):
+			keyAlgs = append(keyAlgs, n)
+		case contains(SupportedJWEContentEncryptions(), n):
+			contentEncs = append(contentEncs, n)
+		default:
+			return nil, fmt.Errorf("unsupported JWE algorithm %q (key algorithms: %s; content encryptions: %s)",
+				n, joinNames(SupportedJWEKeyAlgorithms()), joinNames(SupportedJWEContentEncryptions()))
+		}
+	}
+
+	keys, err := parseAlgorithms("JWE key algorithms", keyAlgs, SupportedJWEKeyAlgorithms())
 	if err != nil {
 		return nil, err
 	}
-	contentEncs, err := parseAlgorithms("JWE content encryptions", contentEncryptions, SupportedJWEContentEncryptions())
-	if err != nil {
-		return nil, err
-	}
-	sigAlgs, err := parseAlgorithms("JWT signature algorithms", signatureAlgorithms, SupportedJWTSignatureAlgorithms())
+	encs, err := parseAlgorithms("JWE content encryptions", contentEncs, SupportedJWEContentEncryptions())
 	if err != nil {
 		return nil, err
 	}
 
-	return []JOSEOption{
-		WithKeyAlgorithms(keyAlgs...),
-		WithContentEncryptions(contentEncs...),
-		WithSignatureAlgorithms(sigAlgs...),
-	}, nil
+	return []JOSEOption{WithKeyAlgorithms(keys...), WithContentEncryptions(encs...)}, nil
+}
+
+// ParseJWTAlgorithms validates the given JWT signature algorithm names and
+// returns the matching options. No names keeps the defaults.
+func ParseJWTAlgorithms(names ...string) ([]JOSEOption, error) {
+	sigAlgs, err := parseAlgorithms("JWT signature algorithms", names, SupportedJWTSignatureAlgorithms())
+	if err != nil {
+		return nil, err
+	}
+
+	return []JOSEOption{WithSignatureAlgorithms(sigAlgs...)}, nil
+}
+
+func contains[T ~string](list []T, name string) bool {
+	for _, v := range list {
+		if string(v) == name {
+			return true
+		}
+	}
+
+	return false
+}
+
+func joinNames[T ~string](list []T) string {
+	names := make([]string, 0, len(list))
+	for _, v := range list {
+		names = append(names, string(v))
+	}
+
+	return strings.Join(names, ", ")
 }
 
 // parseAlgorithms ensures the values are supported and converts them to the

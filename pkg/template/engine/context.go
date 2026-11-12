@@ -17,12 +17,6 @@
 
 package engine
 
-import (
-	"slices"
-
-	"github.com/elastic/harp/pkg/sdk/security/crypto"
-)
-
 // Context describes engine rendering context contract.
 type Context interface {
 	Name() string
@@ -31,9 +25,6 @@ type Context interface {
 	SecretReaders() []SecretReaderFunc
 	Values() Values
 	Files() Files
-	// JOSEOptions returns the JOSE algorithm allow-lists bound to the
-	// `decryptJwe`, `parseJwt` and `verifyJwt` template functions.
-	JOSEOptions() []crypto.JOSEOption
 }
 
 // -----------------------------------------------------------------------------
@@ -87,16 +78,6 @@ func WithFiles(files Files) ContextOption {
 	}
 }
 
-// WithJOSEOptions defines the JOSE algorithm allow-lists used by JWE/JWT
-// template functions. When not provided, the safe defaults defined by the
-// crypto package are used.
-func WithJOSEOptions(values ...crypto.JOSEOption) ContextOption {
-	return func(ctx *context) {
-		// REVIEW: clone so the variadic backing array is not shared with the caller.
-		ctx.joseOptions = slices.Clone(values)
-	}
-}
-
 // NewContext returns a template rendering context.
 func NewContext(opts ...ContextOption) Context {
 	defaultContext := &context{
@@ -127,7 +108,6 @@ type context struct {
 	secretReaders []SecretReaderFunc
 	values        Values
 	files         Files
-	joseOptions   []crypto.JOSEOption
 }
 
 // Name returns template name
@@ -158,8 +138,4 @@ func (ctx *context) Values() Values {
 // Files returns binded files from rendering context.
 func (ctx *context) Files() Files {
 	return ctx.files
-}
-
-func (ctx *context) JOSEOptions() []crypto.JOSEOption {
-	return ctx.joseOptions
 }

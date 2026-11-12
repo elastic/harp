@@ -681,6 +681,15 @@ Decrypt input encoded as JWE.
 {{ decryptJwe $passphrase $encrypted }}
 ```
 
+The accepted algorithms default to `PBES2-HS256+A128KW` (key management) and `A128GCM` (content
+encryption), the algorithms `encryptJwe` produces. Pass the expected algorithms as trailing arguments
+to change them. Each name is matched as a key management algorithm or a content encryption algorithm.
+`none` and `RSA1_5` are never accepted.
+
+```gotemplate
+{{ decryptJwe $passphrase $encrypted "A256KW" "A256GCM" }}
+```
+
 #### parseJwt
 
 Extract claims _WITHOUT_ signature validation.
@@ -693,6 +702,14 @@ Extract claims _WITHOUT_ signature validation.
 {{ $t.Claims | toJson }}
 # Access token headers
 {{ $t.Headers | toJson }}
+```
+
+Accepted signature algorithms default to `EdDSA`, `HS256/384/512`, `RS256/384/512`, `PS256/384/512`
+and `ES256/384/512`. Pass the expected algorithms as trailing arguments to restrict them, `none`
+is never accepted.
+
+```gotemplate
+{{ $t := parseJwt $token "ES256" }}
 ```
 
 #### verifyJwt
@@ -708,6 +725,12 @@ Extract claims _WITH_ signature validation.
 {{ $t.Claims | toJson }}
 # Access token headers
 {{ $t.Headers | toJson }}
+```
+
+As with `parseJwt`, the expected signature algorithms can be given as trailing arguments.
+
+```gotemplate
+{{ $t := verifyJwt $token $key.Public "ES256" }}
 ```
 
 #### toSSH
