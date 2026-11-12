@@ -309,8 +309,9 @@ func EncryptJWE(key string, payload interface{}) (string, error) {
 
 // DecryptJWE decrypt a JWE token.
 //
-// The accepted algorithms must be provided using WithKeyAlgorithms and
-// WithContentEncryptions, there is no implicit default.
+// The accepted algorithms default to DefaultJWEKeyAlgorithms and
+// DefaultJWEContentEncryptions, and can be overridden using WithKeyAlgorithms
+// and WithContentEncryptions.
 func DecryptJWE(key, token string, opts ...JOSEOption) (interface{}, error) {
 	o := newJOSEOptions(opts)
 	if len(o.keyAlgorithms) == 0 || len(o.contentEncryptions) == 0 {
@@ -396,8 +397,8 @@ func ToJWS(payload, privkey interface{}) (string, error) {
 
 // ParseJWT unpack a JWT without signature verification.
 //
-// The accepted signature algorithms must be provided using
-// WithSignatureAlgorithms, there is no implicit default.
+// The accepted signature algorithms default to DefaultJWTSignatureAlgorithms,
+// and can be overridden using WithSignatureAlgorithms.
 func ParseJWT(token string, opts ...JOSEOption) (interface{}, error) {
 	o := newJOSEOptions(opts)
 	if len(o.signatureAlgorithms) == 0 {
@@ -426,6 +427,9 @@ func ParseJWT(token string, opts ...JOSEOption) (interface{}, error) {
 }
 
 // VerifyJWT parses a JWT and verifies its signature using the given key.
+//
+// The accepted signature algorithms default to DefaultJWTSignatureAlgorithms,
+// and can be overridden using WithSignatureAlgorithms.
 func VerifyJWT(token string, key interface{}, opts ...JOSEOption) (interface{}, error) {
 	o := newJOSEOptions(opts)
 	if len(o.signatureAlgorithms) == 0 {
@@ -504,57 +508,4 @@ func ToTLSA(selector, mtype uint8, cert *x509.Certificate) (string, error) {
 
 	// No error
 	return hex.EncodeToString(output), nil
-}
-
-// JOSEOption configures the algorithm allow-lists used when parsing JWE and
-// JWT tokens.
-type JOSEOption func(*joseOptions)
-
-type joseOptions struct {
-	keyAlgorithms       []jose.KeyAlgorithm
-	contentEncryptions  []jose.ContentEncryption
-	signatureAlgorithms []jose.SignatureAlgorithm
-}
-
-// newJOSEOptions applies the given options. No default is provided at this
-// level, the caller (the CLI) owns the policy.
-func newJOSEOptions(opts []JOSEOption) *joseOptions {
-	o := &joseOptions{}
-	for _, opt := range opts {
-		if opt != nil {
-			opt(o)
-		}
-	}
-
-	return o
-}
-
-// WithKeyAlgorithms sets the JWE key management algorithms accepted on
-// decryption.
-func WithKeyAlgorithms(algs ...jose.KeyAlgorithm) JOSEOption {
-	return func(o *joseOptions) {
-		if len(algs) > 0 {
-			o.keyAlgorithms = algs
-		}
-	}
-}
-
-// WithContentEncryptions sets the JWE content encryption algorithms accepted on
-// decryption.
-func WithContentEncryptions(encs ...jose.ContentEncryption) JOSEOption {
-	return func(o *joseOptions) {
-		if len(encs) > 0 {
-			o.contentEncryptions = encs
-		}
-	}
-}
-
-// WithSignatureAlgorithms sets the signature algorithms accepted when parsing
-// or verifying JWT tokens.
-func WithSignatureAlgorithms(algs ...jose.SignatureAlgorithm) JOSEOption {
-	return func(o *joseOptions) {
-		if len(algs) > 0 {
-			o.signatureAlgorithms = algs
-		}
-	}
 }

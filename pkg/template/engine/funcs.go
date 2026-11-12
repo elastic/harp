@@ -42,7 +42,7 @@ import (
 // FuncMap returns a mapping of all of the functions that Temmplate has.
 //
 // joseOpts configures the algorithm allow-lists used by the JWE/JWT functions,
-// there is no implicit default so these functions fail when not provided.
+// when not provided the safe defaults from the crypto package are used.
 func FuncMap(secretReaders []SecretReaderFunc, joseOpts ...crypto.JOSEOption) template.FuncMap {
 	f := sprig.TxtFuncMap()
 

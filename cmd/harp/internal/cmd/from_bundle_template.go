@@ -26,6 +26,7 @@ import (
 
 	"github.com/elastic/harp/pkg/sdk/cmdutil"
 	"github.com/elastic/harp/pkg/sdk/log"
+	"github.com/elastic/harp/pkg/sdk/security/crypto"
 	"github.com/elastic/harp/pkg/tasks/from"
 	tplcmdutil "github.com/elastic/harp/pkg/template/cmdutil"
 	"github.com/elastic/harp/pkg/template/engine"
@@ -83,7 +84,7 @@ var fromTemplateCmd = func() *cobra.Command {
 			}
 
 			// Validate JOSE allow-lists
-			joseOpts, err := joseOptions(jweKeyAlgorithms, jweContentEncryptions, jwtSignatureAlgorithms)
+			joseOpts, err := crypto.ParseJOSEOptions(jweKeyAlgorithms, jweContentEncryptions, jwtSignatureAlgorithms)
 			if err != nil {
 				log.For(ctx).Fatal("invalid JOSE options", zap.Error(err))
 			}

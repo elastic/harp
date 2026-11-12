@@ -84,7 +84,8 @@ func WithFiles(files Files) ContextOption {
 }
 
 // WithJOSEOptions defines the JOSE algorithm allow-lists used by JWE/JWT
-// template functions.
+// template functions. When not provided, the safe defaults defined by the
+// crypto package are used.
 func WithJOSEOptions(values ...crypto.JOSEOption) ContextOption {
 	return func(ctx *context) {
 		ctx.joseOptions = values

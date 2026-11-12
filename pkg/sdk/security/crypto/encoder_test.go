@@ -822,12 +822,12 @@ func TestDecryptJWE_Options(t *testing.T) {
 		t.Fatalf("unable to encrypt: %v", err)
 	}
 
-	// No allow-list configured must fail.
-	if _, err := DecryptJWE("test", jwe); err == nil {
-		t.Fatal("expected failure without configured allow-lists")
+	// Safe defaults are used when no allow-list is configured.
+	if _, err := DecryptJWE("test", jwe); err != nil {
+		t.Fatalf("defaults should accept the default JWE: %v", err)
 	}
-	if _, err := DecryptJWE("test", jwe, testJWEKeyAlgs); err == nil {
-		t.Fatal("expected failure without content encryption allow-list")
+	if _, err := DecryptJWE("test", jwe, testJWEKeyAlgs); err != nil {
+		t.Fatalf("content encryption default should apply: %v", err)
 	}
 
 	// Matching allow-lists succeed.
@@ -846,6 +846,18 @@ func TestDecryptJWE_Options(t *testing.T) {
 	}
 }
 
+func TestJOSEDefaults(t *testing.T) {
+	for _, a := range DefaultJWTSignatureAlgorithms() {
+		if string(a) == "none" {
+			t.Fatal("none must never be in default signature algorithms")
+		}
+	}
+	o := newJOSEOptions(nil)
+	if len(o.keyAlgorithms) == 0 || len(o.contentEncryptions) == 0 || len(o.signatureAlgorithms) == 0 {
+		t.Fatal("defaults must be initialized")
+	}
+}
+
 func TestParseVerifyJWT_SignatureAlgorithmOptions(t *testing.T) {
 	_, priv, err := ed25519.GenerateKey(nil)
 	if err != nil {
@@ -856,11 +868,11 @@ func TestParseVerifyJWT_SignatureAlgorithmOptions(t *testing.T) {
 		t.Fatalf("unable to sign: %v", err)
 	}
 
-	if _, err := ParseJWT(token); err == nil {
-		t.Fatal("expected parse failure without configured allow-list")
+	if _, err := ParseJWT(token); err != nil {
+		t.Fatalf("parse should succeed with default allow-list: %v", err)
 	}
-	if _, err := VerifyJWT(token, priv.Public()); err == nil {
-		t.Fatal("expected verify failure without configured allow-list")
+	if _, err := VerifyJWT(token, priv.Public()); err != nil {
+		t.Fatalf("verify should succeed with default allow-list: %v", err)
 	}
 	if _, err := ParseJWT(token, testJWTSigAlgs); err != nil {
 		t.Fatalf("parse with EdDSA allowed should succeed: %v", err)
@@ -873,5 +885,39 @@ func TestParseVerifyJWT_SignatureAlgorithmOptions(t *testing.T) {
 	}
 	if _, err := VerifyJWT(token, priv.Public(), WithSignatureAlgorithms(jose.EdDSA)); err != nil {
 		t.Fatalf("verify with EdDSA allowed should succeed: %v", err)
+	}
+}
+
+func TestParseJOSEOptions(t *testing.T) {
+	// Empty lists keep defaults.
+	opts, err := ParseJOSEOptions(nil, nil, nil)
+	if err != nil {
+		t.Fatalf("empty lists should be accepted: %v", err)
+	}
+	o := newJOSEOptions(opts)
+	if len(o.keyAlgorithms) != len(DefaultJWEKeyAlgorithms()) || len(o.signatureAlgorithms) != len(DefaultJWTSignatureAlgorithms()) {
+		t.Fatal("empty lists must keep defaults")
+	}
+
+	// Valid selection overrides defaults.
+	opts, err = ParseJOSEOptions([]string{"A256KW"}, []string{"A256GCM"}, []string{"ES256"})
+	if err != nil {
+		t.Fatalf("valid lists should be accepted: %v", err)
+	}
+	o = newJOSEOptions(opts)
+	if len(o.keyAlgorithms) != 1 || o.keyAlgorithms[0] != jose.A256KW || o.signatureAlgorithms[0] != jose.ES256 {
+		t.Fatalf("unexpected options: %+v", o)
+	}
+
+	// Rejected values.
+	for _, tc := range [][3][]string{
+		{{"RSA1_5"}, nil, nil},
+		{{"ED25519"}, nil, nil},
+		{nil, {"A128GCM", "bogus"}, nil},
+		{nil, nil, {"none"}},
+	} {
+		if _, err := ParseJOSEOptions(tc[0], tc[1], tc[2]); err == nil {
+			t.Errorf("expected error for %v", tc)
+		}
 	}
 }
