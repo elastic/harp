@@ -19,9 +19,10 @@ package crypto
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
-	jose "github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4"
 )
 
 // JOSEOption configures the algorithm allow-lists used when parsing JWE and
@@ -76,39 +77,42 @@ func newJOSEOptions(opts []JOSEOption) *joseOptions {
 	return o
 }
 
-// WithKeyAlgorithms sets the JWE key management algorithms accepted on
-// decryption.
+// WithKeyAlgorithms sets the JWE key management algorithms accepted on decryption.
+// REVIEW: the slice is cloned so later mutation by the caller cannot widen the allow-list.
 func WithKeyAlgorithms(algs ...jose.KeyAlgorithm) JOSEOption {
+	// Clone at construction time, not when the option is applied.
+	algs = slices.Clone(algs)
+
 	return func(o *joseOptions) {
 		if len(algs) > 0 {
-			o.keyAlgorithms = algs
+			o.keyAlgorithms = slices.Clone(algs)
 		}
 	}
 }
 
-// WithContentEncryptions sets the JWE content encryption algorithms accepted on
-// decryption.
+// WithContentEncryptions sets the JWE content encryption algorithms accepted on decryption.
 func WithContentEncryptions(encs ...jose.ContentEncryption) JOSEOption {
+	encs = slices.Clone(encs)
+
 	return func(o *joseOptions) {
 		if len(encs) > 0 {
-			o.contentEncryptions = encs
+			o.contentEncryptions = slices.Clone(encs)
 		}
 	}
 }
 
-// WithSignatureAlgorithms sets the signature algorithms accepted when parsing
-// or verifying JWT tokens.
+// WithSignatureAlgorithms sets the signature algorithms accepted when parsing or verifying JWT tokens.
 func WithSignatureAlgorithms(algs ...jose.SignatureAlgorithm) JOSEOption {
+	algs = slices.Clone(algs)
+
 	return func(o *joseOptions) {
 		if len(algs) > 0 {
-			o.signatureAlgorithms = algs
+			o.signatureAlgorithms = slices.Clone(algs)
 		}
 	}
 }
 
-// SupportedJWEKeyAlgorithms returns the JWE key management algorithms that can
-// be selected in an allow-list.
-//
+// SupportedJWEKeyAlgorithms returns the JWE key management algorithms that can be selected in an allow-list.
 // RSA1_5 (RSAES-PKCS1-v1_5) is intentionally excluded, see RFC 8725 section 3.2.
 func SupportedJWEKeyAlgorithms() []jose.KeyAlgorithm {
 	return []jose.KeyAlgorithm{
@@ -120,8 +124,7 @@ func SupportedJWEKeyAlgorithms() []jose.KeyAlgorithm {
 	}
 }
 
-// SupportedJWEContentEncryptions returns the JWE content encryption algorithms
-// that can be selected in an allow-list.
+// SupportedJWEContentEncryptions returns the JWE content encryption algorithms that can be selected in an allow-list.
 func SupportedJWEContentEncryptions() []jose.ContentEncryption {
 	return []jose.ContentEncryption{
 		jose.A128CBC_HS256, jose.A192CBC_HS384, jose.A256CBC_HS512,
@@ -136,8 +139,7 @@ func SupportedJWTSignatureAlgorithms() []jose.SignatureAlgorithm {
 }
 
 // ParseJOSEOptions validates the given algorithm names against the supported
-// lists and returns the matching options. An empty list leaves the
-// corresponding default in place.
+// lists and returns the matching options. An empty list leaves the corresponding default in place.
 func ParseJOSEOptions(keyAlgorithms, contentEncryptions, signatureAlgorithms []string) ([]JOSEOption, error) {
 	keyAlgs, err := parseAlgorithms("JWE key algorithms", keyAlgorithms, SupportedJWEKeyAlgorithms())
 	if err != nil {

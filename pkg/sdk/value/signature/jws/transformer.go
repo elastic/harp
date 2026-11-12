@@ -70,7 +70,7 @@ func (d *jwsTransformer) To(ctx context.Context, input []byte) ([]byte, error) {
 
 func (d *jwsTransformer) From(ctx context.Context, input []byte) ([]byte, error) {
 	// Parse the signed object
-	sig, err := jose.ParseSigned(string(input), []jose.SignatureAlgorithm{d.key.Algorithm})
+	sig, err := jose.ParseSignedCompact(string(input), []jose.SignatureAlgorithm{d.key.Algorithm})
 	if err != nil {
 		return nil, fmt.Errorf("jws: unable to parse input: %w", err)
 	}

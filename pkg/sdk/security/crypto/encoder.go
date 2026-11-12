@@ -319,7 +319,7 @@ func DecryptJWE(key, token string, opts ...JOSEOption) (interface{}, error) {
 	}
 
 	// Parse JWE token
-	object, err := jose.ParseEncrypted(token, o.keyAlgorithms, o.contentEncryptions)
+	object, err := jose.ParseEncryptedCompact(token, o.keyAlgorithms, o.contentEncryptions)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse JWE assertion: %w", err)
 	}

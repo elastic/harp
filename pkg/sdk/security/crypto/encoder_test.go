@@ -921,3 +921,14 @@ func TestParseJOSEOptions(t *testing.T) {
 		}
 	}
 }
+
+func TestWithAlgorithms_CopiesInput(t *testing.T) {
+	algs := []jose.SignatureAlgorithm{jose.ES256}
+	opt := WithSignatureAlgorithms(algs...)
+	algs[0] = jose.HS256 // caller mutation must not leak into the allow-list
+
+	o := newJOSEOptions([]JOSEOption{opt})
+	if len(o.signatureAlgorithms) != 1 || o.signatureAlgorithms[0] != jose.ES256 {
+		t.Fatalf("allow-list was mutated through caller slice: %v", o.signatureAlgorithms)
+	}
+}

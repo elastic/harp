@@ -17,7 +17,11 @@
 
 package engine
 
-import "github.com/elastic/harp/pkg/sdk/security/crypto"
+import (
+	"slices"
+
+	"github.com/elastic/harp/pkg/sdk/security/crypto"
+)
 
 // Context describes engine rendering context contract.
 type Context interface {
@@ -88,7 +92,8 @@ func WithFiles(files Files) ContextOption {
 // crypto package are used.
 func WithJOSEOptions(values ...crypto.JOSEOption) ContextOption {
 	return func(ctx *context) {
-		ctx.joseOptions = values
+		// REVIEW: clone so the variadic backing array is not shared with the caller.
+		ctx.joseOptions = slices.Clone(values)
 	}
 }
 

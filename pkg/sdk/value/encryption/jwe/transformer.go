@@ -91,7 +91,7 @@ func (d *jweTransformer) To(_ context.Context, input []byte) ([]byte, error) {
 
 func (d *jweTransformer) From(_ context.Context, input []byte) ([]byte, error) {
 	// Parse JWE Token
-	jwe, errParse := jose.ParseEncrypted(string(input), []jose.KeyAlgorithm{d.keyAlgorithm}, []jose.ContentEncryption{d.contentEncryption})
+	jwe, errParse := jose.ParseEncryptedCompact(string(input), []jose.KeyAlgorithm{d.keyAlgorithm}, []jose.ContentEncryption{d.contentEncryption})
 	if errParse != nil {
 		return nil, fmt.Errorf("jwe: unable to parse JWE token")
 	}
