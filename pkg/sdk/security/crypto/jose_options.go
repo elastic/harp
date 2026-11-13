@@ -80,14 +80,12 @@ func newJOSEOptions(opts []JOSEOption) *joseOptions {
 }
 
 // WithKeyAlgorithms sets the JWE key management algorithms accepted on decryption.
-// REVIEW: the slice is cloned so later mutation by the caller cannot widen the allow-list.
 func WithKeyAlgorithms(algs ...jose.KeyAlgorithm) JOSEOption {
-	// Clone at construction time, not when the option is applied.
 	algs = slices.Clone(algs)
 
 	return func(o *joseOptions) {
 		if len(algs) > 0 {
-			o.keyAlgorithms = slices.Clone(algs)
+			o.keyAlgorithms = algs
 		}
 	}
 }
@@ -98,7 +96,7 @@ func WithContentEncryptions(encs ...jose.ContentEncryption) JOSEOption {
 
 	return func(o *joseOptions) {
 		if len(encs) > 0 {
-			o.contentEncryptions = slices.Clone(encs)
+			o.contentEncryptions = encs
 		}
 	}
 }
@@ -109,7 +107,7 @@ func WithSignatureAlgorithms(algs ...jose.SignatureAlgorithm) JOSEOption {
 
 	return func(o *joseOptions) {
 		if len(algs) > 0 {
-			o.signatureAlgorithms = slices.Clone(algs)
+			o.signatureAlgorithms = algs
 		}
 	}
 }
