@@ -23,6 +23,8 @@ import (
 	"strings"
 
 	"github.com/go-jose/go-jose/v4"
+
+	"github.com/elastic/harp/pkg/sdk/types"
 )
 
 // JOSEOption configures the algorithm allow-lists used when parsing JWE and
@@ -194,12 +196,7 @@ func contains[T ~string](list []T, name string) bool {
 }
 
 func joinNames[T ~string](list []T) string {
-	names := make([]string, 0, len(list))
-	for _, v := range list {
-		names = append(names, string(v))
-	}
-
-	return strings.Join(names, ", ")
+	return strings.Join(types.ToStrings(list), ", ")
 }
 
 // parseAlgorithms ensures the values are supported and converts them to the
@@ -219,12 +216,7 @@ func parseAlgorithms[T ~string](name string, values []string, supported []T) ([]
 			}
 		}
 		if !found {
-			names := make([]string, 0, len(supported))
-			for _, s := range supported {
-				names = append(names, string(s))
-			}
-
-			return nil, fmt.Errorf("%s: unsupported algorithm %q (supported: %s)", name, v, strings.Join(names, ", "))
+			return nil, fmt.Errorf("%s: unsupported algorithm %q (supported: %s)", name, v, joinNames(supported))
 		}
 	}
 
