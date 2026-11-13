@@ -314,9 +314,6 @@ func EncryptJWE(key string, payload interface{}) (string, error) {
 // and WithContentEncryptions.
 func DecryptJWE(key, token string, opts ...JOSEOption) (interface{}, error) {
 	o := newJOSEOptions(opts)
-	if len(o.keyAlgorithms) == 0 || len(o.contentEncryptions) == 0 {
-		return "", errors.New("JWE key algorithms and content encryptions allow-lists must be configured")
-	}
 
 	// Parse JWE token
 	object, err := jose.ParseEncryptedCompact(token, o.keyAlgorithms, o.contentEncryptions)
@@ -401,9 +398,6 @@ func ToJWS(payload, privkey interface{}) (string, error) {
 // and can be overridden using WithSignatureAlgorithms.
 func ParseJWT(token string, opts ...JOSEOption) (interface{}, error) {
 	o := newJOSEOptions(opts)
-	if len(o.signatureAlgorithms) == 0 {
-		return nil, errors.New("JWT signature algorithms allow-list must be configured")
-	}
 
 	// Parse token
 	t, err := jwt.ParseSigned(token, o.signatureAlgorithms)
@@ -432,9 +426,6 @@ func ParseJWT(token string, opts ...JOSEOption) (interface{}, error) {
 // and can be overridden using WithSignatureAlgorithms.
 func VerifyJWT(token string, key interface{}, opts ...JOSEOption) (interface{}, error) {
 	o := newJOSEOptions(opts)
-	if len(o.signatureAlgorithms) == 0 {
-		return nil, errors.New("JWT signature algorithms allow-list must be configured")
-	}
 
 	// Parse token
 	t, err := jwt.ParseSigned(token, o.signatureAlgorithms)
