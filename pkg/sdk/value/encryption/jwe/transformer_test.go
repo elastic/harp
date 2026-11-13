@@ -18,12 +18,14 @@
 package jwe
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"reflect"
+	"strings"
 	"testing"
 
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 )
 
 func mustDecodeBase64(in string) []byte {
@@ -204,6 +206,47 @@ func Test_jweTransformer_From(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("jweTransformer.From() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_jweTransformer_From_AlgorithmPinning(t *testing.T) {
+	key := mustDecodeBase64("abSOB6OHnFK1CHIm60OXsA==") // 16 bytes
+	tests := []struct {
+		name          string
+		tokenAlg      jose.KeyAlgorithm
+		tokenEnc      jose.ContentEncryption
+		configuredAlg jose.KeyAlgorithm
+		configuredEnc jose.ContentEncryption
+		wantErr       bool
+	}{
+		{name: "matching", tokenAlg: jose.A128KW, tokenEnc: jose.A128GCM, configuredAlg: jose.A128KW, configuredEnc: jose.A128GCM},
+		{name: "key algorithm mismatch", tokenAlg: jose.A128GCMKW, tokenEnc: jose.A128GCM, configuredAlg: jose.A128KW, configuredEnc: jose.A128GCM, wantErr: true},
+		{name: "content encryption mismatch", tokenAlg: jose.A128KW, tokenEnc: jose.A256GCM, configuredAlg: jose.A128KW, configuredEnc: jose.A128GCM, wantErr: true},
+		{name: "both mismatch", tokenAlg: jose.A128GCMKW, tokenEnc: jose.A128CBC_HS256, configuredAlg: jose.A128KW, configuredEnc: jose.A128GCM, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			enc := &jweTransformer{key: key, keyAlgorithm: tt.tokenAlg, contentEncryption: tt.tokenEnc}
+			token, err := enc.To(ctx, []byte("cleartext"))
+			if err != nil {
+				t.Fatalf("unable to prepare token: %v", err)
+			}
+			dec := &jweTransformer{key: key, keyAlgorithm: tt.configuredAlg, contentEncryption: tt.configuredEnc}
+			got, err := dec.From(ctx, token)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("jweTransformer.From() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.wantErr {
+				if !strings.Contains(err.Error(), "unable to parse JWE token") {
+					t.Errorf("expected rejection at parse time, got %v", err)
+				}
+				return
+			}
+			if !bytes.Equal(got, []byte("cleartext")) {
+				t.Errorf("jweTransformer.From() = %q", got)
 			}
 		})
 	}

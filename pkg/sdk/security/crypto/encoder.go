@@ -33,8 +33,8 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	jose "github.com/go-jose/go-jose/v3"
-	"github.com/go-jose/go-jose/v3/jwt"
+	jose "github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 	"github.com/pkg/errors"
 	"go.step.sm/crypto/pemutil"
 
@@ -308,9 +308,15 @@ func EncryptJWE(key string, payload interface{}) (string, error) {
 }
 
 // DecryptJWE decrypt a JWE token.
-func DecryptJWE(key, token string) (interface{}, error) {
+//
+// The accepted algorithms default to DefaultJWEKeyAlgorithms and
+// DefaultJWEContentEncryptions, and can be overridden using WithKeyAlgorithms
+// and WithContentEncryptions.
+func DecryptJWE(key, token string, opts ...JOSEOption) (interface{}, error) {
+	o := newJOSEOptions(opts)
+
 	// Parse JWE token
-	object, err := jose.ParseEncrypted(token)
+	object, err := jose.ParseEncryptedCompact(token, o.keyAlgorithms, o.contentEncryptions)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse JWE assertion: %w", err)
 	}
@@ -387,9 +393,14 @@ func ToJWS(payload, privkey interface{}) (string, error) {
 }
 
 // ParseJWT unpack a JWT without signature verification.
-func ParseJWT(token string) (interface{}, error) {
+//
+// The accepted signature algorithms default to DefaultJWTSignatureAlgorithms,
+// and can be overridden using WithSignatureAlgorithms.
+func ParseJWT(token string, opts ...JOSEOption) (interface{}, error) {
+	o := newJOSEOptions(opts)
+
 	// Parse token
-	t, err := jwt.ParseSigned(token)
+	t, err := jwt.ParseSigned(token, o.signatureAlgorithms)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse input token: %w", err)
 	}
@@ -409,9 +420,15 @@ func ParseJWT(token string) (interface{}, error) {
 	}, nil
 }
 
-func VerifyJWT(token string, key interface{}) (interface{}, error) {
+// VerifyJWT parses a JWT and verifies its signature using the given key.
+//
+// The accepted signature algorithms default to DefaultJWTSignatureAlgorithms,
+// and can be overridden using WithSignatureAlgorithms.
+func VerifyJWT(token string, key interface{}, opts ...JOSEOption) (interface{}, error) {
+	o := newJOSEOptions(opts)
+
 	// Parse token
-	t, err := jwt.ParseSigned(token)
+	t, err := jwt.ParseSigned(token, o.signatureAlgorithms)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse input token: %w", err)
 	}
