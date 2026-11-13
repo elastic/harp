@@ -706,7 +706,7 @@ Extract claims _WITHOUT_ signature validation.
 
 Accepted signature algorithms default to `EdDSA`, `HS256/384/512`, `RS256/384/512`, `PS256/384/512`
 and `ES256/384/512`. Pass the expected algorithms as trailing arguments to restrict them, `none`
-is never accepted.
+is never accepted. FIPS builds never accept `EdDSA`.
 
 ```gotemplate
 {{ $t := parseJwt $token "ES256" }}
