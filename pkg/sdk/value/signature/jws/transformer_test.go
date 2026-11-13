@@ -390,3 +390,37 @@ func Test_jwsTransformer_Roundtrip(t *testing.T) {
 		})
 	}
 }
+
+func Test_jwsTransformer_From_AlgorithmPinning(t *testing.T) {
+	testcases := []struct {
+		name       string
+		privateKey *jose.JSONWebKey
+		signAlg    jose.SignatureAlgorithm
+		verifyAlg  jose.SignatureAlgorithm
+	}{
+		{name: "rs256 token, ps256 verifier", privateKey: mustDecodeJWK(rsa2048PrivateJWK), signAlg: jose.RS256, verifyAlg: jose.PS256},
+		{name: "rs256 token, rs512 verifier", privateKey: mustDecodeJWK(rsa2048PrivateJWK), signAlg: jose.RS256, verifyAlg: jose.RS512},
+		{name: "ps384 token, rs384 verifier", privateKey: mustDecodeJWK(rsa3072PrivateJWK), signAlg: jose.PS384, verifyAlg: jose.RS384},
+	}
+	for _, tt := range testcases {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			signer := &jwsTransformer{key: jose.SigningKey{Algorithm: tt.signAlg, Key: tt.privateKey}}
+			verifier := &jwsTransformer{key: jose.SigningKey{Algorithm: tt.verifyAlg, Key: tt.privateKey.Public()}}
+
+			signed, err := signer.To(ctx, []byte("test"))
+			assert.NoError(t, err)
+
+			_, err = verifier.From(ctx, signed)
+			assert.ErrorContains(t, err, "jws: unable to parse input")
+		})
+	}
+
+	t.Run("alg none", func(t *testing.T) {
+		pub := mustDecodeJWK(p256PrivateJWK).Public()
+		verifier := &jwsTransformer{key: jose.SigningKey{Algorithm: jose.ES256, Key: &pub}}
+		// {"alg":"none"}.test.
+		_, err := verifier.From(context.Background(), []byte("eyJhbGciOiJub25lIn0.dGVzdA."))
+		assert.ErrorContains(t, err, "jws: unable to parse input")
+	})
+}
