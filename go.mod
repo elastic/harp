@@ -5,8 +5,6 @@ go 1.27
 replace github.com/satori/go.uuid => github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 
 // GHSA
-//
-// Nancy findings
 require (
 	filippo.io/age v1.3.2
 	filippo.io/edwards25519 v1.2.0
