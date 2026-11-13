@@ -29,6 +29,8 @@ import (
 	jose "github.com/go-jose/go-jose/v4"
 	"github.com/google/go-cmp/cmp"
 	_ "golang.org/x/crypto/blake2b"
+
+	"github.com/elastic/harp/build/fips"
 )
 
 func TestAlgorithmForECDSACurve(t *testing.T) {
@@ -859,6 +861,10 @@ func TestJOSEDefaults(t *testing.T) {
 }
 
 func TestParseVerifyJWT_SignatureAlgorithmOptions(t *testing.T) {
+	if fips.Enabled() {
+		t.Skip("Ed25519 signature is disabled in FIPS mode")
+	}
+
 	_, priv, err := ed25519.GenerateKey(nil)
 	if err != nil {
 		t.Fatalf("unable to generate key: %v", err)

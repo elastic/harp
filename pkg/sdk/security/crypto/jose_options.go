@@ -51,15 +51,16 @@ func DefaultJWEContentEncryptions() []jose.ContentEncryption {
 
 // DefaultJWTSignatureAlgorithms returns the signature algorithms accepted when
 // parsing or verifying JWT tokens when WithSignatureAlgorithms is not provided.
-// The "none" algorithm is never part of the list.
+// The "none" algorithm is never part of the list, and "EdDSA" is excluded in
+// FIPS mode.
 func DefaultJWTSignatureAlgorithms() []jose.SignatureAlgorithm {
-	return []jose.SignatureAlgorithm{
+	return fipsSignatureAlgorithms([]jose.SignatureAlgorithm{
 		jose.EdDSA,
 		jose.HS256, jose.HS384, jose.HS512,
 		jose.RS256, jose.RS384, jose.RS512,
 		jose.PS256, jose.PS384, jose.PS512,
 		jose.ES256, jose.ES384, jose.ES512,
-	}
+	})
 }
 
 // newJOSEOptions returns options initialized with safe defaults, then applies
@@ -75,6 +76,9 @@ func newJOSEOptions(opts []JOSEOption) *joseOptions {
 			opt(o)
 		}
 	}
+
+	// Explicit options must not re-enable algorithms disabled in FIPS mode.
+	o.signatureAlgorithms = fipsSignatureAlgorithms(o.signatureAlgorithms)
 
 	return o
 }
@@ -144,32 +148,25 @@ func SupportedJWTSignatureAlgorithms() []jose.SignatureAlgorithm {
 // the defaults.
 func ParseJWEAlgorithms(names ...string) ([]JOSEOption, error) {
 	var (
-		keyAlgs     []string
-		contentEncs []string
+		keyAlgs       []jose.KeyAlgorithm
+		contentEncs   []jose.ContentEncryption
+		supportedKeys = SupportedJWEKeyAlgorithms()
+		supportedEncs = SupportedJWEContentEncryptions()
 	)
 	for _, n := range names {
 		n = strings.TrimSpace(n)
 		switch {
-		case contains(SupportedJWEKeyAlgorithms(), n):
-			keyAlgs = append(keyAlgs, n)
-		case contains(SupportedJWEContentEncryptions(), n):
-			contentEncs = append(contentEncs, n)
+		case slices.Contains(supportedKeys, jose.KeyAlgorithm(n)):
+			keyAlgs = append(keyAlgs, jose.KeyAlgorithm(n))
+		case slices.Contains(supportedEncs, jose.ContentEncryption(n)):
+			contentEncs = append(contentEncs, jose.ContentEncryption(n))
 		default:
 			return nil, fmt.Errorf("unsupported JWE algorithm %q (key algorithms: %s; content encryptions: %s)",
-				n, joinNames(SupportedJWEKeyAlgorithms()), joinNames(SupportedJWEContentEncryptions()))
+				n, joinNames(supportedKeys), joinNames(supportedEncs))
 		}
 	}
 
-	keys, err := parseAlgorithms("JWE key algorithms", keyAlgs, SupportedJWEKeyAlgorithms())
-	if err != nil {
-		return nil, err
-	}
-	encs, err := parseAlgorithms("JWE content encryptions", contentEncs, SupportedJWEContentEncryptions())
-	if err != nil {
-		return nil, err
-	}
-
-	return []JOSEOption{WithKeyAlgorithms(keys...), WithContentEncryptions(encs...)}, nil
+	return []JOSEOption{WithKeyAlgorithms(keyAlgs...), WithContentEncryptions(contentEncs...)}, nil
 }
 
 // ParseJWTAlgorithms validates the given JWT signature algorithm names and
@@ -181,16 +178,6 @@ func ParseJWTAlgorithms(names ...string) ([]JOSEOption, error) {
 	}
 
 	return []JOSEOption{WithSignatureAlgorithms(sigAlgs...)}, nil
-}
-
-func contains[T ~string](list []T, name string) bool {
-	for _, v := range list {
-		if string(v) == name {
-			return true
-		}
-	}
-
-	return false
 }
 
 func joinNames[T ~string](list []T) string {
