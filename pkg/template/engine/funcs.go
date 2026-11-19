@@ -40,6 +40,9 @@ import (
 )
 
 // FuncMap returns a mapping of all of the functions that Temmplate has.
+//
+// The JWE/JWT functions accept the expected algorithms as trailing arguments,
+// when omitted the safe defaults from the crypto package are used.
 func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 	f := sprig.TxtFuncMap()
 
@@ -74,10 +77,10 @@ func FuncMap(secretReaders []SecretReaderFunc) template.FuncMap {
 		"secret": SecretReaders(secretReaders),
 		// JWT/JWE
 		"encryptJwe": crypto.EncryptJWE,
-		"decryptJwe": crypto.DecryptJWE,
+		"decryptJwe": decryptJWE,
 		"toJws":      crypto.ToJWS,
-		"parseJwt":   crypto.ParseJWT,
-		"verifyJwt":  crypto.VerifyJWT,
+		"parseJwt":   parseJWT,
+		"verifyJwt":  verifyJWT,
 		// Hex
 		"hexenc": hex.EncodeToString,
 		"hexdec": hex.DecodeString,

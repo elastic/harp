@@ -30,7 +30,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 
 	"github.com/elastic/harp/pkg/tasks"
 )
@@ -104,6 +104,8 @@ func (t *JWKTask) keygenSig(alg jose.SignatureAlgorithm, bits int) (crypto.Publi
 		}
 	case jose.HS256, jose.HS384, jose.HS512:
 		return nil, nil, fmt.Errorf("can't generate crypto keys for '%s' signature", alg)
+	case jose.MLDSA44, jose.MLDSA65, jose.MLDSA87:
+		return nil, nil, fmt.Errorf("key generation for '%s' signature is not supported", alg)
 	}
 	switch alg {
 	case jose.ES256:
@@ -142,6 +144,8 @@ func (t *JWKTask) keygenSig(alg jose.SignatureAlgorithm, bits int) (crypto.Publi
 		return pub, key, err
 	case jose.HS256, jose.HS384, jose.HS512:
 		return nil, nil, fmt.Errorf("can't generate crypto keys for '%s' signature", alg)
+	case jose.MLDSA44, jose.MLDSA65, jose.MLDSA87:
+		return nil, nil, fmt.Errorf("key generation for '%s' signature is not supported", alg)
 	default:
 		return nil, nil, errors.New("unknown signature algorithm provided")
 	}

@@ -26,8 +26,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	jose "github.com/go-jose/go-jose/v4"
 	"github.com/google/go-cmp/cmp"
 	_ "golang.org/x/crypto/blake2b"
+
+	"github.com/elastic/harp/build/fips"
 )
 
 func TestAlgorithmForECDSACurve(t *testing.T) {
@@ -752,7 +755,7 @@ func Test_EncryptDecryptJWE(t *testing.T) {
 		t.Fatalf("unable to encrypt claims: %v", err)
 	}
 
-	got, err := DecryptJWE("test", jwe)
+	got, err := DecryptJWE("test", jwe, testJWEKeyAlgs, testJWEContent)
 	if err != nil {
 		t.Fatalf("unable to decrypt claims: %v", err)
 	}
@@ -806,5 +809,163 @@ func TestToJWS(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+var (
+	testJWEKeyAlgs = WithKeyAlgorithms(jose.PBES2_HS256_A128KW)
+	testJWEContent = WithContentEncryptions(jose.A128GCM)
+	testJWTSigAlgs = WithSignatureAlgorithms(jose.EdDSA, jose.HS256, jose.RS256, jose.ES256)
+)
+
+func TestDecryptJWE_Options(t *testing.T) {
+	jwe, err := EncryptJWE("test", map[string]interface{}{"foo": "bar"})
+	if err != nil {
+		t.Fatalf("unable to encrypt: %v", err)
+	}
+
+	// Safe defaults are used when no allow-list is configured.
+	if _, err := DecryptJWE("test", jwe); err != nil {
+		t.Fatalf("defaults should accept the default JWE: %v", err)
+	}
+	if _, err := DecryptJWE("test", jwe, testJWEKeyAlgs); err != nil {
+		t.Fatalf("content encryption default should apply: %v", err)
+	}
+
+	// Matching allow-lists succeed.
+	if _, err := DecryptJWE("test", jwe, testJWEKeyAlgs, testJWEContent, nil); err != nil {
+		t.Fatalf("matching allow-lists should succeed: %v", err)
+	}
+
+	// A key algorithm allow-list excluding the token's algorithm is rejected.
+	if _, err := DecryptJWE("test", jwe, WithKeyAlgorithms(jose.A128KW), testJWEContent); err == nil {
+		t.Fatal("expected failure when key algorithm is not allowed")
+	}
+
+	// A content encryption allow-list excluding the token's encryption is rejected.
+	if _, err := DecryptJWE("test", jwe, testJWEKeyAlgs, WithContentEncryptions(jose.A256GCM)); err == nil {
+		t.Fatal("expected failure when content encryption is not allowed")
+	}
+}
+
+func TestJOSEDefaults(t *testing.T) {
+	for _, a := range DefaultJWTSignatureAlgorithms() {
+		if string(a) == "none" {
+			t.Fatal("none must never be in default signature algorithms")
+		}
+	}
+	o := newJOSEOptions(nil)
+	if len(o.keyAlgorithms) == 0 || len(o.contentEncryptions) == 0 || len(o.signatureAlgorithms) == 0 {
+		t.Fatal("defaults must be initialized")
+	}
+}
+
+func TestParseVerifyJWT_SignatureAlgorithmOptions(t *testing.T) {
+	if fips.Enabled() {
+		t.Skip("Ed25519 signature is disabled in FIPS mode")
+	}
+
+	_, priv, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		t.Fatalf("unable to generate key: %v", err)
+	}
+	token, err := ToJWS(map[string]interface{}{"sub": "x"}, priv)
+	if err != nil {
+		t.Fatalf("unable to sign: %v", err)
+	}
+
+	if _, err := ParseJWT(token); err != nil {
+		t.Fatalf("parse should succeed with default allow-list: %v", err)
+	}
+	if _, err := VerifyJWT(token, priv.Public()); err != nil {
+		t.Fatalf("verify should succeed with default allow-list: %v", err)
+	}
+	if _, err := ParseJWT(token, testJWTSigAlgs); err != nil {
+		t.Fatalf("parse with EdDSA allowed should succeed: %v", err)
+	}
+	if _, err := ParseJWT(token, WithSignatureAlgorithms(jose.RS256)); err == nil {
+		t.Fatal("expected parse failure when EdDSA is not allowed")
+	}
+	if _, err := VerifyJWT(token, priv.Public(), WithSignatureAlgorithms(jose.ES256)); err == nil {
+		t.Fatal("expected verify failure when EdDSA is not allowed")
+	}
+	if _, err := VerifyJWT(token, priv.Public(), WithSignatureAlgorithms(jose.EdDSA)); err != nil {
+		t.Fatalf("verify with EdDSA allowed should succeed: %v", err)
+	}
+}
+
+func TestWithAlgorithms_CopiesInput(t *testing.T) {
+	algs := []jose.SignatureAlgorithm{jose.ES256}
+	opt := WithSignatureAlgorithms(algs...)
+	algs[0] = jose.HS256 // caller mutation must not leak into the allow-list
+
+	o := newJOSEOptions([]JOSEOption{opt})
+	if len(o.signatureAlgorithms) != 1 || o.signatureAlgorithms[0] != jose.ES256 {
+		t.Fatalf("allow-list was mutated through caller slice: %v", o.signatureAlgorithms)
+	}
+}
+
+func TestParseJWEAlgorithms(t *testing.T) {
+	// No names keeps defaults.
+	opts, err := ParseJWEAlgorithms()
+	if err != nil {
+		t.Fatalf("no names should be accepted: %v", err)
+	}
+	o := newJOSEOptions(opts)
+	if len(o.keyAlgorithms) != len(DefaultJWEKeyAlgorithms()) || len(o.contentEncryptions) != len(DefaultJWEContentEncryptions()) {
+		t.Fatal("no names must keep defaults")
+	}
+
+	// Names are classified as key algorithm or content encryption.
+	opts, err = ParseJWEAlgorithms("A256KW", "A256GCM", "A128KW")
+	if err != nil {
+		t.Fatalf("valid names should be accepted: %v", err)
+	}
+	o = newJOSEOptions(opts)
+	if len(o.keyAlgorithms) != 2 || o.keyAlgorithms[0] != jose.A256KW || o.keyAlgorithms[1] != jose.A128KW {
+		t.Fatalf("unexpected key algorithms: %v", o.keyAlgorithms)
+	}
+	if len(o.contentEncryptions) != 1 || o.contentEncryptions[0] != jose.A256GCM {
+		t.Fatalf("unexpected content encryptions: %v", o.contentEncryptions)
+	}
+
+	// Only one family given, the other keeps its default.
+	opts, err = ParseJWEAlgorithms("A256GCM")
+	if err != nil {
+		t.Fatal(err)
+	}
+	o = newJOSEOptions(opts)
+	if len(o.keyAlgorithms) != len(DefaultJWEKeyAlgorithms()) {
+		t.Fatal("key algorithms must keep defaults")
+	}
+
+	for _, bad := range []string{"RSA1_5", "ED25519", "none", "bogus", "a128kw", ""} {
+		if _, err := ParseJWEAlgorithms(bad); err == nil {
+			t.Errorf("expected error for %q", bad)
+		}
+	}
+}
+
+func TestParseJWTAlgorithms(t *testing.T) {
+	opts, err := ParseJWTAlgorithms()
+	if err != nil {
+		t.Fatalf("no names should be accepted: %v", err)
+	}
+	if len(newJOSEOptions(opts).signatureAlgorithms) != len(DefaultJWTSignatureAlgorithms()) {
+		t.Fatal("no names must keep defaults")
+	}
+
+	opts, err = ParseJWTAlgorithms("ES256", "RS256")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := newJOSEOptions(opts).signatureAlgorithms; len(got) != 2 || got[0] != jose.ES256 {
+		t.Fatalf("unexpected signature algorithms: %v", got)
+	}
+
+	for _, bad := range []string{"none", "bogus", "es256", ""} {
+		if _, err := ParseJWTAlgorithms(bad); err == nil {
+			t.Errorf("expected error for %q", bad)
+		}
 	}
 }
